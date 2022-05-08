@@ -1,5 +1,7 @@
 <template>
-  <hello-world />
+  <div>
+    <vc-calendar />
+  </div>
 </template>
 
 <script>

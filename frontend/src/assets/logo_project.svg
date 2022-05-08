@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="logo_project.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="5.6568543"
+     inkscape:cx="503.54842"
+     inkscape:cy="421.70081"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter26102"
+       x="-0.099741842"
+       y="-0.12694417"
+       width="1.2410428"
+       height="1.3067817">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood26092" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite26094" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="0.2"
+         result="blur"
+         id="feGaussianBlur26096" />
+      <feOffset
+         dx="0.2"
+         dy="0.2"
+         result="offset"
+         id="feOffset26098" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite26100" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter26114"
+       x="-0.13946809"
+       y="-0.15167497"
+       width="1.3370479"
+       height="1.3665478">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood26104" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite26106" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="0.2"
+         result="blur"
+         id="feGaussianBlur26108" />
+      <feOffset
+         dx="0.2"
+         dy="0.2"
+         result="offset"
+         id="feOffset26110" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite26112" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter26126"
+       x="-0.13946809"
+       y="-0.15167497"
+       width="1.3370479"
+       height="1.3665478">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood26116" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite26118" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="0.2"
+         result="blur"
+         id="feGaussianBlur26120" />
+      <feOffset
+         dx="0.2"
+         dy="0.2"
+         result="offset"
+         id="feOffset26122" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite26124" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter26138"
+       x="-0.13946809"
+       y="-0.15167497"
+       width="1.3370479"
+       height="1.3665478">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood26128" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite26130" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="0.2"
+         result="blur"
+         id="feGaussianBlur26132" />
+      <feOffset
+         dx="0.2"
+         dy="0.2"
+         result="offset"
+         id="feOffset26134" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite26136" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter29073"
+       x="-0.099741842"
+       y="-0.12694417"
+       width="1.2410428"
+       height="1.3067817">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood29063" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="out"
+         result="composite1"
+         id="feComposite29065" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="0.2"
+         result="blur"
+         id="feGaussianBlur29067" />
+      <feOffset
+         dx="0.2"
+         dy="0.2"
+         result="offset"
+         id="feOffset29069" />
+      <feComposite
+         in="offset"
+         in2="SourceGraphic"
+         operator="atop"
+         result="composite2"
+         id="feComposite29071" />
+    </filter>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g31269"
+       transform="translate(0.92230601)">
+      <rect
+         style="fill:#27ae60;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect25156"
+         width="4.8124237"
+         height="3.7811899"
+         x="77.120659"
+         y="106.96661" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="77.545601"
+         y="110.40411"
+         id="text14138"><tspan
+           sodipodi:role="line"
+           id="tspan14136"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="77.545601"
+           y="110.40411">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="55.081856"
+         y="111.34528"
+         id="text1244"><tspan
+           sodipodi:role="line"
+           id="tspan1242"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="55.081856"
+           y="111.34528">Schej</tspan></text>
+      <path
+         d="m 81.93308,110.74781 h -4.812424 v -3.78119 h 4.812424 m -1.031234,-2.40622 v 0.68749 H 78.15189 V 104.5604 H 77.4644 v 0.68749 h -0.343744 c -0.381557,0 -0.687491,0.30593 -0.687491,0.68749 v 4.81243 a 0.68748924,0.68748924 0 0 0 0.687491,0.68749 h 4.812424 a 0.68748924,0.68748924 0 0 0 0.687489,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.687489,-0.68749 h -0.343745 v -0.68749"
+         id="path18174"
+         style="fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-miterlimit:4;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g31277"
+       transform="translate(0.68342252,2.5782582)">
+      <rect
+         style="fill:#27ae60;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-miterlimit:4;stroke-dasharray:none;filter:url(#filter29073)"
+         id="rect25156-5"
+         width="4.8124237"
+         height="3.7811899"
+         x="77.359543"
+         y="119.1896" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter26138)"
+         x="77.784492"
+         y="122.6271"
+         id="text14138-3"><tspan
+           sodipodi:role="line"
+           id="tspan14136-2"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="77.784492"
+           y="122.6271">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="55.32074"
+         y="123.56827"
+         id="text1244-7"><tspan
+           sodipodi:role="line"
+           id="tspan1242-6"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="55.32074"
+           y="123.56827">Schej</tspan></text>
+      <path
+         d="m 82.171962,122.97081 h -4.81242 v -3.78119 h 4.81242 m -1.03123,-2.40622 v 0.68749 h -2.74996 v -0.68749 h -0.68749 v 0.68749 h -0.34374 c -0.38156,0 -0.68749,0.30593 -0.68749,0.68749 v 4.81243 a 0.68748924,0.68748924 0 0 0 0.68749,0.68749 h 4.81242 a 0.68748924,0.68748924 0 0 0 0.68749,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.68749,-0.68749 h -0.34374 v -0.68749"
+         id="path18174-3"
+         style="fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-miterlimit:4;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g31285"
+       transform="translate(0.99217951,5.3732347)">
+      <rect
+         style="fill:#219653;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect25156-9"
+         width="4.8124237"
+         height="3.7811899"
+         x="77.050781"
+         y="131.19588" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="77.475723"
+         y="134.63338"
+         id="text14138-7"><tspan
+           sodipodi:role="line"
+           id="tspan14136-27"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="77.475723"
+           y="134.63338">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="55.011986"
+         y="135.57455"
+         id="text1244-1"><tspan
+           sodipodi:role="line"
+           id="tspan1242-66"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="55.011986"
+           y="135.57455">Schej</tspan></text>
+      <path
+         d="m 81.863202,134.97708 h -4.81243 v -3.78119 h 4.81243 m -1.03124,-2.40622 v 0.68749 h -2.74995 v -0.68749 h -0.68749 v 0.68749 h -0.34375 c -0.38155,0 -0.68749,0.30593 -0.68749,0.68749 v 4.81243 a 0.68748924,0.68748924 0 0 0 0.68749,0.68749 h 4.81243 a 0.68748924,0.68748924 0 0 0 0.68749,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.68749,-0.68749 h -0.34375 v -0.68749"
+         id="path18174-1"
+         style="fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-miterlimit:4;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g31292"
+       transform="translate(0.52916666,8.995833)">
+      <path
+         d="m 81.294975,139.96832 v 0.68749 h -2.74995 v -0.68749 h -0.68749 v 0.68749 h -0.34375 c -0.38155,0 -0.68749,0.30593 -0.68749,0.68749 v 4.81243 c 0,0.37969 0.3078,0.68749 0.68749,0.68749 h 4.81243 c 0.37969,0 0.68749,-0.3078 0.68749,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.68749,-0.68749 h -0.34375 v -0.68749"
+         id="path18174-1-2"
+         style="fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-miterlimit:4;stroke-dasharray:none"
+         sodipodi:nodetypes="ccccccsssssssscc" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="77.938728"
+         y="145.29016"
+         id="text14138-7-5"><tspan
+           sodipodi:role="line"
+           id="tspan14136-27-6"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="77.938728"
+           y="145.29016">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="55.474998"
+         y="146.7532"
+         id="text1244-1-2"><tspan
+           sodipodi:role="line"
+           id="tspan1242-66-3"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="55.474998"
+           y="146.7532">Schej</tspan></text>
+    </g>
+    <g
+       id="g32088">
+      <path
+         d="m 114.86997,110.30468 h -4.81242 v -3.78119 h 4.81242 m -1.03123,-2.40622 v 0.68749 h -2.74996 v -0.68749 h -0.68749 v 0.68749 h -0.34374 c -0.38156,0 -0.68749,0.30593 -0.68749,0.68749 v 4.81243 a 0.68748924,0.68748924 0 0 0 0.68749,0.68749 h 4.81242 a 0.68748924,0.68748924 0 0 0 0.68749,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.68749,-0.68749 h -0.34375 v -0.68749"
+         id="path18174-8"
+         style="font-variation-settings:normal;vector-effect:none;fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000" />
+      <path
+         id="rect25156-6"
+         style="fill:#27ae60;fill-opacity:1;stroke:none;stroke-width:0.374756;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 109.37007,106.52373 v 3.78116 c 1e-4,0.37954 0.30775,0.68719 0.68729,0.6873 h 4.81263 c 0.37954,-1.1e-4 0.68719,-0.30776 0.6873,-0.6873 v -3.78116 z"
+         sodipodi:nodetypes="ccccccc" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="110.48249"
+         y="109.96099"
+         id="text14138-6"><tspan
+           sodipodi:role="line"
+           id="tspan14136-24"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="110.48249"
+           y="109.96099">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="88.018745"
+         y="110.90216"
+         id="text1244-6"><tspan
+           sodipodi:role="line"
+           id="tspan1242-7"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="88.018745"
+           y="110.90216">Schej</tspan></text>
+    </g>
+    <g
+       id="g32088-3"
+       transform="translate(0,13.28816)">
+      <path
+         d="m 114.86997,110.30468 h -4.81242 v -3.78119 h 4.81242 m -1.03123,-2.40622 v 0.68749 h -2.74996 v -0.68749 h -0.68749 v 0.68749 h -0.34374 c -0.38156,0 -0.68749,0.30593 -0.68749,0.68749 v 4.81243 a 0.68748924,0.68748924 0 0 0 0.68749,0.68749 h 4.81242 a 0.68748924,0.68748924 0 0 0 0.68749,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.68749,-0.68749 h -0.34375 v -0.68749"
+         id="path18174-8-8"
+         style="font-variation-settings:normal;vector-effect:none;fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000" />
+      <path
+         id="rect25156-6-9"
+         style="fill:#219653;fill-opacity:1;stroke:none;stroke-width:0.374756;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 109.37007,106.52373 v 3.78116 c 1e-4,0.37954 0.30775,0.68719 0.68729,0.6873 h 4.81263 c 0.37954,-1.1e-4 0.68719,-0.30776 0.6873,-0.6873 v -3.78116 z"
+         sodipodi:nodetypes="ccccccc" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="110.48249"
+         y="109.96099"
+         id="text14138-6-4"><tspan
+           sodipodi:role="line"
+           id="tspan14136-24-3"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="110.48249"
+           y="109.96099">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="88.018745"
+         y="110.90216"
+         id="text1244-6-6"><tspan
+           sodipodi:role="line"
+           id="tspan1242-7-2"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="88.018745"
+           y="110.90216">Schej</tspan></text>
+    </g>
+    <g
+       id="g32088-9"
+       transform="translate(31.486877,0.35565507)">
+      <path
+         d="m 114.86997,110.30468 h -4.81242 v -3.78119 h 4.81242 m -1.03123,-2.40622 v 0.68749 h -2.74996 v -0.68749 h -0.68749 v 0.68749 h -0.34374 c -0.38156,0 -0.68749,0.30593 -0.68749,0.68749 v 4.81243 a 0.68748924,0.68748924 0 0 0 0.68749,0.68749 h 4.81242 a 0.68748924,0.68748924 0 0 0 0.68749,-0.68749 v -4.81243 c 0,-0.38156 -0.30937,-0.68749 -0.68749,-0.68749 h -0.34375 v -0.68749"
+         id="path18174-8-9"
+         style="font-variation-settings:normal;vector-effect:none;fill:#6fcf97;fill-opacity:1;stroke-width:0.344286;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000" />
+      <path
+         id="rect25156-6-6"
+         style="fill:#27ae60;fill-opacity:1;stroke:none;stroke-width:0.374756;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 109.37007,106.52373 v 3.78116 c 1e-4,0.37954 0.30775,0.68719 0.68729,0.6873 h 4.81263 c 0.37954,-1.1e-4 0.68719,-0.30776 0.6873,-0.6873 v -3.78116 z"
+         sodipodi:nodetypes="ccccccc" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;fill:#f2f2f2;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="110.48249"
+         y="110.29895"
+         id="text14138-6-8"><tspan
+           sodipodi:role="line"
+           id="tspan14136-24-2"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#f2f2f2;fill-opacity:1;stroke-width:0.264583"
+           x="110.48249"
+           y="110.29895">.it</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:8.46667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="88.018745"
+         y="110.90216"
+         id="text1244-6-8"><tspan
+           sodipodi:role="line"
+           id="tspan1242-7-3"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.46667px;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97;fill-opacity:1;stroke-width:0.264583"
+           x="88.018745"
+           y="110.90216">Schej</tspan></text>
+    </g>
+  </g>
+</svg>
