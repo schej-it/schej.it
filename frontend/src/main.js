@@ -5,6 +5,7 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import VCalendar from 'v-calendar'
+import './index.css'
 
 // Use v-calendar & v-date-picker components
 Vue.use(VCalendar, {
