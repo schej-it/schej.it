@@ -4,13 +4,13 @@
       <div class="-tw-mt-8 tw-flex tw-flex-col tw-items-center tw-space-y-3">
         <div 
           class="tw-font-bold tw-text-5xl"
-        >{{ name }}</div>
+        >{{ event.name }}</div>
         <div
           class="tw-font-light tw-text-2xl"
         >{{ dateString }}</div>
         <div
           class="tw-font-light tw-text-sm tw-flex tw-items-center"
-        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ respondents }} respondents</div>
+        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ event.respondents }} respondents</div>
       </div>
     </div>
     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-12">
@@ -28,25 +28,22 @@
 
 <script>
 import { getDateString } from '@/utils'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Join',
 
-  data: () => ({
-    name: 'Meeting #1',
-    startDate: new Date(),
-    endDate: new Date(new Date().getTime() + 2 * 24*60*60*1000),
-    respondents: 4,
-  }),
-
   computed: {
+    ...mapState([ 'events' ]),
     dateString() {
-      return getDateString(this.startDate) + ' - ' + getDateString(this.endDate)
+      return getDateString(this.event.startDate) + ' - ' + getDateString(this.event.endDate)
+    },
+    event() {
+      return this.events[this.eventId]
     },
     eventId() {
       return this.$route.params.eventId
     },
-
   },
 }
 </script>
