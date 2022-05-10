@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { getDateString } from '@/utils'
+import { getDateRangeString } from '@/utils'
 import { mapState } from 'vuex'
 
 export default {
@@ -21,7 +21,7 @@ export default {
   computed: {
     ...mapState([ 'events' ]),
     dateString() {
-      return getDateString(this.event.startDate) + ' - ' + getDateString(this.event.endDate)
+      return getDateRangeString(this.event.startDate, this.event.endDate)
     },
     event() {
       return this.events[this.eventId]

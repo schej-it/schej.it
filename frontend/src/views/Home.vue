@@ -6,6 +6,13 @@
       v-model="dialog"
     />
 
+    <v-container class="pa-5">
+      <div class="headline font-weight-bold tw-mb-3">My events</div>
+
+      <EventItem :event="exampleEvent"></EventItem>
+
+    </v-container>
+
     <!-- FAB -->
     <v-scale-transition appear origin="center">
       <v-btn 
@@ -23,16 +30,24 @@
 
 <script>
 import NewEventDialog from '@/components/NewEventDialog'
+import EventItem from '@/components/EventItem'
 
 export default {
   name: 'Home',
 
   components: {
     NewEventDialog,
+    EventItem
   },
 
   data: () => ({
     dialog: false,
+    exampleEvent: {
+      name: "Meeting #1",
+      startDate: new Date(),
+      endDate: new Date(),
+      friends: ["arjun", "tony"]
+    }
   }),
 }
 </script>
