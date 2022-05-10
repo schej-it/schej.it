@@ -19,6 +19,7 @@ module.exports = {
       'gray': '#BDBDBD',
     },
   },
-  plugins: [],
+  plugins: [
+  ],
   prefix: 'tw-',
 }

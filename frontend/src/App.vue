@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app style="min-height: 20vh;">
     <div
       v-if="showHeader"
       class="tw-h-14 tw-bg-green"
@@ -82,6 +82,11 @@ export default {
       this.tab = i
       this.$router.push(this.tabs[i].route).catch(e => {})
     }
+  },
+
+  mounted() {
+    // Fix height on mobile
+    document.querySelector('.v-application--wrap').style.minHeight = window.innerHeight + 'px'
   },
 };
 </script>
