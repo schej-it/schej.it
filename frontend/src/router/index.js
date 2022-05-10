@@ -25,6 +25,16 @@ const routes = [
     name: 'sign-in',
     component: () => import('@/views/SignIn.vue')
   },
+  {
+    path: '/j/:eventId',
+    name: 'join',
+    component: () => import('@/views/Join.vue')
+  },
+  {
+    path: '/e/:eventId',
+    name: 'event',
+    component: () => import('@/views/Event.vue')
+  },
 ]
 
 const router = new VueRouter({

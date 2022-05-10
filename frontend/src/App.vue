@@ -70,7 +70,10 @@ export default {
       return this.$route.name !== 'sign-in'
     },
     showNavbar() {
-      return this.$route.name !== 'sign-in'
+      return (
+        this.$route.name !== 'sign-in' &&
+        this.$route.name !== 'join'
+      )
     },
   },
 
