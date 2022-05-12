@@ -1,6 +1,6 @@
 <template>
   <v-container
-    class="tw-bg-[#f3f4f6] tw-rounded-md tw-flex tw-text-black tw-justify-between tw-align-middle tw-py-2"
+    class="tw-bg-light-gray tw-rounded-md tw-flex tw-text-black tw-justify-between tw-align-middle tw-py-2"
   >
     <div>
       <div>{{ this.event.name }}</div>
