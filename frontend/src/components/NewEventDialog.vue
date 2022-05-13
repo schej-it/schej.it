@@ -59,6 +59,7 @@
           :dark="formComplete" 
           class="tw-bg-blue"
           :disabled="!formComplete"
+          @click="submit"
         >Create</v-btn>
       </v-card-text>
     </v-card>
@@ -104,6 +105,9 @@ export default {
   methods: {
     blurNameField() {
       this.$refs['name-field'].blur()
+    },
+    submit() {
+      /* TODO: make sure to strip the time from the date so dates aren't localized to what the client's current time */
     },
   },
 }

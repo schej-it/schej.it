@@ -8,6 +8,9 @@
         class="tw-font-light tw-text-lg"
       >{{ dateString }}</div>
     </div>
+    <ScheduleOverlap 
+      v-bind="event"
+    />
   </div>
 </template>
 
@@ -15,8 +18,14 @@
 import { getDateRangeString } from '@/utils'
 import { mapState } from 'vuex'
 
+import ScheduleOverlap from '@/components/ScheduleOverlap'
+
 export default {
   name: 'Event',
+
+  components: {
+    ScheduleOverlap,
+  },
 
   computed: {
     ...mapState([ 'events' ]),

@@ -10,7 +10,7 @@
         >{{ dateString }}</div>
         <div
           class="tw-font-light tw-text-sm tw-flex tw-items-center"
-        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ event.respondents }} respondents</div>
+        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ event.responses.length }} respondents</div>
       </div>
     </div>
     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-12">
@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { getDateString } from '@/utils'
+import { getDateRangeString } from '@/utils'
 import { mapState } from 'vuex'
 
 export default {
@@ -36,13 +36,19 @@ export default {
   computed: {
     ...mapState([ 'events' ]),
     dateString() {
-      return getDateString(this.event.startDate) + ' - ' + getDateString(this.event.endDate)
+      return getDateRangeString(this.event.startDate, this.event.endDate)
     },
     event() {
       return this.events[this.eventId]
     },
     eventId() {
       return this.$route.params.eventId
+    },
+  },
+
+  methods: {
+    signIn() {
+      this.$router.push({ name: 'event', params: { eventId: this.eventId } })
     },
   },
 }

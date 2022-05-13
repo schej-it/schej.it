@@ -81,12 +81,15 @@ export default {
     navigate(i) {
       this.tab = i
       this.$router.push(this.tabs[i].route).catch(e => {})
-    }
+    },
+    fixHeight() {
+      // Fix height on mobile
+      document.querySelector('.v-application--wrap').style.minHeight = window.innerHeight + 'px'
+    },
   },
 
   mounted() {
-    // Fix height on mobile
-    document.querySelector('.v-application--wrap').style.minHeight = window.innerHeight + 'px'
+    window.addEventListener('resize', this.fixHeight)
   },
 };
 </script>
