@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors')
+
 module.exports = {
   content: [
     "./index.html",
@@ -17,7 +19,8 @@ module.exports = {
       'white': '#F2F2F2',
       'black': '#4F4F4F',
       'gray': '#BDBDBD',
-      'light-gray': '#f3f4f6'
+      'light-gray': '#f3f4f6',
+      'avail-green': colors.emerald, // The green used for marking availability
     },
   },
   plugins: [

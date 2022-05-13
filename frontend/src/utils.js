@@ -24,10 +24,15 @@ export const getDateDayOffset = (date, offset) => {
   return new Date(date.getTime() + offset * 24*60*60*1000)
 }
 
-export const timeIntToTimeString = (timeInt) => {
-  /* Converts a timeInt (e.g. 13) to a timeString (e.g. "1 pm") */
+export const timeIntToTimeText = (timeInt) => {
+  /* Converts a timeInt (e.g. 13) to a timeText (e.g. "1 pm") */
   if (timeInt == 0) return '12 am'
   else if (timeInt <= 11) return `${timeInt} am`
   else if (timeInt == 12) return '12 pm'
   return `${timeInt - 12} pm`
+}
+
+export const dateCompare = (date1, date2) => {
+  /* Returns negative if date1 < date2, positive if date2 > date1, and 0 if date1 == date2 */
+  return date1.getTime() - date2.getTime()
 }
