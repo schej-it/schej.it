@@ -1,3 +1,6 @@
+export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/api'
+export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
+
 export const getDateString = (date) => {
   return `${date.getMonth()+1}/${date.getDate()}`
 }
@@ -35,4 +38,52 @@ export const timeIntToTimeText = (timeInt) => {
 export const dateCompare = (date1, date2) => {
   /* Returns negative if date1 < date2, positive if date2 > date1, and 0 if date1 == date2 */
   return date1.getTime() - date2.getTime()
+}
+
+export const get = (route) => {
+  return fetchMethod('GET', route)
+}
+
+export const post = (route, body={}) => {
+  return fetchMethod('POST', route, body)
+}
+
+export const patch = (route, body={}) => {
+  return fetchMethod('PATCH', route, body)
+}
+
+export const _delete = (route, body={}) => {
+  return fetchMethod('DELETE', route, body)
+}
+
+export const fetchMethod = (method, route, body={}) => {
+  /* Calls the given route with the give method and body */
+  const params = {
+    method,
+    credentials: 'include',
+  }
+
+  if (method !== 'GET') {
+    // Add params specific to POST/PATCH/DELETE
+    params.headers = {
+      'Content-Type': 'application/json'
+    }
+    params.body = JSON.stringify(body)
+  }
+
+  return fetch(serverURL + route, params).then(async res => {
+    // Parse data if it is json, otherwise just return an empty object
+    const text = await res.text()
+    try {
+      return JSON.parse(text)
+    } catch (err) {
+      return {}
+    }
+  }).then(data => {
+    // Throw an error if one occurred
+    if (data.error)
+      throw data.error
+    
+    return data
+  })
 }

@@ -38,6 +38,16 @@ export default {
     eventId() {
       return this.$route.params.eventId
     },
-  }
+  },
+
+  methods: {
+    test() {
+      console.log(document.querySelector('.v-main').scrollTop)
+    },
+  },
+
+  mounted() {
+    //document.querySelector('.v-main').addEventListener('scroll', this.test)
+  },
 }
 </script>

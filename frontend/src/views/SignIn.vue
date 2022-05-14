@@ -27,7 +27,7 @@ export default {
   name: 'SignIn',
 
   methods: {
-    signIn() {
+    async signIn() {
       this.$router.replace({ name: 'home' })
     },
   },

@@ -35,6 +35,11 @@ const routes = [
     name: 'event',
     component: () => import('@/views/Event.vue')
   },
+  {
+    path: '/auth',
+    name: 'auth',
+    component: () => import('@/views/Auth.vue')
+  },
 ]
 
 const router = new VueRouter({

@@ -48,8 +48,27 @@ export default {
 
   methods: {
     signIn() {
-      this.$router.push({ name: 'event', params: { eventId: this.eventId } })
+      const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
+      const redirectUri = 'http://localhost:8080/auth'
+      const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.events.readonly')
+      const state = encodeURIComponent(JSON.stringify({ type: 'join', eventId: this.eventId }))
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&state=${state}`
+      //this.$router.push({ name: 'event', params: { eventId: this.eventId } })
     },
+    handleCredentialResponse(response) {
+      console.log(response)
+    }
+  },
+
+  mounted() {
+    google.accounts.id.initialize({
+      client_id: '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com',
+      callback: this.handleCredentialResponse
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('sign-in-google'),
+      { theme: 'filled_blue', size: 'large', text: 'continue_with' } 
+    )
   },
 }
 </script>

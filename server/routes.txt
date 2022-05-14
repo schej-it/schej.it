@@ -1,0 +1,17 @@
+POST /auth/sign-in
+- signs the user in, using the google oauth credentials
+
+GET /user/profile 
+- returns profile information
+
+GET /user/events
+- returns all of user's events
+
+POST /user/events
+- creates an event
+
+GET /user/friends
+- returns all of the user's friends
+
+GET /user/friends/:id
+- return the schedule of the given friend

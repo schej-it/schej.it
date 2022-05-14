@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-p-8">
+  <div class="tw-p-4">
     <div class="tw-flex">
       <div class="tw-w-12" />
       <div 
@@ -23,21 +23,32 @@
           {{ time.text }}
         </div>
       </div>
-      <div 
-        v-for="day, d in days" 
-        :key="d"
-        class="tw-flex-1"
-      >
-        <div 
-          v-for="time, t in times"
-          :key="t"
-          class="tw-w-full"  
-        >
+      <div class="tw-flex-1">
+        <div class="tw-flex-1 tw-flex">
           <div 
-            class="tw-h-5 tw-border-light-gray tw-border-r" 
-            :class="timeslotClass(day, time, d, t)"
-          />
+            v-for="day, d in days" 
+            :key="d"
+            class="tw-flex-1"
+          >
+            <div 
+              v-for="time, t in times"
+              :key="t"
+              class="tw-w-full"  
+            >
+              <div 
+                class="tw-h-5 tw-border-light-gray tw-border-r" 
+                :class="timeslotClass(day, time, d, t)"
+              />
+            </div>
+          </div>
         </div>
+
+        <v-btn 
+          class="tw-mt-2"
+          block
+        >
+        Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+        </v-btn>
       </div>
     </div>
   </div>

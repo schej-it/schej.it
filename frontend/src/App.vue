@@ -1,5 +1,5 @@
 <template>
-  <v-app style="min-height: 20vh;">
+  <v-app>
     <div
       v-if="showHeader"
       class="tw-h-14 tw-bg-green"
@@ -17,8 +17,8 @@
       </div>
     </div>
 
-    <v-main>
-      <router-view/>
+    <v-main class="tw-overflow-y-auto" style="max-height: calc()">
+      <router-view />
     </v-main>
 
     <div
@@ -67,12 +67,16 @@ export default {
 
   computed: {
     showHeader() {
-      return this.$route.name !== 'sign-in'
+      return (
+        this.$route.name !== 'sign-in' &&
+        this.$route.name !== 'auth'
+      )
     },
     showNavbar() {
       return (
         this.$route.name !== 'sign-in' &&
-        this.$route.name !== 'join'
+        this.$route.name !== 'join' &&
+        this.$route.name !== 'auth'
       )
     },
   },
@@ -84,11 +88,18 @@ export default {
     },
     fixHeight() {
       // Fix height on mobile
-      document.querySelector('.v-application--wrap').style.minHeight = window.innerHeight + 'px'
+      document.querySelector('.v-application--wrap').style.height = window.innerHeight + 'px'
+
+      let items = 0 // Counts the number of fixed height items (header and navbar)
+      if (this.showHeader) items++
+      if (this.showNavbar) items++
+
+      document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
     },
   },
 
   mounted() {
+    this.fixHeight()
     window.addEventListener('resize', this.fixHeight)
   },
 };
