@@ -19,6 +19,14 @@ export const getDateWithTime = (date, timeString) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes)
 }
 
+export const getDateWithTimeInt = (date, timeInt) => {
+  /* Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeInt (e.g. 11.5) */
+
+  const hours = parseInt(timeInt)
+  const minutes = (timeInt - hours) * 60
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes)
+}
+
 export const splitTime = (timeString) => {
   /* Takes a time string (e.g. 13:30) and splits it into hours and minutes, returning an object of the form { hours, minutes } */
   const [hours, minutes] = timeString.split(':')

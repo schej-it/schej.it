@@ -30,22 +30,7 @@
             :key="d"
             class="tw-flex-1 tw-relative"
           >
-
-            <div
-              v-for="event, e in calendarEventsByDay[d]" 
-              :key="`${d}-${e}`"
-              class="tw-absolute tw-w-full tw-p-1"
-              :style="event.style"
-            >
-              <div
-                class="tw-bg-blue/25 tw-border-light-gray tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded-md tw-p-1 tw-overflow-hidden"
-              >
-                <div class="tw-text-blue tw-font-medium">
-                  {{ event.summary }}
-                </div>
-              </div>
-            </div>
-
+            <!-- Timeslots -->
             <div 
               v-for="time, t in times"
               :key="t"
@@ -56,12 +41,31 @@
                 :class="timeslotClass(day, time, d, t)"
               />
             </div>
+            
+            <!-- Calendar events -->
+            <template v-if="showCalendarEvents">
+              <div
+                v-for="event, e in calendarEventsByDay[d]" 
+                :key="`${d}-${e}`"
+                class="tw-absolute tw-w-full tw-p-1"
+                :style="event.style"
+              >
+                <div
+                  class="tw-bg-blue/25 tw-border-light-gray tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded-md tw-p-1 tw-overflow-hidden"
+                >
+                  <div class="tw-text-blue tw-font-medium">
+                    {{ event.summary }}
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
 
         <v-btn 
           class="tw-mt-2"
           block
+          @click="showCalendarEvents = !showCalendarEvents"
         >
         Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
         </v-btn>
@@ -71,7 +75,7 @@
 </template>
 
 <script>
-import { timeIntToTimeText, getDateDayOffset, getDateWithTime, dateCompare, compareDateDay, dateToTimeInt } from '@/utils'
+import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt } from '@/utils'
 
 export default {
   name: 'ScheduleOverlap',
@@ -87,7 +91,9 @@ export default {
   },
 
   data: () => ({
-    max: 0 // The max number of respondents for a given timeslot
+    max: 0, // The max number of respondents for a given timeslot
+    showCalendarEvents: true, 
+    availability: new Set(), // Current availability of the current user, an array of dates
   }),
 
   computed: {
@@ -141,7 +147,7 @@ export default {
       const formatted = new Map()
       for (const day of this.days) {
         for (const time of this.times) {
-          const date = getDateWithTime(day.dateObject, time.timeString)
+          const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           
           for (const response of this.responses) {
@@ -168,13 +174,11 @@ export default {
       
       for (let t = this.startTime; t < this.endTime; ++t) {
         times.push({
-          time: t,
-          timeString: `${t}:00`,
+          timeInt: t,
           text: timeIntToTimeText(t),
         })
         times.push({
-          time: t + 0.5,
-          timeString: `${t}:30`,
+          timeInt: t + 0.5,
         })
       }
 
@@ -185,8 +189,31 @@ export default {
   methods: {
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
-      const d = getDateWithTime(date, time)
+      const d = getDateWithTimeInt(date, time)
       return this.responsesFormatted.get(d.getTime())
+    },
+    setAvailability() {
+      /* Constructs the availability array using calendarEvents array */
+      // This is not a computed property because we should be able to change it manually from what it automatically fills in
+      this.availability = new Set()
+      for (const d in this.days) {
+        const day = this.days[d]
+        for (const time of this.times) {
+          // Check if there exists a calendar event that overlaps [time, time+0.5]
+          const startDate = getDateWithTimeInt(day.dateObject, time.timeInt)
+          const endDate = getDateWithTimeInt(day.dateObject, time.timeInt + 0.5)
+          const index = this.calendarEventsByDay[d].findIndex(e => {
+            return (
+              (dateCompare(e.startDate, startDate) < 0 && dateCompare(e.endDate, startDate) > 0) ||
+              (dateCompare(e.startDate, endDate) < 0 && dateCompare(e.endDate, endDate) > 0)
+            )
+          })
+          if (index === -1) {
+            this.availability.add(startDate.getTime())
+          }
+        }
+      }
+      console.log(this.availability)
     },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
@@ -200,22 +227,40 @@ export default {
       if (t === this.times.length-1) c += 'tw-border-b-gray '
 
       // Fill style
-      const numRespondents = this.getRespondentsForDateTime(day.dateObject, time.timeString).size
-      if (numRespondents > 0) {
-        const frac = numRespondents / this.max
-        const colors = [
-          //'tw-bg-avail-green-50', 
-          'tw-bg-avail-green-100', 
-          'tw-bg-avail-green-200', 
-          'tw-bg-avail-green-300', 
-          'tw-bg-avail-green-400', 
-          'tw-bg-avail-green-500', 
-          //'tw-bg-avail-green-600',
-        ] 
-        c += colors[parseInt(frac*colors.length-1)] + ' '
+      if (this.showCalendarEvents) {
+        // Show only current user availability
+        const date = getDateWithTimeInt(day.dateObject, time.timeInt)
+        if (this.availability.has(date.getTime())) {
+          c += 'tw-bg-avail-green-300 '
+        }
+      } else {
+        // Show everyone's availability
+        const numRespondents = this.getRespondentsForDateTime(day.dateObject, time.timeInt).size
+        if (numRespondents > 0) {
+          const frac = numRespondents / this.max
+          const colors = [
+            //'tw-bg-avail-green-50', 
+            'tw-bg-avail-green-100', 
+            'tw-bg-avail-green-200', 
+            'tw-bg-avail-green-300', 
+            'tw-bg-avail-green-400', 
+            'tw-bg-avail-green-500', 
+            //'tw-bg-avail-green-600',
+          ] 
+          c += colors[parseInt(frac*colors.length-1)] + ' '
+        }
       }
 
       return c
+    },
+  },
+
+  watch: {
+    calendarEvents: {
+      immediate: true,
+      handler() {
+        this.setAvailability()
+      },
     },
   },
 }
