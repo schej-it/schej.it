@@ -24,12 +24,28 @@
         </div>
       </div>
       <div class="tw-flex-1">
-        <div class="tw-flex-1 tw-flex">
+        <div class="tw-flex">
           <div 
             v-for="day, d in days" 
             :key="d"
-            class="tw-flex-1"
+            class="tw-flex-1 tw-relative"
           >
+
+            <div
+              v-for="event, e in calendarEventsByDay[d]" 
+              :key="`${d}-${e}`"
+              class="tw-absolute tw-w-full tw-p-1"
+              :style="event.style"
+            >
+              <div
+                class="tw-bg-blue/25 tw-border-light-gray tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded-md tw-p-1 tw-overflow-hidden"
+              >
+                <div class="tw-text-blue tw-font-medium">
+                  {{ event.summary }}
+                </div>
+              </div>
+            </div>
+
             <div 
               v-for="time, t in times"
               :key="t"
@@ -55,7 +71,7 @@
 </template>
 
 <script>
-import { timeIntToTimeText, getDateDayOffset, getDateWithTime, dateCompare } from '@/utils'
+import { timeIntToTimeText, getDateDayOffset, getDateWithTime, dateCompare, compareDateDay, dateToTimeInt } from '@/utils'
 
 export default {
   name: 'ScheduleOverlap',
@@ -66,6 +82,8 @@ export default {
     startTime: { type: Number, required: true },
     endTime: { type: Number, required: true },
     responses: { type: Array, required: true },
+
+    calendarEvents: { type: Array, required: true },
   },
 
   data: () => ({
@@ -73,6 +91,35 @@ export default {
   }),
 
   computed: {
+    calendarEventsByDay() {
+      /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
+      
+      // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
+      const arr = []
+      for (let i = 0; i < this.days.length; ++i) {
+        arr[i] = []
+      }
+      for (const calendarEvent of this.calendarEvents) {
+        const startTime = dateToTimeInt(calendarEvent.startDate)
+        const endTime = dateToTimeInt(calendarEvent.endDate)
+        console.log(startTime, this.startTime)
+        for (const d in this.days) {
+          const day = this.days[d]
+          if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
+            arr[d].push({
+              ...calendarEvent,
+              style: {
+                top: `calc(${startTime-this.startTime} * 2 * 1.25rem)`, // 1.25 rem = tw-h-5 
+                height: `calc(${endTime-startTime} * 2 * 1.25rem)`
+              }
+            })
+            break
+          }
+        }
+      }
+      console.log(arr)
+      return arr
+    },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
       const days = []

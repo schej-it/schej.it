@@ -1,6 +1,9 @@
 export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/api'
 export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
 
+/* 
+  Date utils 
+*/
 export const getDateString = (date) => {
   return `${date.getMonth()+1}/${date.getDate()}`
 }
@@ -35,11 +38,32 @@ export const timeIntToTimeText = (timeInt) => {
   return `${timeInt - 12} pm`
 }
 
+export const dateToTimeInt = (date) => {
+  /* Converts a date to a timeInt (e.g. 9.5) */
+  return date.getHours() + date.getMinutes() / 60
+}
+
 export const dateCompare = (date1, date2) => {
   /* Returns negative if date1 < date2, positive if date2 > date1, and 0 if date1 == date2 */
   return date1.getTime() - date2.getTime()
 }
 
+export const compareDateDay = (a, b) => {
+  // returns -1 if a is before b, 1 if a is after b, 0 otherwise
+  a = new Date(a)
+  b = new Date(b)
+  if (a.getFullYear() !== b.getFullYear()) {
+    return a.getFullYear() - b.getFullYear()
+  } else if (a.getMonth() !== b.getMonth()) {
+    return a.getMonth() - b.getMonth()
+  } else {
+    return a.getDate() - b.getDate()
+  }
+}
+
+/* 
+  Fetch utils
+*/
 export const get = (route) => {
   return fetchMethod('GET', route)
 }

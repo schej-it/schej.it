@@ -1,8 +1,11 @@
 POST /auth/sign-in
 - signs the user in, using the google oauth credentials
 
+GET /user/availability?timeMin=XX&timeMax=XX
+- gets the times that the current user is available 
+
 GET /user/profile 
-- returns profile information
+- returns current user profile information
 
 GET /user/events
 - returns all of user's events
@@ -15,3 +18,6 @@ GET /user/friends
 
 GET /user/friends/:id
 - return the schedule of the given friend
+
+GET /event/:id
+- returns the details of the given event 

@@ -10,12 +10,13 @@
     </div>
     <ScheduleOverlap 
       v-bind="event"
+      :calendarEvents="calendarEvents"
     />
   </div>
 </template>
 
 <script>
-import { getDateRangeString } from '@/utils'
+import { getDateRangeString, get } from '@/utils'
 import { mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -26,6 +27,10 @@ export default {
   components: {
     ScheduleOverlap,
   },
+
+  data: () => ({
+    calendarEvents: [],
+  }),
 
   computed: {
     ...mapState([ 'events' ]),
@@ -47,6 +52,16 @@ export default {
   },
 
   mounted() {
+    get(`/user/availability?timeMin=${this.event.startDate.toISOString()}&timeMax=${this.event.endDate.toISOString()}`).then(data => {
+      this.calendarEvents = data.items
+        .filter(event => ('dateTime' in event.end && 'dateTime' in event.start))
+        .map(event => ({ 
+          summary: event.summary,
+          startDate: new Date(event.start.dateTime),
+          endDate: new Date(event.end.dateTime)
+        }))
+      console.log(this.calendarEvents)
+    })
     //document.querySelector('.v-main').addEventListener('scroll', this.test)
   },
 }

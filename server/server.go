@@ -2,14 +2,17 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 
+	"encoding/json"
+
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -17,6 +20,7 @@ import (
 func main() {
 	router := gin.Default()
 
+	// Load .env variables
 	loadDotEnv()
 
 	// Cors
@@ -29,16 +33,27 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Session
+	store := cookie.NewStore([]byte("secret"))
+	router.Use(sessions.Sessions("session", store))
+
 	// Auth routes
-	auth := router.Group("/auth")
+	authRouter := router.Group("/auth")
 	{
-		auth.POST("/sign-in", signIn)
+		authRouter.POST("/sign-in", signIn)
+	}
+
+	// Current user routes
+	userRouter := router.Group("/user")
+	{
+		userRouter.GET("/availability", getAvailability)
 	}
 
 	// Run server
 	router.Run(":3000")
 }
 
+// Load .env variables
 func loadDotEnv() {
 	err := godotenv.Load(".env")
 
@@ -47,26 +62,17 @@ func loadDotEnv() {
 	}
 }
 
-type signInPayload struct {
-	Code string `json:"code" binding:"required"`
-}
-
+// Sign user in and set the access token session variable
 func signIn(c *gin.Context) {
-	var payload signInPayload
+	payload := struct {
+		Code string `json:"code" binding:"required"`
+	}{}
 
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
-	/*formattedUrl := fmt.Sprintf(
-		"?client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s",
-		os.Getenv("CLIENT_ID"),
-		os.Getenv("CLIENT_SECRET"),
-		payload.Code,
-		url.QueryEscape("http://localhost:8080"),
-	)
-
-	resp, err := http.Post(formattedUrl, )*/
+	session := sessions.Default(c)
 
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},
@@ -85,15 +91,47 @@ func signIn(c *gin.Context) {
 		log.Fatal(err)
 	}
 
-	defer resp.Body.Close()
+	var res map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&res)
 
-	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(res["access_token"])
+	session.Set("access_token", res["access_token"])
+	session.Save()
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}
+
+// gets the times that the current user is available
+func getAvailability(c *gin.Context) {
+	// Bind query parameters
+	payload := struct {
+		TimeMin string `form:"timeMin" binding:"required"`
+		TimeMax string `form:"timeMax" binding:"required"`
+	}{}
+
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	session := sessions.Default(c)
+
+	req, err := http.NewRequest(
+		"GET",
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=%s&timeMax=%s", payload.TimeMin, payload.TimeMax),
+		nil,
+	)
+
+	fmt.Println("ACCESS TOKEN: ", session.Get("access_token"))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", session.Get("access_token")))
+	fmt.Println(req)
+	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(body))
+	var res map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&res)
 
-	c.JSON(http.StatusOK, gin.H{"test": payload.Code})
+	c.JSON(http.StatusOK, res)
 }

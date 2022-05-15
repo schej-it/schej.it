@@ -14,7 +14,7 @@ export default new Vuex.Store({
       'asdf': {
         name: 'Meeting #1',
         startDate: getDateWithTime(new Date(), '00:00'),
-        endDate: getDateWithTime(getDateDayOffset(new Date(), 2), '00:00'),
+        endDate: getDateWithTime(getDateDayOffset(new Date(), 2), '23:59'),
         startTime: 9,
         endTime: 20,
         responses: [
