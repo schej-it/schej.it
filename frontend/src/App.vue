@@ -40,6 +40,8 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex';
+import { get } from './utils';
 
 export default {
   name: 'App',
@@ -82,6 +84,7 @@ export default {
   },
 
   methods: {
+    ...mapMutations([ 'setAuthUser' ]),
     navigate(i) {
       this.tab = i
       this.$router.push(this.tabs[i].route).catch(e => {})
@@ -96,11 +99,48 @@ export default {
 
       document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
     },
+    redirectAuthUser() {
+      let authRoutes = ['home', 'schedule', 'friends', 'event']
+      let noAuthRoutes = ['sign-in']
+
+      if (!this.authUser) {
+        if (authRoutes.includes(this.$route.name))
+          this.$router.replace({ name: 'sign-in' })
+      } else {
+        if (noAuthRoutes.includes(this.$route.name))
+          this.$router.replace({ name: 'home' })
+      }
+    },
+  },
+
+  created() {
+    get('/user/profile')
+      .then(authUser => {
+        // console.log(authUser)
+        this.setAuthUser(authUser)
+      }).catch(() => {
+        this.setAuthUser(null)
+      })
   },
 
   mounted() {
     this.fixHeight()
     window.addEventListener('resize', this.fixHeight)
+  },
+
+  watch: {
+    authUser: {
+      immediate: true,
+      handler() {
+        this.redirectAuthUser()
+      }
+    },
+    $route: {
+      immediate: true,
+      handler() {
+        this.redirectAuthUser()
+      }
+    },
   },
 };
 </script>

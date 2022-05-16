@@ -59,12 +59,14 @@ func main() {
 	userRouter.Use(middleware.AuthRequired())
 	{
 		userRouter.GET("/availability", getAvailability)
+		userRouter.GET("/events", getUserEvents)
+		userRouter.GET("/profile", getUserProfile)
 	}
 
 	// Event routes
-	eventRouter := router.Group("/event/")
+	eventRouter := router.Group("/events")
 	{
-		eventRouter.POST("/", middleware.AuthRequired(), createEvent)
+		eventRouter.POST("", middleware.AuthRequired(), createEvent)
 	}
 
 	// Run server
@@ -182,17 +184,61 @@ func getAvailability(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// Gets all the user's events
+func getUserEvents(c *gin.Context) {
+	session := sessions.Default(c)
+
+	var events []models.Event
+	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
+		"ownerId": utils.GetUserId(session),
+	})
+	if err != nil {
+		panic(err)
+	}
+	if err := cursor.All(context.Background(), &events); err != nil {
+		panic(err)
+	}
+
+	c.JSON(http.StatusOK, events)
+}
+
+// Gets the user's profile
+func getUserProfile(c *gin.Context) {
+	user, _ := c.Get("authUser")
+	user = user.(models.User)
+
+	c.JSON(http.StatusOK, user)
+}
+
 // Creates a new event
 func createEvent(c *gin.Context) {
 	payload := struct {
-		Name      string `json:"name" binding:"required"`
-		StartDate string `json:"startDate" binding:"required"`
-		EndDate   string `json:"endDate" binding:"required"`
-		StartTime string `json:"startTime" binding:"required"`
-		EndTime   string `json:"endTime" binding:"required"`
+		Name      string    `json:"name" binding:"required"`
+		StartDate time.Time `json:"startDate" binding:"required"`
+		EndDate   time.Time `json:"endDate" binding:"required"`
+		StartTime int       `json:"startTime" binding:"required"`
+		EndTime   int       `json:"endTime" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
+	session := sessions.Default(c)
 
+	event := models.Event{
+		OwnerID:   utils.GetUserId(session),
+		Name:      payload.Name,
+		StartDate: primitive.NewDateTimeFromTime(payload.StartDate),
+		EndDate:   primitive.NewDateTimeFromTime(payload.EndDate),
+		StartTime: payload.StartTime,
+		EndTime:   payload.EndTime,
+		Responses: make([]models.Response, 0),
+	}
+
+	result, err := db.EventsCollection.InsertOne(context.Background(), event)
+	if err != nil {
+		panic(err)
+	}
+
+	insertedID := result.InsertedID.(primitive.ObjectID).Hex()
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedID})
 }

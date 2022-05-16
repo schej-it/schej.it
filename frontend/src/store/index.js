@@ -10,6 +10,7 @@ const date3 = getDateDayOffset(new Date(), 2)
 
 export default new Vuex.Store({
   state: {
+    authUser: null,
     events: {
       'asdf': {
         name: 'Meeting #1',
@@ -81,6 +82,9 @@ export default new Vuex.Store({
   getters: {
   },
   mutations: {
+    setAuthUser(state, authUser) {
+      state.authUser = authUser
+    },
   },
   actions: {
   },

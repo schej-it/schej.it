@@ -46,7 +46,7 @@ export default {
       name: "Meeting #1",
       startDate: new Date(),
       endDate: new Date(),
-      friends: ["arjun", "tony"]
+      responses: ["arjun", "tony"]
     }
   }),
 }

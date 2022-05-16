@@ -67,6 +67,7 @@
 </template>
 
 <script>
+import { getDateWithTime, post } from '@/utils'
 export default {
   name: 'NewEventDialog',
 
@@ -85,7 +86,7 @@ export default {
 
   computed: {
     formComplete() {
-      return this.name.length > 0 && 'start' in this.dateRange && 'end' in this.dateRange
+      return this.name.length > 0 && this.dateRange && 'start' in this.dateRange && 'end' in this.dateRange
     },
     times() {
       const times = []
@@ -106,8 +107,27 @@ export default {
     blurNameField() {
       this.$refs['name-field'].blur()
     },
+    reset() {
+      this.name = ''
+      this.startTime = 9
+      this.endTime = 17
+      this.dateRange = {}
+    },
     submit() {
       /* TODO: make sure to strip the time from the date so dates aren't localized to what the client's current time */
+      const startDate = getDateWithTime(this.dateRange.start, '00:00')
+      const endDate = getDateWithTime(this.dateRange.end, '11:59')
+      post('/events', {
+        name: this.name,
+        startDate,
+        endDate,
+        startTime: this.startTime,
+        endTime: this.endTime,
+      }).then(data => {
+        console.log(data)
+        this.reset()
+        this.$emit('input', false)
+      })
     },
   },
 }

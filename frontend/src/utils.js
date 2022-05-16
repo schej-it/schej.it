@@ -1,6 +1,12 @@
 export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/api'
 export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
 
+// Errors enum
+export const ERRORS = Object.freeze({
+  NOT_SIGNED_IN: "not-signed-in",
+  USER_DOES_NOT_EXIST: "user-does-not-exist",
+})
+
 /* 
   Date utils 
 */

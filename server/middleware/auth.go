@@ -7,11 +7,11 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/db"
 	"schej.it/server/errors"
 	"schej.it/server/models"
+	"schej.it/server/utils"
 )
 
 func AuthRequired() gin.HandlerFunc {
@@ -26,12 +26,8 @@ func AuthRequired() gin.HandlerFunc {
 		}
 
 		// Check if user with user id exists
-		objectId, err := primitive.ObjectIDFromHex(session.Get("userId").(string))
-		if err != nil {
-			panic(err)
-		}
 		result := db.UsersCollection.FindOne(context.Background(), bson.M{
-			"_id": objectId,
+			"_id": utils.GetUserId(session),
 		})
 		if result.Err() == mongo.ErrNoDocuments {
 			// User does not exist!
