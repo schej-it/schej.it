@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="event">
     <div class="tw-bg-green tw-text-white tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2">
       <div 
         class="tw-font-bold tw-text-3xl"
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getDateRangeString, get, signInGoogle } from '@/utils'
+import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt } from '@/utils'
 import { mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -34,15 +34,13 @@ export default {
 
   data: () => ({
     calendarEvents: [],
+    event: null,
   }),
 
   computed: {
     ...mapState([ 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
-    },
-    event() {
-      return this.events[this.eventId]
     },
   },
 
@@ -52,16 +50,30 @@ export default {
     },
   },
 
-  created() {
-    get(`/user/availability?timeMin=${this.event.startDate.toISOString()}&timeMax=${this.event.endDate.toISOString()}`).then(data => {
+  async created() {
+    this.event = await get(`/events/${this.eventId}`)
+    this.event.startDate = new Date(this.event.startDate)
+    this.event.endDate = new Date(this.event.endDate)
+    
+    get(`/user/availability?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {
       this.calendarEvents = data.items
-        .filter(event => ('dateTime' in event.end && 'dateTime' in event.start))
+        .filter(event => {
+          return (
+            'start' in event &&
+            'end' in event &&
+            'dateTime' in event.end &&
+            'dateTime' in event.start &&
+            dateToTimeInt(event.end.dateTime) > this.event.startTime &&
+            dateToTimeInt(event.start.dateTime) < this.event.endTime
+          )
+        })
         .map(event => ({ 
           summary: event.summary,
-          startDate: new Date(event.start.dateTime),
-          endDate: new Date(event.end.dateTime)
+          startDate: clampDateToTimeInt(new Date(event.start.dateTime), this.event.startTime, 'upper'),
+          endDate: clampDateToTimeInt(new Date(event.end.dateTime), this.event.endTime, 'lower'),
         }))
     }).catch(err => {
+      console.error(err)
       if (err.code === 401) {
         signInGoogle({ type: 'join', eventId: this.eventId })
       }

@@ -200,6 +200,7 @@ export default {
     setAvailability() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
+      // TODO: there is a bug where it still sets your availability if the event length is 30 minutes
       this.availability = new Set()
       for (const d in this.days) {
         const day = this.days[d]

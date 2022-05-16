@@ -11,22 +11,27 @@ export const ERRORS = Object.freeze({
   Date utils 
 */
 export const getDateString = (date) => {
+  date = new Date(date)
   return `${date.getMonth()+1}/${date.getDate()}`
 }
 
 export const getDateRangeString = (date1, date2) => {
+  date1 = new Date(date1)
+  date2 = new Date(date2)
   return  getDateString(date1) + ' - ' + getDateString(date2)
 }
 
 export const getDateWithTime = (date, timeString) => {
   /* Returns a new date object with the given date (e.g. 5/2/2022) and the specified time (e.g. 11:30) */
-  
+  date = new Date(date)
+
   const { hours, minutes } = splitTime(timeString)
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes)
 }
 
 export const getDateWithTimeInt = (date, timeInt) => {
   /* Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeInt (e.g. 11.5) */
+  date = new Date(date)
 
   const hours = parseInt(timeInt)
   const minutes = (timeInt - hours) * 60
@@ -41,6 +46,7 @@ export const splitTime = (timeString) => {
 
 export const getDateDayOffset = (date, offset) => {
   /* Returns the specified date offset by the given number of days (can be positive or negative) */
+  date = new Date(date)
   return new Date(date.getTime() + offset * 24*60*60*1000)
 }
 
@@ -54,11 +60,27 @@ export const timeIntToTimeText = (timeInt) => {
 
 export const dateToTimeInt = (date) => {
   /* Converts a date to a timeInt (e.g. 9.5) */
+  date = new Date(date)
   return date.getHours() + date.getMinutes() / 60
+}
+
+export const clampDateToTimeInt = (date, timeInt, type) => {
+  /* Clamps the date to the given time, type can either be "upper" or "lower" */
+  const diff = dateToTimeInt(date) - timeInt
+  if (type === 'upper' && diff < 0) {
+    return getDateWithTimeInt(date, timeInt)     
+  } else if (type === 'lower' && diff > 0) {
+    return getDateWithTimeInt(date, timeInt)
+  }
+  
+  // Return original date
+  return date
 }
 
 export const dateCompare = (date1, date2) => {
   /* Returns negative if date1 < date2, positive if date2 > date1, and 0 if date1 == date2 */
+  date1 = new Date(date1)
+  date2 = new Date(date2)
   return date1.getTime() - date2.getTime()
 }
 

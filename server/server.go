@@ -212,7 +212,7 @@ func getUserEvents(c *gin.Context) {
 // Gets the user's profile
 func getUserProfile(c *gin.Context) {
 	user, _ := c.Get("authUser")
-	user = user.(models.User)
+	user = user.(*models.User)
 
 	c.JSON(http.StatusOK, user)
 }
