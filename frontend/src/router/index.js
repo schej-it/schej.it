@@ -21,6 +21,11 @@ const routes = [
     component: () => import('@/views/Friends.vue')
   },
   {
+    path: '/friend-schedule',
+    name: 'friend-schedule',
+    component: () => import('@/views/FriendSchedule.vue'),
+  },
+  {
     path: '/sign-in',
     name: 'sign-in',
     component: () => import('@/views/SignIn.vue')

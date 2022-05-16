@@ -69,7 +69,7 @@
                   class="tw-bg-blue/25 tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                 >
                   <div class="tw-text-blue tw-font-medium">
-                    {{ event.summary }}
+                    {{ noEventNames ? 'BUSY' : event.summary }}
                   </div>
                 </div>
               </div>
@@ -77,18 +77,27 @@
           </div>
         </div>
 
-        <v-btn 
-          class="tw-mt-2"
-          block
-          @click="showCalendarEvents = !showCalendarEvents"
-        >
-        <template v-if="!showCalendarEvents">
-          Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+        <template v-if="!calendarOnly">
+          <v-btn 
+            class="tw-my-2"
+            block
+            @click="showCalendarEvents = !showCalendarEvents"
+          >
+            <template v-if="!showCalendarEvents">
+              Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+            </template>
+            <template v-else>
+              View suggested times 
+            </template>
+          </v-btn>
+          <v-btn
+            class="tw-mb-2"
+            block
+            @click="copyLink"
+          >
+            Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
+          </v-btn>
         </template>
-        <template v-else>
-          View suggested times 
-        </template>
-        </v-btn>
       </div>
     </div>
   </div>
@@ -102,15 +111,18 @@ export default {
   name: 'ScheduleOverlap',
 
   props: {
-    eventId: { type: String, required: true },
+    eventId: { type: String, default: '' },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     startTime: { type: Number, required: true },
     endTime: { type: Number, required: true },
-    responses: { type: Object, required: true },
+    responses: { type: Object, default: () => ({}) },
 
     calendarEvents: { type: Array, required: true },
     initialShowCalendarEvents: { type: Boolean, default: true },
+
+    noEventNames: { type: Boolean, default: false },
+    calendarOnly: { type: Boolean, default: false },
   },
 
   data() {
@@ -225,6 +237,9 @@ export default {
 
   methods: {
     ...mapActions([ 'showInfo' ]),
+    copyLink() {
+      navigator.clipboard.writeText(`http://localhost:8080/j/${this.eventId}`)
+    },
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
       const d = getDateWithTimeInt(date, time)
@@ -300,7 +315,7 @@ export default {
   watch: {
     calendarEvents: {
       handler() {
-        if (!this.userHasResponded) this.setAvailability()
+        if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
       },
     },
   },

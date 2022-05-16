@@ -19,8 +19,8 @@
       </div>
     </div>
 
-    <v-main class="tw-overflow-y-auto" style="max-height: calc()">
-      <router-view />
+    <v-main class="tw-overflow-y-auto">
+      <router-view v-if="loaded" />
     </v-main>
 
     <div
@@ -54,6 +54,7 @@ export default {
   },
 
   data: () => ({
+    loaded: false,
     tabs: [
       {
         text: 'Home',
@@ -133,7 +134,8 @@ export default {
       }).catch(() => {
         this.setAuthUser(null)
       })
-    
+
+    this.loaded = true    
   },
 
   mounted() {

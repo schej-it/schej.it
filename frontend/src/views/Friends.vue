@@ -11,7 +11,11 @@
 
       <v-text-field label="Search" outlined dense></v-text-field>
 
-      <FriendItem :friend="exampleFriend"></FriendItem>
+      <FriendItem 
+        @click="$router.push({ name: 'friend-schedule' })" 
+        :friend="exampleFriend" 
+        chevron
+      />
     </v-container>
 
     <v-scale-transition appear origin="center">
