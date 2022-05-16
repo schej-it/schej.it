@@ -28,12 +28,16 @@ func ParseJWT(jwt string) sjwt.Claims {
 	return claims
 }
 
-// Gets the user id from the current session as an ObjectID object
-func GetUserId(session sessions.Session) primitive.ObjectID {
-	objectID, err := primitive.ObjectIDFromHex(session.Get("userId").(string))
+func StringToObjectID(s string) primitive.ObjectID {
+	objectID, err := primitive.ObjectIDFromHex(s)
 	if err != nil {
 		panic(err)
 	}
 
 	return objectID
+}
+
+// Gets the user id from the current session as an ObjectID object
+func GetUserId(session sessions.Session) primitive.ObjectID {
+	return StringToObjectID(session.Get("userId").(string))
 }

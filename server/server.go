@@ -68,6 +68,7 @@ func main() {
 	eventRouter := router.Group("/events")
 	{
 		eventRouter.POST("", middleware.AuthRequired(), createEvent)
+		eventRouter.GET("/:eventId", middleware.AuthRequired(), getEvent)
 	}
 
 	// Run server
@@ -140,7 +141,7 @@ func signIn(c *gin.Context) {
 			panic(err)
 		}
 
-		userId = user.ID
+		userId = user.Id
 	}
 
 	// Set session variables
@@ -231,7 +232,7 @@ func createEvent(c *gin.Context) {
 	session := sessions.Default(c)
 
 	event := models.Event{
-		OwnerID:   utils.GetUserId(session),
+		OwnerId:   utils.GetUserId(session),
 		Name:      payload.Name,
 		StartDate: primitive.NewDateTimeFromTime(payload.StartDate),
 		EndDate:   primitive.NewDateTimeFromTime(payload.EndDate),
@@ -245,6 +246,14 @@ func createEvent(c *gin.Context) {
 		panic(err)
 	}
 
-	insertedID := result.InsertedID.(primitive.ObjectID).Hex()
-	c.JSON(http.StatusCreated, gin.H{"eventId": insertedID})
+	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+}
+
+// Gets an event located at the given id
+func getEvent(c *gin.Context) {
+	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
+
+	c.JSON(http.StatusOK, event)
 }
