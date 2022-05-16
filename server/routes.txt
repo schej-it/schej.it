@@ -21,3 +21,6 @@ GET /user/friends/:id
 
 GET /event/:id
 - returns the details of the given event 
+
+POST /event
+- creates a new event

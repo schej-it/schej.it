@@ -12,15 +12,17 @@ export default {
     let { error, code, state } = this.$route.query
     if (error) return
     
-    state = JSON.parse(state)
+    if (state) state = JSON.parse(state)
 
     post('/auth/sign-in', { code }).then(data => {
       console.log(data)
 
-      switch (state.type) {
-        case 'join':
-          this.$router.replace({ name: 'event', params: { eventId: state.eventId } })
-          break
+      if (state) {
+        switch (state.type) {
+          case 'join':
+            this.$router.replace({ name: 'event', params: { eventId: state.eventId } })
+            break
+        }
       }
     })
   },

@@ -108,7 +108,6 @@ export default {
       for (const calendarEvent of this.calendarEvents) {
         const startTime = dateToTimeInt(calendarEvent.startDate)
         const endTime = dateToTimeInt(calendarEvent.endDate)
-        console.log(startTime, this.startTime)
         for (const d in this.days) {
           const day = this.days[d]
           if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
@@ -123,8 +122,14 @@ export default {
           }
         }
       }
-      console.log(arr)
       return arr
+    },
+    currentResponse() {
+      /* Returns a response object for the current user */
+      return {
+        name: 'jony',
+        times: [...this.availability].map(item => new Date(item))
+      }
     },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
@@ -150,7 +155,7 @@ export default {
           const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           
-          for (const response of this.responses) {
+          for (const response of [...this.responses, this.currentResponse]) {
             const index = response.times.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
@@ -213,7 +218,6 @@ export default {
           }
         }
       }
-      console.log(this.availability)
     },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */

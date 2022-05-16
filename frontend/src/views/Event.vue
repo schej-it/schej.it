@@ -24,6 +24,10 @@ import ScheduleOverlap from '@/components/ScheduleOverlap'
 export default {
   name: 'Event',
 
+  props: {
+    eventId: { type: String, required: true },
+  },
+
   components: {
     ScheduleOverlap,
   },
@@ -39,9 +43,6 @@ export default {
     },
     event() {
       return this.events[this.eventId]
-    },
-    eventId() {
-      return this.$route.params.eventId
     },
   },
 
@@ -60,7 +61,6 @@ export default {
           startDate: new Date(event.start.dateTime),
           endDate: new Date(event.end.dateTime)
         }))
-      console.log(this.calendarEvents)
     })
     //document.querySelector('.v-main').addEventListener('scroll', this.test)
   },

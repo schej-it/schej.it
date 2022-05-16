@@ -10,7 +10,7 @@
       />
       <div
         class="tw-font-light tw-text-white tw-text-lg"
-      >Scheduling made easy</div>
+      >Scheduling made simple</div>
     </div>
     <div class="tw-flex tw-justify-center">
       <v-btn 

@@ -27,11 +27,15 @@
 </template>
 
 <script>
-import { getDateRangeString } from '@/utils'
+import { getDateRangeString, signInGoogle } from '@/utils'
 import { mapState } from 'vuex'
 
 export default {
   name: 'Join',
+
+  props: {
+    eventId: { type: String, required: true },
+  },
 
   computed: {
     ...mapState([ 'events' ]),
@@ -41,23 +45,12 @@ export default {
     event() {
       return this.events[this.eventId]
     },
-    eventId() {
-      return this.$route.params.eventId
-    },
   },
 
   methods: {
     signIn() {
-      const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
-      const redirectUri = 'http://localhost:8080/auth'
-      const scope = encodeURIComponent('https://www.googleapis.com/auth/calendar.events.readonly')
-      const state = encodeURIComponent(JSON.stringify({ type: 'join', eventId: this.eventId }))
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline&state=${state}`
-      //this.$router.push({ name: 'event', params: { eventId: this.eventId } })
+      signInGoogle(JSON.stringify({ type: 'join', eventId: this.eventId }))
     },
-    handleCredentialResponse(response) {
-      console.log(response)
-    }
   },
 
   mounted() {

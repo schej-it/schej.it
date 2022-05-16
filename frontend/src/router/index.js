@@ -28,12 +28,14 @@ const routes = [
   {
     path: '/j/:eventId',
     name: 'join',
-    component: () => import('@/views/Join.vue')
+    component: () => import('@/views/Join.vue'),
+    props: true,
   },
   {
     path: '/e/:eventId',
     name: 'event',
-    component: () => import('@/views/Event.vue')
+    component: () => import('@/views/Event.vue'),
+    props: true,
   },
   {
     path: '/auth',

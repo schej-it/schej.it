@@ -119,3 +119,21 @@ export const fetchMethod = (method, route, body={}) => {
     return data
   })
 }
+
+/*
+  Other
+*/
+
+export const signInGoogle = (state=null) => {
+  const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
+  const redirectUri = 'http://localhost:8080/auth'
+  const scope = encodeURIComponent('openid email profile https://www.googleapis.com/auth/calendar.events.readonly')
+  
+  let stateString = ''
+  if (state !== null) {
+    state = encodeURIComponent(state)
+    stateString = `&state=${state}`
+  }
+  
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${stateString}`
+}
