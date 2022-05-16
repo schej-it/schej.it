@@ -75,12 +75,14 @@
 </template>
 
 <script>
-import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt } from '@/utils'
+import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt, post } from '@/utils'
+import { mapState } from 'vuex'
 
 export default {
   name: 'ScheduleOverlap',
 
   props: {
+    eventId: { type: String, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     startTime: { type: Number, required: true },
@@ -88,15 +90,23 @@ export default {
     responses: { type: Object, required: true },
 
     calendarEvents: { type: Array, required: true },
+    initialShowCalendarEvents: { type: Boolean, default: true },
   },
 
-  data: () => ({
-    max: 0, // The max number of respondents for a given timeslot
-    showCalendarEvents: true, 
-    availability: new Set(), // Current availability of the current user, an array of dates
-  }),
+  data() {
+    return {
+      max: 0, // The max number of respondents for a given timeslot
+      showCalendarEvents: this.initialShowCalendarEvents, 
+      availability: new Set(), // Current availability of the current user, an array of dates
+    }
+  },
 
   computed: {
+    ...mapState([ 'authUser' ]),
+    availabilityArray() {
+      /* Returns the availibility as an array */
+      return [...this.availability].map(item => new Date(item))
+    },
     calendarEventsByDay() {
       /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
       
@@ -128,7 +138,7 @@ export default {
       /* Returns a response object for the current user */
       return {
         name: 'jony',
-        times: [...this.availability].map(item => new Date(item))
+        availability: this.availabilityArray,
       }
     },
     days() {
@@ -155,11 +165,10 @@ export default {
           const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           
-          for (const response of [...Object.values(this.responses), this.currentResponse]) {
-            const index = response.times.findIndex(d => dateCompare(d, date) === 0)
+          for (const response of [...Object.values(this.responses), /*this.currentResponse*/]) {
+            const index = response.availability.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
-              //response.times.splice(index, 1)
   
               formatted.get(date.getTime()).add(response.userId)
             }
@@ -189,6 +198,9 @@ export default {
 
       return times
     },
+    userHasResponded() {
+      return this.authUser._id in this.responses
+    }
   },
 
   methods: {
@@ -220,6 +232,8 @@ export default {
           }
         }
       }
+      post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
+      this.$emit('refreshEvent')
     },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
@@ -250,7 +264,7 @@ export default {
             'tw-bg-avail-green-200', 
             'tw-bg-avail-green-300', 
             'tw-bg-avail-green-400', 
-            'tw-bg-avail-green-500', 
+            'tw-bg-light-blue', 
             //'tw-bg-avail-green-600',
           ] 
           c += colors[parseInt(frac*colors.length-1)] + ' '
@@ -263,11 +277,17 @@ export default {
 
   watch: {
     calendarEvents: {
-      immediate: true,
       handler() {
-        this.setAvailability()
+        if (!this.userHasResponded) this.setAvailability()
       },
     },
+  },
+
+  created() {
+    if (this.userHasResponded) {
+      this.availability = new Set()
+      this.responses[this.authUser._id].availability.forEach(item => this.availability.add(new Date(item).getTime()))
+    }
   },
 }
 </script>

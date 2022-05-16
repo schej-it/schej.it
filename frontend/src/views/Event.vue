@@ -8,9 +8,12 @@
         class="tw-font-light tw-text-lg"
       >{{ dateString }}</div>
     </div>
-    <ScheduleOverlap 
+    <ScheduleOverlap
+      :eventId="eventId" 
       v-bind="event"
       :calendarEvents="calendarEvents"
+      :initialShowCalendarEvents="initialShowCalendarEvents"
+      @refreshEvent="refreshEvent"
     />
   </div>
 </template>
@@ -38,9 +41,12 @@ export default {
   }),
 
   computed: {
-    ...mapState([ 'events' ]),
+    ...mapState([ 'authUser', 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
+    },
+    initialShowCalendarEvents() {
+      return !(this.authUser._id in this.event.responses)
     },
   },
 
@@ -48,14 +54,22 @@ export default {
     test() {
       console.log(document.querySelector('.v-main').scrollTop)
     },
+    async refreshEvent() {
+      // Get event details
+      this.event = await get(`/events/${this.eventId}`)
+      this.event.startDate = new Date(this.event.startDate)
+      this.event.endDate = new Date(this.event.endDate)
+    }
   },
 
   async created() {
+    // Get event details
     this.event = await get(`/events/${this.eventId}`)
     this.event.startDate = new Date(this.event.startDate)
     this.event.endDate = new Date(this.event.endDate)
     
-    get(`/user/availability?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {
+    // Get user's calendar
+    get(`/user/calendar?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {
       this.calendarEvents = data.items
         .filter(event => {
           return (

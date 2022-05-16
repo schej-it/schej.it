@@ -11,7 +11,7 @@
     <div>
       <v-chip class="ma-2" color="gray lighten-2" text-color="gray darken-2">
         <v-icon left> mdi-account-multiple </v-icon>
-        {{ this.event.responses.length }}
+        {{ Object.keys(this.event.responses).length }}
       </v-chip>
       <v-icon>mdi-chevron-right</v-icon>
     </div>

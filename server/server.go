@@ -59,7 +59,7 @@ func main() {
 	userRouter := router.Group("/user")
 	userRouter.Use(middleware.AuthRequired())
 	{
-		userRouter.GET("/availability", getAvailability)
+		userRouter.GET("/calendar", getUserCalendar)
 		userRouter.GET("/events", getUserEvents)
 		userRouter.GET("/profile", getUserProfile)
 	}
@@ -160,7 +160,7 @@ func getAuthStatus(c *gin.Context) {
 }
 
 // gets the times that the current user is available
-func getAvailability(c *gin.Context) {
+func getUserCalendar(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
 		TimeMin string `form:"timeMin" binding:"required"`
