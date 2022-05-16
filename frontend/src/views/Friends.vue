@@ -12,8 +12,11 @@
       <v-text-field label="Search" outlined dense></v-text-field>
 
       <FriendItem 
+        class="tw-mb-2"
+        v-for="f, i in exampleFriends"
+        :key="i"
         @click="$router.push({ name: 'friend-schedule' })" 
-        :friend="exampleFriend" 
+        :friend="f" 
         chevron
       />
     </v-container>
@@ -43,10 +46,22 @@ export default {
 
   data: () => ({
     dialog: false,
-    exampleFriend: {
-      name: 'Tony Xin',
-      status: 'free',
-    },
+    exampleFriends: [
+      {
+        name: 'Tony Xin',
+        status: 'free',
+        picture: 'https://media-exp1.licdn.com/dms/image/C5603AQHPyWrhwOLQ_g/profile-displayphoto-shrink_200_200/0/1632279309883?e=1658361600&v=beta&t=SF_4_hjgwSN4dlQt_EXTKVkNuuqaty5_HQRF_E7jVNo',
+      },
+      {
+        name: 'Arjun Patrawala',
+        status: 'EECS 16B lecture',
+        picture: 'https://media-exp1.licdn.com/dms/image/C5603AQFN3On7QKEdiA/profile-displayphoto-shrink_200_200/0/1642207771141?e=1658361600&v=beta&t=X19xF4_OS_SEHePR5HHDzGDnEVqbv3su6e9Y7QIjd0I',
+      },
+      {
+        name: 'Jacob Smith',
+        status: 'Intellecture meeting',
+      },
+    ],
   }),
 }
 </script>

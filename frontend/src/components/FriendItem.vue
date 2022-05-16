@@ -19,7 +19,12 @@
             v-if="this.friend.status == 'free'"
             class="tw-text-green tw-font-bold"
             >free</span
-          ><span v-else>in {{ this.friend.status }}</span>
+          ><span v-else>
+            in 
+            <span class="tw-text-light-blue tw-font-bold">
+              {{ this.friend.status }}
+            </span>
+          </span>
         </div>
       </div>
     </div>
