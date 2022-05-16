@@ -113,12 +113,12 @@ export default {
 
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
-          this.$router.push({ name: 'sign-in' })
+          this.$router.replace({ name: 'sign-in' })
           console.log('redirecting to SIGN IN')
         }
       } else {
         if (noAuthRoutes.includes(this.$route.name)) {
-          this.$router.push({ name: 'home' })
+          this.$router.replace({ name: 'home' })
           console.log('redirecting to HOME')
         }
       }

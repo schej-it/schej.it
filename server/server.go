@@ -239,6 +239,7 @@ func createEvent(c *gin.Context) {
 		EndDate:   primitive.NewDateTimeFromTime(payload.EndDate),
 		StartTime: payload.StartTime,
 		EndTime:   payload.EndTime,
+		Responses: make(map[string]models.Response),
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)

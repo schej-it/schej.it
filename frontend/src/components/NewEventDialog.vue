@@ -123,8 +123,8 @@ export default {
         endDate,
         startTime: this.startTime,
         endTime: this.endTime,
-      }).then(data => {
-        console.log(data)
+      }).then(({ eventId }) => {
+        this.$router.push({ name: 'event', params: { eventId } })
         this.reset()
         this.$emit('input', false)
       })
