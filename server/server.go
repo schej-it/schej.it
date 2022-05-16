@@ -255,6 +255,12 @@ func getEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
 
+	// Populate user fields
+	for userId, response := range event.Responses {
+		response.User = *db.GetUserById(userId)
+		event.Responses[userId] = response
+	}
+
 	c.JSON(http.StatusOK, event)
 }
 

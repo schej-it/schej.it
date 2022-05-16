@@ -36,10 +36,25 @@
               :key="t"
               class="tw-w-full"  
             >
-              <div 
-                class="tw-h-5 tw-border-light-gray tw-border-r" 
-                :class="timeslotClass(day, time, d, t)"
-              />
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <div 
+                    class="tw-h-5 tw-border-light-gray tw-border-r" 
+                    :class="timeslotClass(day, time, d, t)"
+                    v-bind="attrs"
+                    v-on="on"
+                  />
+                </template>
+                <div>
+                  <div>Available:</div>
+                  <div 
+                    v-for="user in getRespondentsForDateTime(day.dateObject, time.timeInt)"
+                    :key="user._id"
+                  >
+                    {{ user.firstName }}
+                  </div>
+                </div>
+              </v-tooltip>
             </div>
             
             <!-- Calendar events -->
@@ -170,7 +185,7 @@ export default {
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
   
-              formatted.get(date.getTime()).add(response.userId)
+              formatted.get(date.getTime()).add(response.user)
             }
           }
 

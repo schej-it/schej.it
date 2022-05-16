@@ -15,5 +15,6 @@ type Event struct {
 
 type Response struct {
 	UserId       primitive.ObjectID `json:"userId" bson:"userId" binding:"required"`
+	User         User               `json:"user" bson:"user"`
 	Availability []string           `json:"availability" bson:"availability" binding:"required"`
 }

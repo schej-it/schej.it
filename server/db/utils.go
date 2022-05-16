@@ -43,4 +43,32 @@ func GetEventById(eventId string) *models.Event {
 	}
 
 	return &event
+
+	/*
+		cursor, err := EventsCollection.Aggregate(context.Background(), []bson.M{
+			{"$match": bson.M{"_id": utils.StringToObjectID(eventId)}},
+			{"$objectToArray": "$responses"},
+			{"$unwind": "$responses"},
+			{"$lookup": bson.M{
+				"from":         "users",
+				"localField":   "responses.userId",
+				"foreignField": "_id",
+				"as":           "responses.user",
+			}},
+		})
+		if err != nil {
+			panic(err)
+		}
+		var events []models.Event
+		if err := cursor.All(context.Background(), &events); err != nil {
+			panic(err)
+		}
+
+		if len(events) == 0 {
+			// Event does not exist!
+			return nil
+		}
+
+		return &events[0]
+	*/
 }
