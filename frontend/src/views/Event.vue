@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt } from '@/utils'
+import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post } from '@/utils'
 import { mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -78,6 +78,10 @@ export default {
         signInGoogle({ type: 'join', eventId: this.eventId })
       }
     })
+
+    /*post(`/events/${this.eventId}/response`, {
+      availability: ['lmao', 'what', 'cool'],
+    }).then(console.log).catch(console.error)*/
     //document.querySelector('.v-main').addEventListener('scroll', this.test)
   },
 }

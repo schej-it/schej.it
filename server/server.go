@@ -69,6 +69,7 @@ func main() {
 	{
 		eventRouter.POST("", middleware.AuthRequired(), createEvent)
 		eventRouter.GET("/:eventId", middleware.AuthRequired(), getEvent)
+		eventRouter.POST("/:eventId/response", middleware.AuthRequired(), updateResponse)
 	}
 
 	// Run server
@@ -238,7 +239,6 @@ func createEvent(c *gin.Context) {
 		EndDate:   primitive.NewDateTimeFromTime(payload.EndDate),
 		StartTime: payload.StartTime,
 		EndTime:   payload.EndTime,
-		Responses: make([]models.Response, 0),
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -256,4 +256,40 @@ func getEvent(c *gin.Context) {
 	event := db.GetEventById(eventId)
 
 	c.JSON(http.StatusOK, event)
+}
+
+// Updates the current user's availability
+func updateResponse(c *gin.Context) {
+	payload := struct {
+		Availability []string `json:"availability" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	session := sessions.Default(c)
+
+	eventId := c.Param("eventId")
+
+	response := models.Response{
+		UserId:       utils.GetUserId(session),
+		Availability: payload.Availability,
+	}
+
+	userIdString := session.Get("userId").(string)
+	_, err := db.EventsCollection.UpdateByID(
+		context.Background(),
+		utils.StringToObjectID(eventId),
+		bson.M{
+			"$set": bson.M{
+				"responses." + userIdString: response,
+			},
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("YAY!")
+
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }

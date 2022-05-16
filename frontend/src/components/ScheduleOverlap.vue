@@ -47,11 +47,11 @@
               <div
                 v-for="event, e in calendarEventsByDay[d]" 
                 :key="`${d}-${e}`"
-                class="tw-absolute tw-w-full tw-p-1"
+                class="tw-absolute tw-w-full tw-p-px"
                 :style="event.style"
               >
                 <div
-                  class="tw-bg-blue/25 tw-border-light-gray tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded-md tw-p-1 tw-overflow-hidden"
+                  class="tw-bg-blue/25 tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                 >
                   <div class="tw-text-blue tw-font-medium">
                     {{ event.summary }}
@@ -85,7 +85,7 @@ export default {
     endDate: { type: Date, required: true },
     startTime: { type: Number, required: true },
     endTime: { type: Number, required: true },
-    responses: { type: Array, required: true },
+    responses: { type: Object, required: true },
 
     calendarEvents: { type: Array, required: true },
   },
@@ -155,13 +155,13 @@ export default {
           const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           
-          for (const response of [...this.responses, this.currentResponse]) {
+          for (const response of [...Object.values(this.responses), this.currentResponse]) {
             const index = response.times.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
               //response.times.splice(index, 1)
   
-              formatted.get(date.getTime()).add(response.name)
+              formatted.get(date.getTime()).add(response.userId)
             }
           }
 
@@ -211,7 +211,8 @@ export default {
           const index = this.calendarEventsByDay[d].findIndex(e => {
             return (
               (dateCompare(e.startDate, startDate) < 0 && dateCompare(e.endDate, startDate) > 0) ||
-              (dateCompare(e.startDate, endDate) < 0 && dateCompare(e.endDate, endDate) > 0)
+              (dateCompare(e.startDate, endDate) < 0 && dateCompare(e.endDate, endDate) > 0) ||
+              (dateCompare(e.startDate, startDate) == 0 && dateCompare(e.endDate, endDate) == 0)
             )
           })
           if (index === -1) {

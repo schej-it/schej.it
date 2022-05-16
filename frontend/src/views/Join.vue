@@ -10,7 +10,7 @@
         >{{ dateString }}</div>
         <div
           class="tw-font-light tw-text-sm tw-flex tw-items-center"
-        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ event.responses.length }} respondents</div>
+        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ Object.keys(event.responses).length }} respondents</div>
       </div>
     </div>
     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-12">
