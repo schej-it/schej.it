@@ -1,10 +1,12 @@
 <template>
   <v-container
+    @click="$emit('click')"
+    v-ripple
     class="tw-bg-light-gray tw-rounded-md tw-flex tw-text-black tw-justify-between tw-align-middle tw-py-2"
   >
     <div>
       <div>{{ this.event.name }}</div>
-      <div class="tw-text-sm">{{ dateString }}</div>
+      <div class="tw-text-sm tw-font-light">{{ dateString }}</div>
     </div>
     <div>
       <v-chip class="ma-2" color="gray lighten-2" text-color="gray darken-2">
@@ -30,7 +32,7 @@ export default {
 
   computed: {
     dateString() {
-      return getDateRangeString(this.event.startDate, this.event.endDate)
+      return getDateRangeString(new Date(this.event.startDate), new Date(this.event.endDate))
     },
   },
 

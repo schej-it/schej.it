@@ -137,7 +137,7 @@ export const signInGoogle = (state=null) => {
   
   let stateString = ''
   if (state !== null) {
-    state = encodeURIComponent(state)
+    state = encodeURIComponent(JSON.stringify(state))
     stateString = `&state=${state}`
   }
   

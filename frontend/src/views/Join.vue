@@ -14,14 +14,22 @@
       </div>
     </div>
     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-12">
-      <v-btn 
-        class="tw-bg-blue tw-mb-2" 
+      <v-btn
+        v-if="authUser"
+        class="tw-bg-blue"
         dark
-        @click="signIn"
-      >Sign in with Google</v-btn>
-      <div 
-        class="tw-text-xs tw-mx-10 tw-text-black tw-text-center"
-      >Schej.it automatically inputs your availability <br> using your google calendar</div>
+        @click="join"
+      >Join event</v-btn>
+      <template v-else>
+        <v-btn 
+          class="tw-bg-blue tw-mb-2" 
+          dark
+          @click="signIn"
+        >Sign in with Google</v-btn>
+        <div 
+          class="tw-text-xs tw-mx-10 tw-text-black tw-text-center"
+        >Schej.it automatically inputs your availability <br> using your google calendar</div>
+      </template>
     </div>
   </div>
 </template>
@@ -38,7 +46,7 @@ export default {
   },
 
   computed: {
-    ...mapState([ 'events' ]),
+    ...mapState([ 'authUser', 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
     },
@@ -48,8 +56,11 @@ export default {
   },
 
   methods: {
+    join() {
+      this.$router.replace({ name: 'event', params: { eventId: this.eventId } })
+    },
     signIn() {
-      signInGoogle(JSON.stringify({ type: 'join', eventId: this.eventId }))
+      signInGoogle({ type: 'join', eventId: this.eventId })
     },
   },
 

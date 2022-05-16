@@ -20,7 +20,7 @@ func AuthRequired() gin.HandlerFunc {
 		session := sessions.Default(c)
 		if session.Get("userId") == nil {
 			// User id is not set, user is not signed in!
-			c.JSON(http.StatusForbidden, gin.H{"error": errors.NotSignedIn})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errors.NotSignedIn})
 			c.Abort()
 			return
 		}
@@ -31,7 +31,7 @@ func AuthRequired() gin.HandlerFunc {
 		})
 		if result.Err() == mongo.ErrNoDocuments {
 			// User does not exist!
-			c.JSON(http.StatusForbidden, gin.H{"error": errors.UserDoesNotExist})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": errors.UserDoesNotExist})
 			c.Abort()
 			return
 		}

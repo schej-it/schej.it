@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations, mapState } from 'vuex';
 import { get } from './utils';
 
 export default {
@@ -68,6 +68,7 @@ export default {
   }),
 
   computed: {
+    ...mapState([ 'authUser' ]),
     showHeader() {
       return (
         this.$route.name !== 'sign-in' &&
@@ -99,28 +100,33 @@ export default {
 
       document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
     },
-    redirectAuthUser() {
+    redirectUser(authenticated) {
       let authRoutes = ['home', 'schedule', 'friends', 'event']
       let noAuthRoutes = ['sign-in']
 
-      if (!this.authUser) {
-        if (authRoutes.includes(this.$route.name))
-          this.$router.replace({ name: 'sign-in' })
+      if (!authenticated) {
+        if (authRoutes.includes(this.$route.name)) {
+          this.$router.push({ name: 'sign-in' })
+          console.log('redirecting to SIGN IN')
+        }
       } else {
-        if (noAuthRoutes.includes(this.$route.name))
-          this.$router.replace({ name: 'home' })
+        if (noAuthRoutes.includes(this.$route.name)) {
+          this.$router.push({ name: 'home' })
+          console.log('redirecting to HOME')
+        }
       }
     },
   },
 
-  created() {
-    get('/user/profile')
+  async created() {
+    await get('/user/profile')
       .then(authUser => {
         // console.log(authUser)
         this.setAuthUser(authUser)
       }).catch(() => {
         this.setAuthUser(null)
       })
+    
   },
 
   mounted() {
@@ -132,13 +138,21 @@ export default {
     authUser: {
       immediate: true,
       handler() {
-        this.redirectAuthUser()
+        /*if (this.authUser) {
+          this.redirectAuthUser(true)
+        } else {
+          this.redirectAuthUser(false)
+        }*/
       }
     },
     $route: {
       immediate: true,
       handler() {
-        this.redirectAuthUser()
+        get('/auth/status').then(data => {
+          this.redirectUser(true)
+        }).catch(err => {
+          this.redirectUser(false)
+        })
       }
     },
   },

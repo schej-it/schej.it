@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getDateRangeString, get } from '@/utils'
+import { getDateRangeString, get, signInGoogle } from '@/utils'
 import { mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -52,7 +52,7 @@ export default {
     },
   },
 
-  mounted() {
+  created() {
     get(`/user/availability?timeMin=${this.event.startDate.toISOString()}&timeMax=${this.event.endDate.toISOString()}`).then(data => {
       this.calendarEvents = data.items
         .filter(event => ('dateTime' in event.end && 'dateTime' in event.start))
@@ -61,6 +61,10 @@ export default {
           startDate: new Date(event.start.dateTime),
           endDate: new Date(event.end.dateTime)
         }))
+    }).catch(err => {
+      if (err.code === 401) {
+        signInGoogle({ type: 'join', eventId: this.eventId })
+      }
     })
     //document.querySelector('.v-main').addEventListener('scroll', this.test)
   },

@@ -52,6 +52,7 @@ func main() {
 	authRouter := router.Group("/auth")
 	{
 		authRouter.POST("/sign-in", signIn)
+		authRouter.GET("/status", middleware.AuthRequired(), getAuthStatus)
 	}
 
 	// Current user routes
@@ -148,6 +149,11 @@ func signIn(c *gin.Context) {
 	session.Set("accessToken", res["access_token"])
 	session.Save()
 
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}
+
+// Gets whether the user is signed in or not
+func getAuthStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 

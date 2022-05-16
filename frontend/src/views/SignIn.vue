@@ -23,12 +23,13 @@
 </template>
 
 <script>
+import { signInGoogle } from '@/utils'
 export default {
   name: 'SignIn',
 
   methods: {
-    async signIn() {
-      this.$router.replace({ name: 'home' })
+    signIn() {
+      signInGoogle()
     },
   },
 }
