@@ -1,5 +1,7 @@
 <template>
   <v-app>
+    <AutoSnackbar color="error" :text="error" />
+    <AutoSnackbar color="info" :text="info" />
     <div
       v-if="showHeader"
       class="tw-h-14 tw-bg-green"
@@ -42,9 +44,14 @@
 <script>
 import { mapMutations, mapState } from 'vuex';
 import { get } from './utils';
+import AutoSnackbar from '@/components/AutoSnackbar'
 
 export default {
   name: 'App',
+
+  components: {
+    AutoSnackbar,
+  },
 
   data: () => ({
     tabs: [
@@ -68,7 +75,7 @@ export default {
   }),
 
   computed: {
-    ...mapState([ 'authUser' ]),
+    ...mapState([ 'authUser', 'error', 'info' ]),
     showHeader() {
       return (
         this.$route.name !== 'sign-in' &&

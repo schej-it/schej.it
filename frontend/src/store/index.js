@@ -10,6 +10,9 @@ const date3 = getDateDayOffset(new Date(), 2)
 
 export default new Vuex.Store({
   state: {
+    error: '',
+    info: '',
+
     authUser: null,
     events: {
       'asdf': {
@@ -82,11 +85,27 @@ export default new Vuex.Store({
   getters: {
   },
   mutations: {
+    setError(state, error) {
+      state.error = error
+    },
+    setInfo(state, info) {
+      state.info = info
+    },
+
     setAuthUser(state, authUser) {
       state.authUser = authUser
     },
   },
   actions: {
+    // Error & info
+    showError({ commit }, error) {
+      commit('setError', '')
+      setTimeout(() => commit('setError', error), 0)
+    },
+    showInfo({ commit }, info) {
+      commit('setInfo', '')
+      setTimeout(() => commit('setInfo', info), 0)
+    },
   },
   modules: {
   }

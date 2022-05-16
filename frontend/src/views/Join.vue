@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-flex tw-flex-col tw-h-full">
+  <div v-if="event" class="tw-flex tw-flex-col tw-h-full">
     <div class="tw-flex-1 tw-bg-green tw-text-white tw-flex tw-justify-center tw-items-center">
       <div class="-tw-mt-8 tw-flex tw-flex-col tw-items-center tw-space-y-3">
         <div 
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { getDateRangeString, signInGoogle } from '@/utils'
+import { getDateRangeString, signInGoogle, get } from '@/utils'
 import { mapState } from 'vuex'
 
 export default {
@@ -45,13 +45,14 @@ export default {
     eventId: { type: String, required: true },
   },
 
+  data: () => ({
+    event: null,
+  }),
+
   computed: {
     ...mapState([ 'authUser', 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
-    },
-    event() {
-      return this.events[this.eventId]
     },
   },
 
@@ -64,15 +65,11 @@ export default {
     },
   },
 
-  mounted() {
-    google.accounts.id.initialize({
-      client_id: '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com',
-      callback: this.handleCredentialResponse
-    });
-    google.accounts.id.renderButton(
-      document.getElementById('sign-in-google'),
-      { theme: 'filled_blue', size: 'large', text: 'continue_with' } 
-    )
-  },
+  async created() {
+    // Get event details
+    this.event = await get(`/events/${this.eventId}`)
+    this.event.startDate = new Date(this.event.startDate)
+    this.event.endDate = new Date(this.event.endDate)
+  }
 }
 </script>

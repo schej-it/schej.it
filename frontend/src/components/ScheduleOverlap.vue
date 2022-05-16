@@ -82,7 +82,12 @@
           block
           @click="showCalendarEvents = !showCalendarEvents"
         >
-        Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+        <template v-if="!showCalendarEvents">
+          Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+        </template>
+        <template v-else>
+          View suggested times 
+        </template>
         </v-btn>
       </div>
     </div>
@@ -91,7 +96,7 @@
 
 <script>
 import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt, post } from '@/utils'
-import { mapState } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'ScheduleOverlap',
@@ -219,12 +224,13 @@ export default {
   },
 
   methods: {
+    ...mapActions([ 'showInfo' ]),
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
       const d = getDateWithTimeInt(date, time)
       return this.responsesFormatted.get(d.getTime())
     },
-    setAvailability() {
+    async setAvailability() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       // TODO: there is a bug where it still sets your availability if the event length is 30 minutes
@@ -247,8 +253,9 @@ export default {
           }
         }
       }
-      post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
+      await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
       this.$emit('refreshEvent')
+      this.showInfo('All done! Your availability has been set automatically')
     },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */

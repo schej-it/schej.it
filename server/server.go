@@ -68,7 +68,7 @@ func main() {
 	eventRouter := router.Group("/events")
 	{
 		eventRouter.POST("", middleware.AuthRequired(), createEvent)
-		eventRouter.GET("/:eventId", middleware.AuthRequired(), getEvent)
+		eventRouter.GET("/:eventId", getEvent)
 		eventRouter.POST("/:eventId/response", middleware.AuthRequired(), updateResponse)
 	}
 
