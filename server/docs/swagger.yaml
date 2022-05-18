@@ -122,6 +122,99 @@ paths:
       summary: Gets whether the user is signed in or not
       tags:
       - auth
+  /events:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Start date
+        in: body
+        name: startDate
+        required: true
+        schema:
+          type: string
+      - description: End date
+        in: body
+        name: endDate
+        required: true
+        schema:
+          type: string
+      - description: Start time
+        in: body
+        name: startTime
+        required: true
+        schema:
+          type: integer
+      - description: End time
+        in: body
+        name: endTime
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                eventId:
+                  type: string
+              type: object
+      summary: Creates a new event
+      tags:
+      - event
+  /events/:eventId:
+    get:
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Event'
+      summary: Gets an event based on its id
+      tags:
+      - event
+  /events/:eventId/response:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Array of dates representing user's availability
+        in: body
+        name: availability
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Updates the current user's availability
+      tags:
+      - event
   /user/calendar:
     get:
       description: Gets the user's calendar events between "timeMin" and "timeMax"

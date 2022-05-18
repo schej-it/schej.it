@@ -21,13 +21,8 @@ func InitUser(router *gin.Engine) {
 	userRouter := router.Group("/user")
 	userRouter.Use(middleware.AuthRequired())
 
-	// Gets the user's profile
 	userRouter.GET("/profile", getProfile)
-
-	// Gets all the user's events
 	userRouter.GET("/events", getEvents)
-
-	// Gets the times that the current user is available
 	userRouter.GET("/calendar", getCalendar)
 }
 
