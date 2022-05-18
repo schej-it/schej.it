@@ -3,9 +3,11 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -21,7 +23,7 @@ import (
 func InitAuth(router *gin.Engine) {
 	authRouter := router.Group("/auth")
 
-	authRouter.POST("/sign-in", postSignIn)
+	authRouter.POST("/sign-in", signIn)
 	authRouter.GET("/status", middleware.AuthRequired(), getStatus)
 }
 
@@ -33,7 +35,7 @@ func InitAuth(router *gin.Engine) {
 // @Param code body string true "Google authorization code"
 // @Success 200
 // @Router /auth/sign-in [post]
-func postSignIn(c *gin.Context) {
+func signIn(c *gin.Context) {
 	payload := struct {
 		Code string `json:"code" binding:"required"`
 	}{}
@@ -41,7 +43,7 @@ func postSignIn(c *gin.Context) {
 		return
 	}
 
-	// Get access_token
+	// Call Google oauth token endpoint
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},
 		"client_secret": {os.Getenv("CLIENT_SECRET")},
@@ -56,36 +58,59 @@ func postSignIn(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	var res gin.H
+	res := struct {
+		AccessToken  string `json:"access_token"`
+		IdToken      string `json:"id_token"`
+		ExpiresIn    int    `json:"expires_in"`
+		RefreshToken string `json:"refresh_token"`
+		Scope        string `json:"scope"`
+		TokenType    string `json:"token_type"`
+	}{}
 	json.NewDecoder(resp.Body).Decode(&res)
 
+	// Get access token expire time
+	expireDuration, err := time.ParseDuration(fmt.Sprintf("%ds", res.ExpiresIn))
+	if err != nil {
+		panic(err)
+	}
+	accessTokenExpireDate := time.Now().Add(expireDuration)
+
 	// Get user info from JWT
-	claims := utils.ParseJWT(res["id_token"].(string))
+	claims := utils.ParseJWT(res.IdToken)
 	email, _ := claims.GetStr("email")
+	firstName, _ := claims.GetStr("given_name")
+	lastName, _ := claims.GetStr("family_name")
+	picture, _ := claims.GetStr("picture")
 
-	// Create new user object if it doesn't exist, and set the userId
-	result := db.UsersCollection.FindOne(context.Background(), bson.M{"email": email})
+	// Create user object to create new user or update existing user
+	userData := models.User{
+		Email:                 email,
+		FirstName:             firstName,
+		LastName:              lastName,
+		Picture:               picture,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          res.RefreshToken,
+	}
 
+	// Update user if exists
+	updateResult := db.UsersCollection.FindOneAndUpdate(
+		context.Background(),
+		bson.M{"email": email},
+		bson.M{"$set": userData},
+	)
 	var userId primitive.ObjectID
-	if result.Err() == mongo.ErrNoDocuments {
-		firstName, _ := claims.GetStr("given_name")
-		lastName, _ := claims.GetStr("family_name")
-		picture, _ := claims.GetStr("picture")
-		newUser := models.User{
-			Email:     email,
-			FirstName: firstName,
-			LastName:  lastName,
-			Picture:   picture,
-		}
-		res, err := db.UsersCollection.InsertOne(context.Background(), newUser)
+	if updateResult.Err() == mongo.ErrNoDocuments {
+		// User doesn't exist, create a new user
+		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
 			panic(err)
 		}
 
 		userId = res.InsertedID.(primitive.ObjectID)
 	} else {
+		// User does exist, get user id
 		var user models.User
-		if err := result.Decode(&user); err != nil {
+		if err := updateResult.Decode(&user); err != nil {
 			panic(err)
 		}
 
@@ -95,7 +120,7 @@ func postSignIn(c *gin.Context) {
 	// Set session variables
 	session := sessions.Default(c)
 	session.Set("userId", userId.Hex())
-	session.Set("accessToken", res["access_token"])
+	session.Set("accessToken", res.AccessToken)
 	session.Save()
 
 	c.JSON(http.StatusOK, gin.H{})

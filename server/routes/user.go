@@ -29,13 +29,13 @@ func InitUser(router *gin.Engine) {
 // @Summary Gets the user's profile
 // @Tags user
 // @Produce json
-// @Success 200 {object} models.User "A user object"
+// @Success 200 {object} models.UserProfile "A user profile object"
 // @Router /user/profile [get]
 func getProfile(c *gin.Context) {
-	user, _ := c.Get("authUser")
-	user = user.(*models.User)
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user.GetProfile())
 }
 
 // @Summary Gets all the user's events

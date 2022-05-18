@@ -60,6 +60,36 @@ definitions:
   models.User:
     properties:
       _id:
+        description: Profile info
+        type: string
+      accessToken:
+        description: Google OAuth stuff
+        type: string
+      accessTokenExpireDate:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      picture:
+        type: string
+      refreshToken:
+        type: string
+    required:
+    - _id
+    - accessToken
+    - accessTokenExpireDate
+    - email
+    - firstName
+    - lastName
+    - picture
+    - refreshToken
+    type: object
+  models.UserProfile:
+    properties:
+      _id:
         type: string
       email:
         type: string
@@ -262,9 +292,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: A user object
+          description: A user profile object
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.UserProfile'
       summary: Gets the user's profile
       tags:
       - user

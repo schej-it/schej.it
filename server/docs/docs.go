@@ -292,9 +292,9 @@ var doc = `{
                 "summary": "Gets the user's profile",
                 "responses": {
                     "200": {
-                        "description": "A user object",
+                        "description": "A user profile object",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.UserProfile"
                         }
                     }
                 }
@@ -386,6 +386,47 @@ var doc = `{
             }
         },
         "models.User": {
+            "type": "object",
+            "required": [
+                "_id",
+                "accessToken",
+                "accessTokenExpireDate",
+                "email",
+                "firstName",
+                "lastName",
+                "picture",
+                "refreshToken"
+            ],
+            "properties": {
+                "_id": {
+                    "description": "Profile info",
+                    "type": "string"
+                },
+                "accessToken": {
+                    "description": "Google OAuth stuff",
+                    "type": "string"
+                },
+                "accessTokenExpireDate": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserProfile": {
             "type": "object",
             "required": [
                 "_id",
