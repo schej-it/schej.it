@@ -10,7 +10,18 @@ import (
 	"github.com/joho/godotenv"
 	"schej.it/server/db"
 	"schej.it/server/routes"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "schej.it/server/docs"
 )
+
+// @title Schej.it API
+// @version 1.0
+// @description This is the API for Schej.it!
+
+// @host localhost:3000
 
 func main() {
 	router := gin.Default()
@@ -40,6 +51,9 @@ func main() {
 	routes.InitAuth(router)
 	routes.InitUser(router)
 	routes.InitEvents(router)
+
+	// Init swagger documentation
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Run server
 	router.Run(":3000")

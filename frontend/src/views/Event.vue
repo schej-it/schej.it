@@ -70,21 +70,11 @@ export default {
     
     // Get user's calendar
     get(`/user/calendar?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {
-      this.calendarEvents = data.items
-        .filter(event => {
-          return (
-            'start' in event &&
-            'end' in event &&
-            'dateTime' in event.end &&
-            'dateTime' in event.start &&
-            dateToTimeInt(event.end.dateTime) > this.event.startTime &&
-            dateToTimeInt(event.start.dateTime) < this.event.endTime
-          )
-        })
+      this.calendarEvents = data
         .map(event => ({ 
           summary: event.summary,
-          startDate: clampDateToTimeInt(new Date(event.start.dateTime), this.event.startTime, 'upper'),
-          endDate: clampDateToTimeInt(new Date(event.end.dateTime), this.event.endTime, 'lower'),
+          startDate: clampDateToTimeInt(new Date(event.startDate), this.event.startTime, 'upper'),
+          endDate: clampDateToTimeInt(new Date(event.endDate), this.event.endTime, 'lower'),
         }))
     }).catch(err => {
       console.error(err)

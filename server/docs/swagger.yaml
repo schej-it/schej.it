@@ -1,0 +1,178 @@
+definitions:
+  models.CalendarEvent:
+    properties:
+      endDate:
+        type: string
+      startDate:
+        type: string
+      summary:
+        type: string
+    required:
+    - endDate
+    - startDate
+    - summary
+    type: object
+  models.Event:
+    properties:
+      _id:
+        type: string
+      endDate:
+        type: string
+      endTime:
+        type: integer
+      name:
+        type: string
+      ownerId:
+        type: string
+      responses:
+        additionalProperties:
+          $ref: '#/definitions/models.Response'
+        type: object
+      startDate:
+        type: string
+      startTime:
+        type: integer
+    required:
+    - _id
+    - endDate
+    - endTime
+    - name
+    - ownerId
+    - responses
+    - startDate
+    - startTime
+    type: object
+  models.Response:
+    properties:
+      availability:
+        items:
+          type: string
+        type: array
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+      userId:
+        type: string
+    required:
+    - availability
+    - userId
+    type: object
+  models.User:
+    properties:
+      _id:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      picture:
+        type: string
+    required:
+    - _id
+    - email
+    - firstName
+    - lastName
+    - picture
+    type: object
+  responses.Error:
+    properties:
+      error:
+        type: string
+    required:
+    - error
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: This is the API for Schej.it!
+  license: {}
+  title: Schej.it API
+  version: "1.0"
+paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Signs user in and sets the access token session variable
+      parameters:
+      - description: Google authorization code
+        in: body
+        name: code
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Signs user in
+      tags:
+      - auth
+  /auth/status:
+    get:
+      description: Returns a 401 error if user is not signed in, 200 if they are
+      responses:
+        "200": {}
+        "401":
+          description: Error object
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Gets whether the user is signed in or not
+      tags:
+      - auth
+  /user/calendar:
+    get:
+      description: Gets the user's calendar events between "timeMin" and "timeMax"
+      parameters:
+      - description: Lower bound for event's start time to filter by
+        in: query
+        name: timeMin
+        required: true
+        type: string
+      - description: Upper bound for event's end time to filter by
+        in: query
+        name: timeMax
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CalendarEvent'
+            type: array
+      summary: Gets the user's calendar events
+      tags:
+      - user
+  /user/events:
+    get:
+      description: Returns an array containing all the user's events
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
+      summary: Gets all the user's events
+      tags:
+      - user
+  /user/profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: A user object
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Gets the user's profile
+      tags:
+      - user
+swagger: "2.0"

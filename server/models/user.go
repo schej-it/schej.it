@@ -2,6 +2,7 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+// Representation of a User in the mongoDB database
 type User struct {
 	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty" binding:"required"`
 	Email     string             `json:"email" bson:"email" binding:"required"`
