@@ -3,11 +3,9 @@ package routes
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
-	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -69,11 +67,7 @@ func signIn(c *gin.Context) {
 	json.NewDecoder(resp.Body).Decode(&res)
 
 	// Get access token expire time
-	expireDuration, err := time.ParseDuration(fmt.Sprintf("%ds", res.ExpiresIn))
-	if err != nil {
-		panic(err)
-	}
-	accessTokenExpireDate := time.Now().Add(expireDuration)
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
 
 	// Get user info from JWT
 	claims := utils.ParseJWT(res.IdToken)
@@ -88,6 +82,7 @@ func signIn(c *gin.Context) {
 		FirstName:             firstName,
 		LastName:              lastName,
 		Picture:               picture,
+		AccessToken:           res.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          res.RefreshToken,
 	}
