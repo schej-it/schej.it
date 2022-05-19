@@ -32,7 +32,6 @@ type UserProfile struct {
 
 // Get a UserProfile object from the given User object
 func (u *User) GetProfile() UserProfile {
-
 	tmp, err := json.Marshal(u)
 	if err != nil {
 		panic(err)
@@ -45,41 +44,3 @@ func (u *User) GetProfile() UserProfile {
 	}
 	return profile
 }
-
-// If access token has expired, get a new token, update the user object, and save it to the database
-/*func (u *User) RefreshTokenIfNecessary() {
-	if time.Now().After(u.AccessTokenExpireDate.Time()) {
-		// Refresh token by calling google token endpoint
-		values := url.Values{
-			"client_id":     {os.Getenv("CLIENT_ID")},
-			"client_secret": {os.Getenv("CLIENT_SECRET")},
-			"grant_type":    {"refresh_token"},
-			"refresh_token": {u.RefreshToken},
-		}
-		resp, err := http.PostForm(
-			"https://oauth2.googleapis.com/token",
-			values,
-		)
-		if err != nil {
-			panic(err)
-		}
-		res := struct {
-			AccessToken string `json:"access_token"`
-			ExpiresIn   int    `json:"expires_in"`
-			Scope       string `json:"scope"`
-			TokenType   string `json:"token_type"`
-		}{}
-		json.NewDecoder(resp.Body).Decode(&res)
-
-		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
-		u.AccessToken = res.AccessToken
-		u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
-
-		db.UsersCollection.FindOneAndUpdate(
-			context.Background(),
-			bson.M{"email": u.Email},
-			bson.M{"$set": u},
-		)
-	}
-}
-*/

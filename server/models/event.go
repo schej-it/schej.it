@@ -17,6 +17,6 @@ type Event struct {
 // A response object containing an array of times that the given user is available
 type Response struct {
 	UserId       primitive.ObjectID `json:"userId" bson:"userId" binding:"required"`
-	User         User               `json:"user" bson:"user"`
+	User         UserProfile        `json:"user" bson:"user"`
 	Availability []string           `json:"availability" bson:"availability" binding:"required"`
 }

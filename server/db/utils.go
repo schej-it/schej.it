@@ -2,8 +2,15 @@ package db
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -43,32 +50,43 @@ func GetEventById(eventId string) *models.Event {
 	}
 
 	return &event
+}
 
-	/*
-		cursor, err := EventsCollection.Aggregate(context.Background(), []bson.M{
-			{"$match": bson.M{"_id": utils.StringToObjectID(eventId)}},
-			{"$objectToArray": "$responses"},
-			{"$unwind": "$responses"},
-			{"$lookup": bson.M{
-				"from":         "users",
-				"localField":   "responses.userId",
-				"foreignField": "_id",
-				"as":           "responses.user",
-			}},
-		})
+// If access token has expired, get a new token, update the user object, and save it to the database
+func RefreshUserTokenIfNecessary(u *models.User) {
+	if time.Now().After(u.AccessTokenExpireDate.Time()) {
+		fmt.Println("REFRESHING TOKEN")
+
+		// Refresh token by calling google token endpoint
+		values := url.Values{
+			"client_id":     {os.Getenv("CLIENT_ID")},
+			"client_secret": {os.Getenv("CLIENT_SECRET")},
+			"grant_type":    {"refresh_token"},
+			"refresh_token": {u.RefreshToken},
+		}
+		resp, err := http.PostForm(
+			"https://oauth2.googleapis.com/token",
+			values,
+		)
 		if err != nil {
 			panic(err)
 		}
-		var events []models.Event
-		if err := cursor.All(context.Background(), &events); err != nil {
-			panic(err)
-		}
+		res := struct {
+			AccessToken string `json:"access_token"`
+			ExpiresIn   int    `json:"expires_in"`
+			Scope       string `json:"scope"`
+			TokenType   string `json:"token_type"`
+		}{}
+		json.NewDecoder(resp.Body).Decode(&res)
 
-		if len(events) == 0 {
-			// Event does not exist!
-			return nil
-		}
+		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
+		u.AccessToken = res.AccessToken
+		u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
 
-		return &events[0]
-	*/
+		UsersCollection.FindOneAndUpdate(
+			context.Background(),
+			bson.M{"email": u.Email},
+			bson.M{"$set": u},
+		)
+	}
 }

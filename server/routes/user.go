@@ -80,6 +80,10 @@ func getCalendar(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 
+	// Refresh token if necessary
+	user, _ := c.Get("authUser")
+	db.RefreshUserTokenIfNecessary(user.(*models.User))
+
 	// Call the google calendar API to get a list of calendar events from the user's gcal
 	// TODO: get events for all user's calendars, not just primary
 	min, _ := payload.TimeMin.MarshalText()
@@ -117,6 +121,12 @@ func getCalendar(c *gin.Context) {
 	var res Response
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		panic(err)
+	}
+
+	// Check if the response returned an error
+	if res.Error != nil {
+		c.JSON(http.StatusInternalServerError, res)
+		return
 	}
 
 	// Format response to return

@@ -79,7 +79,7 @@ func getEvent(c *gin.Context) {
 
 	// Populate user fields
 	for userId, response := range event.Responses {
-		response.User = *db.GetUserById(userId)
+		response.User = db.GetUserById(userId).GetProfile()
 		event.Responses[userId] = response
 	}
 
