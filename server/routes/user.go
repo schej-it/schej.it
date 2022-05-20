@@ -2,18 +2,16 @@ package routes
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
+	"schej.it/server/responses"
 	"schej.it/server/utils"
 )
 
@@ -78,68 +76,29 @@ func getCalendar(c *gin.Context) {
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
-	session := sessions.Default(c)
 
 	// Refresh token if necessary
-	user, _ := c.Get("authUser")
-	db.RefreshUserTokenIfNecessary(user.(*models.User))
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	db.RefreshUserTokenIfNecessary(user)
 
-	// Call the google calendar API to get a list of calendar events from the user's gcal
-	// TODO: get events for all user's calendars, not just primary
-	min, _ := payload.TimeMin.MarshalText()
-	max, _ := payload.TimeMax.MarshalText()
-	fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=%s&timeMax=%s\n", min, max)
-	req, err := http.NewRequest(
-		"GET",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=%s&timeMax=%s&singleEvents=true", min, max),
-		nil,
-	)
+	calendars, err := utils.GetCalendarList(user.AccessToken)
 	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", session.Get("accessToken")))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	// Define some structs to parse the json response
-	type TimeInfo struct {
-		DateTime time.Time `json:"dateTime" binding:"required"`
-	}
-	type Item struct {
-		Summary string   `json:"summary"`
-		Start   TimeInfo `json:"start"`
-		End     TimeInfo `json:"end"`
-	}
-	type Response struct {
-		Items []Item      `json:"items"`
-		Error interface{} `json:"error"`
-	}
-
-	// Parse the response
-	var res Response
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		panic(err)
-	}
-
-	// Check if the response returned an error
-	if res.Error != nil {
-		c.JSON(http.StatusInternalServerError, res)
+		c.JSON(err.Code, responses.Error{Error: *err})
 		return
 	}
 
-	// Format response to return
+	// Call the google calendar API to get a list of calendar events from the user's gcal
+	// TODO: get events for all user's calendars, not just primary
 	calendarEvents := make([]models.CalendarEvent, 0)
-	for _, item := range res.Items {
-		// Filter out invalid dates and restructure
-		if payload.TimeMin.Before(item.Start.DateTime) && payload.TimeMax.After(item.End.DateTime) {
-			calendarEvents = append(calendarEvents, models.CalendarEvent{
-				Summary:   item.Summary,
-				StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
-				EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
-			})
+	for _, calendar := range calendars {
+		events, err := utils.GetCalendarEvents(user.AccessToken, calendar.Id, payload.TimeMin, payload.TimeMax)
+		if err != nil {
+			c.JSON(err.Code, responses.Error{Error: *err})
+			return
 		}
+
+		calendarEvents = append(calendarEvents, events...)
 	}
 
 	c.JSON(http.StatusOK, calendarEvents)

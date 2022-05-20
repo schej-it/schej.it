@@ -78,7 +78,7 @@ export default {
         }))
     }).catch(err => {
       console.error(err)
-      if (err.code === 401) {
+      if (err.code === 401 || err.code === 403) {
         signInGoogle({ type: 'join', eventId: this.eventId })
       }
     })

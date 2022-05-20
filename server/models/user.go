@@ -15,10 +15,20 @@ type User struct {
 	LastName  string             `json:"lastName" bson:"lastName" binding:"required"`
 	Picture   string             `json:"picture" bson:"picture" binding:"required"`
 
+	// Calendars maps the calendar's id to the calendar object
+	Calendars map[string]Calendar `json:"calendars" bson:"calendars" binding:"required"`
+
 	// Google OAuth stuff
-	AccessToken           string             `json:"accessToken" binding:"required"`
+	AccessToken           string             `json:"accessToken" bson:"accessToken" binding:"required"`
 	AccessTokenExpireDate primitive.DateTime `json:"accessTokenExpireDate" bson:"accessTokenExpireDate" binding:"required"`
 	RefreshToken          string             `json:"refreshToken" bson:"refreshToken" binding:"required"`
+}
+
+// Calendar contains information about a user's calendar
+type Calendar struct {
+	Id       string `json:"id" bson:"id" binding:"required"`
+	Summary  string `json:"summary" bson:"summary" binding:"required"`
+	Selected bool   `json:"selected" bson:"selected" binding:"required"`
 }
 
 // User profile to return as json to frontend

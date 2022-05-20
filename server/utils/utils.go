@@ -3,12 +3,16 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/brianvoe/sjwt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"schej.it/server/errors"
+	"schej.it/server/models"
 )
 
 func PrintJson(s gin.H) {
@@ -51,4 +55,109 @@ func GetAccessTokenExpireDate(expiresIn int) time.Time {
 		panic(err)
 	}
 	return time.Now().Add(expireDuration)
+}
+
+// Get the user's list of calendars
+func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIError) {
+	// TODO: update user object with calendars and allow for customization of whether or not to show calendar in schedule
+	req, err := http.NewRequest(
+		"GET",
+		"https://www.googleapis.com/calendar/v3/users/me/calendarList",
+		nil,
+	)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	// Define stucts to parse json response
+	type Response struct {
+		Items []models.Calendar     `json:"items"`
+		Error errors.GoogleAPIError `json:"error"`
+	}
+
+	// Parse the response
+	var res Response
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		panic(err)
+	}
+
+	// Check if the response returned an error
+	if res.Error.Errors != nil {
+		return nil, &res.Error
+	}
+
+	// Append only the selected calendars
+	calendars := make([]models.Calendar, 0)
+	for _, calendar := range res.Items {
+		if calendar.Selected {
+			calendars = append(calendars, calendar)
+		}
+	}
+
+	return calendars, nil
+}
+
+// Get the user's list of calendar events for the given calendar
+func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errors.GoogleAPIError) {
+	min, _ := timeMin.MarshalText()
+	max, _ := timeMax.MarshalText()
+	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
+	req, err := http.NewRequest(
+		"GET",
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
+		nil,
+	)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	// Define some structs to parse the json response
+	type TimeInfo struct {
+		DateTime time.Time `json:"dateTime" binding:"required"`
+	}
+	type Item struct {
+		Summary string   `json:"summary"`
+		Start   TimeInfo `json:"start"`
+		End     TimeInfo `json:"end"`
+	}
+	type Response struct {
+		Items []Item                `json:"items"`
+		Error errors.GoogleAPIError `json:"error"`
+	}
+
+	// Parse the response
+	var res Response
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		panic(err)
+	}
+
+	// Check if the response returned an error
+	if res.Error.Errors != nil {
+		return nil, &res.Error
+	}
+
+	// Format response to return
+	calendarEvents := make([]models.CalendarEvent, 0)
+	for _, item := range res.Items {
+		// Filter out invalid dates and restructure
+		if timeMin.Before(item.Start.DateTime) && timeMax.After(item.End.DateTime) {
+			calendarEvents = append(calendarEvents, models.CalendarEvent{
+				Summary:   item.Summary,
+				StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
+				EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
+			})
+		}
+	}
+
+	return calendarEvents, nil
 }

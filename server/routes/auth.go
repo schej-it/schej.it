@@ -115,7 +115,6 @@ func signIn(c *gin.Context) {
 	// Set session variables
 	session := sessions.Default(c)
 	session.Set("userId", userId.Hex())
-	session.Set("accessToken", res.AccessToken)
 	session.Save()
 
 	c.JSON(http.StatusOK, gin.H{})
