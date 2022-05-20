@@ -1,0 +1,1 @@
+cd frontend && code . && cd ../server && code .

@@ -2,6 +2,7 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+// Representation of an Event in the mongoDB database
 type Event struct {
 	Id        primitive.ObjectID  `json:"_id" bson:"_id,omitempty" binding:"required"`
 	OwnerId   primitive.ObjectID  `json:"ownerId" bson:"ownerId" binding:"required"`
@@ -13,8 +14,9 @@ type Event struct {
 	Responses map[string]Response `json:"responses" bson:"responses" binding:"required"`
 }
 
+// A response object containing an array of times that the given user is available
 type Response struct {
 	UserId       primitive.ObjectID `json:"userId" bson:"userId" binding:"required"`
-	User         User               `json:"user" bson:"user"`
+	User         UserProfile        `json:"user" bson:"user"`
 	Availability []string           `json:"availability" bson:"availability" binding:"required"`
 }
