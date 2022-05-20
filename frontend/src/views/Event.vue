@@ -8,7 +8,13 @@
         class="tw-font-light tw-text-lg"
       >{{ dateString }}</div>
     </div>
+    <div v-if="isEditing" class="tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
+      <div class="tw-text-white">Editing...</div>
+      <v-spacer />
+      <v-btn @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
+    </div>
     <ScheduleOverlap
+      ref="scheduleOverlap"
       :eventId="eventId" 
       v-bind="event"
       :calendarEvents="calendarEvents"
@@ -38,6 +44,7 @@ export default {
   data: () => ({
     calendarEvents: [],
     event: null,
+    scheduleOverlapComponent: null
   }),
 
   computed: {
@@ -47,6 +54,9 @@ export default {
     },
     initialShowCalendarEvents() {
       return !(this.authUser._id in this.event.responses)
+    },
+    isEditing() {
+      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
     },
   },
 
@@ -59,7 +69,10 @@ export default {
       this.event = await get(`/events/${this.eventId}`)
       this.event.startDate = new Date(this.event.startDate)
       this.event.endDate = new Date(this.event.endDate)
-    }
+    },
+    resetEditing() {
+      if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
+    },
   },
 
   async created() {
@@ -82,11 +95,16 @@ export default {
         signInGoogle({ type: 'join', eventId: this.eventId })
       }
     })
+  },
 
-    /*post(`/events/${this.eventId}/response`, {
-      availability: ['lmao', 'what', 'cool'],
-    }).then(console.log).catch(console.error)*/
-    //document.querySelector('.v-main').addEventListener('scroll', this.test)
+  watch: {
+    event() {
+      if (this.event) {
+        this.$nextTick(() => {
+          this.scheduleOverlapComponent = this.$refs.scheduleOverlap
+        })
+      }
+    },
   },
 }
 </script>

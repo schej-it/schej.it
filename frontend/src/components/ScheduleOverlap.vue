@@ -8,8 +8,8 @@
         class="tw-flex-1"
       >
         <div class="tw-text-center">
-          <div class="tw-uppercase tw-font-light tw-text-xs">{{ day.dayText }}</div>
-          <div class="tw-text-lg">{{ day.date }}</div>
+          <div class="tw-uppercase tw-font-light tw-text-xs">{{ day.dateString }}</div>
+          <div class="tw-text-lg tw-capitalize">{{ day.dayText }}</div>
         </div>
       </div>
     </div>
@@ -177,11 +177,12 @@ export default {
       /* Return the days that are encompassed by startDate and endDate */
       const days = []
       const daysOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-      let curDate = this.startDate 
+      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+      let curDate = this.startDate
       while (curDate.getTime() <= this.endDate.getTime())  {
         days.push({
           dayText: daysOfWeek[curDate.getDay()],
-          date: curDate.getDate(),
+          dateString: months[curDate.getMonth()] + ' ' + curDate.getDate(),
           dateObject: curDate,
         })
         curDate = getDateDayOffset(curDate, 1)
@@ -248,7 +249,6 @@ export default {
     async setAvailability() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
-      // TODO: there is a bug where it still sets your availability if the event length is 30 minutes
       this.availability = new Set()
       for (const d in this.days) {
         const day = this.days[d]
@@ -301,8 +301,9 @@ export default {
             'tw-bg-avail-green-200', 
             'tw-bg-avail-green-300', 
             'tw-bg-avail-green-400', 
-            'tw-bg-light-blue', 
-            //'tw-bg-avail-green-600',
+            'tw-bg-avail-green-500',
+            //'tw-bg-light-blue', 
+            'tw-bg-avail-green-600',
           ] 
           c += colors[parseInt(frac*colors.length-1)] + ' '
         }
