@@ -4,7 +4,7 @@
     top
     :color="color"
   >
-    {{ text }}
+    <span class="tw-text-sm sm:tw-text-base">{{ text }}</span>
     <v-btn
       text
       @click="show = false"

@@ -24,7 +24,7 @@
         </div>
       </div>
       <div class="tw-flex-1">
-        <div class="tw-flex">
+        <div id="times" class="tw-flex">
           <div 
             v-for="day, d in days" 
             :key="d"
@@ -36,25 +36,10 @@
               :key="t"
               class="tw-w-full"  
             >
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <div 
-                    class="tw-h-5 tw-border-light-gray tw-border-r" 
-                    :class="timeslotClass(day, time, d, t)"
-                    v-bind="attrs"
-                    v-on="on"
-                  />
-                </template>
-                <div>
-                  <div>Available:</div>
-                  <div 
-                    v-for="user in getRespondentsForDateTime(day.dateObject, time.timeInt)"
-                    :key="user._id"
-                  >
-                    {{ user.firstName }}
-                  </div>
-                </div>
-              </v-tooltip>
+              <div 
+                class="timeslot tw-h-5 tw-border-light-gray tw-border-r" 
+                :class="timeslotClass(day, time, d, t)"
+              />
             </div>
             
             <!-- Calendar events -->
@@ -62,7 +47,7 @@
               <div
                 v-for="event, e in calendarEventsByDay[d]" 
                 :key="`${d}-${e}`"
-                class="tw-absolute tw-w-full tw-p-px"
+                class="tw-absolute tw-w-full tw-p-px tw-select-none"
                 :style="event.style"
               >
                 <div
@@ -104,7 +89,7 @@
 </template>
 
 <script>
-import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt, post } from '@/utils'
+import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt, post, onLongPress, isBetween, clamp } from '@/utils'
 import { mapActions, mapState } from 'vuex'
 
 export default {
@@ -130,6 +115,20 @@ export default {
       max: 0, // The max number of respondents for a given timeslot
       showCalendarEvents: this.initialShowCalendarEvents, 
       availability: new Set(), // Current availability of the current user, an array of dates
+
+      /* Variables for drag stuff */
+      DRAG_TYPES: {
+        ADD: 'add',
+        REMOVE: 'remove',
+      },
+      timeslot: {
+        width: 0,
+        height: 0,
+      },
+      dragging: false,
+      dragType: 'add',
+      dragStart: null,
+      dragCur: null,
     }
   },
 
@@ -166,13 +165,6 @@ export default {
       }
       return arr
     },
-    currentResponse() {
-      /* Returns a response object for the current user */
-      return {
-        name: 'jony',
-        availability: this.availabilityArray,
-      }
-    },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
       const days = []
@@ -198,7 +190,7 @@ export default {
           const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           
-          for (const response of [...Object.values(this.responses), /*this.currentResponse*/]) {
+          for (const response of Object.values(this.responses)) {
             const index = response.availability.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
@@ -272,6 +264,10 @@ export default {
       this.$emit('refreshEvent')
       this.showInfo('All done! Your availability has been set automatically')
     },
+    setTimeslotSize() {
+      /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
+      ({ width: this.timeslot.width, height: this.timeslot.height } = document.querySelector('.timeslot').getBoundingClientRect())
+    },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
       let c = ''
@@ -286,9 +282,20 @@ export default {
       // Fill style
       if (this.showCalendarEvents) {
         // Show only current user availability
-        const date = getDateWithTimeInt(day.dateObject, time.timeInt)
-        if (this.availability.has(date.getTime())) {
-          c += 'tw-bg-avail-green-300 '
+
+        const inDragRange = this.inDragRange(d, t)
+        if (inDragRange) {
+          // Set style if drag range goes over the current timeslot
+          if (this.dragType === this.DRAG_TYPES.ADD) {
+            c += 'tw-bg-avail-green-300 '
+          } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
+          }
+        } else {
+          // Otherwise just show the current availability
+          const date = getDateWithTimeInt(day.dateObject, time.timeInt)
+          if (this.availability.has(date.getTime())) {
+            c += 'tw-bg-avail-green-300 '
+          }
         }
       } else {
         // Show everyone's availability
@@ -303,13 +310,55 @@ export default {
             'tw-bg-avail-green-400', 
             'tw-bg-avail-green-500',
             //'tw-bg-light-blue', 
-            'tw-bg-avail-green-600',
+            //'tw-bg-avail-green-600',
           ] 
           c += colors[parseInt(frac*colors.length-1)] + ' '
         }
       }
 
       return c
+    },
+
+    /* Drag Stuff */
+    normalizeXY(e) {
+      /* Normalize the touch event to be relative to element */
+      const { pageX, pageY } = e.touches[0]
+      const { left, top } = e.currentTarget.getBoundingClientRect()
+      const x = pageX - left
+      const y = pageY - top
+      return { x, y }
+    },
+    getDateFromXY(x, y) {
+      /* Returns a date for the timeslot we are currently hovering over given the x and y position */
+      const { width, height } = this.timeslot
+      let dayIndex = Math.floor(x/width)
+      let timeIndex = Math.floor(y/height)
+      dayIndex = clamp(dayIndex, 0, this.days.length-1)
+      timeIndex = clamp(timeIndex, 0, this.times.length-1)
+
+      return { dayIndex, timeIndex, date: getDateWithTimeInt(this.days[dayIndex].dateObject, this.times[timeIndex].timeInt) }
+    },
+    endDrag() {
+      if (!this.showCalendarEvents) return
+      
+      this.dragging = false
+      this.dragStart = null
+      this.dragCur = null
+    },
+    inDragRange(dayIndex, timeIndex) {
+      /* Returns whether the given day and time index is within the drag range */
+      if (this.dragging) {
+        return (
+          ( 
+            isBetween(dayIndex, this.dragStart.dayIndex, this.dragCur.dayIndex) ||
+            isBetween(dayIndex, this.dragCur.dayIndex, this.dragStart.dayIndex)
+          ) &&
+          (
+            isBetween(timeIndex, this.dragStart.timeIndex, this.dragCur.timeIndex) ||
+            isBetween(timeIndex, this.dragCur.timeIndex, this.dragStart.timeIndex)
+          )
+        )
+      }
     },
   },
 
@@ -326,6 +375,54 @@ export default {
       this.availability = new Set()
       this.responses[this.authUser._id].availability.forEach(item => this.availability.add(new Date(item).getTime()))
     }
+  },
+
+  mounted() {
+    // Get timeslot size
+    this.setTimeslotSize()
+    window.addEventListener('resize', this.setTimeslotSize)
+
+    /*console.log(document.getElementById('times'))
+    onLongPress(document.getElementById('times'), (element) => {
+      console.log('long press!')
+    }, true)*/
+
+    const timesEl = document.getElementById('times')
+
+    timesEl.addEventListener('touchstart', e => {
+      if (!this.showCalendarEvents) return
+
+      this.dragging = true
+      const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
+      this.dragStart = { dayIndex, timeIndex }
+      this.dragCur = { dayIndex, timeIndex }
+
+      // Set drag type
+      if (this.availability.has(date.getTime())) {
+        this.dragType = this.DRAG_TYPES.REMOVE
+      } else {
+        this.dragType = this.DRAG_TYPES.ADD
+      }
+
+      /*
+      if (this.availability.has(date.getTime())) {
+        this.availability.delete(date.getTime())
+      } else {
+        this.availability.add(date.getTime())
+      }
+      this.availability = new Set(this.availability)
+      */
+    })
+    timesEl.addEventListener('touchmove', e => {
+      if (!this.showCalendarEvents) return
+
+      e.preventDefault()
+      const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
+      this.dragCur = { dayIndex, timeIndex }
+    })
+
+    timesEl.addEventListener('touchend', this.endDrag)
+    timesEl.addEventListener('touchcancel', this.endDrag)
   },
 }
 </script>

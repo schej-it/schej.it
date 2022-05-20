@@ -9,7 +9,7 @@
       >{{ dateString }}</div>
     </div>
     <div v-if="isEditing" class="tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
-      <div class="tw-text-white">Editing...</div>
+      <div class="tw-text-white tw-text-sm">Tap and hold to edit availability</div>
       <v-spacer />
       <v-btn @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
     </div>

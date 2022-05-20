@@ -165,3 +165,41 @@ export const signInGoogle = (state=null) => {
   
   window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${stateString}`
 }
+
+export const onLongPress = (element, callback, capture=false) => {
+  var timeoutId;
+
+  element.addEventListener('touchstart', function(e) {
+      timeoutId = setTimeout(function() {
+          timeoutId = null;
+          e.stopPropagation();
+          callback(e.target);
+      }, 500);
+  }, capture);
+
+  element.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+  }, capture);
+
+  element.addEventListener('touchend', function () {
+      if (timeoutId) clearTimeout(timeoutId);
+  }, capture);
+
+  element.addEventListener('touchmove', function () {
+      if (timeoutId) clearTimeout(timeoutId);
+  }, capture);
+}
+
+export const isBetween = (value, lower, upper, inclusive=true) => {
+  if (inclusive) {
+    return value >= lower && value <= upper
+  } else {
+    return value > lower && value < upper
+  }
+}
+
+export const clamp = (value, lower, upper) => {
+  if (value < lower) return lower
+  if (value > upper) return upper
+  return value
+}
