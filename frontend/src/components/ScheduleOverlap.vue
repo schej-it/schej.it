@@ -39,6 +39,7 @@
               <div 
                 class="timeslot tw-h-5 tw-border-light-gray tw-border-r" 
                 :class="timeslotClass(day, time, d, t)"
+                v-on="timeslotVon(d, t)"
               />
             </div>
             
@@ -85,6 +86,30 @@
         </template>
       </div>
     </div>
+
+    <v-bottom-sheet
+      v-model="availabilityBottomSheet"
+      hide-overlay
+      persistent
+    >
+      <v-sheet class="tw-h-32 tw-pt-2">
+        <div class="tw-flex tw-items-center tw-px-2">
+          <div class="tw-font-medium">Availability:</div>
+          <v-spacer />
+          <v-btn icon small @click="availabilityBottomSheet = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>
+        <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-auto tw-max-h-20 tw-pl-4 tw-text-sm">
+          <div v-for="user, i in curTimeslotAvailability.available" :key="i" class="tw-max-w-full tw-truncate">
+            {{ user.firstName + ' ' + user.lastName }}
+          </div>
+          <div v-for="user, i in curTimeslotAvailability.unavailable" :key="`unavailable-${i}`" class="tw-line-through tw-text-gray">
+            {{ user.firstName + ' ' + user.lastName }}
+          </div>
+        </div>
+      </v-sheet>
+    </v-bottom-sheet>
   </div>
 </template>
 
@@ -117,6 +142,13 @@ export default {
       availability: new Set(), // Current availability of the current user, an array of dates
       editing: false, // Whether editing the current user's availability
       unsavedChanges: false, // Whether there are unsaved availability changes
+
+      availabilityBottomSheet: false, // Whether to show the bottom sheet with people's availability
+      curTimeslotAvailability: {
+        available: [],
+        unavailable: [],
+      }, // An object containing the people that are available and unavailable for the given timeslot  
+      selectedTimeslot: { dayIndex: -1, timeIndex: -1 },
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -183,6 +215,9 @@ export default {
       }
 
       return days
+    },
+    respondents() {
+      return Object.values(this.responses).map(r => r.user)
     },
     responsesFormatted() {
       /* Formats the responses in a map where date/time is mapped to the people that are available then */
@@ -269,6 +304,17 @@ export default {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
       ({ width: this.timeslot.width, height: this.timeslot.height } = document.querySelector('.timeslot').getBoundingClientRect())
     },
+    showAvailability(d, t) {
+      this.selectedTimeslot = { dayIndex: d, timeIndex: t }
+      const available = this.getRespondentsForDateTime(this.days[d].dateObject, this.times[t].timeInt) 
+      const availableIds = [...available].map(a => a._id)
+      const unavailable = this.respondents.filter(r => !availableIds.includes(r._id))
+      this.curTimeslotAvailability = {
+        available,
+        unavailable,
+      }
+      this.availabilityBottomSheet = true
+    },
     async submitAvailability() {
       await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
       this.$emit('refreshEvent')
@@ -280,11 +326,19 @@ export default {
       let c = ''
       
       // Border style
-      if (!('text' in time)) c += 'tw-border-b '
-      if (d === 0) c += 'tw-border-l tw-border-l-gray '
-      if (d === this.days.length-1) c += 'tw-border-r-gray '
-      if (t === 0) c+= 'tw-border-t tw-border-t-gray '
-      if (t === this.times.length-1) c += 'tw-border-b-gray '
+      if (
+        this.availabilityBottomSheet && 
+        this.selectedTimeslot.dayIndex === d && 
+        this.selectedTimeslot.timeIndex === t  
+      ) {
+        c += 'tw-border tw-border-dashed tw-border-black tw-z-10 '
+      } else {
+        if (!('text' in time)) c += 'tw-border-b '
+        if (d === 0) c += 'tw-border-l tw-border-l-gray '
+        if (d === this.days.length-1) c += 'tw-border-r-gray '
+        if (t === 0) c+= 'tw-border-t tw-border-t-gray '
+        if (t === this.times.length-1) c += 'tw-border-b-gray '
+      }
 
       // Fill style
       if (this.showCalendarEvents) {
@@ -329,8 +383,16 @@ export default {
       if (this.showCalendarEvents && this.unsavedChanges) {
         await this.submitAvailability()
       }
-      
+      this.availabilityBottomSheet = false
       this.showCalendarEvents = !this.showCalendarEvents
+    },
+    timeslotVon(d, t) {
+      if (!this.showCalendarEvents) {
+        return {
+          click: () => this.showAvailability(d, t)
+        }
+      }
+      return {}
     },
 
     /* Drag Stuff */
@@ -424,40 +486,42 @@ export default {
     this.setTimeslotSize()
     window.addEventListener('resize', this.setTimeslotSize)
 
-    const timesEl = document.getElementById('times')
+    if (!this.calendarOnly) {
+      const timesEl = document.getElementById('times')
 
-    onLongPress(timesEl, () => {
-      if (!this.showCalendarEvents || this.editing) return
-      
-      navigator.vibrate(10)
-      this.editing = true
-    }, true)
+      onLongPress(timesEl, () => {
+        if (!this.showCalendarEvents || this.editing) return
+        
+        navigator.vibrate(10)
+        this.editing = true
+      }, true)
 
-    timesEl.addEventListener('touchstart', e => {
-      if (!this.editing) return
+      timesEl.addEventListener('touchstart', e => {
+        if (!this.editing) return
 
-      this.dragging = true
-      const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
-      this.dragStart = { dayIndex, timeIndex }
-      this.dragCur = { dayIndex, timeIndex }
+        this.dragging = true
+        const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
+        this.dragStart = { dayIndex, timeIndex }
+        this.dragCur = { dayIndex, timeIndex }
 
-      // Set drag type
-      if (this.availability.has(date.getTime())) {
-        this.dragType = this.DRAG_TYPES.REMOVE
-      } else {
-        this.dragType = this.DRAG_TYPES.ADD
-      }
-    })
-    timesEl.addEventListener('touchmove', e => {
-      if (!this.editing) return
+        // Set drag type
+        if (this.availability.has(date.getTime())) {
+          this.dragType = this.DRAG_TYPES.REMOVE
+        } else {
+          this.dragType = this.DRAG_TYPES.ADD
+        }
+      })
+      timesEl.addEventListener('touchmove', e => {
+        if (!this.editing) return
 
-      e.preventDefault()
-      const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
-      this.dragCur = { dayIndex, timeIndex }
-    })
+        e.preventDefault()
+        const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
+        this.dragCur = { dayIndex, timeIndex }
+      })
 
-    timesEl.addEventListener('touchend', this.endDrag)
-    timesEl.addEventListener('touchcancel', this.endDrag)
+      timesEl.addEventListener('touchend', this.endDrag)
+      timesEl.addEventListener('touchcancel', this.endDrag)
+    }
   },
 }
 </script>
