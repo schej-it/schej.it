@@ -66,7 +66,7 @@
           <v-btn 
             class="tw-my-2"
             block
-            @click="showCalendarEvents = !showCalendarEvents"
+            @click="toggleShowCalendarEvents"
           >
             <template v-if="!showCalendarEvents">
               Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
@@ -325,6 +325,13 @@ export default {
 
       return c
     },
+    async toggleShowCalendarEvents() {
+      if (this.showCalendarEvents && this.unsavedChanges) {
+        await this.submitAvailability()
+      }
+      
+      this.showCalendarEvents = !this.showCalendarEvents
+    },
 
     /* Drag Stuff */
     normalizeXY(e) {
@@ -348,9 +355,13 @@ export default {
     endDrag() {
       if (!this.editing) return
 
+      if (!this.dragStart || !this.dragCur) return
+
       // Update availability set based on drag region
-      const timeInc = (this.dragCur.timeIndex - this.dragStart.timeIndex) / Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
-      const dayInc = (this.dragCur.dayIndex - this.dragStart.dayIndex) / Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
+      let dayInc = (this.dragCur.dayIndex - this.dragStart.dayIndex) / Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
+      let timeInc = (this.dragCur.timeIndex - this.dragStart.timeIndex) / Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
+      if (isNaN(dayInc)) dayInc = 1
+      if (isNaN(timeInc)) timeInc = 1
       let d = this.dragStart.dayIndex
       while (d != this.dragCur.dayIndex + dayInc) {
         let t = this.dragStart.timeIndex 

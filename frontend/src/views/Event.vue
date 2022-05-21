@@ -11,7 +11,7 @@
     <div v-if="isCalendarShown" class="tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
       <div class="tw-text-white tw-text-sm">
         <span v-if="isEditing">Editing...</span>
-        <span v-else>Tap and hold to edit availability</span>
+        <span v-else>Tap and hold calendar to enable editing</span>
       </div>
       <v-spacer />
       <v-btn v-if="isEditing" @click="resetEditing" small text class="tw-text-white">Reset</v-btn>

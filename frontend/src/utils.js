@@ -155,7 +155,7 @@ export const fetchMethod = (method, route, body={}) => {
 export const signInGoogle = (state=null) => {
   const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
   const redirectUri = 'http://localhost:8080/auth'
-  const scope = encodeURIComponent('openid email profile https://www.googleapis.com/auth/calendar.readonly')
+  const scope = encodeURIComponent('openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly')
   
   let stateString = ''
   if (state !== null) {
