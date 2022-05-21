@@ -8,11 +8,16 @@
         class="tw-font-light tw-text-lg"
       >{{ dateString }}</div>
     </div>
-    <div v-if="isEditing" class="tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
-      <div class="tw-text-white tw-text-sm">Tap and hold to edit availability</div>
+    <div v-if="isCalendarShown" class="tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
+      <div class="tw-text-white tw-text-sm">
+        <span v-if="isEditing">Editing...</span>
+        <span v-else>Tap and hold to edit availability</span>
+      </div>
       <v-spacer />
-      <v-btn @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
+      <v-btn v-if="isEditing" @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
+      <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
     </div>
+    <div v-else class="tw-h-8" />
     <ScheduleOverlap
       ref="scheduleOverlap"
       :eventId="eventId" 
@@ -55,8 +60,14 @@ export default {
     initialShowCalendarEvents() {
       return !(this.authUser._id in this.event.responses)
     },
-    isEditing() {
+    isCalendarShown() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
+    },
+    isEditing() {
+      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
+    },
+    areUnsavedChanges() {
+      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.unsavedChanges
     },
   },
 
@@ -72,6 +83,9 @@ export default {
     },
     resetEditing() {
       if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
+    },
+    saveChanges() {
+      if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.submitAvailability()
     },
   },
 

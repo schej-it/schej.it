@@ -113,8 +113,10 @@ export default {
   data() {
     return {
       max: 0, // The max number of respondents for a given timeslot
-      showCalendarEvents: this.initialShowCalendarEvents, 
+      showCalendarEvents: this.initialShowCalendarEvents, // Whether we are showing the current user's availability or aggregate availability
       availability: new Set(), // Current availability of the current user, an array of dates
+      editing: false, // Whether editing the current user's availability
+      unsavedChanges: false, // Whether there are unsaved availability changes
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -260,13 +262,18 @@ export default {
           }
         }
       }
-      await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
-      this.$emit('refreshEvent')
+      await this.submitAvailability()
       this.showInfo('All done! Your availability has been set automatically')
     },
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
       ({ width: this.timeslot.width, height: this.timeslot.height } = document.querySelector('.timeslot').getBoundingClientRect())
+    },
+    async submitAvailability() {
+      await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
+      this.$emit('refreshEvent')
+      this.unsavedChanges = false
+      this.editing = false
     },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
@@ -339,8 +346,28 @@ export default {
       return { dayIndex, timeIndex, date: getDateWithTimeInt(this.days[dayIndex].dateObject, this.times[timeIndex].timeInt) }
     },
     endDrag() {
-      if (!this.showCalendarEvents) return
-      
+      if (!this.editing) return
+
+      // Update availability set based on drag region
+      const timeInc = (this.dragCur.timeIndex - this.dragStart.timeIndex) / Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
+      const dayInc = (this.dragCur.dayIndex - this.dragStart.dayIndex) / Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
+      let d = this.dragStart.dayIndex
+      while (d != this.dragCur.dayIndex + dayInc) {
+        let t = this.dragStart.timeIndex 
+        while (t != this.dragCur.timeIndex + timeInc) {
+          const date = getDateWithTimeInt(this.days[d].dateObject, this.times[t].timeInt)
+          if (this.dragType === this.DRAG_TYPES.ADD) {
+            this.availability.add(date.getTime())
+          } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
+            this.availability.delete(date.getTime())
+          }
+          t += timeInc
+        }
+        d += dayInc 
+      }
+      this.availability = new Set(this.availability)
+
+      // Set dragging defaults
       this.dragging = false
       this.dragStart = null
       this.dragCur = null
@@ -363,6 +390,9 @@ export default {
   },
 
   watch: {
+    availability() {
+      this.unsavedChanges = true
+    },
     calendarEvents: {
       handler() {
         if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
@@ -374,6 +404,7 @@ export default {
     if (this.userHasResponded) {
       this.availability = new Set()
       this.responses[this.authUser._id].availability.forEach(item => this.availability.add(new Date(item).getTime()))
+      this.$nextTick(() => this.unsavedChanges = false)
     }
   },
 
@@ -382,15 +413,16 @@ export default {
     this.setTimeslotSize()
     window.addEventListener('resize', this.setTimeslotSize)
 
-    /*console.log(document.getElementById('times'))
-    onLongPress(document.getElementById('times'), (element) => {
-      console.log('long press!')
-    }, true)*/
-
     const timesEl = document.getElementById('times')
 
+    onLongPress(timesEl, () => {
+      if (!this.showCalendarEvents || this.editing) return
+      
+      this.editing = true
+    }, true)
+
     timesEl.addEventListener('touchstart', e => {
-      if (!this.showCalendarEvents) return
+      if (!this.editing) return
 
       this.dragging = true
       const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
@@ -403,18 +435,9 @@ export default {
       } else {
         this.dragType = this.DRAG_TYPES.ADD
       }
-
-      /*
-      if (this.availability.has(date.getTime())) {
-        this.availability.delete(date.getTime())
-      } else {
-        this.availability.add(date.getTime())
-      }
-      this.availability = new Set(this.availability)
-      */
     })
     timesEl.addEventListener('touchmove', e => {
-      if (!this.showCalendarEvents) return
+      if (!this.editing) return
 
       e.preventDefault()
       const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
