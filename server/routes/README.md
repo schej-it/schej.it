@@ -8,7 +8,6 @@ Visit https://github.com/swaggo/swag for a comprehensive overview of the swagger
 
 To generate swagger docs, make sure you have swag installed:
 ```
-go get -u github.com/swaggo/swag/cmd/swag@v1.6.7
 go install github.com/swaggo/swag/cmd/swag@v1.6.7
 ```
 
