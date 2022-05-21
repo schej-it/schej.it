@@ -429,6 +429,7 @@ export default {
     onLongPress(timesEl, () => {
       if (!this.showCalendarEvents || this.editing) return
       
+      navigator.vibrate(10)
       this.editing = true
     }, true)
 
