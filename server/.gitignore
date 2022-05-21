@@ -1,2 +1,4 @@
 tmp
 .env
+.vscode/*
+!.vscode/tasks.json
