@@ -1,5 +1,6 @@
 <template>
   <div class="tw-p-4">
+    <!-- Day header -->
     <div class="tw-flex">
       <div class="tw-w-12" />
       <div 
@@ -12,87 +13,107 @@
           <div class="tw-text-lg tw-capitalize">{{ day.dayText }}</div>
         </div>
       </div>
+      <div class="sm:tw-w-32" />
     </div>
-    <div class="tw-flex">
-      <div class="tw-w-12">
-        <div 
-          v-for="time, i in times"
-          :key="i"
-          class="tw-h-5 tw-text-xs tw-pt-1 tw-pr-2 tw-text-right tw-uppercase tw-font-light"  
-        >
-          {{ time.text }}
+
+    <div class="sm:tw-flex sm:tw-gap-4">
+      <div class="sm:tw-flex-1">
+        <!-- Times and grid -->
+        <div class="tw-flex">
+          <div class="tw-w-12">
+            <div 
+              v-for="time, i in times"
+              :key="i"
+              class="tw-h-5 tw-text-xs tw-pt-1 tw-pr-2 tw-text-right tw-uppercase tw-font-light"  
+            >
+              {{ time.text }}
+            </div>
+          </div>
+          <div class="tw-flex-1">
+            <div id="times" class="tw-flex tw-relative">
+              <!-- Loader -->
+              <div v-if="showCalendarEvents && loadingCalendarEvents" class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10">
+                <v-progress-circular class="tw-text-blue" indeterminate />
+              </div>
+
+              <div 
+                v-for="day, d in days" 
+                :key="d"
+                class="tw-flex-1 tw-relative"
+              >
+                <!-- Timeslots -->
+                <div 
+                  v-for="time, t in times"
+                  :key="t"
+                  class="tw-w-full"  
+                >
+                  <div 
+                    class="timeslot tw-h-5 tw-border-light-gray tw-border-r" 
+                    :class="timeslotClass(day, time, d, t)"
+                    v-on="timeslotVon(d, t)"
+                  />
+                </div>
+                
+                <!-- Calendar events -->
+                <template v-if="showCalendarEvents">
+                  <div
+                    v-for="event, e in calendarEventsByDay[d]" 
+                    :key="`${d}-${e}`"
+                    class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                    :style="event.style"
+                  >
+                    <div
+                      class="tw-bg-blue/25 tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                    >
+                      <div class="tw-text-blue tw-font-medium">
+                        {{ noEventNames ? 'BUSY' : event.summary }}
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <template v-if="!calendarOnly">
+              <v-btn 
+                class="tw-my-2"
+                block
+                @click="toggleShowCalendarEvents"
+              >
+                <template v-if="!showCalendarEvents">
+                  Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+                </template>
+                <template v-else>
+                  View suggested times 
+                </template>
+              </v-btn>
+              <v-btn
+                class="tw-mb-2"
+                block
+                @click="copyLink"
+              >
+                Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
+              </v-btn>
+            </template>
+          </div>
         </div>
       </div>
-      <div class="tw-flex-1">
-        <div id="times" class="tw-flex tw-relative">
-          <!-- Loader -->
-          <div v-if="showCalendarEvents && loadingCalendarEvents" class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10">
-            <v-progress-circular class="tw-text-blue" indeterminate />
+    
+      <div class="tw-hidden sm:tw-block sm:tw-w-32">
+        <div class="tw-font-medium tw-mb-2">Availability:</div>
+        <div class="tw-space-y-2 tw-pl-4 tw-text-sm">
+          <div v-for="user, i in curTimeslotAvailability.available" :key="i" class="tw-max-w-full tw-truncate">
+            {{ user.firstName + ' ' + user.lastName }}
           </div>
-
-          <div 
-            v-for="day, d in days" 
-            :key="d"
-            class="tw-flex-1 tw-relative"
-          >
-            <!-- Timeslots -->
-            <div 
-              v-for="time, t in times"
-              :key="t"
-              class="tw-w-full"  
-            >
-              <div 
-                class="timeslot tw-h-5 tw-border-light-gray tw-border-r" 
-                :class="timeslotClass(day, time, d, t)"
-                v-on="timeslotVon(d, t)"
-              />
-            </div>
-            
-            <!-- Calendar events -->
-            <template v-if="showCalendarEvents">
-              <div
-                v-for="event, e in calendarEventsByDay[d]" 
-                :key="`${d}-${e}`"
-                class="tw-absolute tw-w-full tw-p-px tw-select-none"
-                :style="event.style"
-              >
-                <div
-                  class="tw-bg-blue/25 tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
-                >
-                  <div class="tw-text-blue tw-font-medium">
-                    {{ noEventNames ? 'BUSY' : event.summary }}
-                  </div>
-                </div>
-              </div>
-            </template>
+          <div v-for="user, i in curTimeslotAvailability.unavailable" :key="`unavailable-${i}`" class="tw-line-through tw-text-gray">
+            {{ user.firstName + ' ' + user.lastName }}
           </div>
         </div>
-
-        <template v-if="!calendarOnly">
-          <v-btn 
-            class="tw-my-2"
-            block
-            @click="toggleShowCalendarEvents"
-          >
-            <template v-if="!showCalendarEvents">
-              Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
-            </template>
-            <template v-else>
-              View suggested times 
-            </template>
-          </v-btn>
-          <v-btn
-            class="tw-mb-2"
-            block
-            @click="copyLink"
-          >
-            Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
-          </v-btn>
-        </template>
       </div>
     </div>
 
     <v-bottom-sheet
+      v-if="isPhone"
       v-model="availabilityBottomSheet"
       hide-overlay
       persistent
@@ -119,7 +140,7 @@
 </template>
 
 <script>
-import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt, post, onLongPress, isBetween, clamp } from '@/utils'
+import { timeIntToTimeText, getDateDayOffset, dateCompare, compareDateDay, dateToTimeInt, getDateWithTimeInt, post, onLongPress, isBetween, clamp, isPhone } from '@/utils'
 import { mapActions, mapState } from 'vuex'
 
 export default {
@@ -221,6 +242,9 @@ export default {
       }
 
       return days
+    },
+    isPhone() {
+      return isPhone(this.$vuetify)
     },
     respondents() {
       return Object.values(this.responses).map(r => r.user)
@@ -395,7 +419,8 @@ export default {
     timeslotVon(d, t) {
       if (!this.showCalendarEvents) {
         return {
-          click: () => this.showAvailability(d, t)
+          click: () => this.showAvailability(d, t),
+          mouseover: () => this.showAvailability(d, t),
         }
       }
       return {}

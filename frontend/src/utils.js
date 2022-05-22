@@ -1,3 +1,5 @@
+import Vue from "vue"
+
 export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/api'
 export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
 
@@ -202,4 +204,8 @@ export const clamp = (value, lower, upper) => {
   if (value < lower) return lower
   if (value > upper) return upper
   return value
+}
+
+export const isPhone = (vuetify) => {
+  return vuetify.breakpoint.name === 'xs'
 }

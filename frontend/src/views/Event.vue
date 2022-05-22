@@ -1,12 +1,15 @@
 <template>
   <div v-if="event">
-    <div class="tw-bg-green tw-text-white tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2">
-      <div 
-        class="tw-font-bold tw-text-3xl"
-      >{{ event.name }}</div>
-      <div
-        class="tw-font-light tw-text-lg"
-      >{{ dateString }}</div>
+    <div class="tw-relative tw-bg-green tw-text-white tw-flex tw-justify-center">
+      <div class="tw-absolute tw-bg-green tw-h-full tw-w-screen" />
+      <div class="tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2 tw-z-10">
+        <div 
+          class="tw-font-bold tw-text-3xl"
+        >{{ event.name }}</div>
+        <div
+          class="tw-font-light tw-text-lg"
+        >{{ dateString }}</div>
+      </div>
     </div>
     <div v-if="isCalendarShown" class="tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
       <div class="tw-text-white tw-text-sm">

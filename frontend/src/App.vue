@@ -73,7 +73,7 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { get } from './utils';
+import { get, isPhone } from './utils';
 import AutoSnackbar from '@/components/AutoSnackbar'
 
 export default {
@@ -115,7 +115,7 @@ export default {
     },
     showBottomNavbar() {
       return (
-        this.$vuetify.breakpoint.name === 'xs' &&
+        isPhone(this.$vuetify) &&
         this.$route.name !== 'sign-in' &&
         this.$route.name !== 'join' &&
         this.$route.name !== 'auth'
