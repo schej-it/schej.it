@@ -7,31 +7,61 @@
       class="tw-h-14 tw-bg-green"
       dark
     >
-      <div class="tw-flex tw-items-center tw-justify-center tw-w-full tw-h-full">
+      <div class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto">
         <v-img
+          @click="navigate(0)"
           alt="Schej.it Logo"
-          class="shrink"
+          class="shrink tw-cursor-pointer"
           contain
           src="@/assets/logo_dark.svg"
           transition="scale-transition"
           width="120"
         />
+
+        <template v-if="!centerHeaderLogo">
+
+          <v-spacer />
+
+          <div
+            class="tw-absolute tw-h-full tw-hidden sm:tw-flex"
+          >
+            <div 
+              v-for="{ text, icon, route }, i in tabs"
+              :key="text"
+              class="tw-w-28 tw-flex tw-flex-col tw-justify-center tw-items-center tw-flex-1 tw-h-full tw-select-none tw-cursor-pointer tw-brightness-95 hover:tw-brightness-150"
+              :class="$route.name === route.name ? `tw-border-b-4 tw-border-white tw-border-solid tw-brightness-150` : ''"
+              @click="navigate(i)"
+            >
+              <v-icon class="tw-text-white">{{ icon }}</v-icon>
+              <div class="tw-text-white tw-text-sm">{{ text }}</div>
+            </div>
+          </div>
+
+          <v-spacer />
+
+          <v-avatar v-if="authUser">
+            <img :src="authUser.picture">
+          </v-avatar>
+
+        </template>
       </div>
     </div>
 
-    <v-main class="tw-overflow-y-auto">
-      <router-view v-if="loaded" />
+    <v-main class="tw-overflow-y-auto tw-flex tw-justify-center">
+      <div class="tw-max-w-6xl tw-mx-auto tw-h-full">
+        <router-view v-if="loaded" />
+      </div>
     </v-main>
 
     <div
-      v-if="showNavbar"
+      v-if="showBottomNavbar"
       class="tw-h-14 tw-bg-green tw-flex"
     >
       <div 
         v-for="{ text, icon, route }, i in tabs"
         :key="text"
-        class="tw-flex tw-flex-col tw-justify-center tw-items-center tw-flex-1 tw-h-full tw-select-none tw-cursor-pointer hover:tw-bg-dark-green"
-        :class="$route.name === route.name ? `tw-bg-dark-green` : ''"
+        class="tw-flex tw-flex-col tw-justify-center tw-items-center tw-flex-1 tw-h-full tw-select-none tw-cursor-pointer tw-brightness-95 hover:tw-brightness-150"
+        :class="$route.name === route.name ? `tw-border-b-4 tw-border-white tw-border-solid tw-brightness-150` : ''"
         @click="navigate(i)"
       >
         <v-icon class="tw-text-white">{{ icon }}</v-icon>
@@ -83,11 +113,17 @@ export default {
         this.$route.name !== 'auth'
       )
     },
-    showNavbar() {
+    showBottomNavbar() {
       return (
+        this.$vuetify.breakpoint.name === 'xs' &&
         this.$route.name !== 'sign-in' &&
         this.$route.name !== 'join' &&
         this.$route.name !== 'auth'
+      )
+    },
+    centerHeaderLogo() {
+      return (
+        this.$route.name === 'join'
       )
     },
   },
@@ -104,7 +140,7 @@ export default {
 
       let items = 0 // Counts the number of fixed height items (header and navbar)
       if (this.showHeader) items++
-      if (this.showNavbar) items++
+      if (this.showBottomNavbar) items++
 
       document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
     },
@@ -154,9 +190,15 @@ export default {
         }*/
       }
     },
+    '$vuetify.breakpoint.name': {
+      handler() {
+        this.fixHeight()
+      },
+    },
     $route: {
       immediate: true,
       handler() {
+        this.fixHeight()
         get('/auth/status').then(data => {
           this.redirectUser(true)
         }).catch(err => {

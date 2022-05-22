@@ -6,18 +6,20 @@
       v-model="dialog"
     />
 
-    <v-container class="pa-5">
-      <div class="headline font-weight-bold tw-mb-3">My events</div>
+    <div class="tw-p-4">
+      <div class="tw-text-2xl tw-font-bold tw-mb-3">My events</div>
+      
+      <div class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-2">
+        <EventItem 
+          class="tw-cursor-pointer"
+          v-for="event, i in events" 
+          :key="i"
+          :event="event" 
+          @click="goToEvent(event._id)"
+        />
+      </div>
 
-      <EventItem 
-        v-for="event, i in events" 
-        :key="i"
-        :event="event" 
-        @click="goToEvent(event._id)"
-        class="tw-mb-2"
-      />
-
-    </v-container>
+    </div>
 
     <!-- FAB -->
     <v-scale-transition appear origin="center">
