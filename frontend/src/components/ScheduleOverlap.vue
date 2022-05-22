@@ -30,7 +30,11 @@
             </div>
           </div>
           <div class="tw-flex-1">
-            <div id="times" class="tw-flex tw-relative">
+            <div 
+              id="times" 
+              class="tw-flex tw-relative"
+              @mouseleave="resetCurTimeslot"
+            >
               <!-- Loader -->
               <div v-if="showCalendarEvents && loadingCalendarEvents" class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10">
                 <v-progress-circular class="tw-text-blue" indeterminate />
@@ -175,7 +179,7 @@ export default {
         available: [],
         unavailable: [],
       }, // An object containing the people that are available and unavailable for the given timeslot  
-      selectedTimeslot: { dayIndex: -1, timeIndex: -1 },
+      curTimeslot: { dayIndex: -1, timeIndex: -1 },
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -335,7 +339,7 @@ export default {
       ({ width: this.timeslot.width, height: this.timeslot.height } = document.querySelector('.timeslot').getBoundingClientRect())
     },
     showAvailability(d, t) {
-      this.selectedTimeslot = { dayIndex: d, timeIndex: t }
+      this.curTimeslot = { dayIndex: d, timeIndex: t }
       const available = this.getRespondentsForDateTime(this.days[d].dateObject, this.times[t].timeInt) 
       const availableIds = [...available].map(a => a._id)
       const unavailable = this.respondents.filter(r => !availableIds.includes(r._id))
@@ -358,8 +362,8 @@ export default {
       // Border style
       if (
         this.availabilityBottomSheet && 
-        this.selectedTimeslot.dayIndex === d && 
-        this.selectedTimeslot.timeIndex === t  
+        this.curTimeslot.dayIndex === d && 
+        this.curTimeslot.timeIndex === t  
       ) {
         c += 'tw-border tw-border-dashed tw-border-black tw-z-10 '
       } else {
@@ -424,6 +428,13 @@ export default {
         }
       }
       return {}
+    },
+    resetCurTimeslot() {
+      this.curTimeslotAvailability = {
+        available: [],
+        unavailable: [],
+      }
+      this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
     },
 
     /* Drag Stuff */
