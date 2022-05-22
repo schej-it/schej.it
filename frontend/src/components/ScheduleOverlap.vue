@@ -24,7 +24,12 @@
         </div>
       </div>
       <div class="tw-flex-1">
-        <div id="times" class="tw-flex">
+        <div id="times" class="tw-flex tw-relative">
+          <!-- Loader -->
+          <div v-if="showCalendarEvents && loadingCalendarEvents" class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10">
+            <v-progress-circular class="tw-text-blue" indeterminate />
+          </div>
+
           <div 
             v-for="day, d in days" 
             :key="d"
@@ -128,6 +133,7 @@ export default {
     endTime: { type: Number, required: true },
     responses: { type: Object, default: () => ({}) },
 
+    loadingCalendarEvents: { type: Boolean, default: false },
     calendarEvents: { type: Array, required: true },
     initialShowCalendarEvents: { type: Boolean, default: true },
 

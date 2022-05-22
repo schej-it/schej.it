@@ -17,11 +17,11 @@
       <v-btn v-if="isEditing" @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
       <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
     </div>
-    <div v-else class="tw-h-8" />
     <ScheduleOverlap
       ref="scheduleOverlap"
       :eventId="eventId" 
       v-bind="event"
+      :loadingCalendarEvents="loading"
       :calendarEvents="calendarEvents"
       :initialShowCalendarEvents="initialShowCalendarEvents"
       @refreshEvent="refreshEvent"
@@ -47,6 +47,7 @@ export default {
   },
 
   data: () => ({
+    loading: true,
     calendarEvents: [],
     event: null,
     scheduleOverlapComponent: null
@@ -103,6 +104,8 @@ export default {
           startDate: clampDateToTimeInt(new Date(event.startDate), this.event.startTime, 'upper'),
           endDate: clampDateToTimeInt(new Date(event.endDate), this.event.endTime, 'lower'),
         }))
+      
+      this.loading = false
     }).catch(err => {
       console.error(err)
       if (err.code === 401 || err.code === 403) {
