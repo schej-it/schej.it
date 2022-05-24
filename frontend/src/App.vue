@@ -40,7 +40,7 @@
           <v-spacer />
 
           <v-avatar v-if="authUser">
-            <img :src="authUser.picture">
+            <img referrerpolicy="no-referrer" :src="authUser.picture">
           </v-avatar>
 
         </template>
