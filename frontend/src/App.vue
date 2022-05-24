@@ -110,7 +110,8 @@ export default {
     showHeader() {
       return (
         this.$route.name !== 'sign-in' &&
-        this.$route.name !== 'auth'
+        this.$route.name !== 'auth' &&
+        this.$route.name !== 'privacy-policy'
       )
     },
     showBottomNavbar() {
