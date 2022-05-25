@@ -140,6 +140,8 @@ func signOut(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Delete("userId")
 	session.Save()
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // @Summary Gets whether the user is signed in or not
