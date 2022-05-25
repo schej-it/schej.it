@@ -22,6 +22,7 @@ func InitAuth(router *gin.Engine) {
 	authRouter := router.Group("/auth")
 
 	authRouter.POST("/sign-in", signIn)
+	authRouter.POST("/sign-out", signOut)
 	authRouter.GET("/status", middleware.AuthRequired(), getStatus)
 }
 
@@ -118,6 +119,20 @@ func signIn(c *gin.Context) {
 	session.Save()
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Signs user out
+// @Description Signs user out and deletes the session
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /auth/sign-in [post]
+func signOut(c *gin.Context) {
+	// Delete session
+	session := sessions.Default(c)
+	session.Delete("userId")
+	session.Save()
 }
 
 // @Summary Gets whether the user is signed in or not

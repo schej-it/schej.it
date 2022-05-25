@@ -29,7 +29,7 @@ export default {
     startDate: getDateWithTime(new Date(), '0:00'),
     endDate: getDateWithTime(getDateDayOffset(new Date(), 2), '11:59'),
     startTime: 9,
-    endTime: 22,
+    endTime: 24,
     calendarEvents: [],
   }),
 

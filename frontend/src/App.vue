@@ -39,9 +39,7 @@
 
           <v-spacer />
 
-          <v-avatar v-if="authUser">
-            <img :src="authUser.picture">
-          </v-avatar>
+          <AuthUserMenu></AuthUserMenu>
 
         </template>
       </div>
@@ -75,13 +73,15 @@
 import { mapMutations, mapState } from 'vuex';
 import { get, isPhone } from './utils';
 import AutoSnackbar from '@/components/AutoSnackbar'
+import AuthUserMenu from './components/AuthUserMenu.vue';
 
 export default {
   name: 'App',
 
   components: {
     AutoSnackbar,
-  },
+    AuthUserMenu
+},
 
   data: () => ({
     loaded: false,
