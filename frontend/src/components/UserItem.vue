@@ -34,7 +34,7 @@
 
     <div >
       <v-switch
-        v-model="hideEventNames"
+        v-model="showEventNames"
         inset
       ></v-switch>
     </div>
@@ -50,8 +50,14 @@ export default {
     user: { type: Object, required: true },
   },
 
+  mounted() {
+      if (localStorage.showEventNames) {
+          this.showEventNames = localStorage.showEventNames
+      }
+  },
+
   data: () => ({
-      hideEventNames: 0,
+      showEventNames: true,
   }),
 
   computed: {
@@ -59,8 +65,9 @@ export default {
   },
 
   watch: {
-      hideEventNames(val) {
-          console.log(val)
+      showEventNames(val) {
+          localStorage.showEventNames = val
+          this.$emit("showEventNames", val)
       }
   },
 

@@ -67,9 +67,12 @@
                     :style="event.style"
                   >
                     <div
-                      class="tw-bg-blue/25 tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                      :class="`tw-bg-${noEventNames ? 'gray' : 'blue'}/25`"
+                      class="tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                     >
-                      <div class="tw-text-blue tw-font-medium">
+                      <div 
+                      :class="`tw-text-${noEventNames ? 'gray' : 'blue'}`"
+                      class="tw-font-medium">
                         {{ noEventNames ? 'BUSY' : event.summary }}
                       </div>
                     </div>

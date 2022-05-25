@@ -1,8 +1,8 @@
 <template>
   <div class="tw-p-4">
 
-    <UserItem :user="userItem" />
-    <TestCalendar :noEventNames="false" ref="calendar" />
+    <UserItem :user="userItem" @showEventNames="showEventNames"/>
+    <TestCalendar :noEventNames="hideEventNames" ref="calendar" />
 
     <v-scale-transition appear origin="center">
       <v-btn
@@ -35,6 +35,7 @@ export default {
   data() {
     return {
       output: '',
+      hideEventNames: false
     }
   },
 
@@ -53,6 +54,9 @@ export default {
   },
 
   methods: {
+    showEventNames(option) {
+      this.hideEventNames = !option
+    },
     async share() {
       let el = this.$refs.calendar.$el
       this.output = (await html2canvas(el)).toDataURL('image/png')
