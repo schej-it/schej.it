@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"log"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -9,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"schej.it/server/db"
+	"schej.it/server/logger"
 	"schej.it/server/routes"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -24,7 +29,40 @@ import (
 // @host localhost:3001
 
 func main() {
-	router := gin.Default()
+	// Init logfile
+	logFile, err := os.OpenFile("logs.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gin.DefaultWriter = io.MultiWriter(logFile, os.Stdout)
+
+	// Init logger
+	logger.Init(logFile)
+
+	// Init router
+	router := gin.New()
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		var statusColor, methodColor, resetColor string
+		if param.IsOutputColor() {
+			statusColor = param.StatusCodeColor()
+			methodColor = param.MethodColor()
+			resetColor = param.ResetColor()
+		}
+
+		if param.Latency > time.Minute {
+			param.Latency = param.Latency.Truncate(time.Second)
+		}
+		return fmt.Sprintf("%v |%s %3d %s| %13v | %15s |%s %-7s %s %#v\n%s",
+			param.TimeStamp.Format("2006/01/02 15:04:05"),
+			statusColor, param.StatusCode, resetColor,
+			param.Latency,
+			param.ClientIP,
+			methodColor, param.Method, resetColor,
+			param.Path,
+			param.ErrorMessage,
+		)
+	}))
+	router.Use(gin.Recovery())
 
 	// Load .env variables
 	loadDotEnv()

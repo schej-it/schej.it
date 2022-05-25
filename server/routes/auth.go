@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/db"
+	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -133,5 +134,6 @@ func signIn(c *gin.Context) {
 // @Failure 401 {object} responses.Error "Error object"
 // @Router /auth/status [get]
 func getStatus(c *gin.Context) {
+	logger.StdErr.Panicln("LMAOOOO")
 	c.JSON(http.StatusOK, gin.H{})
 }
