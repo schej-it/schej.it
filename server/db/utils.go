@@ -17,8 +17,13 @@ import (
 )
 
 func GetUserById(userId string) *models.User {
+	objectId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		// eventId is malformatted
+		return nil
+	}
 	result := UsersCollection.FindOne(context.Background(), bson.M{
-		"_id": utils.StringToObjectID(userId),
+		"_id": objectId,
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// User does not exist!
@@ -35,8 +40,13 @@ func GetUserById(userId string) *models.User {
 }
 
 func GetEventById(eventId string) *models.Event {
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		return nil
+	}
 	result := EventsCollection.FindOne(context.Background(), bson.M{
-		"_id": utils.StringToObjectID(eventId),
+		"_id": objectId,
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event does not exist!

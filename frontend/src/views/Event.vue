@@ -33,10 +33,11 @@
 </template>
 
 <script>
-import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post } from '@/utils'
-import { mapState } from 'vuex'
+import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS } from '@/utils'
+import { mapActions, mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
+import { errors } from '@/constants'
 
 export default {
   name: 'Event',
@@ -76,6 +77,7 @@ export default {
   },
 
   methods: {
+    ...mapActions([ 'showError' ]),
     test() {
       console.log(document.querySelector('.v-main').scrollTop)
     },
@@ -95,7 +97,16 @@ export default {
 
   async created() {
     // Get event details
-    this.event = await get(`/events/${this.eventId}`)
+    try {
+      this.event = await get(`/events/${this.eventId}`)
+    } catch (err) {
+      switch (err.error) {
+        case errors.EventNotFound:
+          this.showError('The specified event does not exist!')
+          this.$router.replace({ name: 'home' })
+          return
+      }
+    }
     this.event.startDate = new Date(this.event.startDate)
     this.event.endDate = new Date(this.event.endDate)
     
@@ -111,7 +122,7 @@ export default {
       this.loading = false
     }).catch(err => {
       console.error(err)
-      if (err.code === 401 || err.code === 403) {
+      if (err.error.code === 401 || err.error.code === 403) {
         signInGoogle({ type: 'join', eventId: this.eventId })
       }
     })

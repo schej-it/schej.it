@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -45,7 +46,7 @@ func getProfile(c *gin.Context) {
 func getEvents(c *gin.Context) {
 	session := sessions.Default(c)
 
-	var events []models.Event
+	events := make([]models.Event, 0)
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
 		"ownerId": utils.GetUserId(session),
 	})
@@ -55,6 +56,8 @@ func getEvents(c *gin.Context) {
 	if err := cursor.All(context.Background(), &events); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("events: ", events)
 
 	c.JSON(http.StatusOK, events)
 }

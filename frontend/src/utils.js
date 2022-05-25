@@ -1,13 +1,6 @@
 import Vue from "vue"
 
-export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/api'
-export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
-
-// Errors enum
-export const ERRORS = Object.freeze({
-  NOT_SIGNED_IN: "not-signed-in",
-  USER_DOES_NOT_EXIST: "user-does-not-exist",
-})
+import { serverURL, socketURL, errors } from "@/constants"
 
 /* 
   Date utils 
@@ -134,18 +127,20 @@ export const fetchMethod = (method, route, body={}) => {
   }
 
   return fetch(serverURL + route, params).then(async res => {
-    // Parse data if it is json, otherwise just return an empty object
     const text = await res.text()
+    
+    // Check if response was ok
+    if (!res.ok) {
+      throw JSON.parse(text) 
+    }
+
+    // Parse data if it is json, otherwise throw an error
     try {
       return JSON.parse(text)
     } catch (err) {
-      return {}
+      throw {error: errors.JsonError}
     }
   }).then(data => {
-    // Throw an error if one occurred
-    if (data.error)
-      throw data.error
-    
     return data
   })
 }

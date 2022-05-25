@@ -15,7 +15,7 @@ export default {
 
   async created() {
     let { error, code, state } = this.$route.query
-    if (error) return
+    if (error) this.$router.replace({ name: "home" })
     
     if (state) state = JSON.parse(state)
 
