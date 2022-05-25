@@ -64,7 +64,6 @@ export default {
   created() {
     get('/user/events')
       .then(data => {
-        console.log(data)
         this.events = data 
       }).catch(err => {
         console.error(err)

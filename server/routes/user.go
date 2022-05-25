@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"schej.it/server/db"
+	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
@@ -45,15 +46,15 @@ func getProfile(c *gin.Context) {
 func getEvents(c *gin.Context) {
 	session := sessions.Default(c)
 
-	var events []models.Event
+	events := make([]models.Event, 0)
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
 		"ownerId": utils.GetUserId(session),
 	})
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 	if err := cursor.All(context.Background(), &events); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, events)

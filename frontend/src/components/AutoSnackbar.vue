@@ -4,13 +4,18 @@
     top
     :color="color"
   >
-    <span class="tw-text-sm sm:tw-text-base">{{ text }}</span>
-    <v-btn
-      text
-      @click="show = false"
-    >
-      Close
-    </v-btn>
+    <span class="tw-text-sm tw-mr-2">{{ text }}</span>
+
+    <template v-slot:action="{ attrs }">
+      <v-btn
+        v-bind="attrs"
+        icon
+        @click="show = false"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </template>
+    
   </v-snackbar>
 </template>
 

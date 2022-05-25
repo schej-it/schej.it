@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/brianvoe/sjwt"
@@ -12,13 +13,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/errors"
+	"schej.it/server/logger"
 	"schej.it/server/models"
 )
+
+// Returns whether running on production server
+func IsRelease() bool {
+	mode := os.Getenv("GIN_MODE")
+	return mode == "release"
+}
 
 func PrintJson(s gin.H) {
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	fmt.Println(string(data))
@@ -27,7 +35,7 @@ func PrintJson(s gin.H) {
 func ParseJWT(jwt string) sjwt.Claims {
 	claims, err := sjwt.Parse(jwt)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	return claims
@@ -36,7 +44,7 @@ func ParseJWT(jwt string) sjwt.Claims {
 func StringToObjectID(s string) primitive.ObjectID {
 	objectID, err := primitive.ObjectIDFromHex(s)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	return objectID
@@ -52,7 +60,7 @@ func GetUserId(session sessions.Session) primitive.ObjectID {
 func GetAccessTokenExpireDate(expiresIn int) time.Time {
 	expireDuration, err := time.ParseDuration(fmt.Sprintf("%ds", expiresIn))
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 	return time.Now().Add(expireDuration)
 }
@@ -60,18 +68,15 @@ func GetAccessTokenExpireDate(expiresIn int) time.Time {
 // Get the user's list of calendars
 func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIError) {
 	// TODO: update user object with calendars and allow for customization of whether or not to show calendar in schedule
-	req, err := http.NewRequest(
+	req, _ := http.NewRequest(
 		"GET",
 		"https://www.googleapis.com/calendar/v3/users/me/calendarList?fields=items(id,summary,selected)",
 		nil,
 	)
-	if err != nil {
-		panic(err)
-	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	// Define stucts to parse json response
@@ -83,7 +88,7 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIEr
 	// Parse the response
 	var res Response
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	// Check if the response returned an error
@@ -107,18 +112,15 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	min, _ := timeMin.MarshalText()
 	max, _ := timeMax.MarshalText()
 	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
-	req, err := http.NewRequest(
+	req, _ := http.NewRequest(
 		"GET",
 		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
 		nil,
 	)
-	if err != nil {
-		panic(err)
-	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	// Define some structs to parse the json response
@@ -138,7 +140,7 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	// Parse the response
 	var res Response
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	// Check if the response returned an error

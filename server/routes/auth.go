@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/db"
+	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -43,19 +44,25 @@ func signIn(c *gin.Context) {
 	}
 
 	// Call Google oauth token endpoint
+	var redirectUri string
+	if utils.IsRelease() {
+		redirectUri = "https://schej.it/auth"
+	} else {
+		redirectUri = "http://localhost:8080/auth"
+	}
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},
 		"client_secret": {os.Getenv("CLIENT_SECRET")},
 		"code":          {payload.Code},
 		"grant_type":    {"authorization_code"},
-		"redirect_uri":  {"http://localhost:8080/auth"},
+		"redirect_uri":  {redirectUri},
 	}
 	resp, err := http.PostForm(
 		"https://oauth2.googleapis.com/token",
 		values,
 	)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 	res := struct {
 		AccessToken  string `json:"access_token"`
@@ -99,7 +106,7 @@ func signIn(c *gin.Context) {
 		// User doesn't exist, create a new user
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
-			panic(err)
+			logger.StdErr.Panicln(err)
 		}
 
 		userId = res.InsertedID.(primitive.ObjectID)
@@ -107,7 +114,7 @@ func signIn(c *gin.Context) {
 		// User does exist, get user id
 		var user models.User
 		if err := updateResult.Decode(&user); err != nil {
-			panic(err)
+			logger.StdErr.Panicln(err)
 		}
 
 		userId = user.Id

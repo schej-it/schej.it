@@ -79,31 +79,31 @@
             </div>
 
             <template v-if="!calendarOnly">
-              <v-btn 
-                class="tw-my-2"
-                block
-                @click="toggleShowCalendarEvents"
-              >
-                <template v-if="!showCalendarEvents">
-                  Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
-                </template>
-                <template v-else>
-                  View suggested times 
-                </template>
-              </v-btn>
-              <v-btn
-                class="tw-mb-2"
-                block
-                @click="copyLink"
-              >
-                Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
-              </v-btn>
+              <div class="tw-flex tw-flex-col tw-items-center">
+                <v-btn 
+                  class="tw-my-2 tw-min-w-full sm:tw-min-w-[unset] sm:tw-w-52"
+                  @click="toggleShowCalendarEvents"
+                >
+                  <template v-if="!showCalendarEvents">
+                    Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+                  </template>
+                  <template v-else>
+                    View suggested times 
+                  </template>
+                </v-btn>
+                <v-btn
+                  class="tw-mb-2 tw-min-w-full sm:tw-min-w-[unset] sm:tw-w-52"
+                  @click="copyLink"
+                >
+                  Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
             </template>
           </div>
         </div>
       </div>
     
-      <div class="tw-hidden sm:tw-block sm:tw-w-32">
+      <div v-if="!calendarOnly" class="tw-hidden sm:tw-block sm:tw-w-32">
         <div class="tw-font-medium tw-mb-2">Availability:</div>
         <div class="tw-space-y-2 tw-pl-4 tw-text-sm">
           <div v-for="user, i in curTimeslotAvailability.available" :key="i" class="tw-max-w-full tw-truncate">
@@ -117,7 +117,7 @@
     </div>
 
     <v-bottom-sheet
-      v-if="isPhone"
+      v-if="isPhone && !calendarOnly"
       v-model="availabilityBottomSheet"
       hide-overlay
       persistent
@@ -303,6 +303,7 @@ export default {
     ...mapActions([ 'showInfo' ]),
     copyLink() {
       navigator.clipboard.writeText(`http://localhost:8080/j/${this.eventId}`)
+      this.showInfo('Link copied to clipboard!')
     },
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
@@ -440,7 +441,14 @@ export default {
     /* Drag Stuff */
     normalizeXY(e) {
       /* Normalize the touch event to be relative to element */
-      const { pageX, pageY } = e.touches[0]
+      let pageX, pageY
+      if ('touches' in e) {
+        // is a touch event
+        ({ pageX, pageY } = e.touches[0])
+      } else {
+        // is a mouse event
+        ({ pageX, pageY } = e)
+      }
       const { left, top } = e.currentTarget.getBoundingClientRect()
       const x = pageX - left
       const y = pageY - top
@@ -486,6 +494,9 @@ export default {
       this.dragging = false
       this.dragStart = null
       this.dragCur = null
+
+      // Set editing to false if we are on desktop
+      if (!isPhone(this.$vuetify)) this.editing = false
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
@@ -500,6 +511,31 @@ export default {
             isBetween(timeIndex, this.dragCur.timeIndex, this.dragStart.timeIndex)
           )
         )
+      }
+    },
+    moveDrag(e) {
+      if (!this.editing) return
+
+      e.preventDefault()
+      const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
+      this.dragCur = { dayIndex, timeIndex }
+    },
+    startDrag(e) {
+      // Set editing to true if we are on desktop and in editing mode
+      if (this.showCalendarEvents && !isPhone(this.$vuetify)) this.editing = true
+
+      if (!this.editing) return
+
+      this.dragging = true
+      const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
+      this.dragStart = { dayIndex, timeIndex }
+      this.dragCur = { dayIndex, timeIndex }
+
+      // Set drag type
+      if (this.availability.has(date.getTime())) {
+        this.dragType = this.DRAG_TYPES.REMOVE
+      } else {
+        this.dragType = this.DRAG_TYPES.ADD
       }
     },
   },
@@ -531,38 +567,24 @@ export default {
     if (!this.calendarOnly) {
       const timesEl = document.getElementById('times')
 
-      onLongPress(timesEl, () => {
-        if (!this.showCalendarEvents || this.editing) return
-        
-        navigator.vibrate(10)
-        this.editing = true
-      }, true)
+      if (isPhone(this.$vuetify)) {
+        onLongPress(timesEl, () => {
+          if (!this.showCalendarEvents || this.editing) return
+          
+          navigator.vibrate(10)
+          this.editing = true
+        }, true)
 
-      timesEl.addEventListener('touchstart', e => {
-        if (!this.editing) return
+        timesEl.addEventListener('touchstart', this.startDrag)
+        timesEl.addEventListener('touchmove', this.moveDrag)
 
-        this.dragging = true
-        const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
-        this.dragStart = { dayIndex, timeIndex }
-        this.dragCur = { dayIndex, timeIndex }
-
-        // Set drag type
-        if (this.availability.has(date.getTime())) {
-          this.dragType = this.DRAG_TYPES.REMOVE
-        } else {
-          this.dragType = this.DRAG_TYPES.ADD
-        }
-      })
-      timesEl.addEventListener('touchmove', e => {
-        if (!this.editing) return
-
-        e.preventDefault()
-        const { dayIndex, timeIndex, date } = this.getDateFromXY(...Object.values(this.normalizeXY(e)))
-        this.dragCur = { dayIndex, timeIndex }
-      })
-
-      timesEl.addEventListener('touchend', this.endDrag)
-      timesEl.addEventListener('touchcancel', this.endDrag)
+        timesEl.addEventListener('touchend', this.endDrag)
+        timesEl.addEventListener('touchcancel', this.endDrag)
+      } else {
+        timesEl.addEventListener('mousedown', this.startDrag)
+        timesEl.addEventListener('mousemove', this.moveDrag)
+        timesEl.addEventListener('mouseup', this.endDrag)
+      }
     }
   },
 }

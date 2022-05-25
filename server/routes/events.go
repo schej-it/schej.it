@@ -10,8 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
+	"schej.it/server/errors"
+	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
+	"schej.it/server/responses"
 	"schej.it/server/utils"
 )
 
@@ -59,7 +62,7 @@ func createEvent(c *gin.Context) {
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
@@ -76,6 +79,11 @@ func createEvent(c *gin.Context) {
 func getEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
+
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errors.EventNotFound})
+		return
+	}
 
 	// Populate user fields
 	for userId, response := range event.Responses {
@@ -120,7 +128,7 @@ func updateEventResponse(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

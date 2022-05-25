@@ -44,7 +44,7 @@ export default {
         }))
     }).catch(err => {
       console.error(err)
-      if (err.code === 401) {
+      if (err.error.code === 401) {
         signInGoogle()
       }
     })

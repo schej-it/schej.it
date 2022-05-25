@@ -12,13 +12,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"schej.it/server/logger"
 	"schej.it/server/models"
 	"schej.it/server/utils"
 )
 
 func GetUserById(userId string) *models.User {
+	objectId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		// eventId is malformatted
+		return nil
+	}
 	result := UsersCollection.FindOne(context.Background(), bson.M{
-		"_id": utils.StringToObjectID(userId),
+		"_id": objectId,
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// User does not exist!
@@ -28,15 +34,20 @@ func GetUserById(userId string) *models.User {
 	// Set auth user request variable
 	var user models.User
 	if err := result.Decode(&user); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	return &user
 }
 
 func GetEventById(eventId string) *models.Event {
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		return nil
+	}
 	result := EventsCollection.FindOne(context.Background(), bson.M{
-		"_id": utils.StringToObjectID(eventId),
+		"_id": objectId,
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event does not exist!
@@ -46,7 +57,7 @@ func GetEventById(eventId string) *models.Event {
 	// Set auth user request variable
 	var event models.Event
 	if err := result.Decode(&event); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	return &event
@@ -69,7 +80,7 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 			values,
 		)
 		if err != nil {
-			panic(err)
+			logger.StdErr.Panicln(err)
 		}
 		res := struct {
 			AccessToken string `json:"access_token"`

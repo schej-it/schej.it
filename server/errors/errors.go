@@ -4,6 +4,7 @@ package errors
 const (
 	NotSignedIn      string = "not-signed-in"
 	UserDoesNotExist string = "user-does-not-exist"
+	EventNotFound    string = "event-not-found"
 )
 
 type GoogleAPIError struct {

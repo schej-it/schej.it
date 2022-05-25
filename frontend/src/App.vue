@@ -84,6 +84,7 @@ export default {
 },
 
   data: () => ({
+    mounted: false,
     loaded: false,
     tabs: [
       {
@@ -96,11 +97,11 @@ export default {
         icon: 'mdi-calendar',
         route: { name: 'schedule' },
       },
-      {
+      /*{
         text: 'Friends',
         icon: 'mdi-account-multiple',
         route: { name: 'friends' },
-      },
+      },*/
     ],
     tab: 0,
   }),
@@ -110,7 +111,8 @@ export default {
     showHeader() {
       return (
         this.$route.name !== 'sign-in' &&
-        this.$route.name !== 'auth'
+        this.$route.name !== 'auth' &&
+        this.$route.name !== 'privacy-policy'
       )
     },
     showBottomNavbar() {
@@ -175,6 +177,7 @@ export default {
   },
 
   mounted() {
+    this.mounted = true
     this.fixHeight()
     window.addEventListener('resize', this.fixHeight)
   },
@@ -198,7 +201,7 @@ export default {
     $route: {
       immediate: true,
       handler() {
-        this.fixHeight()
+        if (this.mounted) this.fixHeight()
         get('/auth/status').then(data => {
           this.redirectUser(true)
         }).catch(err => {
