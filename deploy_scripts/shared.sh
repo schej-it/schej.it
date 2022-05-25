@@ -14,7 +14,7 @@ fi
 SERVER_HOST="$1"
 AWS_KEY_LOCATION="$( pwd )/$2"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-DEPLOY_BRANCH="master" # The branch to deploy
+DEPLOY_BRANCH="main" # The branch to deploy
 
 # Check if aws key file exists
 if test ! -f "$AWS_KEY_LOCATION"

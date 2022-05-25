@@ -42,12 +42,18 @@ func signIn(c *gin.Context) {
 	}
 
 	// Call Google oauth token endpoint
+	var redirectUri string
+	if utils.IsRelease() {
+		redirectUri = "https://schej.it/auth"
+	} else {
+		redirectUri = "http://localhost:8080/auth"
+	}
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},
 		"client_secret": {os.Getenv("CLIENT_SECRET")},
 		"code":          {payload.Code},
 		"grant_type":    {"authorization_code"},
-		"redirect_uri":  {"http://localhost:8080/auth"},
+		"redirect_uri":  {redirectUri},
 	}
 	resp, err := http.PostForm(
 		"https://oauth2.googleapis.com/token",

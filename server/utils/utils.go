@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/brianvoe/sjwt"
@@ -14,6 +15,12 @@ import (
 	"schej.it/server/errors"
 	"schej.it/server/models"
 )
+
+// Returns whether running on production server
+func IsRelease() bool {
+	mode := os.Getenv("GIN_MODE")
+	return mode == "release"
+}
 
 func PrintJson(s gin.H) {
 	data, err := json.MarshalIndent(s, "", "  ")

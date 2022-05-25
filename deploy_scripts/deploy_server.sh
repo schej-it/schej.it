@@ -13,5 +13,5 @@ ROOT_FOLDER_SERVER_LOCATION="/schej.it"
 
 # Git pull on server, npm install, and restart server process
 echo "Deploying server..."
-ssh $SERVER_HOST -i $AWS_KEY_LOCATION "cd $ROOT_FOLDER_SERVER_LOCATION && sudo git stash && sudo git pull && cd server && go build && /*STarT GO SERVER IN DETACHED MODE*/"
+ssh $SERVER_HOST -i $AWS_KEY_LOCATION "cd $ROOT_FOLDER_SERVER_LOCATION && sudo git stash && sudo git pull && cd server && go build && screen -XS schej.it-server quit; screen -dmS schej.it-server ./server"
 echo "Done!"
