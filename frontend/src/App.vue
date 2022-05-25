@@ -37,8 +37,6 @@
             </div>
           </div>
 
-          <v-spacer />
-
           <v-avatar v-if="authUser">
             <img referrerpolicy="no-referrer" :src="authUser.picture">
           </v-avatar>
@@ -97,11 +95,11 @@ export default {
         icon: 'mdi-calendar',
         route: { name: 'schedule' },
       },
-      {
+      /*{
         text: 'Friends',
         icon: 'mdi-account-multiple',
         route: { name: 'friends' },
-      },
+      },*/
     ],
     tab: 0,
   }),

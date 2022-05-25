@@ -11,8 +11,8 @@
         >{{ dateString }}</div>
       </div>
     </div>
-    <div v-if="isCalendarShown" class="tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-py-1 tw-px-2 tw-drop-shadow">
-      <div class="tw-text-white tw-text-sm">
+    <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
+      <div class="tw-text-white tw-text-sm tw-z-10">
         <span v-if="isEditing">Editing...</span>
         <span v-else>Tap and hold calendar to enable editing</span>
       </div>
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS } from '@/utils'
+import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS, isPhone } from '@/utils'
 import { mapActions, mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -69,7 +69,7 @@ export default {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
     },
     isEditing() {
-      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
+      return this.scheduleOverlapComponent && (this.scheduleOverlapComponent.editing || (this.isCalendarShown && !isPhone(this.$vuetify)))
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.unsavedChanges
