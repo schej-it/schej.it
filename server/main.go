@@ -21,7 +21,7 @@ import (
 // @version 1.0
 // @description This is the API for Schej.it!
 
-// @host localhost:3000
+// @host localhost:3001
 
 func main() {
 	router := gin.Default()
@@ -56,7 +56,7 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// Run server
-	router.Run(":3000")
+	router.Run(":3001")
 }
 
 // Load .env variables

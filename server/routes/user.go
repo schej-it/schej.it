@@ -2,7 +2,6 @@ package routes
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -56,8 +55,6 @@ func getEvents(c *gin.Context) {
 	if err := cursor.All(context.Background(), &events); err != nil {
 		panic(err)
 	}
-
-	fmt.Println("events: ", events)
 
 	c.JSON(http.StatusOK, events)
 }

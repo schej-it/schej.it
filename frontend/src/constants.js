@@ -1,6 +1,6 @@
 // Urls
-export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/api'
-export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/'
+export const serverURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '/api'
+export const socketURL = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : '/'
 
 // Errors enum
 export const errors = Object.freeze({
