@@ -79,25 +79,25 @@
             </div>
 
             <template v-if="!calendarOnly">
-              <v-btn 
-                class="tw-my-2"
-                block
-                @click="toggleShowCalendarEvents"
-              >
-                <template v-if="!showCalendarEvents">
-                  Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
-                </template>
-                <template v-else>
-                  View suggested times 
-                </template>
-              </v-btn>
-              <v-btn
-                class="tw-mb-2"
-                block
-                @click="copyLink"
-              >
-                Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
-              </v-btn>
+              <div class="tw-flex tw-flex-col tw-items-center">
+                <v-btn 
+                  class="tw-my-2 tw-min-w-full sm:tw-min-w-[unset] sm:tw-w-52"
+                  @click="toggleShowCalendarEvents"
+                >
+                  <template v-if="!showCalendarEvents">
+                    Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
+                  </template>
+                  <template v-else>
+                    View suggested times 
+                  </template>
+                </v-btn>
+                <v-btn
+                  class="tw-mb-2 tw-min-w-full sm:tw-min-w-[unset] sm:tw-w-52"
+                  @click="copyLink"
+                >
+                  Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
             </template>
           </div>
         </div>
@@ -303,6 +303,7 @@ export default {
     ...mapActions([ 'showInfo' ]),
     copyLink() {
       navigator.clipboard.writeText(`http://localhost:8080/j/${this.eventId}`)
+      this.showInfo('Link copied to clipboard!')
     },
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
