@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -29,6 +30,16 @@ import (
 // @host localhost:3001
 
 func main() {
+	// Set release flag
+	release := flag.Bool("release", false, "Whether this is the release version of the server")
+	flag.Parse()
+	if *release {
+		os.Setenv("GIN_MODE", "release")
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		os.Setenv("GIN_MODE", "debug")
+	}
+
 	// Init logfile
 	logFile, err := os.OpenFile("logs.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
