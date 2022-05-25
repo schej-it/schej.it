@@ -102,6 +102,6 @@ func loadDotEnv() {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		panic("Error loading .env file")
+		logger.StdErr.Panicln("Error loading .env file")
 	}
 }

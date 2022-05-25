@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"schej.it/server/logger"
 )
 
 // Representation of a User in the mongoDB database
@@ -44,13 +45,13 @@ type UserProfile struct {
 func (u *User) GetProfile() UserProfile {
 	tmp, err := json.Marshal(u)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	var profile UserProfile
 	err = json.Unmarshal(tmp, &profile)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 	return profile
 }

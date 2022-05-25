@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"schej.it/server/logger"
 	"schej.it/server/models"
 	"schej.it/server/utils"
 )
@@ -33,7 +34,7 @@ func GetUserById(userId string) *models.User {
 	// Set auth user request variable
 	var user models.User
 	if err := result.Decode(&user); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	return &user
@@ -56,7 +57,7 @@ func GetEventById(eventId string) *models.Event {
 	// Set auth user request variable
 	var event models.Event
 	if err := result.Decode(&event); err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	return &event
@@ -79,7 +80,7 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 			values,
 		)
 		if err != nil {
-			panic(err)
+			logger.StdErr.Panicln(err)
 		}
 		res := struct {
 			AccessToken string `json:"access_token"`

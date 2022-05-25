@@ -61,7 +61,7 @@ func signIn(c *gin.Context) {
 		values,
 	)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 	res := struct {
 		AccessToken  string `json:"access_token"`
@@ -105,7 +105,7 @@ func signIn(c *gin.Context) {
 		// User doesn't exist, create a new user
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
-			panic(err)
+			logger.StdErr.Panicln(err)
 		}
 
 		userId = res.InsertedID.(primitive.ObjectID)
@@ -113,7 +113,7 @@ func signIn(c *gin.Context) {
 		// User does exist, get user id
 		var user models.User
 		if err := updateResult.Decode(&user); err != nil {
-			panic(err)
+			logger.StdErr.Panicln(err)
 		}
 
 		userId = user.Id
@@ -134,6 +134,5 @@ func signIn(c *gin.Context) {
 // @Failure 401 {object} responses.Error "Error object"
 // @Router /auth/status [get]
 func getStatus(c *gin.Context) {
-	logger.StdErr.Panicln("LMAOOOO")
 	c.JSON(http.StatusOK, gin.H{})
 }

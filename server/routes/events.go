@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
 	"schej.it/server/errors"
+	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
@@ -61,7 +62,7 @@ func createEvent(c *gin.Context) {
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
@@ -127,7 +128,7 @@ func updateEventResponse(c *gin.Context) {
 		},
 	)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

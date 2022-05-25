@@ -6,6 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"schej.it/server/logger"
 )
 
 var Client *mongo.Client
@@ -18,12 +19,12 @@ func Init() func() {
 	var err error
 	Client, err = mongo.NewClient(options.Client().ApplyURI("mongodb://localhost"))
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 	var ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
 	err = Client.Connect(ctx)
 	if err != nil {
-		panic(err)
+		logger.StdErr.Panicln(err)
 	}
 
 	// Define mongodb database + collections
