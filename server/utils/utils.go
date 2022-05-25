@@ -60,14 +60,11 @@ func GetAccessTokenExpireDate(expiresIn int) time.Time {
 // Get the user's list of calendars
 func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIError) {
 	// TODO: update user object with calendars and allow for customization of whether or not to show calendar in schedule
-	req, err := http.NewRequest(
+	req, _ := http.NewRequest(
 		"GET",
 		"https://www.googleapis.com/calendar/v3/users/me/calendarList?fields=items(id,summary,selected)",
 		nil,
 	)
-	if err != nil {
-		panic(err)
-	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -107,14 +104,11 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	min, _ := timeMin.MarshalText()
 	max, _ := timeMax.MarshalText()
 	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
-	req, err := http.NewRequest(
+	req, _ := http.NewRequest(
 		"GET",
 		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
 		nil,
 	)
-	if err != nil {
-		panic(err)
-	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
