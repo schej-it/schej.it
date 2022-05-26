@@ -66,6 +66,7 @@
                     class="tw-absolute tw-w-full tw-p-px tw-select-none"
                     :style="event.style"
                   >
+                    <div class="tw-hidden tw-bg-blue/25 tw-bg-gray/25" />
                     <div
                       :class="`tw-bg-${noEventNames ? 'gray' : 'blue'}/25`"
                       class="tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
