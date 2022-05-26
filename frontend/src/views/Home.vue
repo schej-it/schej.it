@@ -64,7 +64,6 @@ export default {
 
   methods: {
     goToEvent(eventId) {
-      console.log('WHAT')
       this.$router.push({ name: 'event', params: { eventId } })
     }
   },

@@ -305,7 +305,7 @@ export default {
   methods: {
     ...mapActions([ 'showInfo' ]),
     copyLink() {
-      navigator.clipboard.writeText(`http://localhost:8080/j/${this.eventId}`)
+      navigator.clipboard.writeText(`${window.location.origin}/j/${this.eventId}`)
       this.showInfo('Link copied to clipboard!')
     },
     getRespondentsForDateTime(date, time) {
