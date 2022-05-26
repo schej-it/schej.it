@@ -49,43 +49,13 @@ definitions:
           type: string
         type: array
       user:
-        $ref: '#/definitions/models.User'
+        $ref: '#/definitions/models.UserProfile'
         type: object
       userId:
         type: string
     required:
     - availability
     - userId
-    type: object
-  models.User:
-    properties:
-      _id:
-        description: Profile info
-        type: string
-      accessToken:
-        description: Google OAuth stuff
-        type: string
-      accessTokenExpireDate:
-        type: string
-      email:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-      picture:
-        type: string
-      refreshToken:
-        type: string
-    required:
-    - _id
-    - accessToken
-    - accessTokenExpireDate
-    - email
-    - firstName
-    - lastName
-    - picture
-    - refreshToken
     type: object
   models.UserProfile:
     properties:
@@ -109,11 +79,11 @@ definitions:
   responses.Error:
     properties:
       error:
-        type: string
+        type: object
     required:
     - error
     type: object
-host: localhost:3000
+host: localhost:3001
 info:
   contact: {}
   description: This is the API for Schej.it!
@@ -125,19 +95,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: Signs user in and sets the access token session variable
-      parameters:
-      - description: Google authorization code
-        in: body
-        name: code
-        required: true
-        schema:
-          type: string
+      description: Signs user out and deletes the session
       produces:
       - application/json
       responses:
         "200": {}
-      summary: Signs user in
+      summary: Signs user out
       tags:
       - auth
   /auth/status:
@@ -280,9 +243,18 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Event'
-            type: array
+            allOf:
+            - type: object
+            - properties:
+                events:
+                  items:
+                    $ref: '#/definitions/models.Event'
+                  type: array
+                respondedEvents:
+                  items:
+                    $ref: '#/definitions/models.Event'
+                  type: array
+              type: object
       summary: Gets all the user's events
       tags:
       - user

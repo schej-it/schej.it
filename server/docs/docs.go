@@ -27,7 +27,7 @@ var doc = `{
     "paths": {
         "/auth/sign-in": {
             "post": {
-                "description": "Signs user in and sets the access token session variable",
+                "description": "Signs user out and deletes the session",
                 "consumes": [
                     "application/json"
                 ],
@@ -37,18 +37,7 @@ var doc = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Signs user in",
-                "parameters": [
-                    {
-                        "description": "Google authorization code",
-                        "name": "code",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "summary": "Signs user out",
                 "responses": {
                     "200": {}
                 }
@@ -272,10 +261,28 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Event"
-                            }
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "events": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Event"
+                                            }
+                                        },
+                                        "respondedEvents": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Event"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -378,50 +385,9 @@ var doc = `{
                 },
                 "user": {
                     "type": "object",
-                    "$ref": "#/definitions/models.User"
+                    "$ref": "#/definitions/models.UserProfile"
                 },
                 "userId": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.User": {
-            "type": "object",
-            "required": [
-                "_id",
-                "accessToken",
-                "accessTokenExpireDate",
-                "email",
-                "firstName",
-                "lastName",
-                "picture",
-                "refreshToken"
-            ],
-            "properties": {
-                "_id": {
-                    "description": "Profile info",
-                    "type": "string"
-                },
-                "accessToken": {
-                    "description": "Google OAuth stuff",
-                    "type": "string"
-                },
-                "accessTokenExpireDate": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "picture": {
-                    "type": "string"
-                },
-                "refreshToken": {
                     "type": "string"
                 }
             }
@@ -460,7 +426,7 @@ var doc = `{
             ],
             "properties": {
                 "error": {
-                    "type": "string"
+                    "type": "object"
                 }
             }
         }
@@ -479,7 +445,7 @@ type swaggerInfo struct {
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
-	Host:        "localhost:3000",
+	Host:        "localhost:3001",
 	BasePath:    "",
 	Schemes:     []string{},
 	Title:       "Schej.it API",

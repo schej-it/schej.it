@@ -1,5 +1,5 @@
 # Schej.it API
-API docs (available when the server is running): http://localhost:3000/swagger/index.html
+API docs (available when the server is running): http://localhost:3001/swagger/index.html
 ## Debug
 - Install mongodb
 - Install `air`, a package that facilitates live reload for Go apps

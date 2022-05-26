@@ -41,14 +41,21 @@ func getProfile(c *gin.Context) {
 // @Description Returns an array containing all the user's events
 // @Tags user
 // @Produce json
-// @Success 200 {object} []models.Event
+// @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
 	session := sessions.Default(c)
 
+	userId := utils.GetUserId(session)
+	userIdString := session.Get("userId").(string)
+
+	// Get the events associated with the current user
 	events := make([]models.Event, 0)
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
-		"ownerId": utils.GetUserId(session),
+		"$or": bson.A{
+			bson.M{"ownerId": userId},
+			bson.M{"responses." + userIdString: bson.M{"$exists": true}},
+		},
 	})
 	if err != nil {
 		logger.StdErr.Panicln(err)
@@ -57,7 +64,19 @@ func getEvents(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 
-	c.JSON(http.StatusOK, events)
+	response := make(map[string][]models.Event)
+	response["events"] = make([]models.Event, 0)       // The events the user created
+	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
+
+	for _, event := range events {
+		if event.OwnerId == userId {
+			response["events"] = append(response["events"], event)
+		} else {
+			response["joinedEvents"] = append(response["joinedEvents"], event)
+		}
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // @Summary Gets the user's calendar events
