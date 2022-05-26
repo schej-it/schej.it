@@ -4,7 +4,7 @@
       class="tw-flex tw-w-full tw-justify-between tw-pl-12 tw-relative tw-bg-gray tw-h-0 tw-top-5"
     >
       <v-btn icon color="gray darken-2" @click="shiftBack">
-        <v-icon large > mdi-chevron-left </v-icon>
+        <v-icon large> mdi-chevron-left </v-icon>
       </v-btn>
       <v-btn icon color="gray darken-2" @click="shiftForward">
         <v-icon large> mdi-chevron-right </v-icon>
@@ -52,45 +52,51 @@ export default {
   }),
 
   created() {
-    get(
-      `/user/calendar?timeMin=${this.startDate.toISOString()}&timeMax=${getDateDayOffset(
-        this.endDate,
-        1
-      ).toISOString()}`
-    )
-      .then((data) => {
-        this.calendarEvents = data.map((event) => ({
-          summary: event.summary,
-          startDate: clampDateToTimeInt(
-            new Date(event.startDate),
-            this.startTime,
-            'upper'
-          ),
-          endDate: clampDateToTimeInt(
-            new Date(event.endDate),
-            this.endTime,
-            'lower'
-          ),
-        }))
-      })
-      .catch((err) => {
-        console.error(err)
-        if (err.error.code === 401) {
-          signInGoogle()
-        }
-      })
+    this.retrieveCalendarEvents()
   },
 
   methods: {
     shiftBack() {
-      this.startDate.setDate(this.startDate.getDate() - 1)
-      this.endDate.setDate(this.endDate.getDate() - 1)
+      this.shiftBy(-1)
     },
     shiftForward() {
-      this.startDate.setDate(this.startDate.getDate() + 1)
-      this.endDate.setDate(this.endDate.getDate() + 1)
-      console.log(this.startDate)
-    }
-  }
+      this.shiftBy(1)
+    },
+    shiftBy(numberDays) {
+      this.startDate.setDate(this.startDate.getDate() + numberDays)
+      this.endDate.setDate(this.endDate.getDate() + numberDays)
+      this.startDate = new Date(this.startDate)
+      this.retrieveCalendarEvents()
+    },
+    retrieveCalendarEvents() {
+      get(
+        `/user/calendar?timeMin=${this.startDate.toISOString()}&timeMax=${getDateDayOffset(
+          this.endDate,
+          1
+        ).toISOString()}`
+      )
+        .then((data) => {
+          this.calendarEvents = data.map((event) => ({
+            summary: event.summary,
+            startDate: clampDateToTimeInt(
+              new Date(event.startDate),
+              this.startTime,
+              'upper'
+            ),
+            endDate: clampDateToTimeInt(
+              new Date(event.endDate),
+              this.endTime,
+              'lower'
+            ),
+          }))
+        })
+        .catch((err) => {
+          console.error(err)
+          if (err.error.code === 401) {
+            signInGoogle()
+          }
+        })
+    },
+  },
 }
 </script>
