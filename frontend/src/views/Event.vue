@@ -113,6 +113,10 @@ export default {
     // Get user's calendar
     get(`/user/calendar?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {
       this.calendarEvents = data
+        .filter(event => (
+          dateToTimeInt(new Date(event.endDate)) > this.event.startTime && 
+          dateToTimeInt(new Date(event.startDate)) < this.event.endTime
+        ))
         .map(event => ({ 
           summary: event.summary,
           startDate: clampDateToTimeInt(new Date(event.startDate), this.event.startTime, 'upper'),

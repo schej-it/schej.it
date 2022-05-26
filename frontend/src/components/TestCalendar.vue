@@ -11,7 +11,6 @@
       </v-btn>
     </div>
     <ScheduleOverlap
-      :key="startDate"
       :startDate="startDate"
       :endDate="endDate"
       :startTime="startTime"
