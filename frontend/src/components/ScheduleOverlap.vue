@@ -32,6 +32,7 @@
           <div class="tw-flex-1">
             <div 
               id="times" 
+              data-long-press-delay="500"
               class="tw-flex tw-relative"
               @mouseleave="resetCurTimeslot"
             >
@@ -572,12 +573,16 @@ export default {
       const timesEl = document.getElementById('times')
 
       if (isPhone(this.$vuetify)) {
-        onLongPress(timesEl, () => {
+        timesEl.addEventListener('contextmenu', e => {
+          e.preventDefault();
+        });
+
+        timesEl.addEventListener('long-press', e => {
           if (!this.showCalendarEvents || this.editing) return
           
           navigator.vibrate(10)
           this.editing = true
-        }, true)
+        })
 
         timesEl.addEventListener('touchstart', this.startDrag)
         timesEl.addEventListener('touchmove', this.moveDrag)
