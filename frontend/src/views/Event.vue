@@ -13,11 +13,14 @@
     <div class="tw-max-w-6xl tw-mx-auto">
       <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
         <div class="tw-text-white tw-text-sm tw-z-10">
-          <span v-if="isEditing">Editing...</span>
-          <span v-else>Tap and hold calendar to enable editing</span>
+          <span v-if="isPhone">
+            <span v-if="isEditing">Editing...</span>
+            <span v-else>Tap and hold calendar to enable editing</span>
+          </span>
+          <span v-else>Drag to edit availability</span>
         </div>
         <v-spacer />
-        <v-btn v-if="isEditing" @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
+        <v-btn v-if="isEditing || !isPhone" @click="resetEditing" small text class="tw-text-white">Clear</v-btn>
         <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
       </div>
       <ScheduleOverlap
@@ -70,7 +73,10 @@ export default {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
     },
     isEditing() {
-      return this.scheduleOverlapComponent && (this.scheduleOverlapComponent.editing || (this.isCalendarShown && !isPhone(this.$vuetify)))
+      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
+    },
+    isPhone() {
+      return isPhone(this.$vuetify)
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.unsavedChanges
@@ -93,6 +99,8 @@ export default {
     },
     saveChanges() {
       if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.submitAvailability()
+
+      if (!this.isPhone) this.scheduleOverlapComponent.showCalendarEvents = false
     },
   },
 
