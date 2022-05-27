@@ -1,9 +1,11 @@
 <template>
   <v-dialog
     :value="value"
-    fullscreen
-    hide-overlay
-    transition="dialog-bottom-transition"
+    @input="e => $emit('input', e)"
+    :fullscreen="isPhone"
+    :hide-overlay="isPhone"
+    content-class="tw-max-w-xl"
+    :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
     <v-card tile class="tw-flex tw-flex-col">
       <v-card-title class="tw-flex">
@@ -18,6 +20,7 @@
         <v-text-field 
           ref="name-field"
           v-model="name"
+          :disabled="loading"
           class="tw-text-white tw-flex-initial"
           placeholder="Name of event..."
           hide-details
@@ -28,6 +31,7 @@
           <div class="tw-flex tw-space-x-2 tw-items-baseline tw-justify-center">
             <v-select
               v-model="startTime"
+              :disabled="loading"
               class="tw-flex-initial /*tw-w-28*/"
               menu-props="auto"
               :items="times"
@@ -37,6 +41,7 @@
             <div>to</div>
             <v-select
               v-model="endTime"
+              :disabled="loading"
               class="tw-flex-initial /*tw-w-28*/"
               menu-props="auto"
               :items="times"
@@ -56,6 +61,7 @@
         <v-spacer />
 
         <v-btn 
+          :loading="loading"
           :dark="formComplete" 
           class="tw-bg-blue"
           :disabled="!formComplete"
@@ -67,7 +73,7 @@
 </template>
 
 <script>
-import { getDateWithTime, getDateWithTimeInt, post } from '@/utils'
+import { getDateWithTime, getDateWithTimeInt, isPhone, post } from '@/utils'
 export default {
   name: 'NewEventDialog',
 
@@ -82,9 +88,13 @@ export default {
     startTime: 9,
     endTime: 17,
     dateRange: {},
+    loading: false,
   }),
 
   computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
     formComplete() {
       return this.name.length > 0 && this.dateRange && 'start' in this.dateRange && 'end' in this.dateRange
     },
@@ -114,17 +124,16 @@ export default {
       this.dateRange = {}
     },
     submit() {
-      /* TODO: make sure to strip the time from the date so dates aren't localized to what the client's current time */
       const startDate = getDateWithTimeInt(this.dateRange.start, this.startTime)
       const endDate = getDateWithTimeInt(this.dateRange.end, this.endTime)
+      this.loading = true
       post('/events', {
         name: this.name,
         startDate,
         endDate,
       }).then(({ eventId }) => {
         this.$router.push({ name: 'event', params: { eventId } })
-        this.reset()
-        this.$emit('input', false)
+        this.loading = false
       })
     },
   },
