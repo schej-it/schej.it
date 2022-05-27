@@ -42,8 +42,6 @@ func createEvent(c *gin.Context) {
 		Name      string    `json:"name" binding:"required"`
 		StartDate time.Time `json:"startDate" binding:"required"`
 		EndDate   time.Time `json:"endDate" binding:"required"`
-		StartTime int       `json:"startTime" binding:"required"`
-		EndTime   int       `json:"endTime" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -55,8 +53,6 @@ func createEvent(c *gin.Context) {
 		Name:      payload.Name,
 		StartDate: primitive.NewDateTimeFromTime(payload.StartDate),
 		EndDate:   primitive.NewDateTimeFromTime(payload.EndDate),
-		StartTime: payload.StartTime,
-		EndTime:   payload.EndTime,
 		Responses: make(map[string]models.Response),
 	}
 

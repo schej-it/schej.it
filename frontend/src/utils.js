@@ -150,6 +150,7 @@ export const fetchMethod = (method, route, body={}) => {
 */
 
 export const signInGoogle = (state=null) => {
+  /* Redirects user to the correct google sign in page */
   const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
   const redirectUri = `${window.location.origin}/auth`
   const scope = encodeURIComponent('openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly')
@@ -164,6 +165,8 @@ export const signInGoogle = (state=null) => {
 }
 
 export const onLongPress = (element, callback, capture=false) => {
+  /* Calls callback() on long press */
+
   var timeoutId;
 
   element.addEventListener('touchstart', function(e) {
@@ -188,6 +191,7 @@ export const onLongPress = (element, callback, capture=false) => {
 }
 
 export const isBetween = (value, lower, upper, inclusive=true) => {
+  /* Returns whether the given value is between lower and upper */
   if (inclusive) {
     return value >= lower && value <= upper
   } else {
@@ -196,6 +200,7 @@ export const isBetween = (value, lower, upper, inclusive=true) => {
 }
 
 export const clamp = (value, lower, upper) => {
+  /* Clamps the given value between the given ranges */
   if (value < lower) return lower
   if (value > upper) return upper
   return value
@@ -221,4 +226,12 @@ export const dataURItoBlob = (dataURI) => {
   }
   
   return new Blob([ab], { type: mimeString })
+}
+
+export const processEvent = (event) => {
+  /* Reformats the given event object to the format we want */
+  event.startDate = new Date(event.startDate)
+  event.endDate = new Date(event.endDate)
+  event.startTime = event.startDate.getHours()
+  event.endTime = event.endDate.getHours()
 }

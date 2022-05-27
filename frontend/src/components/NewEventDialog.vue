@@ -67,7 +67,7 @@
 </template>
 
 <script>
-import { getDateWithTime, post } from '@/utils'
+import { getDateWithTime, getDateWithTimeInt, post } from '@/utils'
 export default {
   name: 'NewEventDialog',
 
@@ -115,14 +115,12 @@ export default {
     },
     submit() {
       /* TODO: make sure to strip the time from the date so dates aren't localized to what the client's current time */
-      const startDate = getDateWithTime(this.dateRange.start, '00:00')
-      const endDate = getDateWithTime(this.dateRange.end, '11:59')
+      const startDate = getDateWithTimeInt(this.dateRange.start, this.startTime)
+      const endDate = getDateWithTimeInt(this.dateRange.end, this.endTime)
       post('/events', {
         name: this.name,
         startDate,
         endDate,
-        startTime: this.startTime,
-        endTime: this.endTime,
       }).then(({ eventId }) => {
         this.$router.push({ name: 'event', params: { eventId } })
         this.reset()

@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS, isPhone } from '@/utils'
+import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS, isPhone, processEvent } from '@/utils'
 import { mapActions, mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -91,8 +91,7 @@ export default {
     async refreshEvent() {
       // Get event details
       this.event = await get(`/events/${this.eventId}`)
-      this.event.startDate = new Date(this.event.startDate)
-      this.event.endDate = new Date(this.event.endDate)
+      processEvent(this.event)
     },
     resetEditing() {
       if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
@@ -108,6 +107,7 @@ export default {
     // Get event details
     try {
       this.event = await get(`/events/${this.eventId}`)
+      processEvent(this.event)
     } catch (err) {
       switch (err.error) {
         case errors.EventNotFound:
@@ -116,8 +116,6 @@ export default {
           return
       }
     }
-    this.event.startDate = new Date(this.event.startDate)
-    this.event.endDate = new Date(this.event.endDate)
     
     // Get user's calendar
     get(`/user/calendar?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {

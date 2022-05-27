@@ -9,8 +9,6 @@ type Event struct {
 	Name      string              `json:"name" bson:"name" binding:"required"`
 	StartDate primitive.DateTime  `json:"startDate" bson:"startDate" binding:"required"`
 	EndDate   primitive.DateTime  `json:"endDate" bson:"endDate" binding:"required"`
-	StartTime int                 `json:"startTime" bson:"startTime" binding:"required"`
-	EndTime   int                 `json:"endTime" bson:"endTime" binding:"required"`
 	Responses map[string]Response `json:"responses" bson:"responses" binding:"required"`
 }
 
