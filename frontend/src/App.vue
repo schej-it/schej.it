@@ -46,7 +46,7 @@
     </div>
 
     <v-main class="tw-overflow-y-auto tw-flex tw-justify-center">
-      <div class="tw-max-w-6xl tw-mx-auto tw-h-full">
+      <div class="tw-h-full">
         <router-view v-if="loaded" />
       </div>
     </v-main>
@@ -68,6 +68,12 @@
     </div>
   </v-app>
 </template>
+
+<style>
+html {
+  overflow-y: auto !important; 
+}
+</style>
 
 <script>
 import { mapMutations, mapState } from 'vuex';
@@ -110,6 +116,7 @@ export default {
     ...mapState([ 'authUser', 'error', 'info' ]),
     showHeader() {
       return (
+        this.$route.name !== 'landing' &&
         this.$route.name !== 'sign-in' &&
         this.$route.name !== 'auth' &&
         this.$route.name !== 'privacy-policy'
@@ -118,6 +125,7 @@ export default {
     showBottomNavbar() {
       return (
         isPhone(this.$vuetify) &&
+        this.$route.name !== 'landing' &&
         this.$route.name !== 'sign-in' &&
         this.$route.name !== 'join' &&
         this.$route.name !== 'auth'

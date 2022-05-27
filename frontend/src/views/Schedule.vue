@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-p-4">
+  <div class="tw-max-w-6xl tw-mx-auto tw-p-4">
 
     <UserItem :user="userItem" @showEventNames="showEventNames"/>
     <TestCalendar :noEventNames="hideEventNames" ref="calendar" />

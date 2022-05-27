@@ -1,7 +1,6 @@
 <template>
   <div v-if="event">
     <div class="tw-relative tw-bg-green tw-text-white tw-flex tw-justify-center">
-      <div class="tw-absolute tw-bg-green tw-h-full tw-w-screen" />
       <div class="tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2 tw-z-10">
         <div 
           class="tw-font-bold tw-text-3xl"
@@ -11,24 +10,26 @@
         >{{ dateString }}</div>
       </div>
     </div>
-    <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
-      <div class="tw-text-white tw-text-sm tw-z-10">
-        <span v-if="isEditing">Editing...</span>
-        <span v-else>Tap and hold calendar to enable editing</span>
+    <div class="tw-max-w-6xl tw-mx-auto">
+      <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
+        <div class="tw-text-white tw-text-sm tw-z-10">
+          <span v-if="isEditing">Editing...</span>
+          <span v-else>Tap and hold calendar to enable editing</span>
+        </div>
+        <v-spacer />
+        <v-btn v-if="isEditing" @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
+        <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
       </div>
-      <v-spacer />
-      <v-btn v-if="isEditing" @click="resetEditing" small text class="tw-text-white">Reset</v-btn>
-      <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
+      <ScheduleOverlap
+        ref="scheduleOverlap"
+        :eventId="eventId" 
+        v-bind="event"
+        :loadingCalendarEvents="loading"
+        :calendarEvents="calendarEvents"
+        :initialShowCalendarEvents="initialShowCalendarEvents"
+        @refreshEvent="refreshEvent"
+      />
     </div>
-    <ScheduleOverlap
-      ref="scheduleOverlap"
-      :eventId="eventId" 
-      v-bind="event"
-      :loadingCalendarEvents="loading"
-      :calendarEvents="calendarEvents"
-      :initialShowCalendarEvents="initialShowCalendarEvents"
-      @refreshEvent="refreshEvent"
-    />
   </div>
 </template>
 

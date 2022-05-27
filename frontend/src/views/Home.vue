@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="tw-max-w-6xl tw-mx-auto">
 
     <!-- Dialog -->
     <NewEventDialog 

@@ -13,7 +13,7 @@
           <div class="tw-text-lg tw-capitalize">{{ day.dayText }}</div>
         </div>
       </div>
-      <div class="sm:tw-w-32" />
+      <div v-if="!calendarOnly" class="sm:tw-w-32" />
     </div>
 
     <div class="sm:tw-flex sm:tw-gap-4">
@@ -168,6 +168,7 @@ export default {
 
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
+    showResponsesWithCalendarEvents: { type: Boolean, default: false },
   },
 
   data() {
@@ -269,7 +270,6 @@ export default {
             const index = response.availability.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
-  
               formatted.get(date.getTime()).add(response.user)
             }
           }
@@ -380,7 +380,7 @@ export default {
       }
 
       // Fill style
-      if (this.showCalendarEvents) {
+      if (this.showCalendarEvents && !this.showResponsesWithCalendarEvents) {
         // Show only current user availability
 
         const inDragRange = this.inDragRange(d, t)

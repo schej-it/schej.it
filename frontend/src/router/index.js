@@ -1,14 +1,19 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import HomeView from '../views/Home.vue'
+import Landing from '@/views/Landing'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
+    name: 'landing',
+    component: Landing,
+  },
+  {
+    path: '/home',
     name: 'home',
-    component: HomeView
+    component: () => import('@/views/Home.vue')
   },
   {
     path: '/schedule',
