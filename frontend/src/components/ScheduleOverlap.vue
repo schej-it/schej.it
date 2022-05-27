@@ -286,8 +286,10 @@ export default {
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = []
-      
-      for (let t = this.startTime; t < this.endTime; ++t) {
+
+      let t = this.startTime
+      while (t != this.endTime) {
+        if (t > 23) t = 0
         times.push({
           timeInt: t,
           text: timeIntToTimeText(t),
@@ -295,6 +297,7 @@ export default {
         times.push({
           timeInt: t + 0.5,
         })
+        t++
       }
 
       return times
