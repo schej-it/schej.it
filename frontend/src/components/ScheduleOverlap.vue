@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-p-4">
+  <div class="tw-p-4 tw-select-none">
     <!-- Day header -->
     <div class="tw-flex">
       <div class="tw-w-12" />
