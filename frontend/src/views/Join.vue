@@ -3,7 +3,7 @@
     <div class="tw-flex-1 tw-bg-green tw-text-white tw-flex tw-justify-center tw-items-center">
       <div class="-tw-mt-8 tw-flex tw-flex-col tw-items-center tw-space-y-3">
         <div 
-          class="tw-font-bold tw-text-5xl"
+          class="tw-text-center tw-font-bold tw-text-5xl"
         >{{ event.name }}</div>
         <div
           class="tw-font-light tw-text-2xl"
