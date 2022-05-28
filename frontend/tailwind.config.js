@@ -21,7 +21,7 @@ module.exports = {
       'gray': '#BDBDBD',
       'light-gray': '#f3f4f6',
       'avail-green': colors.emerald, // The green used for marking availability
-    },
+    }
   },
   plugins: [
   ],
