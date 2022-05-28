@@ -303,7 +303,7 @@ export default {
       return times
     },
     userHasResponded() {
-      return this.authUser._id in this.responses
+      return this.authUser && this.authUser._id in this.responses
     }
   },
 

@@ -117,7 +117,6 @@ export default {
     showHeader() {
       return (
         this.$route.name !== 'landing' &&
-        this.$route.name !== 'sign-in' &&
         this.$route.name !== 'auth' &&
         this.$route.name !== 'privacy-policy'
       )
@@ -126,7 +125,6 @@ export default {
       return (
         isPhone(this.$vuetify) &&
         this.$route.name !== 'landing' &&
-        this.$route.name !== 'sign-in' &&
         this.$route.name !== 'join' &&
         this.$route.name !== 'auth'
       )
@@ -156,11 +154,11 @@ export default {
     },
     redirectUser(authenticated) {
       let authRoutes = ['home', 'schedule', 'friends', 'event']
-      let noAuthRoutes = ['sign-in']
+      let noAuthRoutes = []
 
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
-          this.$router.replace({ name: 'sign-in' })
+          this.$router.replace({ name: 'landing' })
           console.log('redirecting to SIGN IN')
         }
       } else {

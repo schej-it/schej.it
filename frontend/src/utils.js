@@ -63,7 +63,7 @@ export const clampDateToTimeInt = (date, timeInt, type) => {
   /* Clamps the date to the given time, type can either be "upper" or "lower" */
   const diff = dateToTimeInt(date) - timeInt
   if (type === 'upper' && diff < 0) {
-    return getDateWithTimeInt(date, timeInt)     
+    return getDateWithTimeInt(date, timeInt)
   } else if (type === 'lower' && diff > 0) {
     return getDateWithTimeInt(date, timeInt)
   }
@@ -91,6 +91,37 @@ export const compareDateDay = (a, b) => {
     return a.getDate() - b.getDate()
   }
 }
+
+export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
+  /* 
+  Returns whether the given timeInt is between date1 and date2 
+  such that date1.getHour() <= timeInt <= date2.getHour(), accounting 
+  for the possibility that date1 and date2 might be on separate days
+  */
+
+  const hour1 = date1.getHour()
+  const hour2 = date2.getHour()
+
+  if (hour1 <= hour2) {
+    return hour1 <= timeInt && timeInt <= hour2 
+  } else {
+    return ( hour1 <= timeInt && timeInt < 24 ) || ( 0 <= timeInt && timeInt <= hour2 )
+  }
+}
+
+// export const areDatesBetweenTimeInts = (date1, date2, time1, time2) => {
+//   /* Returns whether both date1 and date2 are fully contained within time1 and time2 */
+
+//   if (date1.getHour() < time1) {
+//     return getDateWithTimeInt(date1, time1).getTime() <= date1.getTime() && date2.getTime() <= getDateWithTimeInt(date2, time2).getTime()
+//   }
+
+//   else
+//     return getDateWithTimeInt(date1, time1).getTime() <= date1.getTime() && date2.getTime() <= getDateWithTimeInt(date2, time2).getTime()
+
+//   time1 <= date1.getHour() || time1 <= 24 && 0 <= date1.getHour() && date1.getHour() < date2.getHour() && date2.getHour() <= time2 
+//   return getDateWithTimeInt(date1, time1) <= date1.getTime()
+// }
 
 /* 
   Fetch utils

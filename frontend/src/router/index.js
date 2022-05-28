@@ -31,11 +31,6 @@ const routes = [
     component: () => import('@/views/FriendSchedule.vue'),
   },
   {
-    path: '/sign-in',
-    name: 'sign-in',
-    component: () => import('@/views/SignIn.vue')
-  },
-  {
     path: '/j/:eventId',
     name: 'join',
     component: () => import('@/views/Join.vue'),

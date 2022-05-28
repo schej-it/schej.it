@@ -151,14 +151,12 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	// Format response to return
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, item := range res.Items {
-		// Filter out invalid dates and restructure
-		if timeMin.Before(item.Start.DateTime) && timeMax.After(item.End.DateTime) {
-			calendarEvents = append(calendarEvents, models.CalendarEvent{
-				Summary:   item.Summary,
-				StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
-				EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
-			})
-		}
+		// Restructure event
+		calendarEvents = append(calendarEvents, models.CalendarEvent{
+			Summary:   item.Summary,
+			StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
+			EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
+		})
 	}
 
 	return calendarEvents, nil

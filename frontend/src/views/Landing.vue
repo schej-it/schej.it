@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="tw-bg-green tw-h-screen">
-      <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between">
+      <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-max-w-6xl tw-m-auto">
         <v-img
           alt="Schej.it Logo"
           class="shrink tw-cursor-pointer"
@@ -11,33 +11,29 @@
           width="120"
         />
 
-        <v-btn dark text @click="$router.push('/sign-in')">Sign in</v-btn>
+        <v-btn dark text @click="signIn">Sign in</v-btn>
       </div>
       <div class="tw-flex tw-flex-col tw-items-center">
         <div
-          class="tw-mt-24 tw-mb-4 tw-text-3xl sm:tw-text-5xl lg:tw-text-7xl tw-font-medium tw-text-center tw-text-white"
+          class="tw-mt-28 tw-mb-4 lg:tw-mb-10 tw-text-3xl sm:tw-text-5xl lg:tw-text-7xl tw-font-medium tw-text-center tw-text-white"
         >
           Scheduling made simple.
         </div>
-        <v-btn rounded class="tw-bg-blue" dark @click="$router.push('/sign-in')"
+        <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
           >Get started</v-btn
         >
       </div>
     </div>
+
     <div
       class="-tw-translate-y-1/2 -tw-mb-72 md:tw-grid md:tw-place-content-center"
     >
       <LandingPageCalendar />
     </div>
+    
     <div class="tw-pt-20 tw-pb-56">
-      <div class="tw-flex tw-flex-row tw-justify-center">
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10">
-          <h1 class="tw-font-bold tw-text-2xl">Schedule meetings with ease</h1>
-          <p class="tw-text-gray">
-            Mark your availability alongside all your Google Calendar events.
-            It’s like when2meet but with Google Calendar integration.
-          </p>
-        </div>
+
+      <div class="tw-flex tw-flex-col tw-items-center sm:tw-flex-row-reverse sm:tw-justify-center">
         <div class="tw-flex tw-flex tw-w-80">
           <v-img
             alt="Schej.it Logo"
@@ -48,63 +44,72 @@
             width="600"
           />
         </div>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10">
+          <h1 class="tw-font-bold tw-text-2xl">Schedule meetings with ease</h1>
+          <p class="tw-text-dark-gray">
+            Mark your availability alongside all your Google Calendar events.
+            It’s like when2meet but with Google Calendar integration.
+          </p>
+        </div>
       </div>
 
-      <div class="tw-flex tw-flex-row tw-justify-center tw-mt-20">
+      <div class="tw-flex tw-flex-col tw-items-center sm:tw-flex-row sm:tw-justify-center tw-mt-20">
         <div class="tw-flex tw-flex tw-w-80 tw-justify-center">
           <v-img
             alt="Schej.it Logo"
             class="shrink tw-cursor-pointer"
             contain
             src="https://cdn-icons-png.flaticon.com/512/3721/3721924.png"
-            transition="scale-transition"
+            transition="scroll-y-reverse-transition"
             width="180"
           />
         </div>
 
         <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7">
           <h1 class="tw-font-bold tw-text-2xl">Send your availability</h1>
-          <p class="tw-text-gray">
+          <p class="tw-text-dark-gray">
             Send your friends a screenshot of the times you are available. No
             more hassle of manually typing out time ranges of when you're free.
           </p>
         </div>
       </div>
 
-      <div class="tw-flex tw-flex-row tw-justify-center tw-mt-20">
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7">
-          <h1 class="tw-font-bold tw-text-2xl">Peep your friends’ schedules</h1>
-          <p class="tw-text-gray">
-            Add your friends to see what they’ve been up to. Control who can see
-            what.
-          </p>
-        </div>
+      <div class="tw-flex tw-flex-col tw-items-center sm:tw-flex-row-reverse sm:tw-justify-center tw-mt-20">
         <div class="tw-flex tw-flex tw-w-80 tw-justify-center">
           <v-img
             alt="Schej.it Logo"
             class="shrink tw-cursor-pointer"
             contain
             src="https://icon-library.com/images/friends-icon-transparent/friends-icon-transparent-1.jpg"
-            transition="scale-transition"
+            transition="scroll-y-reverse-transition"
             width="200"
           />
+        </div>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7">
+          <h1 class="tw-font-bold tw-text-2xl">Peep your friends’ schedules</h1>
+          <p class="tw-text-dark-gray">
+            Add your friends to see what they’ve been up to. Control who can see
+            what.
+          </p>
         </div>
       </div>
     </div>
 
     <div
-      class="-tw-translate-y-1/2 -tw-mb-52 md:tw-grid md:tw-place-content-center"
+      class="-tw-translate-y-1/2 -tw-mb-52 tw-grid tw-place-content-center"
     >
-      <v-img
+      <img
+        class="tw-select-none"
+        style="user-drag: none;"
         alt="Schej.it Logo"
         contain
         src="@/assets/logo_square_512_512.png"
         width="200"
-      />
+      >
     </div>
 
-    <div class="tw-bg-green tw-h-96 tw-flex tw-justify-center tw-items-center">
-      <v-btn rounded class="tw-bg-blue" dark @click="$router.push('/sign-in')"
+    <div class="tw-bg-green tw-h-80 tw-flex tw-justify-center tw-items-center">
+      <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
         >Get started</v-btn
       >
     </div>
@@ -112,13 +117,31 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import LandingPageCalendar from '@/components/LandingPageCalendar'
+import { isPhone, signInGoogle } from '@/utils'
 
 export default {
   name: 'Landing',
 
   components: {
     LandingPageCalendar,
+  },
+
+  computed: {
+    ...mapState([ 'authUser' ]),
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
+  },
+
+  methods: {
+    signIn() {
+      if (!this.authUser) 
+        signInGoogle()
+      else 
+        this.$router.push({ name: 'home' })
+    },
   },
 }
 </script>

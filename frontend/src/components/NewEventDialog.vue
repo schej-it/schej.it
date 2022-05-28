@@ -20,6 +20,7 @@
         <v-text-field 
           ref="name-field"
           v-model="name"
+          autofocus
           :disabled="loading"
           class="tw-text-white tw-flex-initial"
           placeholder="Name of event..."
