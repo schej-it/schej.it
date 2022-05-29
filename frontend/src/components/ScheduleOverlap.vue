@@ -429,6 +429,7 @@ export default {
     async toggleShowCalendarEvents() {
       if (this.showCalendarEvents && this.unsavedChanges) {
         await this.submitAvailability()
+        this.showInfo('Changes saved!')
       }
       this.availabilityBottomSheet = false
       this.showCalendarEvents = !this.showCalendarEvents

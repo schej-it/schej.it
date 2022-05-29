@@ -126,7 +126,8 @@ export default {
         isPhone(this.$vuetify) &&
         this.$route.name !== 'landing' &&
         this.$route.name !== 'join' &&
-        this.$route.name !== 'auth'
+        this.$route.name !== 'auth' && 
+        this.$route.name !== 'privacy-policy'
       )
     },
     centerHeaderLogo() {

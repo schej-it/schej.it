@@ -84,7 +84,7 @@ export default {
   },
 
   methods: {
-    ...mapActions([ 'showError' ]),
+    ...mapActions([ 'showError', 'showInfo' ]),
     test() {
       console.log(document.querySelector('.v-main').scrollTop)
     },
@@ -99,7 +99,10 @@ export default {
     saveChanges() {
       if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.submitAvailability()
 
-      if (!this.isPhone) this.scheduleOverlapComponent.showCalendarEvents = false
+      if (!this.isPhone) {
+        this.showInfo('Changes saved!')
+        this.scheduleOverlapComponent.showCalendarEvents = false
+      }
     },
   },
 
