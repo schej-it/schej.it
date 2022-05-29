@@ -96,7 +96,7 @@
     </div>
 
     <div
-      class="-tw-translate-y-1/2 -tw-mb-52 tw-grid tw-place-content-center"
+      class="-tw-translate-y-[41%] -tw-mb-52 tw-grid tw-place-content-center"
     >
       <img
         class="tw-select-none"
@@ -109,7 +109,7 @@
     </div>
 
     <div class="tw-bg-green tw-h-80 tw-flex tw-flex-col">
-      <div class="tw-flex-1 tw-flex tw-justify-center tw-items-center">
+      <div class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-14">
         <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
           >Get started</v-btn
         >
