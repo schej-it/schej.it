@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-p-4 tw-select-none">
+  <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none;">
     <!-- Day header -->
     <div class="tw-flex">
       <div class="tw-w-12" />
@@ -587,7 +587,12 @@ export default {
         timesEl.addEventListener('long-press', e => {
           if (!this.showCalendarEvents || this.editing) return
           
-          navigator.vibrate(10)
+          try {
+            navigator.vibrate(10)
+          } catch (err) {
+            console.log(`Didn't vibrate because it's unsupported!`)
+          }
+
           this.editing = true
         })
 

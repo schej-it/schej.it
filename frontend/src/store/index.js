@@ -4,10 +4,6 @@ import { getDateWithTime, getDateDayOffset } from '@/utils'
 
 Vue.use(Vuex)
 
-const date1 = new Date()
-const date2 = getDateDayOffset(new Date(), 1)
-const date3 = getDateDayOffset(new Date(), 2)
-
 export default new Vuex.Store({
   state: {
     error: '',

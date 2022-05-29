@@ -15,7 +15,7 @@
       </div>
       <div class="tw-flex tw-flex-col tw-items-center">
         <div
-          class="tw-mt-28 tw-mb-4 lg:tw-mb-10 tw-text-3xl sm:tw-text-5xl lg:tw-text-7xl tw-font-medium tw-text-center tw-text-white"
+          class="tw-mt-28 tw-mb-4 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-7xl tw-font-medium tw-text-center tw-text-white"
         >
           Scheduling made simple.
         </div>
@@ -44,8 +44,8 @@
             width="600"
           />
         </div>
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10">
-          <h1 class="tw-font-bold tw-text-2xl">Schedule meetings with ease</h1>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10 tw-px-4">
+          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center tw-text-xl tw-mb-2">Schedule meetings with ease</h1>
           <p class="tw-text-dark-gray">
             Mark your availability alongside all your Google Calendar events.
             It’s like when2meet but with Google Calendar integration.
@@ -65,8 +65,8 @@
           />
         </div>
 
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7">
-          <h1 class="tw-font-bold tw-text-2xl">Send your availability</h1>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4">
+          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center tw-text-xl tw-mb-2">Send your availability</h1>
           <p class="tw-text-dark-gray">
             Send your friends a screenshot of the times you are available. No
             more hassle of manually typing out time ranges of when you're free.
@@ -85,8 +85,8 @@
             width="200"
           />
         </div>
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7">
-          <h1 class="tw-font-bold tw-text-2xl">Peep your friends’ schedules</h1>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4">
+          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center tw-text-xl tw-mb-2">Peep your friends’ schedules</h1>
           <p class="tw-text-dark-gray">
             Add your friends to see what they’ve been up to. Control who can see
             what.
@@ -108,10 +108,15 @@
       >
     </div>
 
-    <div class="tw-bg-green tw-h-80 tw-flex tw-justify-center tw-items-center">
-      <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
-        >Get started</v-btn
-      >
+    <div class="tw-bg-green tw-h-80 tw-flex tw-flex-col">
+      <div class="tw-flex-1 tw-flex tw-justify-center tw-items-center">
+        <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
+          >Get started</v-btn
+        >
+      </div>
+      <div class="tw-text-center tw-text-white tw-m-2">	
+        <router-link class="tw-text-white tw-font-medium" :to="{ path: 'privacy-policy' }">Privacy Policy</router-link>
+      </div>
     </div>
   </div>
 </template>

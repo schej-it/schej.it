@@ -118,7 +118,6 @@ export default {
     }
     
     // Get user's calendar
-    console.log(this.event.startDate, this.event.endDate)
     getCalendarEvents(this.event).then(events => {
       this.calendarEvents = events
       this.loading = false

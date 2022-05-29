@@ -1,5 +1,6 @@
 import Vue from "vue"
 
+import store from '@/store'
 import { serverURL, socketURL, errors } from "@/constants"
 
 /* 
@@ -116,13 +117,7 @@ export const areDatesInTimeRanges = (date1, date2, timeRanges) => {
   const time2 = date2.getTime()
   for (const range of timeRanges) {
     if (range.start <= time1 && time2 <= range.end) {
-      console.log(new Date(range.start))
-      console.log(date1)
-      console.log(date2)
-      console.log(new Date(range.end))
-      console.log(' ')
       return true
-    
     }
   }
   return false
@@ -162,15 +157,12 @@ export const getCalendarEvents = (event) => {
         calendarEvent.startDate = new Date(calendarEvent.startDate)
         calendarEvent.endDate = new Date(calendarEvent.endDate)
         const { startDate, endDate} = calendarEvent
-        if (calendarEvent.summary.includes('to work')) console.log(calendarEvent)
         if (isTimeIntBetweenDates(event.startTime, startDate, endDate)) {
-          console.log('OK 1')
           return {
             ...calendarEvent,
             startDate: startDate.getHours() <= event.startTime ? getDateWithTimeInt(startDate, event.startTime) : getDateWithTimeInt(endDate, event.startTime)
           }
         } else if (isTimeIntBetweenDates(event.endTime, startDate, endDate)) {
-          console.log('OK 2')
           return {
             ...calendarEvent,
             endDate: endDate.getHours() >= event.endTime ? getDateWithTimeInt(endDate, event.endTime) : getDateWithTimeInt(startDate, event.endTime)
@@ -258,10 +250,9 @@ export const signInGoogle = (state=null) => {
   window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${stateString}`
 }
 
+var timeoutId;
 export const onLongPress = (element, callback, capture=false) => {
   /* Calls callback() on long press */
-
-  var timeoutId;
 
   element.addEventListener('touchstart', function(e) {
       timeoutId = setTimeout(function() {
