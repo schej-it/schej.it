@@ -44,8 +44,8 @@
             width="600"
           />
         </div>
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10 tw-px-4">
-          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center tw-text-xl tw-mb-2">Schedule meetings with ease</h1>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10 tw-px-4 sm:tw-px-0">
+          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center sm:tw-text-left tw-text-xl tw-mb-2">Schedule meetings with ease</h1>
           <p class="tw-text-dark-gray">
             Mark your availability alongside all your Google Calendar events.
             It’s like when2meet but with Google Calendar integration.
@@ -65,8 +65,8 @@
           />
         </div>
 
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4">
-          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center tw-text-xl tw-mb-2">Send your availability</h1>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4 sm:tw-px-0">
+          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center sm:tw-text-left tw-text-xl tw-mb-2">Send your availability</h1>
           <p class="tw-text-dark-gray">
             Send your friends a screenshot of the times you are available. No
             more hassle of manually typing out time ranges of when you're free.
@@ -85,8 +85,8 @@
             width="200"
           />
         </div>
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4">
-          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center tw-text-xl tw-mb-2">Peep your friends’ schedules</h1>
+        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4 sm:tw-px-0">
+          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center sm:tw-text-left tw-text-xl tw-mb-2">Peep your friends’ schedules</h1>
           <p class="tw-text-dark-gray">
             Add your friends to see what they’ve been up to. Control who can see
             what.
