@@ -3,7 +3,7 @@
     <div class="tw-bg-green tw-h-screen">
       <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-max-w-6xl tw-m-auto">
         <v-img
-          alt="Schej.it Logo"
+          alt="schej.it Logo"
           class="shrink tw-cursor-pointer"
           contain
           src="@/assets/logo_dark.svg"
