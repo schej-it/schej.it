@@ -154,8 +154,8 @@ export default {
     },
     redirectUser(authenticated) {
       let authRoutes = ['home', 'schedule', 'friends', 'event']
-      let noAuthRoutes = []
-
+      let noAuthRoutes = ['landing']
+      
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
           this.$router.replace({ name: 'landing' })
