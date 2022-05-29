@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS, isPhone, processEvent } from '@/utils'
+import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getDateDayOffset, clampDateToTimeInt, post, ERRORS, isPhone, processEvent, getDateWithTimeInt, getCalendarEvents } from '@/utils'
 import { mapActions, mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
@@ -118,18 +118,9 @@ export default {
     }
     
     // Get user's calendar
-    get(`/user/calendar?timeMin=${this.event.startDate.toISOString()}&timeMax=${getDateDayOffset(this.event.endDate, 1).toISOString()}`).then(data => {
-      this.calendarEvents = data
-        .filter(event => (
-          dateToTimeInt(new Date(event.endDate)) > this.event.startTime && 
-          dateToTimeInt(new Date(event.startDate)) < this.event.endTime
-        ))
-        .map(event => ({ 
-          summary: event.summary,
-          startDate: clampDateToTimeInt(new Date(event.startDate), this.event.startTime, 'upper'),
-          endDate: clampDateToTimeInt(new Date(event.endDate), this.event.endTime, 'lower'),
-        }))
-      
+    console.log(this.event.startDate, this.event.endDate)
+    getCalendarEvents(this.event).then(events => {
+      this.calendarEvents = events
       this.loading = false
     }).catch(err => {
       console.error(err)

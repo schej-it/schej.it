@@ -99,8 +99,8 @@ export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
   for the possibility that date1 and date2 might be on separate days
   */
 
-  const hour1 = date1.getHour()
-  const hour2 = date2.getHour()
+  const hour1 = date1.getHours()
+  const hour2 = date2.getHours()
 
   if (hour1 <= hour2) {
     return hour1 <= timeInt && timeInt <= hour2 
@@ -109,19 +109,82 @@ export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
   }
 }
 
-// export const areDatesBetweenTimeInts = (date1, date2, time1, time2) => {
-//   /* Returns whether both date1 and date2 are fully contained within time1 and time2 */
+export const areDatesInTimeRanges = (date1, date2, timeRanges) => {
+  /* Returns whether both date1 and date2 are fully contained within time1 and time2 */
 
-//   if (date1.getHour() < time1) {
-//     return getDateWithTimeInt(date1, time1).getTime() <= date1.getTime() && date2.getTime() <= getDateWithTimeInt(date2, time2).getTime()
-//   }
+  const time1 = date1.getTime()
+  const time2 = date2.getTime()
+  for (const range of timeRanges) {
+    if (range.start <= time1 && time2 <= range.end) {
+      console.log(new Date(range.start))
+      console.log(date1)
+      console.log(date2)
+      console.log(new Date(range.end))
+      console.log(' ')
+      return true
+    
+    }
+  }
+  return false
+}
 
-//   else
-//     return getDateWithTimeInt(date1, time1).getTime() <= date1.getTime() && date2.getTime() <= getDateWithTimeInt(date2, time2).getTime()
+export const getCalendarEvents = (event) => {
+  /* 
+    Returns an array of the user's calendar events for the given event, filtering for events
+    only between the time ranges of the event and clamping calendar events that extend beyond the time
+    ranges
+  */
 
-//   time1 <= date1.getHour() || time1 <= 24 && 0 <= date1.getHour() && date1.getHour() < date2.getHour() && date2.getHour() <= time2 
-//   return getDateWithTimeInt(date1, time1) <= date1.getTime()
-// }
+  const timeRanges = []
+  let curDate = event.startDate
+  while (curDate.getTime() < event.endDate.getTime()) {
+    const nextDate = getDateDayOffset(curDate, 1)
+
+    let end
+    if (event.startTime <= event.endTime) {
+      end = getDateWithTimeInt(curDate, event.endTime).getTime()
+    } else {
+      end = getDateWithTimeInt(nextDate, event.endTime).getTime()
+    }
+    timeRanges.push({
+      start: curDate.getTime(),
+      end,
+    })
+
+    curDate = nextDate
+  }
+
+  return get(`/user/calendar?timeMin=${event.startDate.toISOString()}&timeMax=${getDateDayOffset(event.endDate, 1).toISOString()}`).then(data => {
+    return data
+      .map((calendarEvent) => {
+        // If calendarEvent has a time int between the start and end dates, clamp it based on whether it's the starttime or endtime
+
+        calendarEvent.startDate = new Date(calendarEvent.startDate)
+        calendarEvent.endDate = new Date(calendarEvent.endDate)
+        const { startDate, endDate} = calendarEvent
+        if (calendarEvent.summary.includes('to work')) console.log(calendarEvent)
+        if (isTimeIntBetweenDates(event.startTime, startDate, endDate)) {
+          console.log('OK 1')
+          return {
+            ...calendarEvent,
+            startDate: startDate.getHours() <= event.startTime ? getDateWithTimeInt(startDate, event.startTime) : getDateWithTimeInt(endDate, event.startTime)
+          }
+        } else if (isTimeIntBetweenDates(event.endTime, startDate, endDate)) {
+          console.log('OK 2')
+          return {
+            ...calendarEvent,
+            endDate: endDate.getHours() >= event.endTime ? getDateWithTimeInt(endDate, event.endTime) : getDateWithTimeInt(startDate, event.endTime)
+          }
+        } else {
+          return calendarEvent
+        }
+      })
+      .filter(({ startDate, endDate }) => {
+        // Filter calendarEvent based on whether it's completely in between start time and end time
+        return areDatesInTimeRanges(startDate, endDate, timeRanges)
+      })
+  })
+}
 
 /* 
   Fetch utils

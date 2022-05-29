@@ -67,13 +67,13 @@
                     class="tw-absolute tw-w-full tw-p-px tw-select-none"
                     :style="event.style"
                   >
-                    <div class="tw-hidden tw-bg-blue/25 tw-bg-gray/25" />
+                    <div class="tw-hidden tw-bg-blue/25 tw-bg-dark-gray/25" />
                     <div
-                      :class="`tw-bg-${noEventNames ? 'gray' : 'blue'}/25`"
+                      :class="`tw-bg-${noEventNames ? 'dark-gray' : 'blue'}/25`"
                       class="tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                     >
                       <div 
-                      :class="`tw-text-${noEventNames ? 'gray' : 'blue'}`"
+                      :class="`tw-text-${noEventNames ? 'dark-gray' : 'blue'}`"
                       class="tw-font-medium">
                         {{ noEventNames ? 'BUSY' : event.summary }}
                       </div>
@@ -218,16 +218,20 @@ export default {
         arr[i] = []
       }
       for (const calendarEvent of this.calendarEvents) {
-        const startTime = dateToTimeInt(calendarEvent.startDate)
-        const endTime = dateToTimeInt(calendarEvent.endDate)
+        // The number of hours since start time
+        // TODO: this doesn't account for if the startTime and the startTime of the event are on different days
+        const hoursOffset = ( calendarEvent.startDate.getTime() - getDateWithTimeInt(calendarEvent.startDate, this.startTime).getTime() ) / ( 1000*60*60 )
+        // The length of the event in hours
+        const hoursLength = ( calendarEvent.endDate.getTime() - calendarEvent.startDate.getTime() ) / ( 1000*60*60 )
+
         for (const d in this.days) {
           const day = this.days[d]
           if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
             arr[d].push({
               ...calendarEvent,
               style: {
-                top: `calc(${startTime-this.startTime} * 2 * 1.25rem)`, // 1.25 rem = tw-h-5 
-                height: `calc(${endTime-startTime} * 2 * 1.25rem)`
+                top: `calc(${hoursOffset} * 2 * 1.25rem)`, // 1.25 rem = tw-h-5 
+                height: `calc(${hoursLength} * 2 * 1.25rem)`
               }
             })
             break

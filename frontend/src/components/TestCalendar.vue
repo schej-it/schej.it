@@ -16,6 +16,7 @@
       :startTime="startTime"
       :endTime="endTime"
       :calendarEvents="calendarEvents"
+      :loadingCalendarEvents="loading"
       :noEventNames="noEventNames"
       calendarOnly
     />
@@ -29,9 +30,11 @@ import {
   signInGoogle,
   get,
   getDateDayOffset,
-  getDateWithTime,
+  getDateWithTimeInt,
   dateToTimeInt,
   clampDateToTimeInt,
+  getCalendarEvents,
+  isPhone,
 } from '@/utils'
 
 export default {
@@ -44,14 +47,23 @@ export default {
   },
 
   data: () => ({
-    startDate: getDateWithTime(new Date(), '0:00'),
-    endDate: getDateWithTime(getDateDayOffset(new Date(), 2), '11:59'),
+    startDate: getDateWithTimeInt(new Date(), 9),
+    endDate: getDateWithTimeInt(getDateDayOffset(new Date(), 2), 24),
     startTime: 9,
     endTime: 24,
     calendarEvents: [],
+    loading: false,
   }),
 
   created() {
+    if (this.isPhone) {
+      this.startDate = getDateWithTimeInt(new Date(), 9)
+      this.endDate = getDateWithTimeInt(getDateDayOffset(new Date(), 2), 24)
+    } else {
+      this.startDate = getDateWithTimeInt(new Date(), 9)
+      this.endDate = getDateWithTimeInt(getDateDayOffset(new Date(), 6), 24)
+    }
+
     this.retrieveCalendarEvents()
   },
 
@@ -69,33 +81,27 @@ export default {
       this.retrieveCalendarEvents()
     },
     retrieveCalendarEvents() {
-      get(
-        `/user/calendar?timeMin=${this.startDate.toISOString()}&timeMax=${getDateDayOffset(
-          this.endDate,
-          1
-        ).toISOString()}`
-      )
-        .then((data) => {
-          this.calendarEvents = data.map((event) => ({
-            summary: event.summary,
-            startDate: clampDateToTimeInt(
-              new Date(event.startDate),
-              this.startTime,
-              'upper'
-            ),
-            endDate: clampDateToTimeInt(
-              new Date(event.endDate),
-              this.endTime,
-              'lower'
-            ),
-          }))
-        })
-        .catch((err) => {
-          console.error(err)
-          if (err.error.code === 401) {
-            signInGoogle()
-          }
-        })
+      this.loading = true
+      getCalendarEvents({ 
+        startDate: this.startDate,
+        endDate: this.endDate,
+        startTime: this.startTime,
+        endTime: this.endTime,
+      }).then(data => {
+        this.calendarEvents = data
+        this.loading = false
+      }).catch((err) => {
+        console.error(err)
+        if (err.error.code === 401 || err.error.code === 403) {
+          signInGoogle()
+        }
+      })
+    },
+  },
+
+  computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
     },
   },
 }
