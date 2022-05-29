@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"schej.it/server/db"
+	"schej.it/server/discord_bot"
 	"schej.it/server/logger"
 	"schej.it/server/routes"
 
@@ -50,6 +51,12 @@ func main() {
 	// Init logger
 	logger.Init(logFile)
 
+	// Load .env variables
+	loadDotEnv()
+
+	// Init discord bot
+	discord_bot.Init()
+
 	// Init router
 	router := gin.New()
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
@@ -74,9 +81,6 @@ func main() {
 		)
 	}))
 	router.Use(gin.Recovery())
-
-	// Load .env variables
-	loadDotEnv()
 
 	// Cors
 	router.Use(cors.New(cors.Config{

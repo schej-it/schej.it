@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/db"
+	"schej.it/server/discord_bot"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
@@ -110,6 +112,8 @@ func signIn(c *gin.Context) {
 		}
 
 		userId = res.InsertedID.(primitive.ObjectID)
+
+		discord_bot.SendMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
 	} else {
 		// User does exist, get user id
 		var user models.User

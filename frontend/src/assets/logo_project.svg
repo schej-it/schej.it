@@ -28,15 +28,15 @@
      fit-margin-right="0"
      fit-margin-bottom="0"
      units="in"
-     inkscape:zoom="0.70710678"
-     inkscape:cx="672.45855"
-     inkscape:cy="174.65537"
+     inkscape:zoom="1"
+     inkscape:cx="400.5"
+     inkscape:cy="128.5"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g32088-9" />
+     inkscape:current-layer="text1244-6-8" />
   <defs
      id="defs34207" />
   <g
@@ -117,6 +117,17 @@
            d="m 108.67692,106.42905 v 4.71702 q 0,0.74001 -0.39274,1.14929 -0.39274,0.41341 -1.13275,0.41341 -0.31005,0 -0.59117,-0.0703 v -0.94671 q 0.21497,0.0372 0.3762,0.0372 0.54157,0 0.54157,-0.57464 v -4.72529 z m -1.29397,-1.15756 q 0,-0.26871 0.17776,-0.44235 0.1819,-0.17363 0.49196,-0.17363 0.31006,0 0.48783,0.17363 0.1819,0.17364 0.1819,0.44235 0,0.27286 -0.18604,0.44649 -0.1819,0.17363 -0.48369,0.17363 -0.30179,0 -0.48782,-0.17363 -0.1819,-0.17363 -0.1819,-0.44649 z"
            style="font-weight:bold;font-family:Roboto;-inkscape-font-specification:'Roboto Bold';fill:#6fcf97"
            id="path866" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:8.41496px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0104365"
+           x="88.974579"
+           y="110.84302"
+           id="text1810"><tspan
+             sodipodi:role="line"
+             id="tspan1808"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8.41496px;font-family:roboto;-inkscape-font-specification:'roboto Bold';stroke-width:0.0104365"
+             x="88.974579"
+             y="110.84302">schej</tspan></text>
       </g>
       <rect
          style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:#00ff00;fill-opacity:1;stroke:none;stroke-width:0.444259;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
