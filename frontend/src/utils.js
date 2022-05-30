@@ -295,6 +295,10 @@ export const isPhone = (vuetify) => {
   return vuetify.breakpoint.name === 'xs'
 }
 
+export const br = (vuetify, breakpoint) => {
+  return vuetify.breakpoint.name === breakpoint
+}
+
 export const dataURItoBlob = (dataURI) => {
   // convert base64 to raw binary data held in a string
   // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this

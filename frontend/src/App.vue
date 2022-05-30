@@ -73,6 +73,11 @@
 html {
   overflow-y: auto !important; 
 }
+
+.v-btn {
+  letter-spacing: unset !important;
+  text-transform: unset !important;
+}
 </style>
 
 <script>
@@ -155,7 +160,7 @@ export default {
     },
     redirectUser(authenticated) {
       let authRoutes = ['home', 'schedule', 'friends', 'event']
-      let noAuthRoutes = ['landing']
+      let noAuthRoutes = ['landing', 'sign-in']
       
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {

@@ -1,5 +1,34 @@
 <template>
   <div>
+    <v-dialog 
+      v-model="dialog"
+      :width="400"
+    >
+      <v-card>
+        <v-card-title>
+          <span v-if="dialogType === DIALOG_TYPES.SIGN_IN">Sign in</span>
+          <span v-else-if="dialogType === DIALOG_TYPES.SIGN_UP">Sign up</span>
+        </v-card-title>
+        <v-card-text class="tw-flex tw-flex-col tw-items-center">
+          <v-btn
+            outlined
+            class="tw-border-gray tw-p-0 tw-mb-2"
+            @click="signInGoogle"
+          >
+            <v-img
+              class="tw-mx-2"
+              contain
+              width="20"
+              height="20"
+              src="@/assets/google_logo.svg"
+            ></v-img>
+            <div class="tw-mr-4 tw-text-black">Continue with Google</div>
+          </v-btn>
+          <div class="tw-text-xs tw-text-center">By continuing, you agree to our <router-link :to="{ name: 'privacy-policy' }">privacy policy</router-link></div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <div class="tw-bg-green tw-h-screen">
       <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-max-w-6xl tw-m-auto">
         <v-img
@@ -19,7 +48,7 @@
         >
           Scheduling made simple.
         </div>
-        <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
+        <v-btn rounded class="tw-bg-blue" dark @click="getStarted" :large="$vuetify.breakpoint.smAndUp" :x-large="$vuetify.breakpoint.mdAndUp"
           >Get started</v-btn
         >
       </div>
@@ -110,7 +139,7 @@
 
     <div class="tw-bg-green tw-h-80 tw-flex tw-flex-col">
       <div class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-14">
-        <v-btn rounded class="tw-bg-blue" dark @click="signIn" :large="!isPhone"
+        <v-btn rounded class="tw-bg-blue" dark @click="getStarted" :large="$vuetify.breakpoint.smAndUp" :x-large="$vuetify.breakpoint.mdAndUp"
           >Get started</v-btn
         >
       </div>
@@ -122,7 +151,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import LandingPageCalendar from '@/components/LandingPageCalendar'
 import { isPhone, signInGoogle } from '@/utils'
 
@@ -133,19 +161,32 @@ export default {
     LandingPageCalendar,
   },
 
+  data: () => ({
+    dialog: false,
+    dialogType: 0,
+    DIALOG_TYPES: {
+      SIGN_IN: 0,
+      SIGN_UP: 1,
+    },
+  }),
+
   computed: {
-    ...mapState([ 'authUser' ]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
   },
 
   methods: {
+    signInGoogle() {
+      signInGoogle()
+    },
     signIn() {
-      if (!this.authUser) 
-        signInGoogle()
-      else 
-        this.$router.push({ name: 'home' })
+      this.dialog = true
+      this.dialogType = this.DIALOG_TYPES.SIGN_IN
+    },
+    getStarted() {
+      this.dialog = true
+      this.dialogType = this.DIALOG_TYPES.SIGN_UP
     },
   },
 }
