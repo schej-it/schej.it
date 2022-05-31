@@ -9,8 +9,11 @@ type Command struct {
 	Execute     func(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 }
 
-var Commands []Command = []Command{
-	activeUsers,
+var Commands []Command = make([]Command, 0)
+
+func Init() {
+	Commands = append(Commands, activeUsers)
+	Commands = append(Commands, help)
 }
 
 // Send a message to the current channel that received a message

@@ -19,6 +19,7 @@ var commandMap map[string]commands.Command = make(map[string]commands.Command)
 func Init() {
 	var err error
 	token := os.Getenv("DISCORD_BOT_TOKEN")
+	guildId := os.Getenv("GUILD_ID")
 	bot, err = discordgo.New("Bot " + token)
 	if err != nil {
 		logger.StdErr.Panicln(err)
@@ -43,21 +44,16 @@ func Init() {
 	} else {
 		listeningChannelName = "schej-it-bot-dev"
 	}
-	guilds, _ := bot.UserGuilds(100, "", "")
-	for _, guild := range guilds {
-		if guild.Name == "AssignHub" {
-			channels, _ := bot.GuildChannels(guild.ID)
-			for _, channel := range channels {
-				if channel.Name == listeningChannelName {
-					listeningChannel = channel
-					break
-				}
-			}
+	channels, _ := bot.GuildChannels(guildId)
+	for _, channel := range channels {
+		if channel.Name == listeningChannelName {
+			listeningChannel = channel
 			break
 		}
 	}
 
 	// Construct commandMap
+	commands.Init()
 	for _, command := range commands.Commands {
 		commandMap[command.Name] = command
 	}
