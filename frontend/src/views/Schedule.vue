@@ -71,7 +71,7 @@ export default {
           .share({
             files: filesArray,
             title: 'My Schedule',
-            text: '',
+            text: `Check out my Schej! My timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
           })
           .then(() => console.log('Share was successful.'))
           .catch((error) => console.log('Sharing failed', error))
