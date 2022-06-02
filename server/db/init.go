@@ -13,6 +13,7 @@ var Client *mongo.Client
 var Db *mongo.Database
 var EventsCollection *mongo.Collection
 var UsersCollection *mongo.Collection
+var DailyUserLogCollection *mongo.Collection
 
 func Init() func() {
 	// Establish mongodb connection
@@ -31,6 +32,7 @@ func Init() func() {
 	Db = Client.Database("schej-it")
 	EventsCollection = Db.Collection("events")
 	UsersCollection = Db.Collection("users")
+	DailyUserLogCollection = Db.Collection("dailyuserlogs")
 
 	// Return a function to close the connection
 	return func() {

@@ -9,6 +9,8 @@ import (
 
 // Representation of a User in the mongoDB database
 type User struct {
+	TimezoneOffset int `json:"timezoneOffset" bson:"timezoneOffset"`
+
 	// Profile info
 	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty" binding:"required"`
 	Email     string             `json:"email" bson:"email" binding:"required"`
@@ -42,7 +44,7 @@ type UserProfile struct {
 }
 
 // Get a UserProfile object from the given User object
-func (u *User) GetProfile() UserProfile {
+func (u *User) GetProfile() *UserProfile {
 	tmp, err := json.Marshal(u)
 	if err != nil {
 		logger.StdErr.Panicln(err)
@@ -53,5 +55,5 @@ func (u *User) GetProfile() UserProfile {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-	return profile
+	return &profile
 }

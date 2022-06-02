@@ -39,7 +39,8 @@ func InitAuth(router *gin.Engine) {
 // @Router /auth/sign-in [post]
 func signIn(c *gin.Context) {
 	payload := struct {
-		Code string `json:"code" binding:"required"`
+		Code           string `json:"code" binding:"required"`
+		TimezoneOffset int    `json:"timezoneOffset" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
@@ -95,6 +96,8 @@ func signIn(c *gin.Context) {
 		AccessToken:           res.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          res.RefreshToken,
+
+		TimezoneOffset: payload.TimezoneOffset,
 	}
 
 	// Update user if exists
