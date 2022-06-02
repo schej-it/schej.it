@@ -38,6 +38,7 @@ var activeUsers Command = Command{
 				list = false
 			} else {
 				sendMessage(s, m, fmt.Sprintf("LIST=%s is not a valid boolean!", args[0]))
+				return
 			}
 		}
 		if len(args) >= 2 {
@@ -190,7 +191,5 @@ var activeUsers Command = Command{
 
 			sendEmbed(s, m, chartEmbed)
 		}
-
-		sendMessage(s, m, "active users was called hehe ")
 	},
 }
