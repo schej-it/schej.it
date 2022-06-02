@@ -161,3 +161,13 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 
 	return calendarEvents, nil
 }
+
+func GetDateAtTime(date time.Time, timeString string) time.Time {
+	s, _ := date.UTC().MarshalText()
+	utcDateString := string(s)[:10]
+	newDate, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT%sZ", utcDateString, timeString))
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	return newDate
+}

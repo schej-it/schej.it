@@ -114,10 +114,8 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 func GetDailyUserLogByDate(date time.Time, timezoneOffset int) *models.DailyUserLog {
 	timezoneOffsetDuration, _ := time.ParseDuration(fmt.Sprintf("%dm", timezoneOffset))
 	adjustedDate := date.Add(timezoneOffsetDuration)
-	timeString, _ := adjustedDate.UTC().MarshalText()
-	utcDateString := string(timeString)[:10]
-	startDate, _ := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", utcDateString))
-	endDate, _ := time.Parse(time.RFC3339, fmt.Sprintf("%sT23:59:59Z", utcDateString))
+	startDate := utils.GetDateAtTime(adjustedDate, "00:00:00")
+	endDate := utils.GetDateAtTime(adjustedDate, "23:59:59")
 
 	// Find a log for the current date
 	result := DailyUserLogCollection.FindOne(context.Background(), bson.M{
