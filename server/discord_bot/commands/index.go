@@ -25,6 +25,10 @@ func sendMessage(s *discordgo.Session, m *discordgo.MessageCreate, message strin
 	_, _ = s.ChannelMessageSend(m.ChannelID, message)
 }
 
+func sendEmbed(s *discordgo.Session, m *discordgo.MessageCreate, embed *discordgo.MessageEmbed) {
+	_, _ = s.ChannelMessageSendEmbed(m.ChannelID, embed)
+}
+
 func splitLongMessage(message string, surroundString string) []string {
 	/* Returns an array containing the separate messages to send when a
 	 * single message is too long (>2000 characters).

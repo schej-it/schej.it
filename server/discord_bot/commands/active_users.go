@@ -2,13 +2,16 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/models"
@@ -49,12 +52,14 @@ var activeUsers Command = Command{
 		startDate := time.Now().AddDate(0, 0, -days)
 		startDate = utils.GetDateAtTime(startDate, "00:00:00")
 		query := bson.M{"date": bson.M{"$gte": primitive.NewDateTimeFromTime(startDate)}}
+		sort := bson.M{"date": -1}
 
 		var logs []models.DailyUserLog
 		if list {
 			// Find and populate
 			cursor, err := db.DailyUserLogCollection.Aggregate(context.Background(), []bson.M{
 				{"$match": query},
+				{"$sort": sort},
 				{"$lookup": bson.M{
 					"from":         "users",
 					"localField":   "userIds",
@@ -77,7 +82,9 @@ var activeUsers Command = Command{
 			}
 		} else {
 			// Find matches
-			cursor, err := db.DailyUserLogCollection.Find(context.Background(), query)
+			cursor, err := db.DailyUserLogCollection.Find(context.Background(), query, &options.FindOptions{
+				Sort: sort,
+			})
 			if err != nil {
 				logger.StdErr.Panicln(err)
 			}
@@ -140,11 +147,49 @@ var activeUsers Command = Command{
 				sendMessage(s, m, msg)
 			}
 		} else {
-		}
+			// Display a bar graph of active users over time
 
-		// logger.StdOut.Println(query)
-		// logger.StdOut.Println(logs[0])
-		// logger.StdOut.Println(logs[0].Users)
+			// Generate labels and data based on logs
+			labels := make([]string, 0)
+			data := make([]int, 0)
+			for i := len(logs) - 1; i >= 0; i-- {
+				labels = append(labels, utils.GetDateString(logs[i].Date.Time()))
+				data = append(data, len(logs[i].UserIds))
+			}
+
+			// Generate chart using QuickChart API
+			chart := bson.M{
+				"type": "bar",
+				"data": bson.M{
+					"labels": labels,
+					"datasets": bson.A{bson.M{
+						"label": "Active Users",
+						"data":  data,
+					}},
+				},
+				"options": bson.M{
+					"scales": bson.M{
+						"yAxes": bson.A{bson.M{
+							"ticks": bson.M{
+								"stepSize": 1,
+							},
+						}},
+					},
+				},
+			}
+			jsonStr, _ := json.Marshal(chart)
+
+			encodedChart := url.PathEscape(string(jsonStr))
+			chartUrl := fmt.Sprintf(`https://quickchart.io/chart?c=%s&backgroundColor=white`, encodedChart)
+			chartEmbed := &discordgo.MessageEmbed{
+				Title: "Active Users",
+				Image: &discordgo.MessageEmbedImage{
+					URL: chartUrl,
+				},
+			}
+
+			sendEmbed(s, m, chartEmbed)
+		}
 
 		sendMessage(s, m, "active users was called hehe ")
 	},
