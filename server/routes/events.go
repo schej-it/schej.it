@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
-	"schej.it/server/errors"
+	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
@@ -77,7 +77,7 @@ func getEvent(c *gin.Context) {
 	event := db.GetEventById(eventId)
 
 	if event == nil {
-		c.JSON(http.StatusNotFound, responses.Error{Error: errors.EventNotFound})
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
 

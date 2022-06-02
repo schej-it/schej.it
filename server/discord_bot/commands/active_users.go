@@ -62,6 +62,7 @@ var activeUsers Command = Command{
 					"as":           "users",
 				}},
 				{"$project": bson.M{
+					"date":            1,
 					"users._id":       1,
 					"users.firstName": 1,
 					"users.lastName":  1,
@@ -84,6 +85,63 @@ var activeUsers Command = Command{
 				logger.StdErr.Panicln(err)
 			}
 		}
+
+		// Add empty days
+		curDate := startDate
+		for i := len(logs) - 1; i >= 0; i-- {
+			// Add all dates up to the current log date
+			for !logs[i].Date.Time().Equal(curDate) && curDate.Before(time.Now()) {
+				// Insert curDate into logs, with an empty users array
+				logs, err = utils.Insert(logs, i+1, models.DailyUserLog{
+					Date:  primitive.NewDateTimeFromTime(curDate),
+					Users: make([]models.UserProfile, 0),
+				})
+				if err != nil {
+					logger.StdErr.Panicln(err)
+				}
+				curDate = curDate.AddDate(0, 0, 1)
+			}
+
+			// Increase curDate by a day
+			curDate = curDate.AddDate(0, 0, 1)
+		}
+
+		// Add all dates up to the current date
+		for curDate.Before(time.Now()) {
+			logs, err = utils.Insert(logs, 0, models.DailyUserLog{
+				Date:  primitive.NewDateTimeFromTime(curDate),
+				Users: make([]models.UserProfile, 0),
+			})
+			if err != nil {
+				logger.StdErr.Panicln(err)
+			}
+			curDate = curDate.AddDate(0, 0, 1)
+		}
+
+		// Define constants
+		dayStrings := []string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
+
+		if list {
+			// Display a list of all active users
+			sendMessage(s, m, "Active Users:\n")
+			message := ""
+			for _, log := range logs {
+				date := log.Date.Time()
+				message += dayStrings[date.Weekday()] + " "
+				message += utils.GetDateString(date) + " | "
+				message += fmt.Sprintf("Count: %d\n", len(log.Users))
+
+				for _, user := range log.Users {
+					message += fmt.Sprintf("\t- %s %s (%s)\n", user.FirstName, user.LastName, user.Email)
+				}
+			}
+
+			for _, msg := range splitLongMessage(message, "```") {
+				sendMessage(s, m, msg)
+			}
+		} else {
+		}
+
 		// logger.StdOut.Println(query)
 		// logger.StdOut.Println(logs[0])
 		// logger.StdOut.Println(logs[0].Users)

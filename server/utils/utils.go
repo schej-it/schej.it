@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,7 +13,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/errors"
+	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/models"
 )
@@ -66,7 +67,7 @@ func GetAccessTokenExpireDate(expiresIn int) time.Time {
 }
 
 // Get the user's list of calendars
-func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIError) {
+func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIError) {
 	// TODO: update user object with calendars and allow for customization of whether or not to show calendar in schedule
 	req, _ := http.NewRequest(
 		"GET",
@@ -81,8 +82,8 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIEr
 
 	// Define stucts to parse json response
 	type Response struct {
-		Items []models.Calendar     `json:"items"`
-		Error errors.GoogleAPIError `json:"error"`
+		Items []models.Calendar   `json:"items"`
+		Error errs.GoogleAPIError `json:"error"`
 	}
 
 	// Parse the response
@@ -108,7 +109,7 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errors.GoogleAPIEr
 }
 
 // Get the user's list of calendar events for the given calendar
-func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errors.GoogleAPIError) {
+func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
 	min, _ := timeMin.MarshalText()
 	max, _ := timeMax.MarshalText()
 	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
@@ -133,8 +134,8 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 		End     TimeInfo `json:"end"`
 	}
 	type Response struct {
-		Items []Item                `json:"items"`
-		Error errors.GoogleAPIError `json:"error"`
+		Items []Item              `json:"items"`
+		Error errs.GoogleAPIError `json:"error"`
 	}
 
 	// Parse the response
@@ -162,12 +163,34 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	return calendarEvents, nil
 }
 
-func GetDateAtTime(date time.Time, timeString string) time.Time {
+// Returns the ISO date string for the given date
+func GetDateString(date time.Time) string {
 	s, _ := date.UTC().MarshalText()
-	utcDateString := string(s)[:10]
+	return string(s)[:10]
+}
+
+// Returns a time object with the given date and a time string in the form of "00:00:00"
+func GetDateAtTime(date time.Time, timeString string) time.Time {
+	utcDateString := GetDateString(date)
 	newDate, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT%sZ", utcDateString, timeString))
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
 	return newDate
+}
+
+// Inserts the given value at the specified index in the slice. Returns the updated slice
+func Insert[T any](arr []T, index int, value T) ([]T, error) {
+	if index < 0 {
+		return nil, errors.New("index cannot be less than 0")
+	}
+
+	if index >= len(arr) {
+		return append(arr, value), nil
+	}
+
+	arr = append(arr[:index+1], arr[index:]...)
+	arr[index] = value
+
+	return arr, nil
 }

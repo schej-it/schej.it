@@ -6,7 +6,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"schej.it/server/db"
-	"schej.it/server/errors"
+	"schej.it/server/errs"
 	"schej.it/server/responses"
 )
 
@@ -16,7 +16,7 @@ func AuthRequired() gin.HandlerFunc {
 		session := sessions.Default(c)
 		if session.Get("userId") == nil {
 			// User id is not set, user is not signed in!
-			c.JSON(http.StatusUnauthorized, responses.Error{Error: errors.NotSignedIn})
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
 			c.Abort()
 			return
 		}
@@ -25,7 +25,7 @@ func AuthRequired() gin.HandlerFunc {
 		user := db.GetUserById(session.Get("userId").(string))
 
 		if user == nil {
-			c.JSON(http.StatusUnauthorized, responses.Error{Error: errors.UserDoesNotExist})
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.UserDoesNotExist})
 			c.Abort()
 			return
 		}

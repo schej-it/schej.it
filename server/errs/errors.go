@@ -1,4 +1,4 @@
-package errors
+package errs
 
 // Errors enum
 const (
