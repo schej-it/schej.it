@@ -93,7 +93,7 @@ export default {
       }).catch((err) => {
         console.error(err)
         if (err.error.code === 401 || err.error.code === 403) {
-          signInGoogle()
+          signInGoogle(null, true)
         }
       })
     },

@@ -12,35 +12,35 @@ type User struct {
 	TimezoneOffset int `json:"timezoneOffset" bson:"timezoneOffset"`
 
 	// Profile info
-	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty" binding:"required"`
-	Email     string             `json:"email" bson:"email,omitempty" binding:"required"`
-	FirstName string             `json:"firstName" bson:"firstName,omitempty" binding:"required"`
-	LastName  string             `json:"lastName" bson:"lastName,omitempty" binding:"required"`
-	Picture   string             `json:"picture" bson:"picture,omitempty" binding:"required"`
+	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Email     string             `json:"email" bson:"email,omitempty"`
+	FirstName string             `json:"firstName" bson:"firstName,omitempty"`
+	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
+	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
 	// Calendars maps the calendar's id to the calendar object
-	Calendars map[string]Calendar `json:"calendars" bson:"calendars,omitempty" binding:"required"`
+	Calendars map[string]Calendar `json:"calendars" bson:"calendars,omitempty"`
 
 	// Google OAuth stuff
-	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty" binding:"required"`
-	AccessTokenExpireDate primitive.DateTime `json:"accessTokenExpireDate" bson:"accessTokenExpireDate,omitempty" binding:"required"`
-	RefreshToken          string             `json:"refreshToken" bson:"refreshToken,omitempty" binding:"required"`
+	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty"`
+	AccessTokenExpireDate primitive.DateTime `json:"accessTokenExpireDate" bson:"accessTokenExpireDate,omitempty"`
+	RefreshToken          string             `json:"refreshToken" bson:"refreshToken,omitempty"`
 }
 
 // Calendar contains information about a user's calendar
 type Calendar struct {
-	Id       string `json:"id" bson:"id" binding:"required"`
-	Summary  string `json:"summary" bson:"summary" binding:"required"`
-	Selected bool   `json:"selected" bson:"selected" binding:"required"`
+	Id       string `json:"id" bson:"id,omitempty"`
+	Summary  string `json:"summary" bson:"summary,omitempty"`
+	Selected bool   `json:"selected" bson:"selected,omitempty"`
 }
 
 // User profile to return as json to frontend
 type UserProfile struct {
-	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty" binding:"required"`
-	Email     string             `json:"email" bson:"email" binding:"required"`
-	FirstName string             `json:"firstName" bson:"firstName" binding:"required"`
-	LastName  string             `json:"lastName" bson:"lastName" binding:"required"`
-	Picture   string             `json:"picture" bson:"picture" binding:"required"`
+	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Email     string             `json:"email" bson:"email,omitempty"`
+	FirstName string             `json:"firstName" bson:"firstName,omitempty"`
+	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
+	Picture   string             `json:"picture" bson:"picture,omitempty"`
 }
 
 // Get a UserProfile object from the given User object

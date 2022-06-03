@@ -65,9 +65,9 @@ func GetEventById(eventId string) *models.Event {
 
 // If access token has expired, get a new token, update the user object, and save it to the database
 func RefreshUserTokenIfNecessary(u *models.User) {
-	logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
+	//logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		logger.StdOut.Println("REFRESHING TOKEN")
+		//logger.StdOut.Println("REFRESHING TOKEN")
 
 		// Refresh token by calling google token endpoint
 		values := url.Values{

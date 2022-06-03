@@ -235,7 +235,7 @@ export const fetchMethod = (method, route, body={}) => {
   Other
 */
 
-export const signInGoogle = (state=null) => {
+export const signInGoogle = (state=null, consent=false) => {
   /* Redirects user to the correct google sign in page */
   const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
   const redirectUri = `${window.location.origin}/auth`
@@ -246,8 +246,13 @@ export const signInGoogle = (state=null) => {
     state = encodeURIComponent(JSON.stringify(state))
     stateString = `&state=${state}`
   }
+
+  let consentString = ''
+  if (consent) {
+    consentString = '&prompt=consent'
+  }
   
-  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${stateString}`
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${consentString}${stateString}`
 }
 
 var timeoutId;
