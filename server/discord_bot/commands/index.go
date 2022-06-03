@@ -17,6 +17,8 @@ var Commands []Command = make([]Command, 0)
 
 func Init() {
 	Commands = append(Commands, activeUsers)
+	Commands = append(Commands, numUsers)
+
 	Commands = append(Commands, help)
 }
 

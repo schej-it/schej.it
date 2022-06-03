@@ -1,6 +1,6 @@
 <template>
   <v-avatar v-if="user">
-    <img :src="user.picture" />
+    <img :src="user.picture" referrerpolicy="no-referrer" />
   </v-avatar>
 </template>
 

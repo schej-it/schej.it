@@ -16,26 +16,25 @@
     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-12">
       <v-btn
         v-if="authUser"
-        class="tw-bg-blue"
+        class="tw-bg-blue tw-mb-2"
         dark
         @click="join"
       >Join event</v-btn>
-      <template v-else>
-        <v-btn 
-          class="tw-bg-blue tw-mb-2" 
-          dark
-          @click="signIn"
-        >Sign in with Google</v-btn>
-        <div 
-          class="tw-text-xs tw-mx-10 tw-text-black tw-text-center"
-        >Schej.it automatically inputs your availability <br> using your google calendar</div>
-      </template>
+      <v-btn 
+        v-else
+        class="tw-bg-blue tw-mb-2" 
+        dark
+        @click="signIn"
+      >Sign in with Google</v-btn>
+      <div 
+        class="tw-text-xs tw-mx-10 tw-text-black tw-text-center"
+      >Schej.it automatically inputs your availability <br v-if="isPhone"> using your google calendar</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getDateRangeString, signInGoogle, get } from '@/utils'
+import { getDateRangeString, signInGoogle, get, isPhone } from '@/utils'
 import { mapState } from 'vuex'
 
 export default {
@@ -53,6 +52,9 @@ export default {
     ...mapState([ 'authUser', 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
+    },
+    isPhone() {
+      return isPhone(this.$vuetify)
     },
   },
 
