@@ -13,18 +13,18 @@ type User struct {
 
 	// Profile info
 	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty" binding:"required"`
-	Email     string             `json:"email" bson:"email" binding:"required"`
-	FirstName string             `json:"firstName" bson:"firstName" binding:"required"`
-	LastName  string             `json:"lastName" bson:"lastName" binding:"required"`
-	Picture   string             `json:"picture" bson:"picture" binding:"required"`
+	Email     string             `json:"email" bson:"email,omitempty" binding:"required"`
+	FirstName string             `json:"firstName" bson:"firstName,omitempty" binding:"required"`
+	LastName  string             `json:"lastName" bson:"lastName,omitempty" binding:"required"`
+	Picture   string             `json:"picture" bson:"picture,omitempty" binding:"required"`
 
 	// Calendars maps the calendar's id to the calendar object
-	Calendars map[string]Calendar `json:"calendars" bson:"calendars" binding:"required"`
+	Calendars map[string]Calendar `json:"calendars" bson:"calendars,omitempty" binding:"required"`
 
 	// Google OAuth stuff
-	AccessToken           string             `json:"accessToken" bson:"accessToken" binding:"required"`
-	AccessTokenExpireDate primitive.DateTime `json:"accessTokenExpireDate" bson:"accessTokenExpireDate" binding:"required"`
-	RefreshToken          string             `json:"refreshToken" bson:"refreshToken" binding:"required"`
+	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty" binding:"required"`
+	AccessTokenExpireDate primitive.DateTime `json:"accessTokenExpireDate" bson:"accessTokenExpireDate,omitempty" binding:"required"`
+	RefreshToken          string             `json:"refreshToken" bson:"refreshToken,omitempty" binding:"required"`
 }
 
 // Calendar contains information about a user's calendar
