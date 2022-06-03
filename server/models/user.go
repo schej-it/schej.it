@@ -19,7 +19,7 @@ type User struct {
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
 	// Calendars maps the calendar's id to the calendar object
-	Calendars map[string]Calendar `json:"calendars" bson:"calendars,omitempty"`
+	Calendars map[string]Calendar `json:"calendars" bson:"calendars"`
 
 	// Google OAuth stuff
 	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty"`

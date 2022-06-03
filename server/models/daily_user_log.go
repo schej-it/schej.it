@@ -7,6 +7,6 @@ import (
 type DailyUserLog struct {
 	Id      primitive.ObjectID   `json:"_id" bson:"_id,omitempty"`
 	Date    primitive.DateTime   `json:"date" bson:"date,omitempty"`
-	UserIds []primitive.ObjectID `json:"-" bson:"userIds,omitempty"`
+	UserIds []primitive.ObjectID `json:"-" bson:"userIds"`
 	Users   []UserProfile        `json:"users" bson:",omitempty"`
 }

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
+	"schej.it/server/discord_bot"
 	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
@@ -63,6 +65,9 @@ func createEvent(c *gin.Context) {
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event name**: \"%s\"\n**Creator**: %s %s (%s)", event.Name, user.FirstName, user.LastName, user.Email))
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
 

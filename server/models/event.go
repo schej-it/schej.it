@@ -9,12 +9,12 @@ type Event struct {
 	Name      string              `json:"name" bson:"name,omitempty"`
 	StartDate primitive.DateTime  `json:"startDate" bson:"startDate,omitempty"`
 	EndDate   primitive.DateTime  `json:"endDate" bson:"endDate,omitempty"`
-	Responses map[string]Response `json:"responses" bson:"responses,omitempty"`
+	Responses map[string]Response `json:"responses" bson:"responses"`
 }
 
 // A response object containing an array of times that the given user is available
 type Response struct {
 	UserId       primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
 	User         *UserProfile       `json:"user" bson:",omitempty"`
-	Availability []string           `json:"availability" bson:"availability,omitempty"`
+	Availability []string           `json:"availability" bson:"availability"`
 }
