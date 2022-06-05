@@ -7,6 +7,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "copy-image-clipboard": "^2.1.2",
     "core-js": "^3.8.3",
     "html2canvas": "^1.4.1",
     "long-press-event": "^2.4.4",

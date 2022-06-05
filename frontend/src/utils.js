@@ -1,20 +1,20 @@
-import Vue from "vue"
+import Vue from 'vue'
 
 import store from '@/store'
-import { serverURL, socketURL, errors } from "@/constants"
+import { serverURL, socketURL, errors } from '@/constants'
 
 /* 
   Date utils 
 */
 export const getDateString = (date) => {
   date = new Date(date)
-  return `${date.getMonth()+1}/${date.getDate()}`
+  return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
 export const getDateRangeString = (date1, date2) => {
   date1 = new Date(date1)
   date2 = new Date(date2)
-  return  getDateString(date1) + ' - ' + getDateString(date2)
+  return getDateString(date1) + ' - ' + getDateString(date2)
 }
 
 export const getDateWithTime = (date, timeString) => {
@@ -22,7 +22,13 @@ export const getDateWithTime = (date, timeString) => {
   date = new Date(date)
 
   const { hours, minutes } = splitTime(timeString)
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes)
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hours,
+    minutes
+  )
 }
 
 export const getDateWithTimeInt = (date, timeInt) => {
@@ -31,7 +37,13 @@ export const getDateWithTimeInt = (date, timeInt) => {
 
   const hours = parseInt(timeInt)
   const minutes = (timeInt - hours) * 60
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes)
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    hours,
+    minutes
+  )
 }
 
 export const splitTime = (timeString) => {
@@ -43,7 +55,7 @@ export const splitTime = (timeString) => {
 export const getDateDayOffset = (date, offset) => {
   /* Returns the specified date offset by the given number of days (can be positive or negative) */
   date = new Date(date)
-  return new Date(date.getTime() + offset * 24*60*60*1000)
+  return new Date(date.getTime() + offset * 24 * 60 * 60 * 1000)
 }
 
 export const timeIntToTimeText = (timeInt) => {
@@ -68,7 +80,7 @@ export const clampDateToTimeInt = (date, timeInt, type) => {
   } else if (type === 'lower' && diff > 0) {
     return getDateWithTimeInt(date, timeInt)
   }
-  
+
   // Return original date
   return date
 }
@@ -104,9 +116,11 @@ export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
   const hour2 = date2.getHours()
 
   if (hour1 <= hour2) {
-    return hour1 <= timeInt && timeInt <= hour2 
+    return hour1 <= timeInt && timeInt <= hour2
   } else {
-    return ( hour1 <= timeInt && timeInt < 24 ) || ( 0 <= timeInt && timeInt <= hour2 )
+    return (
+      (hour1 <= timeInt && timeInt < 24) || (0 <= timeInt && timeInt <= hour2)
+    )
   }
 }
 
@@ -149,23 +163,34 @@ export const getCalendarEvents = (event) => {
     curDate = nextDate
   }
 
-  return get(`/user/calendar?timeMin=${event.startDate.toISOString()}&timeMax=${getDateDayOffset(event.endDate, 1).toISOString()}`).then(data => {
+  return get(
+    `/user/calendar?timeMin=${event.startDate.toISOString()}&timeMax=${getDateDayOffset(
+      event.endDate,
+      1
+    ).toISOString()}`
+  ).then((data) => {
     return data
       .map((calendarEvent) => {
         // If calendarEvent has a time int between the start and end dates, clamp it based on whether it's the starttime or endtime
 
         calendarEvent.startDate = new Date(calendarEvent.startDate)
         calendarEvent.endDate = new Date(calendarEvent.endDate)
-        const { startDate, endDate} = calendarEvent
+        const { startDate, endDate } = calendarEvent
         if (isTimeIntBetweenDates(event.startTime, startDate, endDate)) {
           return {
             ...calendarEvent,
-            startDate: startDate.getHours() <= event.startTime ? getDateWithTimeInt(startDate, event.startTime) : getDateWithTimeInt(endDate, event.startTime)
+            startDate:
+              startDate.getHours() <= event.startTime
+                ? getDateWithTimeInt(startDate, event.startTime)
+                : getDateWithTimeInt(endDate, event.startTime),
           }
         } else if (isTimeIntBetweenDates(event.endTime, startDate, endDate)) {
           return {
             ...calendarEvent,
-            endDate: endDate.getHours() >= event.endTime ? getDateWithTimeInt(endDate, event.endTime) : getDateWithTimeInt(startDate, event.endTime)
+            endDate:
+              endDate.getHours() >= event.endTime
+                ? getDateWithTimeInt(endDate, event.endTime)
+                : getDateWithTimeInt(startDate, event.endTime),
           }
         } else {
           return calendarEvent
@@ -185,19 +210,19 @@ export const get = (route) => {
   return fetchMethod('GET', route)
 }
 
-export const post = (route, body={}) => {
+export const post = (route, body = {}) => {
   return fetchMethod('POST', route, body)
 }
 
-export const patch = (route, body={}) => {
+export const patch = (route, body = {}) => {
   return fetchMethod('PATCH', route, body)
 }
 
-export const _delete = (route, body={}) => {
+export const _delete = (route, body = {}) => {
   return fetchMethod('DELETE', route, body)
 }
 
-export const fetchMethod = (method, route, body={}) => {
+export const fetchMethod = (method, route, body = {}) => {
   /* Calls the given route with the give method and body */
   const params = {
     method,
@@ -207,40 +232,45 @@ export const fetchMethod = (method, route, body={}) => {
   if (method !== 'GET') {
     // Add params specific to POST/PATCH/DELETE
     params.headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     }
     params.body = JSON.stringify(body)
   }
 
-  return fetch(serverURL + route, params).then(async res => {
-    const text = await res.text()
-    
-    // Check if response was ok
-    if (!res.ok) {
-      throw JSON.parse(text) 
-    }
+  return fetch(serverURL + route, params)
+    .then(async (res) => {
+      const text = await res.text()
 
-    // Parse data if it is json, otherwise throw an error
-    try {
-      return JSON.parse(text)
-    } catch (err) {
-      throw {error: errors.JsonError}
-    }
-  }).then(data => {
-    return data
-  })
+      // Check if response was ok
+      if (!res.ok) {
+        throw JSON.parse(text)
+      }
+
+      // Parse data if it is json, otherwise throw an error
+      try {
+        return JSON.parse(text)
+      } catch (err) {
+        throw { error: errors.JsonError }
+      }
+    })
+    .then((data) => {
+      return data
+    })
 }
 
 /*
   Other
 */
 
-export const signInGoogle = (state=null, consent=false) => {
+export const signInGoogle = (state = null, consent = false) => {
   /* Redirects user to the correct google sign in page */
-  const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
+  const clientId =
+    '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
   const redirectUri = `${window.location.origin}/auth`
-  const scope = encodeURIComponent('openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly')
-  
+  const scope = encodeURIComponent(
+    'openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly'
+  )
+
   let stateString = ''
   if (state !== null) {
     state = encodeURIComponent(JSON.stringify(state))
@@ -251,36 +281,52 @@ export const signInGoogle = (state=null, consent=false) => {
   if (consent) {
     consentString = '&prompt=consent'
   }
-  
+
   window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${consentString}${stateString}`
 }
 
-var timeoutId;
-export const onLongPress = (element, callback, capture=false) => {
+var timeoutId
+export const onLongPress = (element, callback, capture = false) => {
   /* Calls callback() on long press */
 
-  element.addEventListener('touchstart', function(e) {
-      timeoutId = setTimeout(function() {
-          timeoutId = null;
-          e.stopPropagation();
-          callback(e.target);
-      }, 500);
-  }, capture);
+  element.addEventListener(
+    'touchstart',
+    function (e) {
+      timeoutId = setTimeout(function () {
+        timeoutId = null
+        e.stopPropagation()
+        callback(e.target)
+      }, 500)
+    },
+    capture
+  )
 
-  element.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-  }, capture);
+  element.addEventListener(
+    'contextmenu',
+    function (e) {
+      e.preventDefault()
+    },
+    capture
+  )
 
-  element.addEventListener('touchend', function () {
-      if (timeoutId) clearTimeout(timeoutId);
-  }, capture);
+  element.addEventListener(
+    'touchend',
+    function () {
+      if (timeoutId) clearTimeout(timeoutId)
+    },
+    capture
+  )
 
-  element.addEventListener('touchmove', function () {
-      if (timeoutId) clearTimeout(timeoutId);
-  }, capture);
+  element.addEventListener(
+    'touchmove',
+    function () {
+      if (timeoutId) clearTimeout(timeoutId)
+    },
+    capture
+  )
 }
 
-export const isBetween = (value, lower, upper, inclusive=true) => {
+export const isBetween = (value, lower, upper, inclusive = true) => {
   /* Returns whether the given value is between lower and upper */
   if (inclusive) {
     return value >= lower && value <= upper
@@ -318,7 +364,7 @@ export const dataURItoBlob = (dataURI) => {
   for (var i = 0; i < byteString.length; i++) {
     ia[i] = byteString.charCodeAt(i)
   }
-  
+
   return new Blob([ab], { type: mimeString })
 }
 
@@ -328,4 +374,10 @@ export const processEvent = (event) => {
   event.endDate = new Date(event.endDate)
   event.startTime = event.startDate.getHours()
   event.endTime = event.endDate.getHours()
+}
+
+export const getCurrentTimezone = () => {
+  return new Date()
+    .toLocaleTimeString('en-us', { timeZoneName: 'short' })
+    .split(' ')[2]
 }
