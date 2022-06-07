@@ -1,5 +1,27 @@
 <template>
   <div v-if="event">
+    <v-dialog
+      v-model="choiceDialog"
+      persistent
+      width="400"
+      content-class="tw-m-0"
+    >
+      <v-card class="tw-text-center sm:tw-p-6 tw-p-4">
+        <div class="tw-text-md tw-font-semibold tw-pb-4">How would you like to input <br v-if="isPhone"> your availability?</div>
+        <div class="">
+          <v-btn 
+            @click="setAvailabilityAutomatically(); choiceDialog = false"
+            class="tw-bg-blue tw-mb-2" 
+            dark 
+            block
+          >
+            <div class="tw-text-sm -tw-mx-4">Automatically from Google Calendar</div>
+          </v-btn>
+          <v-btn @click="choiceDialog = false" block>Manually</v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+
     <div class="tw-relative tw-bg-green tw-text-white tw-flex tw-justify-center">
       <div class="tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2 tw-z-10">
         <div 
@@ -14,13 +36,13 @@
       <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
         <div class="tw-text-white tw-text-sm tw-z-10">
           <span v-if="isPhone">
-            <span v-if="isEditing">Editing...</span>
+            <span v-if="isEditing">Drag to edit availability</span>
             <span v-else>Tap and hold calendar to enable editing</span>
           </span>
           <span v-else>Drag to edit availability</span>
         </div>
         <v-spacer />
-        <v-btn v-if="isEditing || !isPhone" @click="resetEditing" small text class="tw-text-white">Clear</v-btn>
+        <v-btn v-if="isEditing || !isPhone" @click="setAvailabilityAutomatically" small text class="tw-text-white">Clear</v-btn>
         <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
       </div>
       <ScheduleOverlap
@@ -55,6 +77,8 @@ export default {
   },
 
   data: () => ({
+    choiceDialog: true,
+
     loading: true,
     calendarEvents: [],
     event: null,
@@ -67,7 +91,7 @@ export default {
       return getDateRangeString(this.event.startDate, this.event.endDate)
     },
     initialShowCalendarEvents() {
-      return !(this.authUser._id in this.event.responses)
+      return !this.userHasResponded
     },
     isCalendarShown() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
@@ -81,6 +105,9 @@ export default {
     areUnsavedChanges() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.unsavedChanges
     },
+    userHasResponded() {
+      return this.authUser && this.authUser._id in this.event.responses
+    },
   },
 
   methods: {
@@ -93,7 +120,7 @@ export default {
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
-    resetEditing() {
+    setAvailabilityAutomatically() {
       if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
     },
     saveChanges() {
@@ -119,6 +146,9 @@ export default {
           return
       }
     }
+
+    // Show dialog if user hasn't responded yet
+    this.choiceDialog = !this.userHasResponded
     
     // Get user's calendar
     getCalendarEvents(this.event).then(events => {

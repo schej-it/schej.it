@@ -559,7 +559,7 @@ export default {
     },
     calendarEvents: {
       handler() {
-        if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
+        //if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
       },
     },
   },
