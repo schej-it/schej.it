@@ -20,15 +20,14 @@
         dark
         @click="join"
       >Join event</v-btn>
-      <v-btn 
+      <SignInGoogleBtn 
         v-else
-        class="tw-bg-blue tw-mb-2" 
-        dark
         @click="signIn"
-      >Sign in with Google</v-btn>
+        dark
+      />
       <div 
         class="tw-text-xs tw-mx-10 tw-text-black tw-text-center"
-      >Schej.it automatically inputs your availability <br v-if="isPhone"> using your google calendar</div>
+      >Schej.it automatically inputs your availability <br v-if="isPhone"> using your Google calendar</div>
     </div>
   </div>
 </template>
@@ -36,8 +35,10 @@
 <script>
 import { getDateRangeString, signInGoogle, get, isPhone } from '@/utils'
 import { mapState } from 'vuex'
+import SignInGoogleBtn from '@/components/SignInGoogleBtn.vue'
 
 export default {
+  components: { SignInGoogleBtn },
   name: 'Join',
 
   props: {
