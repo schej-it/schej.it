@@ -10,20 +10,10 @@
           <span v-else-if="dialogType === DIALOG_TYPES.SIGN_UP">Sign up</span>
         </v-card-title>
         <v-card-text class="tw-flex tw-flex-col tw-items-center">
-          <v-btn
-            outlined
-            class="tw-border-gray tw-p-0 tw-mb-2"
+          <SignInGoogleBtn
             @click="signInGoogle"
-          >
-            <v-img
-              class="tw-mx-2"
-              contain
-              width="20"
-              height="20"
-              src="@/assets/google_logo.svg"
-            ></v-img>
-            <div class="tw-mr-4 tw-text-black">Continue with Google</div>
-          </v-btn>
+            dark
+          />
           <div class="tw-text-xs tw-text-center">By continuing, you agree to our <router-link :to="{ name: 'privacy-policy' }">privacy policy</router-link></div>
         </v-card-text>
       </v-card>
@@ -153,12 +143,14 @@
 <script>
 import LandingPageCalendar from '@/components/LandingPageCalendar'
 import { isPhone, signInGoogle } from '@/utils'
+import SignInGoogleBtn from '@/components/SignInGoogleBtn.vue'
 
 export default {
   name: 'Landing',
 
   components: {
     LandingPageCalendar,
+    SignInGoogleBtn,
   },
 
   data: () => ({
