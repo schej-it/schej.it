@@ -49,7 +49,7 @@
           Scheduling made simple.
         </div>
         <v-btn rounded class="tw-bg-blue" dark @click="getStarted" :large="$vuetify.breakpoint.smAndUp" :x-large="$vuetify.breakpoint.mdAndUp"
-          >Get started</v-btn
+          >Create an event</v-btn
         >
       </div>
     </div>
