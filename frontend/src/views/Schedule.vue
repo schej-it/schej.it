@@ -1,22 +1,25 @@
 <template>
   <div class="tw-max-w-6xl tw-mx-auto tw-p-4">
-    <UserItem :user="userItem" @showEventNames="showEventNames" />
-    <TestCalendar :noEventNames="hideEventNames" ref="calendar" />
+    <div class="tw-pt-5 tw-bg-white-white tw-top-0 tw-left-0 tw-w-full tw-h-32 tw-z-20 tw-relative">
+
+      <UserItem :user="userItem" @showEventNames="showEventNames" />
+    </div>
+    <div ref="calendarContainer" class="-tw-mt-24 tw-z-0 tw-relative">
+      <div class="tw-w-full tw-h-24 tw-flex tw-text-center tw-pt-1 tw-flex-col tw-bg-green">
+        <h1 class="tw-text-4xl tw-font-bold tw-text-white">{{ authUser.firstName }}'s Schej</h1>
+        <h1 class="tw-text-md tw-text-white mt-2"><span class="tw-font-medium">Timezone:</span> {{ currentTimezone }}
+        </h1>
+      </div>
+      <TestCalendar :noEventNames="hideEventNames" />
+    </div>
 
     <v-scale-transition appear origin="center">
-      <v-btn
-        :loading="loading"
-        :disabled="loading"
-        fixed
-        class="tw-bg-blue tw-mx-auto tw-left-0 tw-right-0 tw-bottom-16 white--text"
-        fab
-        @click="share"
-      >
+      <v-btn :loading="loading" :disabled="loading" fixed
+        class="tw-bg-blue tw-mx-auto tw-left-0 tw-right-0 tw-bottom-16 white--text" fab @click="share">
         <v-icon dark> mdi-share </v-icon>
       </v-btn>
     </v-scale-transition>
 
-    <div id="test"></div>
   </div>
 </template>
 
@@ -45,7 +48,7 @@ export default {
     }
   },
 
-  async mounted() {},
+  async mounted() { },
 
   computed: {
     ...mapState(['authUser']),
@@ -57,6 +60,9 @@ export default {
         status: 'free',
       }
     },
+    currentTimezone() {
+      return getCurrentTimezone()
+    }
   },
 
   watch: {},
@@ -69,14 +75,9 @@ export default {
     async share() {
       this.loading = true
 
-      let el = this.$refs.calendar.$el
+      let el = this.$refs.calendarContainer
       let canvas = await html2canvas(el)
-      let ctx = canvas.getContext("2d")
 
-      console.log(ctx)
-      ctx.setFont("30 Arial")
-      ctx.fillText("Hello World", 200, 200)
-      document.getElementById("test").appendChild(canvas)
       this.output = canvas.toDataURL('image/png')
 
 
@@ -92,9 +93,7 @@ export default {
             .share({
               files: filesArray,
               title: 'My Schedule',
-              text: `Check out my Schej! My timezone: ${
-                getCurrentTimezone()
-              }`,
+              text: ``,
             })
             .then(() => {
               console.log('Share was successful.')
