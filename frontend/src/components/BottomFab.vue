@@ -26,10 +26,5 @@ export default {
       return isPhone(this.$vuetify)
     }
   },
-
-  created() {
-    console.log('PROPS:', this.$props)
-    console.log('ATTRS:', this.$attrs)
-  }
 }
 </script>
