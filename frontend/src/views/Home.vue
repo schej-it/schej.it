@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-max-w-6xl tw-mx-auto">
+  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12">
 
     <!-- Dialog -->
     <NewEventDialog 
@@ -26,27 +26,19 @@
           />
         </div>
       </div>
-
     </div>
 
     <!-- FAB -->
-    <v-scale-transition appear origin="center">
-      <v-btn 
-        fab
-        absolute
-        dark
-        class="tw-bg-blue tw-mx-auto tw-left-0 tw-right-0 tw-bottom-4"
-        @click="dialog = true"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-    </v-scale-transition>
+    <BottomFab @click="dialog = true">
+      <v-icon>mdi-plus</v-icon>
+    </BottomFab>
   </div>
 </template>
 
 <script>
 import NewEventDialog from '@/components/NewEventDialog'
 import EventItem from '@/components/EventItem'
+import BottomFab from '@/components/BottomFab.vue'
 import { get } from '@/utils'
 
 export default {
@@ -54,7 +46,8 @@ export default {
 
   components: {
     NewEventDialog,
-    EventItem
+    EventItem,
+    BottomFab,
   },
 
   data: () => ({

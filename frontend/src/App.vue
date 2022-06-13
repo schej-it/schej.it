@@ -4,7 +4,7 @@
     <AutoSnackbar color="info" :text="info" />
     <div
       v-if="showHeader"
-      class="tw-h-14 tw-bg-green"
+      class="tw-h-14 tw-bg-green tw-fixed tw-w-screen tw-z-40"
       dark
     >
       <div class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto">
@@ -45,15 +45,15 @@
       </div>
     </div>
 
-    <v-main class="tw-overflow-y-auto tw-flex tw-justify-center">
-      <div class="tw-h-full">
+    <div class="tw-h-screen tw-flex tw-flex-col tw-justify-center tw-overflow-hidden">
+      <div class="tw-flex-1 tw-relative tw-overflow-y-auto" :class="routerViewClass">
         <router-view v-if="loaded" />
       </div>
-    </v-main>
+    </div>
 
     <div
       v-if="showBottomNavbar"
-      class="tw-h-14 tw-bg-green tw-flex"
+      class="tw-h-14 tw-bg-green tw-flex tw-fixed tw-w-screen tw-bottom-0 tw-z-40"
     >
       <div 
         v-for="{ text, icon, route }, i in tabs"
@@ -135,6 +135,12 @@ export default {
         this.$route.name !== 'privacy-policy'
       )
     },
+    routerViewClass() {
+      let c = ''
+      if (this.showHeader) c += 'tw-mt-14 '
+      if (this.showBottomNavbar) c += 'tw-mb-14 '
+      return c
+    },
     centerHeaderLogo() {
       return (
         this.$route.name === 'join'
@@ -149,14 +155,14 @@ export default {
       this.$router.push(this.tabs[i].route).catch(e => {})
     },
     fixHeight() {
-      // Fix height on mobile
-      document.querySelector('.v-application--wrap').style.height = window.innerHeight + 'px'
+      // // Fix height on mobile
+      // document.querySelector('.v-application--wrap').style.height = window.innerHeight + 'px'
 
-      let items = 0 // Counts the number of fixed height items (header and navbar)
-      if (this.showHeader) items++
-      if (this.showBottomNavbar) items++
+      // let items = 0 // Counts the number of fixed height items (header and navbar)
+      // if (this.showHeader) items++
+      // if (this.showBottomNavbar) items++
 
-      document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
+      // document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
     },
     redirectUser(authenticated) {
       let authRoutes = ['home', 'schedule', 'friends', 'event']
