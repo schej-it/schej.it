@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-max-w-6xl tw-mx-auto tw-p-4">
+  <div class="tw-max-w-6xl tw-mx-auto tw-p-4 tw-mb-12">
     <div class="tw-pt-5 tw-bg-white-white tw-top-0 tw-left-0 tw-w-full tw-h-32 tw-z-20 tw-relative">
 
       <UserItem :user="userItem" @showEventNames="showEventNames" />
@@ -13,13 +13,9 @@
       <TestCalendar :noEventNames="hideEventNames" />
     </div>
 
-    <v-scale-transition appear origin="center">
-      <v-btn :loading="loading" :disabled="loading" fixed
-        class="tw-bg-blue tw-mx-auto tw-left-0 tw-right-0 tw-bottom-16 white--text" fab @click="share">
-        <v-icon dark> mdi-share </v-icon>
-      </v-btn>
-    </v-scale-transition>
-
+    <BottomFab @click="share" :loading="loading" :disabled="loading">
+      <v-icon> mdi-share </v-icon>
+    </BottomFab>
   </div>
 </template>
 
@@ -31,6 +27,7 @@ import { copyImageToClipboard } from 'copy-image-clipboard'
 import { dataURItoBlob, isPhone, getCurrentTimezone } from '@/utils'
 import UserItem from '@/components/UserItem'
 import TestCalendar from '@/components/TestCalendar'
+import BottomFab from '@/components/BottomFab.vue'
 
 export default {
   name: 'Schedule',
@@ -38,6 +35,7 @@ export default {
   components: {
     UserItem,
     TestCalendar,
+    BottomFab,
   },
 
   data() {

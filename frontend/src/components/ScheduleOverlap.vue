@@ -110,11 +110,15 @@
     
       <div v-if="!calendarOnly" class="tw-hidden sm:tw-block sm:tw-w-32">
         <div class="tw-font-medium tw-mb-2">Availability:</div>
-        <div class="tw-space-y-2 tw-pl-4 tw-text-sm">
-          <div v-for="user, i in curTimeslotAvailability.available" :key="i" class="tw-max-w-full tw-truncate">
-            {{ user.firstName + ' ' + user.lastName }}
-          </div>
-          <div v-for="user, i in curTimeslotAvailability.unavailable" :key="`unavailable-${i}`" class="tw-line-through tw-text-gray">
+        <div class="tw-pl-4 tw-text-sm">
+          <div 
+            v-for="user in respondents" 
+            :key="user._id"
+            :class="!curTimeslotAvailability[user._id] ? 'tw-line-through tw-text-gray' : 'hover:tw-font-bold'"
+            class="tw-py-1"
+            @mouseover="curUser = user._id"
+            @mouseleave="curUser = ''"
+          >
             {{ user.firstName + ' ' + user.lastName }}
           </div>
         </div>
@@ -136,10 +140,12 @@
           </v-btn>
         </div>
         <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-auto tw-max-h-20 tw-pl-4 tw-text-sm">
-          <div v-for="user, i in curTimeslotAvailability.available" :key="i" class="tw-max-w-full tw-truncate">
-            {{ user.firstName + ' ' + user.lastName }}
-          </div>
-          <div v-for="user, i in curTimeslotAvailability.unavailable" :key="`unavailable-${i}`" class="tw-line-through tw-text-gray">
+          <div 
+            v-for="user in respondents" 
+            :key="user._id"
+            :class="!curTimeslotAvailability[user._id] ? 'tw-line-through tw-text-gray' : ''"
+            class="tw-max-w-full tw-truncate"
+          >
             {{ user.firstName + ' ' + user.lastName }}
           </div>
         </div>
@@ -181,11 +187,9 @@ export default {
       unsavedChanges: false, // Whether there are unsaved availability changes
 
       availabilityBottomSheet: false, // Whether to show the bottom sheet with people's availability
-      curTimeslotAvailability: {
-        available: [],
-        unavailable: [],
-      }, // An object containing the people that are available and unavailable for the given timeslot  
+      curTimeslotAvailability: {}, // An object containing the people that are available and unavailable for the given timeslot, maps their user id to either true or false  
       curTimeslot: { dayIndex: -1, timeIndex: -1 },
+      curUser: '', // The id of the current user to show the availability of
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -275,7 +279,7 @@ export default {
             const index = response.availability.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
-              formatted.get(date.getTime()).add(response.user)
+              formatted.get(date.getTime()).add(response.user._id)
             }
           }
 
@@ -354,11 +358,12 @@ export default {
     showAvailability(d, t) {
       this.curTimeslot = { dayIndex: d, timeIndex: t }
       const available = this.getRespondentsForDateTime(this.days[d].dateObject, this.times[t].timeInt) 
-      const availableIds = [...available].map(a => a._id)
-      const unavailable = this.respondents.filter(r => !availableIds.includes(r._id))
-      this.curTimeslotAvailability = {
-        available,
-        unavailable,
+      for (const respondent of this.respondents) {
+        if (available.has(respondent._id)) {
+          this.curTimeslotAvailability[respondent._id] = true
+        } else {
+          this.curTimeslotAvailability[respondent._id] = false
+        }
       }
       this.availabilityBottomSheet = true
     },
@@ -406,21 +411,28 @@ export default {
           }
         }
       } else {
-        // Show everyone's availability
-        const numRespondents = this.getRespondentsForDateTime(day.dateObject, time.timeInt).size
-        if (numRespondents > 0) {
-          const frac = numRespondents / this.max
-          const colors = [
-            //'tw-bg-avail-green-50', 
-            'tw-bg-avail-green-100', 
-            'tw-bg-avail-green-200', 
-            'tw-bg-avail-green-300', 
-            'tw-bg-avail-green-400', 
-            'tw-bg-avail-green-500',
-            //'tw-bg-light-blue', 
-            //'tw-bg-avail-green-600',
-          ] 
-          c += colors[parseInt(frac*colors.length-1)] + ' '
+        if (this.curUser) {
+          const respondents = this.getRespondentsForDateTime(day.dateObject, time.timeInt)
+          if (respondents.has(this.curUser)) {
+            c += 'tw-bg-avail-green-300 '
+          }
+        } else {
+          // Show everyone's availability
+          const numRespondents = this.getRespondentsForDateTime(day.dateObject, time.timeInt).size
+          if (numRespondents > 0) {
+            const frac = numRespondents / this.max
+            const colors = [
+              //'tw-bg-avail-green-50', 
+              'tw-bg-avail-green-100', 
+              'tw-bg-avail-green-200', 
+              'tw-bg-avail-green-300', 
+              'tw-bg-avail-green-400', 
+              'tw-bg-avail-green-500',
+              //'tw-bg-light-blue', 
+              //'tw-bg-avail-green-600',
+            ] 
+            c += colors[parseInt(frac*colors.length-1)] + ' '
+          }
         }
       }
 
@@ -444,9 +456,9 @@ export default {
       return {}
     },
     resetCurTimeslot() {
-      this.curTimeslotAvailability = {
-        available: [],
-        unavailable: [],
+      this.curTimeslotAvailability = {}
+      for (const respondent of this.respondents) {
+        this.curTimeslotAvailability[respondent._id] = true
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
     },
@@ -560,6 +572,15 @@ export default {
     calendarEvents: {
       handler() {
         //if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
+      },
+    },
+    respondents: {
+      immediate: true,
+      handler() {
+        this.curTimeslotAvailability = {}
+        for (const respondent of this.respondents) {
+          this.curTimeslotAvailability[respondent._id] = true
+        }
       },
     },
   },
