@@ -6,8 +6,8 @@
     </div>
     <div ref="calendarContainer" class="-tw-mt-24 tw-z-0 tw-relative">
       <div class="tw-w-full tw-h-24 tw-flex tw-text-center tw-pt-1 tw-flex-col tw-bg-green">
-        <h1 class="tw-text-4xl tw-font-bold tw-text-white">{{ authUser.firstName }}'s Schej</h1>
-        <h1 class="tw-text-md tw-text-white mt-2"><span class="tw-font-medium">Timezone:</span> {{ currentTimezone }}
+        <h1 class="tw-text-4xl tw-font-bold tw-text-white-white">{{ authUser.firstName }}'s Schej</h1>
+        <h1 class="tw-text-md tw-text-white-white mt-2"><span class="tw-font-medium">Timezone:</span> {{ currentTimezone }}
         </h1>
       </div>
       <TestCalendar :noEventNames="hideEventNames" />
