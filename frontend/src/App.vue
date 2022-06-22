@@ -45,11 +45,13 @@
       </div>
     </div>
 
-    <div class="tw-h-screen tw-flex tw-flex-col tw-justify-center tw-overflow-hidden">
-      <div class="tw-flex-1 tw-relative tw-overflow-y-auto" :class="routerViewClass">
-        <router-view v-if="loaded" />
+    <v-main>
+      <div class="tw-h-screen tw-flex tw-flex-col">
+        <div class="tw-flex-1 tw-relative tw-overscroll-auto" :class="routerViewClass">
+          <router-view v-if="loaded" />
+        </div>
       </div>
-    </div>
+    </v-main>
 
     <div
       v-if="showBottomNavbar"
@@ -138,8 +140,8 @@ export default {
     },
     routerViewClass() {
       let c = ''
-      if (this.showHeader) c += 'tw-mt-14 '
-      if (this.showBottomNavbar) c += 'tw-mb-14 '
+      if (this.showHeader) c += 'tw-pt-14 '
+      if (this.showBottomNavbar) c += 'tw-pb-14 '
       return c
     },
     centerHeaderLogo() {

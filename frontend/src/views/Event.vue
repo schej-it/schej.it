@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="tw-max-w-6xl tw-mx-auto">
-      <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-0 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
+      <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-14 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
         <div class="tw-text-white tw-text-sm tw-z-10">
           <span v-if="isPhone">
             <span v-if="isEditing">Drag to edit availability</span>
