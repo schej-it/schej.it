@@ -72,6 +72,7 @@
 <style>
 html {
   overflow-y: auto !important; 
+  overscroll-behavior: none;
 }
 
 .v-btn {
@@ -230,6 +231,3 @@ export default {
   },
 };
 </script>
-
-<style>
-</style>
