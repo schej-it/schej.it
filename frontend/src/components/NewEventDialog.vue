@@ -55,7 +55,7 @@
         <div>
           <div class="tw-text-lg tw-text-black tw-text-center tw-font-medium tw-mt-6 tw-mb-2">What dates would you like to meet?</div>
           <div class="tw-flex tw-flex-col tw-justify-center tw-items-center">
-            <vc-date-picker v-model="dateRange" is-range class="tw-min-w-full sm:tw-min-w-0 " />
+            <vc-date-picker v-model="dateRange" :min-date='new Date()' is-range class="tw-min-w-full sm:tw-min-w-0 " />
           </div>
         </div>
 

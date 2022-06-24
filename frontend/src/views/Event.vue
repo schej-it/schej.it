@@ -7,7 +7,7 @@
       content-class="tw-m-0"
     >
       <v-card class="tw-text-center sm:tw-p-6 tw-p-4">
-        <div class="tw-text-md tw-font-semibold tw-pb-4">How would you like to input <br v-if="isPhone"> your availability?</div>
+        <div class="tw-text-md tw-font-semibold tw-pb-4">How would you like to mark <br v-if="isPhone"> your availability?</div>
         <div class="">
           <v-btn 
             @click="setAvailabilityAutomatically(); choiceDialog = false"
@@ -15,7 +15,7 @@
             dark 
             block
           >
-            <div class="tw-text-sm -tw-mx-4">Automatically from Google Calendar</div>
+            <div class="tw-text-sm -tw-mx-4">Automatically with Google Calendar</div>
           </v-btn>
           <v-btn @click="choiceDialog = false" block>Manually</v-btn>
         </div>
