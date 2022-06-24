@@ -95,13 +95,16 @@ export default {
             })
             .then(() => {
               console.log('Share was successful.')
+              this.loading = false
             })
             .catch((error) => {
               console.log('Sharing failed', error)
               this.showError('There was an issue when trying to share')
+              this.loading = false
             })
         } else {
           console.log(`Your system doesn't support sharing files.`)
+          this.loading = false
         }
       } else {
         copyImageToClipboard(this.output)
