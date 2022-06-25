@@ -28,8 +28,8 @@ export default {
   },
 
   data: () => ({
-    startDate: getDateDayOffset(new Date(), -1),
-    endDate: getDateDayOffset(new Date(), 1),
+    startDate: getDateWithTimeInt(getDateDayOffset(new Date(), -1), 9),
+    endDate: getDateWithTimeInt(getDateDayOffset(new Date(), 1), 22),
     startTime: 9,
     endTime: 22,
 
@@ -68,7 +68,7 @@ export default {
 
     this.responses = {
       "62828fec1bc681fa020632f2": {
-        user: {name: '1'},
+        user: {_id: '1', name: '1'},
         "availability": [
           getDateWithTimeInt(day1, 11),
           getDateWithTimeInt(day1, 11.5),
@@ -124,7 +124,7 @@ export default {
         ]
       },
       "628292fe6e12d2baa9c01395": {
-        user: {name: '2'},
+        user: {_id: '2', name: '2'},
         "availability": [
           getDateWithTimeInt(day1, 14),
           getDateWithTimeInt(day1, 14.5),
@@ -173,7 +173,7 @@ export default {
         ]
       },
       "628208870df4418ff4213757": {
-        user: {name: '3'},
+        user: {_id: '3', name: '3'},
         "availability": [
           getDateWithTimeInt(day1, 11),
           getDateWithTimeInt(day1, 11.5),
