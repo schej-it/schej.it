@@ -1,3 +1,4 @@
+/* The /events group contains all the routes to get and edit events */
 package routes
 
 import (

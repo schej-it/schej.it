@@ -1,3 +1,4 @@
+/* The /user group contains all the routes to get all the information about the currently signed in user */
 package routes
 
 import (

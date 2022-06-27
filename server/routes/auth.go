@@ -1,3 +1,4 @@
+/* The /auth group contains all the routes to sign in and sign out */
 package routes
 
 import (
