@@ -30,7 +30,7 @@ func InitEvents(router *gin.Engine) {
 }
 
 // @Summary Creates a new event
-// @Tags event
+// @Tags events
 // @Accept json
 // @Produce json
 // @Param name body string true "Name"
@@ -73,7 +73,7 @@ func createEvent(c *gin.Context) {
 }
 
 // @Summary Gets an event based on its id
-// @Tags event
+// @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
 // @Success 200 {object} models.Event
@@ -97,7 +97,7 @@ func getEvent(c *gin.Context) {
 }
 
 // @Summary Updates the current user's availability
-// @Tags event
+// @Tags events
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"

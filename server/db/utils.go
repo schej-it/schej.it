@@ -20,7 +20,7 @@ import (
 func GetUserById(userId string) *models.User {
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
-		// eventId is malformatted
+		// userId is malformatted
 		return nil
 	}
 	result := UsersCollection.FindOne(context.Background(), bson.M{
@@ -61,6 +61,29 @@ func GetEventById(eventId string) *models.Event {
 	}
 
 	return &event
+}
+
+func GetFriendRequestById(friendRequestId string) *models.FriendRequest {
+	objectId, err := primitive.ObjectIDFromHex(friendRequestId)
+	if err != nil {
+		// friendRequestId is malformatted
+		return nil
+	}
+	result := FriendRequestsCollection.FindOne(context.Background(), bson.M{
+		"_id": objectId,
+	})
+	if result.Err() == mongo.ErrNoDocuments {
+		// Friend request does not exist!
+		return nil
+	}
+
+	// Set auth user request variable
+	var friendRequest models.FriendRequest
+	if err := result.Decode(&friendRequest); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	return &friendRequest
 }
 
 // If access token has expired, get a new token, update the user object, and save it to the database

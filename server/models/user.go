@@ -19,7 +19,8 @@ type User struct {
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
 	// Friends
-	Friends []primitive.ObjectID `json:"friends" bson:"friends,omitempty"`
+	FriendIds []primitive.ObjectID `json:"-" bson:"friendIds"`
+	Friends   []UserProfile        `json:"friends" bson:",omitempty"`
 
 	// Calendars maps the calendar's id to the calendar object
 	Calendars map[string]Calendar `json:"calendars" bson:"calendars"`
