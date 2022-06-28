@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/db"
 	"schej.it/server/errs"
 	"schej.it/server/logger"
@@ -47,13 +48,31 @@ func createFriendRequest(c *gin.Context) {
 		return
 	}
 
+	// Check if user is allowed to create this friend request
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	if user.Id != payload.From {
+		c.JSON(http.StatusForbidden, gin.H{})
+		return
+	}
+
+	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
+		"from": payload.To,
+		"to":   payload.From,
+	}); result.Err() != mongo.ErrNoDocuments {
+		// Friend request already exists, accept it
+		var friendRequest models.FriendRequest
+		result.Decode(&friendRequest)
+		_acceptFriendRequest(c, &friendRequest)
+		return
+	}
+
+	// Insert friend request
 	friendRequest := models.FriendRequest{
 		From:      payload.From,
 		To:        payload.To,
 		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}
-
-	// Insert friend request
 	result, err := db.FriendRequestsCollection.InsertOne(context.Background(), friendRequest)
 	if err != nil {
 		logger.StdErr.Panicln(err)
@@ -64,6 +83,8 @@ func createFriendRequest(c *gin.Context) {
 
 	// Populate the ToUser field
 	friendRequest.ToUser = db.GetUserById(friendRequest.To.Hex()).GetProfile()
+
+	c.JSON(http.StatusCreated, friendRequest)
 }
 
 // @Summary Accepts an existing friend request
@@ -81,6 +102,11 @@ func acceptFriendRequest(c *gin.Context) {
 		return
 	}
 
+	_acceptFriendRequest(c, friendRequest)
+}
+
+// Helper function for friend request route
+func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 	// Check if the "To" user id matches the current user's id
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
@@ -88,16 +114,6 @@ func acceptFriendRequest(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{})
 		return
 	}
-
-	// user1 := db.GetUserById(friendRequest.From.Hex())
-	// if user1 == nil {
-	// 	logger.StdErr.Panicf("User(id=%s) does not exist!\n", friendRequest.From.Hex())
-	// }
-
-	// user2 := db.GetUserById(friendRequest.To.Hex())
-	// if user2 == nil {
-	// 	logger.StdErr.Panicf("User(id=%s) does not exist!\n", friendRequest.To.Hex())
-	// }
 
 	// Update friend arrays of both From and To user
 	db.UsersCollection.UpdateOne(context.Background(),
@@ -117,6 +133,7 @@ func acceptFriendRequest(c *gin.Context) {
 	)
 
 	// Delete friend request
+	db.DeleteFriendRequestById(friendRequest.Id.Hex())
 
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -145,6 +162,7 @@ func rejectFriendRequest(c *gin.Context) {
 	}
 
 	// Delete friend request
+	db.DeleteFriendRequestById(friendRequestId)
 
 	c.JSON(http.StatusOK, gin.H{})
 }

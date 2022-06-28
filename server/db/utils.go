@@ -31,7 +31,7 @@ func GetUserById(userId string) *models.User {
 		return nil
 	}
 
-	// Set auth user request variable
+	// Decode result
 	var user models.User
 	if err := result.Decode(&user); err != nil {
 		logger.StdErr.Panicln(err)
@@ -54,7 +54,7 @@ func GetEventById(eventId string) *models.Event {
 		return nil
 	}
 
-	// Set auth user request variable
+	// Decode result
 	var event models.Event
 	if err := result.Decode(&event); err != nil {
 		logger.StdErr.Panicln(err)
@@ -77,13 +77,27 @@ func GetFriendRequestById(friendRequestId string) *models.FriendRequest {
 		return nil
 	}
 
-	// Set auth user request variable
+	// Decode result
 	var friendRequest models.FriendRequest
 	if err := result.Decode(&friendRequest); err != nil {
 		logger.StdErr.Panicln(err)
 	}
 
 	return &friendRequest
+}
+
+func DeleteFriendRequestById(friendRequestId string) {
+	objectId, err := primitive.ObjectIDFromHex(friendRequestId)
+	if err != nil {
+		// friendRequestId is malformatted
+		logger.StdErr.Panicln(err)
+	}
+	_, err = FriendRequestsCollection.DeleteOne(context.Background(), bson.M{
+		"_id": objectId,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
 }
 
 // If access token has expired, get a new token, update the user object, and save it to the database
