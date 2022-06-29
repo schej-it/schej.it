@@ -36,7 +36,8 @@ func InitFriends(router *gin.Engine) {
 // @Accept json
 // @Produce json
 // @Param payload body object{from=string,to=string} true "Object specifying the user IDs of who this request is sent from and to"
-// @Success 201 {object} models.FriendRequest
+// @Success 201 {object} models.FriendRequest "Friend request created"
+// @Success 200 "Friend request already exists from \"to\" to \"from\", and it was accepted"
 // @Router /friends/requests [post]
 func createFriendRequest(c *gin.Context) {
 	payload := struct {
@@ -54,6 +55,10 @@ func createFriendRequest(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{})
 		return
 	}
+
+	// TODOS: (not essential, because frontend should prevent these errors)
+	// TODO: If user is already friends with the user, return an error
+	// TODO: If user already sent a friend request with the same parameters, return an error
 
 	// If friend request already exists, accept it
 	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
@@ -116,22 +121,22 @@ func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 	}
 
 	// Update friend array of the To user
-	db.UsersCollection.UpdateOne(context.Background(),
-		bson.M{"$and": bson.A{
-			bson.M{"_id": friendRequest.To},
-			bson.M{"friendIds": bson.M{"$ne": bson.A{friendRequest.From}}},
-		}},
-		bson.M{"$push": bson.M{"friendIds": friendRequest.From}},
+	_, err := db.UsersCollection.UpdateOne(context.Background(),
+		bson.M{"_id": friendRequest.To},
+		bson.M{"$addToSet": bson.M{"friendIds": friendRequest.From}},
 	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
 
 	// Update friend array of the From user
-	db.UsersCollection.UpdateOne(context.Background(),
-		bson.M{"$and": bson.A{
-			bson.M{"_id": friendRequest.From},
-			bson.M{"friendIds": bson.M{"$ne": bson.A{friendRequest.To}}},
-		}},
-		bson.M{"$push": bson.M{"friendIds": friendRequest.To}},
+	_, err = db.UsersCollection.UpdateOne(context.Background(),
+		bson.M{"_id": friendRequest.From},
+		bson.M{"$addToSet": bson.M{"friendIds": friendRequest.To}},
 	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
 
 	// Delete friend request
 	db.DeleteFriendRequestById(friendRequest.Id.Hex())

@@ -257,8 +257,11 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Friend request already exists from \\\"to\\\" to \\\"from\\\", and it was accepted"
+                    },
                     "201": {
-                        "description": "Created",
+                        "description": "Friend request created",
                         "schema": {
                             "$ref": "#/definitions/models.FriendRequest"
                         }
