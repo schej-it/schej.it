@@ -27,6 +27,44 @@ var doc = `{
     "paths": {
         "/auth/sign-in": {
             "post": {
+                "description": "Signs user in and sets the access token session variable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Signs user in",
+                "parameters": [
+                    {
+                        "description": "Google authorization code",
+                        "name": "code",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "User's timezone offset",
+                        "name": "timezoneOffset",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/auth/sign-out": {
+            "post": {
                 "description": "Signs user out and deletes the session",
                 "consumes": [
                     "application/json"
@@ -70,7 +108,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "event"
+                    "events"
                 ],
                 "summary": "Creates a new event",
                 "parameters": [
@@ -148,7 +186,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "event"
+                    "events"
                 ],
                 "summary": "Gets an event based on its id",
                 "parameters": [
@@ -179,7 +217,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "event"
+                    "events"
                 ],
                 "summary": "Updates the current user's availability",
                 "parameters": [
@@ -201,6 +239,126 @@ var doc = `{
                                 "type": "string"
                             }
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/friends/requests": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Creates a new friend request",
+                "parameters": [
+                    {
+                        "description": "The sender of the friend request",
+                        "name": "from",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The recipient of the friend request",
+                        "name": "to",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.FriendRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/friends/requests/:id": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Delete's a friend request created by the current user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the friend request",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/friends/requests/:id/accept": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Accepts an existing friend request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the friend request",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/friends/requests/:id/reject": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Rejects an existing friend request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the friend request",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -274,7 +432,7 @@ var doc = `{
                                                 "$ref": "#/definitions/models.Event"
                                             }
                                         },
-                                        "respondedEvents": {
+                                        "joinedEvents": {
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/definitions/models.Event"
@@ -311,11 +469,6 @@ var doc = `{
     "definitions": {
         "models.CalendarEvent": {
             "type": "object",
-            "required": [
-                "endDate",
-                "startDate",
-                "summary"
-            ],
             "properties": {
                 "endDate": {
                     "type": "string"
@@ -330,25 +483,12 @@ var doc = `{
         },
         "models.Event": {
             "type": "object",
-            "required": [
-                "_id",
-                "endDate",
-                "endTime",
-                "name",
-                "ownerId",
-                "responses",
-                "startDate",
-                "startTime"
-            ],
             "properties": {
                 "_id": {
                     "type": "string"
                 },
                 "endDate": {
                     "type": "string"
-                },
-                "endTime": {
-                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -364,18 +504,36 @@ var doc = `{
                 },
                 "startDate": {
                     "type": "string"
+                }
+            }
+        },
+        "models.FriendRequest": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
                 },
-                "startTime": {
-                    "type": "integer"
+                "createdAt": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "fromUser": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.UserProfile"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "toUser": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.UserProfile"
                 }
             }
         },
         "models.Response": {
             "type": "object",
-            "required": [
-                "availability",
-                "userId"
-            ],
             "properties": {
                 "availability": {
                     "type": "array",
@@ -394,13 +552,6 @@ var doc = `{
         },
         "models.UserProfile": {
             "type": "object",
-            "required": [
-                "_id",
-                "email",
-                "firstName",
-                "lastName",
-                "picture"
-            ],
             "properties": {
                 "_id": {
                     "type": "string"
@@ -445,7 +596,7 @@ type swaggerInfo struct {
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
-	Host:        "localhost:3001",
+	Host:        "localhost:3002",
 	BasePath:    "",
 	Schemes:     []string{},
 	Title:       "Schej.it API",

@@ -28,17 +28,17 @@ func InitFriends(router *gin.Engine) {
 	friendsRouter.POST("/requests", createFriendRequest)
 	friendsRouter.POST("/requests/:id/accept", acceptFriendRequest)
 	friendsRouter.POST("/requests/:id/reject", rejectFriendRequest)
-	friendsRouter.DELETE("/requests/:id")
+	friendsRouter.DELETE("/requests/:id", deleteFriendRequest)
 }
 
 // @Summary Creates a new friend request
 // @Tags friends
 // @Accept json
 // @Produce json
-// @Param from body primitive.ObjectId true "The sender of the friend request"
-// @Param to body primitive.ObjectId true "The recipient of the friend request"
+// @Param from body string true "The sender of the friend request"
+// @Param to body string true "The recipient of the friend request"
 // @Success 201 {object} models.FriendRequest
-// @Router /requests [post]
+// @Router /friends/requests [post]
 func createFriendRequest(c *gin.Context) {
 	payload := struct {
 		From primitive.ObjectID `json:"from" binding:"required"`
@@ -93,7 +93,7 @@ func createFriendRequest(c *gin.Context) {
 // @Produce json
 // @Param id path string true "ID of the friend request"
 // @Success 200
-// @Router /requests/:id/accept [post]
+// @Router /friends/requests/:id/accept [post]
 func acceptFriendRequest(c *gin.Context) {
 	friendRequestId := c.Param("id")
 	friendRequest := db.GetFriendRequestById(friendRequestId)
@@ -138,13 +138,13 @@ func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// @Summaryejects an existing friend request
+// @Summary Rejects an existing friend request
 // @Tags friends
 // @Accept json
 // @Produce json
 // @Param id path string true "ID of the friend request"
 // @Success 200
-// @Router /requests/:id/reject [post]
+// @Router /friends/requests/:id/reject [post]
 func rejectFriendRequest(c *gin.Context) {
 	friendRequestId := c.Param("id")
 	friendRequest := db.GetFriendRequestById(friendRequestId)
@@ -165,4 +165,15 @@ func rejectFriendRequest(c *gin.Context) {
 	db.DeleteFriendRequestById(friendRequestId)
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Delete's a friend request created by the current user
+// @Tags friends
+// @Accept json
+// @Produce json
+// @Param id path string true "ID of the friend request"
+// @Success 200
+// @Router /friends/requests/:id [delete]
+func deleteFriendRequest(c *gin.Context) {
+
 }

@@ -7,10 +7,6 @@ definitions:
         type: string
       summary:
         type: string
-    required:
-    - endDate
-    - startDate
-    - summary
     type: object
   models.Event:
     properties:
@@ -18,8 +14,6 @@ definitions:
         type: string
       endDate:
         type: string
-      endTime:
-        type: integer
       name:
         type: string
       ownerId:
@@ -30,17 +24,23 @@ definitions:
         type: object
       startDate:
         type: string
-      startTime:
-        type: integer
-    required:
-    - _id
-    - endDate
-    - endTime
-    - name
-    - ownerId
-    - responses
-    - startDate
-    - startTime
+    type: object
+  models.FriendRequest:
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      from:
+        type: string
+      fromUser:
+        $ref: '#/definitions/models.UserProfile'
+        type: object
+      to:
+        type: string
+      toUser:
+        $ref: '#/definitions/models.UserProfile'
+        type: object
     type: object
   models.Response:
     properties:
@@ -53,9 +53,6 @@ definitions:
         type: object
       userId:
         type: string
-    required:
-    - availability
-    - userId
     type: object
   models.UserProfile:
     properties:
@@ -69,12 +66,6 @@ definitions:
         type: string
       picture:
         type: string
-    required:
-    - _id
-    - email
-    - firstName
-    - lastName
-    - picture
     type: object
   responses.Error:
     properties:
@@ -83,7 +74,7 @@ definitions:
     required:
     - error
     type: object
-host: localhost:3001
+host: localhost:3002
 info:
   contact: {}
   description: This is the API for Schej.it!
@@ -92,6 +83,31 @@ info:
   version: "1.0"
 paths:
   /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Signs user in and sets the access token session variable
+      parameters:
+      - description: Google authorization code
+        in: body
+        name: code
+        required: true
+        schema:
+          type: string
+      - description: User's timezone offset
+        in: body
+        name: timezoneOffset
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Signs user in
+      tags:
+      - auth
+  /auth/sign-out:
     post:
       consumes:
       - application/json
@@ -164,7 +180,7 @@ paths:
               type: object
       summary: Creates a new event
       tags:
-      - event
+      - events
   /events/:eventId:
     get:
       parameters:
@@ -182,7 +198,7 @@ paths:
             $ref: '#/definitions/models.Event'
       summary: Gets an event based on its id
       tags:
-      - event
+      - events
   /events/:eventId/response:
     post:
       consumes:
@@ -207,7 +223,85 @@ paths:
         "200": {}
       summary: Updates the current user's availability
       tags:
-      - event
+      - events
+  /friends/requests:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: The sender of the friend request
+        in: body
+        name: from
+        required: true
+        schema:
+          type: string
+      - description: The recipient of the friend request
+        in: body
+        name: to
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.FriendRequest'
+      summary: Creates a new friend request
+      tags:
+      - friends
+  /friends/requests/:id:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID of the friend request
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete's a friend request created by the current user
+      tags:
+      - friends
+  /friends/requests/:id/accept:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID of the friend request
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Accepts an existing friend request
+      tags:
+      - friends
+  /friends/requests/:id/reject:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID of the friend request
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Rejects an existing friend request
+      tags:
+      - friends
   /user/calendar:
     get:
       description: Gets the user's calendar events between "timeMin" and "timeMax"
@@ -250,7 +344,7 @@ paths:
                   items:
                     $ref: '#/definitions/models.Event'
                   type: array
-                respondedEvents:
+                joinedEvents:
                   items:
                     $ref: '#/definitions/models.Event'
                   type: array

@@ -21,6 +21,7 @@ export default {
 
     // Sign in and set auth user
     try {
+      if (process.env.NODE_ENV === 'development') console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
       await post('/auth/sign-in', { code, timezoneOffset: new Date().getTimezoneOffset() })
       const authUser = await get('/user/profile')
       this.setAuthUser(authUser)

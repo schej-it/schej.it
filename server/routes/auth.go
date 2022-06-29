@@ -143,7 +143,7 @@ func signIn(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /auth/sign-in [post]
+// @Router /auth/sign-out [post]
 func signOut(c *gin.Context) {
 	// Delete session
 	session := sessions.Default(c)
