@@ -33,11 +33,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param name body string true "Name"
-// @Param startDate body string true "Start date"
-// @Param endDate body string true "End date"
-// @Param startTime body int true "Start time"
-// @Param endTime body int true "End time"
+// @Param payload body object{name=string,startDate=string,endDate=string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -77,7 +73,7 @@ func createEvent(c *gin.Context) {
 // @Produce json
 // @Param eventId path string true "Event ID"
 // @Success 200 {object} models.Event
-// @Router /events/:eventId [get]
+// @Router /events/{eventId} [get]
 func getEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
@@ -103,7 +99,7 @@ func getEvent(c *gin.Context) {
 // @Param eventId path string true "Event ID"
 // @Param availability body []string true "Array of dates representing user's availability"
 // @Success 200
-// @Router /events/:eventId/response [post]
+// @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
 		Availability []string `json:"availability" binding:"required"`

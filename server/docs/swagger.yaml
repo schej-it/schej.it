@@ -88,18 +88,20 @@ paths:
       - application/json
       description: Signs user in and sets the access token session variable
       parameters:
-      - description: Google authorization code
+      - description: Object containing the Google authorization code and the user's
+          timezone offset
         in: body
-        name: code
+        name: payload
         required: true
         schema:
-          type: string
-      - description: User's timezone offset
-        in: body
-        name: timezoneOffset
-        required: true
-        schema:
-          type: integer
+          allOf:
+          - type: object
+          - properties:
+              code:
+                type: string
+              timezoneOffset:
+                type: integer
+            type: object
       produces:
       - application/json
       responses:
@@ -136,36 +138,21 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Name
+      - description: Object containing info about the event to create
         in: body
-        name: name
+        name: payload
         required: true
         schema:
-          type: string
-      - description: Start date
-        in: body
-        name: startDate
-        required: true
-        schema:
-          type: string
-      - description: End date
-        in: body
-        name: endDate
-        required: true
-        schema:
-          type: string
-      - description: Start time
-        in: body
-        name: startTime
-        required: true
-        schema:
-          type: integer
-      - description: End time
-        in: body
-        name: endTime
-        required: true
-        schema:
-          type: integer
+          allOf:
+          - type: object
+          - properties:
+              endDate:
+                type: string
+              name:
+                type: string
+              startDate:
+                type: string
+            type: object
       produces:
       - application/json
       responses:
@@ -181,7 +168,7 @@ paths:
       summary: Creates a new event
       tags:
       - events
-  /events/:eventId:
+  /events/{eventId}:
     get:
       parameters:
       - description: Event ID
@@ -199,7 +186,7 @@ paths:
       summary: Gets an event based on its id
       tags:
       - events
-  /events/:eventId/response:
+  /events/{eventId}/response:
     post:
       consumes:
       - application/json
@@ -229,18 +216,20 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: The sender of the friend request
+      - description: Object specifying the user IDs of who this request is sent from
+          and to
         in: body
-        name: from
+        name: payload
         required: true
         schema:
-          type: string
-      - description: The recipient of the friend request
-        in: body
-        name: to
-        required: true
-        schema:
-          type: string
+          allOf:
+          - type: object
+          - properties:
+              from:
+                type: string
+              to:
+                type: string
+            type: object
       produces:
       - application/json
       responses:
@@ -251,7 +240,7 @@ paths:
       summary: Creates a new friend request
       tags:
       - friends
-  /friends/requests/:id:
+  /friends/requests/{id}:
     delete:
       consumes:
       - application/json
@@ -268,7 +257,7 @@ paths:
       summary: Delete's a friend request created by the current user
       tags:
       - friends
-  /friends/requests/:id/accept:
+  /friends/requests/{id}/accept:
     post:
       consumes:
       - application/json
@@ -285,7 +274,7 @@ paths:
       summary: Accepts an existing friend request
       tags:
       - friends
-  /friends/requests/:id/reject:
+  /friends/requests/{id}/reject:
     post:
       consumes:
       - application/json

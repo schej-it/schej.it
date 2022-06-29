@@ -35,8 +35,7 @@ func InitFriends(router *gin.Engine) {
 // @Tags friends
 // @Accept json
 // @Produce json
-// @Param from body string true "The sender of the friend request"
-// @Param to body string true "The recipient of the friend request"
+// @Param payload body object{from=string,to=string} true "Object specifying the user IDs of who this request is sent from and to"
 // @Success 201 {object} models.FriendRequest
 // @Router /friends/requests [post]
 func createFriendRequest(c *gin.Context) {
@@ -93,7 +92,7 @@ func createFriendRequest(c *gin.Context) {
 // @Produce json
 // @Param id path string true "ID of the friend request"
 // @Success 200
-// @Router /friends/requests/:id/accept [post]
+// @Router /friends/requests/{id}/accept [post]
 func acceptFriendRequest(c *gin.Context) {
 	// Check that the specified friend request exists
 	friendRequestId := c.Param("id")
@@ -146,7 +145,7 @@ func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 // @Produce json
 // @Param id path string true "ID of the friend request"
 // @Success 200
-// @Router /friends/requests/:id/reject [post]
+// @Router /friends/requests/{id}/reject [post]
 func rejectFriendRequest(c *gin.Context) {
 	// Check that the specified friend request exists
 	friendRequestId := c.Param("id")
@@ -176,7 +175,7 @@ func rejectFriendRequest(c *gin.Context) {
 // @Produce json
 // @Param id path string true "ID of the friend request"
 // @Success 200
-// @Router /friends/requests/:id [delete]
+// @Router /friends/requests/{id} [delete]
 func deleteFriendRequest(c *gin.Context) {
 	// Check that the specified friend request exists
 	friendRequestId := c.Param("id")
