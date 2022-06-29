@@ -90,10 +90,14 @@ func signIn(c *gin.Context) {
 
 	// Create user object to create new user or update existing user
 	userData := models.User{
-		Email:                 email,
-		FirstName:             firstName,
-		LastName:              lastName,
-		Picture:               picture,
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
+		Picture:   picture,
+
+		FriendIds: make([]primitive.ObjectID, 0),
+		Calendars: make(map[string]models.Calendar),
+
 		AccessToken:           res.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          res.RefreshToken,
