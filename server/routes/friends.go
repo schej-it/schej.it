@@ -56,18 +56,18 @@ func createFriendRequest(c *gin.Context) {
 		return
 	}
 
+	// If friend request already exists, accept it
 	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
 		"from": payload.To,
 		"to":   payload.From,
 	}); result.Err() != mongo.ErrNoDocuments {
-		// Friend request already exists, accept it
 		var friendRequest models.FriendRequest
 		result.Decode(&friendRequest)
 		_acceptFriendRequest(c, &friendRequest)
 		return
 	}
 
-	// Insert friend request
+	// Insert new friend request
 	friendRequest := models.FriendRequest{
 		From:      payload.From,
 		To:        payload.To,
@@ -95,6 +95,7 @@ func createFriendRequest(c *gin.Context) {
 // @Success 200
 // @Router /friends/requests/:id/accept [post]
 func acceptFriendRequest(c *gin.Context) {
+	// Check that the specified friend request exists
 	friendRequestId := c.Param("id")
 	friendRequest := db.GetFriendRequestById(friendRequestId)
 	if friendRequest == nil {
@@ -115,7 +116,7 @@ func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 		return
 	}
 
-	// Update friend arrays of both From and To user
+	// Update friend array of the To user
 	db.UsersCollection.UpdateOne(context.Background(),
 		bson.M{"$and": bson.A{
 			bson.M{"_id": friendRequest.To},
@@ -124,6 +125,7 @@ func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 		bson.M{"$push": bson.M{"friendIds": friendRequest.From}},
 	)
 
+	// Update friend array of the From user
 	db.UsersCollection.UpdateOne(context.Background(),
 		bson.M{"$and": bson.A{
 			bson.M{"_id": friendRequest.From},
@@ -146,6 +148,7 @@ func _acceptFriendRequest(c *gin.Context, friendRequest *models.FriendRequest) {
 // @Success 200
 // @Router /friends/requests/:id/reject [post]
 func rejectFriendRequest(c *gin.Context) {
+	// Check that the specified friend request exists
 	friendRequestId := c.Param("id")
 	friendRequest := db.GetFriendRequestById(friendRequestId)
 	if friendRequest == nil {
@@ -175,5 +178,24 @@ func rejectFriendRequest(c *gin.Context) {
 // @Success 200
 // @Router /friends/requests/:id [delete]
 func deleteFriendRequest(c *gin.Context) {
+	// Check that the specified friend request exists
+	friendRequestId := c.Param("id")
+	friendRequest := db.GetFriendRequestById(friendRequestId)
+	if friendRequest == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.FriendRequestNotFound})
+		return
+	}
 
+	// Check if the "From" user id matches the current user's id
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	if user.Id != friendRequest.From {
+		c.JSON(http.StatusForbidden, gin.H{})
+		return
+	}
+
+	// Delete friend request
+	db.DeleteFriendRequestById(friendRequestId)
+
+	c.JSON(http.StatusOK, gin.H{})
 }

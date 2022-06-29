@@ -99,7 +99,7 @@ paths:
         name: timezoneOffset
         required: true
         schema:
-          type: string
+          type: integer
       produces:
       - application/json
       responses:

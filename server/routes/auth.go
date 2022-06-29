@@ -36,7 +36,7 @@ func InitAuth(router *gin.Engine) {
 // @Accept json
 // @Produce json
 // @Param code body string true "Google authorization code"
-// @Param timezoneOffset body string true "User's timezone offset"
+// @Param timezoneOffset body int true "User's timezone offset"
 // @Success 200
 // @Router /auth/sign-in [post]
 func signIn(c *gin.Context) {
