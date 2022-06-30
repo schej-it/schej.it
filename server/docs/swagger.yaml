@@ -224,7 +224,39 @@ paths:
       summary: Updates the current user's availability
       tags:
       - events
+  /friends:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Gets all of users current friends
+      tags:
+      - friends
+  /friends/:id:
+    delete:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Removes an existing friend
+      tags:
+      - friends
   /friends/requests:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Gets all the current incoming and outgoing friend requests
+      tags:
+      - friends
     post:
       consumes:
       - application/json
@@ -364,4 +396,24 @@ paths:
       summary: Gets the user's profile
       tags:
       - user
+  /users:
+    get:
+      parameters:
+      - description: Search query matching users' names/emails
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: An array of user profile objects
+          schema:
+            items:
+              $ref: '#/definitions/models.UserProfile'
+            type: array
+      summary: Returns users that match the search query
+      tags:
+      - users
 swagger: "2.0"

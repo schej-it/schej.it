@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,19 +17,94 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/utils"
 )
 
 func InitFriends(router *gin.Engine) {
 	friendsRouter := router.Group("/friends")
 	friendsRouter.Use(middleware.AuthRequired())
 
-	friendsRouter.GET("")
-	friendsRouter.DELETE("/:id")
-	friendsRouter.GET("/requests")
+	friendsRouter.GET("", getFriends)
+	friendsRouter.DELETE("/:id", deleteFriend)
+	friendsRouter.GET("/requests", getFriendRequests)
 	friendsRouter.POST("/requests", createFriendRequest)
 	friendsRouter.POST("/requests/:id/accept", acceptFriendRequest)
 	friendsRouter.POST("/requests/:id/reject", rejectFriendRequest)
 	friendsRouter.DELETE("/requests/:id", deleteFriendRequest)
+}
+
+// @Summary Gets all of users current friends
+// @Tags friends
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /friends [get]
+func getFriends(c *gin.Context) {
+
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	c.JSON(http.StatusOK, user.Friends)
+
+}
+
+// @Summary Removes an existing friend
+// @Tags friends
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /friends/:id [delete]
+func deleteFriend(c *gin.Context) {
+	session := sessions.Default(c)
+	userId := utils.GetUserId(session)
+	friendId := c.Param("id")
+
+	// See if friend to be deleted is an existing user
+	result := db.UsersCollection.FindOne(context.Background(), bson.M{
+		"_id": friendId,
+	})
+	if result.Err() == mongo.ErrNoDocuments {
+		// Event does not exist!
+		logger.StdErr.Panicln("user-not-found")
+		return
+	}
+
+	// Remove friend from friend array
+	db.UsersCollection.UpdateOne(context.Background(),
+		bson.M{
+			"_id": userId,
+		},
+		bson.M{"$pullAll": bson.M{"friendIds": friendId}},
+	)
+
+}
+
+// @Summary Gets all the current incoming and outgoing friend requests
+// @Tags friends
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /friends/requests [get]
+func getFriendRequests(c *gin.Context) {
+	session := sessions.Default(c)
+	userId := utils.GetUserId(session)
+
+	// Get the friend requests associated with the current user
+	friendRequests := make([]models.FriendRequest, 0)
+	cursor, err := db.FriendRequestsCollection.Find(context.Background(), bson.M{
+		"$or": bson.A{
+			bson.M{"to": userId},
+			bson.M{"from": userId},
+		},
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	if err := cursor.All(context.Background(), &friendRequests); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, friendRequests)
 }
 
 // @Summary Creates a new friend request
