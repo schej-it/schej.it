@@ -35,8 +35,7 @@ func InitAuth(router *gin.Engine) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param code body string true "Google authorization code"
-// @Param timezoneOffset body string true "User's timezone offset"
+// @Param payload body object{code=string,timezoneOffset=int} true "Object containing the Google authorization code and the user's timezone offset"
 // @Success 200
 // @Router /auth/sign-in [post]
 func signIn(c *gin.Context) {
@@ -91,10 +90,14 @@ func signIn(c *gin.Context) {
 
 	// Create user object to create new user or update existing user
 	userData := models.User{
-		Email:                 email,
-		FirstName:             firstName,
-		LastName:              lastName,
-		Picture:               picture,
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
+		Picture:   picture,
+
+		FriendIds: make([]primitive.ObjectID, 0),
+		Calendars: make(map[string]models.Calendar),
+
 		AccessToken:           res.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          res.RefreshToken,

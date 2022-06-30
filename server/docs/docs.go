@@ -40,21 +40,27 @@ var doc = `{
                 "summary": "Signs user in",
                 "parameters": [
                     {
-                        "description": "Google authorization code",
-                        "name": "code",
+                        "description": "Object containing the Google authorization code and the user's timezone offset",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "User's timezone offset",
-                        "name": "timezoneOffset",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "timezoneOffset": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 ],
@@ -113,48 +119,30 @@ var doc = `{
                 "summary": "Creates a new event",
                 "parameters": [
                     {
-                        "description": "Name",
-                        "name": "name",
+                        "description": "Object containing info about the event to create",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Start date",
-                        "name": "startDate",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "End date",
-                        "name": "endDate",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Start time",
-                        "name": "startTime",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "description": "End time",
-                        "name": "endTime",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "endDate": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "startDate": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 ],
@@ -180,7 +168,7 @@ var doc = `{
                 }
             }
         },
-        "/events/:eventId": {
+        "/events/{eventId}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -208,7 +196,7 @@ var doc = `{
                 }
             }
         },
-        "/events/:eventId/response": {
+        "/events/{eventId}/response": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -309,27 +297,36 @@ var doc = `{
                 "summary": "Creates a new friend request",
                 "parameters": [
                     {
-                        "description": "The sender of the friend request",
-                        "name": "from",
+                        "description": "Object specifying the user IDs of who this request is sent from and to",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "The recipient of the friend request",
-                        "name": "to",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {
+                                            "type": "string"
+                                        },
+                                        "to": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Friend request already exists from \\\"to\\\" to \\\"from\\\", and it was accepted"
+                    },
                     "201": {
-                        "description": "Created",
+                        "description": "Friend request created",
                         "schema": {
                             "$ref": "#/definitions/models.FriendRequest"
                         }
@@ -337,7 +334,7 @@ var doc = `{
                 }
             }
         },
-        "/friends/requests/:id": {
+        "/friends/requests/{id}": {
             "delete": {
                 "consumes": [
                     "application/json"
@@ -363,7 +360,7 @@ var doc = `{
                 }
             }
         },
-        "/friends/requests/:id/accept": {
+        "/friends/requests/{id}/accept": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -389,7 +386,7 @@ var doc = `{
                 }
             }
         },
-        "/friends/requests/:id/reject": {
+        "/friends/requests/{id}/reject": {
             "post": {
                 "consumes": [
                     "application/json"
