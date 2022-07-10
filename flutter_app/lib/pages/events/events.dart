@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/router/app_router.dart';
 
 class EventsPage extends StatelessWidget {
@@ -8,9 +9,7 @@ class EventsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My events'),
-      ),
+      appBar: SchejAppBar(title: const Text('My events'), isRoot: true),
       body: Center(
         child: Column(
           children: <Widget>[
