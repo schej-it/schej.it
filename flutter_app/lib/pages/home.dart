@@ -1,5 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/constants/colors.dart';
+import 'package:flutter_app/constants/fonts.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../router/app_router.dart';
@@ -51,9 +53,11 @@ class HomePage extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       currentIndex: tabsRouter.activeIndex,
       onTap: tabsRouter.setActiveIndex,
-      backgroundColor: Colors.white,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.grey,
+      backgroundColor: SchejColors.white,
+      selectedItemColor: SchejColors.darkGreen,
+      unselectedItemColor: SchejColors.darkGray,
+      selectedLabelStyle: SchejFonts.smallMedium.copyWith(color: null),
+      unselectedLabelStyle: SchejFonts.smallMedium.copyWith(color: null),
     );
   }
 }

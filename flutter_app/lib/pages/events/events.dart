@@ -9,7 +9,7 @@ class EventsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SchejAppBar(title: const Text('My events'), isRoot: true),
+      appBar: SchejAppBar(title: 'My events', isRoot: true),
       body: Center(
         child: Column(
           children: <Widget>[
