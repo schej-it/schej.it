@@ -35,10 +35,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   material_design_icons_flutter: 5.0.6595
+  auto_route: ^4.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  auto_route_generator: ^4.2.0
+  build_runner:    
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
