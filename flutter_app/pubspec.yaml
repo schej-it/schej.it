@@ -43,6 +43,7 @@ dev_dependencies:
 
   auto_route_generator: ^4.2.0
   build_runner:    
+  change_app_package_name: ^1.1.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
