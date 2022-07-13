@@ -60,7 +60,6 @@ class _CalendarState extends State<Calendar> {
       timeStrings.add(timeText);
     }
 
-    // return const Text('test');
     return ListView.builder(
       scrollDirection: Axis.vertical,
       itemCount: timeStrings.length,
@@ -74,6 +73,7 @@ class _CalendarState extends State<Calendar> {
               SizedBox(
                 width: timeColWidth,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
@@ -86,17 +86,16 @@ class _CalendarState extends State<Calendar> {
                         ),
                       ),
                     ),
-                    const Spacer(),
-                    const SizedBox(width: 5, child: Divider(color: SchejColors.lightGray)),
+                    const SizedBox(width: 5, child: Divider(color: SchejColors.lightGray, thickness: 1.15)),
                   ],
                 ),
               ),
-              const VerticalDivider(width: 1, color: SchejColors.lightGray),
-              const Expanded(child: Divider(color: SchejColors.lightGray)),
-              const VerticalDivider(width: 1, color: SchejColors.lightGray),
-              const Expanded(child: Divider(color: SchejColors.lightGray)),
-              const VerticalDivider(width: 1, color: SchejColors.lightGray),
-              const Expanded(child: Divider(color: SchejColors.lightGray)),
+              const VerticalDivider(width: 1.15, thickness: 1.15, color: SchejColors.lightGray),
+              const Expanded(child: Divider(color: SchejColors.lightGray, thickness: 1.15)),
+              const VerticalDivider(width: 1.15, thickness: 1.15, color: SchejColors.lightGray),
+              const Expanded(child: Divider(color: SchejColors.lightGray, thickness: 1.15)),
+              const VerticalDivider(width: 1.15, thickness: 1.15, color: SchejColors.lightGray),
+              const Expanded(child: Divider(color: SchejColors.lightGray, thickness: 1.15)),
             ],
           ),
         );
