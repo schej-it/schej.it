@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
-import 'package:flutter_app/router/app_router.dart';
+import 'package:flutter_app/router/app_router.gr.dart';
 
 class EventsPage extends StatelessWidget {
   const EventsPage({Key? key}) : super(key: key);

@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_app/router/auth_guard.dart';
 import '../pages/events/event.dart';
 import '../pages/events/events.dart';
 import '../pages/events/events_tab.dart';
@@ -12,14 +12,13 @@ import '../pages/profile/profile_tab.dart';
 import '../pages/sign_in.dart';
 import '../pages/home.dart';
 
-part 'app_router.gr.dart';
-
 @MaterialAutoRouter(
   routes: <AutoRoute>[
     AutoRoute(path: '/sign-in', page: SignInPage),
     AutoRoute(
       path: '/',
       page: HomePage,
+      guards: [AuthGuard],
       children: [
         AutoRoute(
           path: 'my-schej', 
@@ -55,4 +54,4 @@ part 'app_router.gr.dart';
     ),
   ],
 )
-class AppRouter extends _$AppRouter {}
+class $AppRouter {}
