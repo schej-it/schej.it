@@ -10,7 +10,7 @@ class EventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SchejAppBar(title: 'Event'),
+      appBar: SchejAppBar(titleString: 'Event'),
       body: Center(
         child: Text('Specific event, event id: $eventId'),
       )

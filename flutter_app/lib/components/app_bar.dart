@@ -7,15 +7,21 @@ import '../constants/colors.dart';
 class SchejAppBar extends AppBar {
   SchejAppBar({
     Key? key,
-    required String title,
+    String titleString = '',
+    Widget? title,
+    List<Widget>? actions,
+    bool underline = true,
     bool isRoot = false,
   }) : super(
-    key: key, 
+    key: key,
     leading: isRoot ? null : const AutoLeadingButton(),
-    title: Text(title, style: SchejFonts.header),
+    title: titleString.isNotEmpty
+        ? Text(titleString, style: SchejFonts.header)
+        : title,
     centerTitle: false,
+    actions: actions,
     foregroundColor: SchejColors.black,
     backgroundColor: SchejColors.white,
-    elevation: 1,
+    elevation: underline ? 1 : 0,
   );
 }
