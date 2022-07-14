@@ -37,6 +37,9 @@ dependencies:
   material_design_icons_flutter: 5.0.6595
   auto_route: ^4.2.1
   provider: ^6.0.3
+  linked_scroll_controller: ^0.2.0
+  intl: ^0.17.0
+  sorted_list: ^1.0.0
 
 dev_dependencies:
   flutter_test:
