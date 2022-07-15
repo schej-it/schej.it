@@ -4,7 +4,6 @@ import 'package:flutter_app/constants/fonts.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:sorted_list/sorted_list.dart';
 
 // Notes:
 // For calendar view, make the times column its own list view,
@@ -32,9 +31,12 @@ class _CalendarState extends State<Calendar> {
 
   // Other variables
   final DateTime _curDate = DateTime.now();
-  final SortedList<DateTime> _loadedDates =
-      SortedList<DateTime>((a, b) => a.compareTo(b));
   final List<String> _timeStrings = <String>[];
+  // Note: this _startDateOffset is hardcoded for now, i.e. if the user happens
+  // to scroll back farther than 20 days, then they won't be able to scroll back
+  // any farther
+  final int _startDateOffset = -20;
+  int _endDateOffset = 3;
 
   @override
   void initState() {
@@ -44,17 +46,34 @@ class _CalendarState extends State<Calendar> {
     // Set up scroll controllers
     _controllers = LinkedScrollControllerGroup();
     _timeScrollController = _controllers.addAndGet();
-    for (int i = -3; i <= 3; ++i) {
+    for (int i = _startDateOffset; i <= _endDateOffset; ++i) {
       final date = _curDate.add(Duration(days: i));
-      _loadedDates.add(date);
       _dayScrollControllers[date] = _controllers.addAndGet();
     }
+
     // _controllers.jumpTo(8.25 * _timeRowHeight);
 
     _pageController = PageController(
       viewportFraction: 1 / 3,
-      initialPage: _loadedDates.indexOf(_curDate),
+      initialPage: _startDateOffset.abs() + 1,
     );
+    _pageController.addListener(() {
+      // If we reach the end of the currently loaded dates, load 3 more dates
+      // (by populating their scroll containers)
+      const numDatesToLoad = 3;
+      if (_pageController.page != null &&
+          _pageController.page! > _startDateOffset.abs() + _endDateOffset - 2) {
+        for (int i = _endDateOffset + 1;
+            i <= _endDateOffset + numDatesToLoad;
+            ++i) {
+          final date = _curDate.add(Duration(days: i));
+          _dayScrollControllers[date] = _controllers.addAndGet();
+        }
+        setState(() {
+          _endDateOffset += numDatesToLoad;
+        });
+      }
+    });
 
     // Create a list of all the visible times, 1am - 11pm
     for (int i = 1; i < 24; ++i) {
@@ -95,30 +114,29 @@ class _CalendarState extends State<Calendar> {
   // Builds the section containing all the days in a horizontally scrolling
   // page view
   Widget _buildDaySection() {
-    final days = <Widget>[];
-    for (final date in _loadedDates) {
-      days.add(_buildDay(date));
-    }
-
     return FractionallySizedBox(
       heightFactor: 1,
-      child: PageView(
+      child: PageView.builder(
         controller: _pageController,
-        children: days,
+        itemBuilder: (BuildContext context, int index) {
+          final date = _curDate.add(Duration(days: _startDateOffset + index));
+          return _buildDay(date, index);
+        },
       ),
     );
   }
 
   // Builds a column containing the given day and a scrollable list with
   // dividers representing the hour increments
-  Widget _buildDay(DateTime date) {
+  Widget _buildDay(DateTime date, int index) {
     String dayText = DateFormat.E().format(date);
     int dateNum = date.day;
+    ScrollController? controller = _dayScrollControllers[date];
 
     final hourIncrements = ListView.builder(
       scrollDirection: Axis.vertical,
       itemCount: _timeStrings.length,
-      controller: _dayScrollControllers[date],
+      controller: controller,
       itemBuilder: (BuildContext context, int index) {
         return SizedBox(
           height: _timeRowHeight,
