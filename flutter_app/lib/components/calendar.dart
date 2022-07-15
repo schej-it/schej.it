@@ -27,8 +27,6 @@ class _CalendarState extends State<Calendar> {
   late final PageController _pageController;
   late final LinkedScrollControllerGroup _controllers;
   late final ScrollController _timeScrollController;
-  late final Map<DateTime, ScrollController> _dayScrollControllers =
-      <DateTime, ScrollController>{};
 
   // Other variables
   final DateTime _curDate = DateTime.now();
@@ -37,7 +35,6 @@ class _CalendarState extends State<Calendar> {
   // to scroll back farther than 20 days, then they won't be able to scroll back
   // any farther
   final int _startDateOffset = -20;
-  int _endDateOffset = 3;
 
   @override
   void initState() {
@@ -47,10 +44,6 @@ class _CalendarState extends State<Calendar> {
     // Set up scroll controllers
     _controllers = LinkedScrollControllerGroup();
     _timeScrollController = _controllers.addAndGet();
-    for (int i = _startDateOffset; i <= _endDateOffset; ++i) {
-      final date = _curDate.add(Duration(days: i));
-      _dayScrollControllers[date] = _controllers.addAndGet();
-    }
 
     // Set initial scroll
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -61,25 +54,6 @@ class _CalendarState extends State<Calendar> {
       viewportFraction: 1 / 3,
       initialPage: _startDateOffset.abs() + 1,
     );
-    // TODO: could make this more efficient by only loading the day scroll
-    // containers for the currently visible days
-    _pageController.addListener(() {
-      // If we reach the end of the currently loaded dates, load 3 more dates
-      // (by populating their scroll containers)
-      const numDatesToLoad = 3;
-      if (_pageController.page != null &&
-          _pageController.page! > _startDateOffset.abs() + _endDateOffset - 2) {
-        for (int i = _endDateOffset + 1;
-            i <= _endDateOffset + numDatesToLoad;
-            ++i) {
-          final date = _curDate.add(Duration(days: i));
-          _dayScrollControllers[date] = _controllers.addAndGet();
-        }
-        setState(() {
-          _endDateOffset += numDatesToLoad;
-        });
-      }
-    });
 
     // Create a list of all the visible times, 1am - 11pm
     for (int i = 1; i < 24; ++i) {
@@ -100,9 +74,6 @@ class _CalendarState extends State<Calendar> {
     // Dispose all scroll controllers
     _pageController.dispose();
     _timeScrollController.dispose();
-    for (var controller in _dayScrollControllers.values) {
-      controller.dispose();
-    }
 
     super.dispose();
   }
@@ -126,7 +97,7 @@ class _CalendarState extends State<Calendar> {
         controller: _pageController,
         itemBuilder: (BuildContext context, int index) {
           final date = _curDate.add(Duration(days: _startDateOffset + index));
-          return _buildDay(date, index);
+          return _buildDay(date);
         },
       ),
     );
@@ -134,39 +105,9 @@ class _CalendarState extends State<Calendar> {
 
   // Builds a column containing the given day and a scrollable list with
   // dividers representing the hour increments
-  Widget _buildDay(DateTime date, int index) {
+  Widget _buildDay(DateTime date) {
     String dayText = DateFormat.E().format(date);
     int dateNum = date.day;
-    ScrollController? controller = _dayScrollControllers[date];
-
-    final hourIncrements = ListView.builder(
-      scrollDirection: Axis.vertical,
-      itemCount: _timeStrings.length,
-      controller: controller,
-      physics:
-          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-      itemBuilder: (BuildContext context, int index) {
-        return SizedBox(
-          height: _timeRowHeight,
-          child: Row(
-            children: const [
-              VerticalDivider(
-                width: 1.15,
-                thickness: 1.15,
-                color: SchejColors.lightGray,
-              ),
-              Expanded(
-                child: Divider(
-                  height: 1.15,
-                  thickness: 1.15,
-                  color: SchejColors.lightGray,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -201,7 +142,14 @@ class _CalendarState extends State<Calendar> {
           thickness: 1.15,
           color: SchejColors.darkGray,
         ),
-        Expanded(child: hourIncrements),
+        Expanded(
+          child: CalendarDay(
+            controllers: _controllers,
+            date: date,
+            numRows: _timeStrings.length,
+            rowHeight: _timeRowHeight,
+          ),
+        ),
       ],
     );
   }
@@ -263,6 +211,76 @@ class _CalendarState extends State<Calendar> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Widget containing a list view with all the time dividers and events for the
+// given day
+class CalendarDay extends StatefulWidget {
+  final LinkedScrollControllerGroup controllers;
+  final DateTime date;
+  final int numRows;
+  final double rowHeight;
+
+  const CalendarDay({
+    Key? key,
+    required this.controllers,
+    required this.date,
+    required this.numRows,
+    required this.rowHeight,
+  }) : super(key: key);
+
+  @override
+  State<CalendarDay> createState() => _CalendarDayState();
+}
+
+class _CalendarDayState extends State<CalendarDay> {
+  late final ScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = widget.controllers.addAndGet();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: widget.numRows,
+      controller: _controller,
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      itemBuilder: (BuildContext context, int index) {
+        return SizedBox(
+          height: widget.rowHeight,
+          child: Row(
+            children: const [
+              VerticalDivider(
+                width: 1.15,
+                thickness: 1.15,
+                color: SchejColors.lightGray,
+              ),
+              Expanded(
+                child: Divider(
+                  height: 1.15,
+                  thickness: 1.15,
+                  color: SchejColors.lightGray,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
