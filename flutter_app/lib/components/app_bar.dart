@@ -13,15 +13,15 @@ class SchejAppBar extends AppBar {
     bool underline = true,
     bool isRoot = false,
   }) : super(
-    key: key,
-    leading: isRoot ? null : const AutoLeadingButton(),
-    title: titleString.isNotEmpty
-        ? Text(titleString, style: SchejFonts.header)
-        : title,
-    centerTitle: false,
-    actions: actions,
-    foregroundColor: SchejColors.black,
-    backgroundColor: SchejColors.white,
-    elevation: underline ? 1 : 0,
-  );
+          key: key,
+          leading: isRoot ? null : const AutoLeadingButton(),
+          title: titleString.isNotEmpty
+              ? Text(titleString, style: SchejFonts.header)
+              : title,
+          centerTitle: false,
+          actions: actions,
+          foregroundColor: SchejColors.black,
+          backgroundColor: SchejColors.white,
+          elevation: underline ? 1 : 0,
+        );
 }

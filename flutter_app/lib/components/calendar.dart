@@ -27,18 +27,21 @@ class _CalendarState extends State<Calendar> {
   late final PageController _pageController;
   late final LinkedScrollControllerGroup _controllers;
   late final ScrollController _timeScrollController;
-  late final Map<DateTime, ScrollController> _dayScrollControllers = <DateTime, ScrollController>{};
+  late final Map<DateTime, ScrollController> _dayScrollControllers =
+      <DateTime, ScrollController>{};
 
   // Other variables
   final DateTime _curDate = DateTime.now();
-  final SortedList<DateTime> _loadedDates = SortedList<DateTime>((a, b) => a.compareTo(b));
-  final _timeStrings = <String>[];
+  final SortedList<DateTime> _loadedDates =
+      SortedList<DateTime>((a, b) => a.compareTo(b));
+  final List<String> _timeStrings = <String>[];
 
   @override
   void initState() {
     super.initState();
     initializeDateFormatting();
 
+    // Set up scroll controllers
     _controllers = LinkedScrollControllerGroup();
     _timeScrollController = _controllers.addAndGet();
     for (int i = -3; i <= 3; ++i) {
@@ -49,10 +52,11 @@ class _CalendarState extends State<Calendar> {
     // _controllers.jumpTo(8.25 * _timeRowHeight);
 
     _pageController = PageController(
-      viewportFraction: 1 / 3, 
+      viewportFraction: 1 / 3,
       initialPage: _loadedDates.indexOf(_curDate),
     );
 
+    // Create a list of all the visible times, 1am - 11pm
     for (int i = 1; i < 24; ++i) {
       String timeText;
       if (i < 12) {
@@ -68,11 +72,13 @@ class _CalendarState extends State<Calendar> {
 
   @override
   void dispose() {
+    // Dispose all scroll controllers
     _pageController.dispose();
     _timeScrollController.dispose();
     for (var controller in _dayScrollControllers.values) {
       controller.dispose();
     }
+
     super.dispose();
   }
 
@@ -84,21 +90,14 @@ class _CalendarState extends State<Calendar> {
         Expanded(child: _buildDaySection()),
       ],
     );
-    // return Column(
-    //   children: [
-    //     _buildDaySection(),
-    //     const Divider(color: SchejColors.darkGray),
-    //     Expanded(child: _buildCalendarSection()),
-    //   ],
-    // );
   }
 
+  // Builds the section containing all the days in a horizontally scrolling
+  // page view
   Widget _buildDaySection() {
     final days = <Widget>[];
     for (final date in _loadedDates) {
-      days.add(
-        _buildDay(date)
-      );
+      days.add(_buildDay(date));
     }
 
     return FractionallySizedBox(
@@ -110,9 +109,38 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
+  // Builds a column containing the given day and a scrollable list with
+  // dividers representing the hour increments
   Widget _buildDay(DateTime date) {
     String dayText = DateFormat.E().format(date);
     int dateNum = date.day;
+
+    final hourIncrements = ListView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: _timeStrings.length,
+      controller: _dayScrollControllers[date],
+      itemBuilder: (BuildContext context, int index) {
+        return SizedBox(
+          height: _timeRowHeight,
+          child: Row(
+            children: const [
+              VerticalDivider(
+                width: 1.15,
+                thickness: 1.15,
+                color: SchejColors.lightGray,
+              ),
+              Expanded(
+                child: Divider(
+                  thickness: 1.15,
+                  color: SchejColors.lightGray,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -127,38 +155,45 @@ class _CalendarState extends State<Calendar> {
           ),
         ),
         const Divider(color: SchejColors.darkGray),
-        Expanded(
-          child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            itemCount: _timeStrings.length,
-            controller: _dayScrollControllers[date],
-            itemBuilder: (BuildContext context, int index) {
-              return SizedBox(
-                height: _timeRowHeight,
-                child: Row(
-                  children: const [
-                    VerticalDivider(
-                      width: 1.15,
-                      thickness: 1.15,
-                      color: SchejColors.lightGray,
-                    ),
-                    Expanded(
-                      child: Divider(
-                        thickness: 1.15,
-                        color: SchejColors.lightGray,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
+        Expanded(child: hourIncrements),
       ],
     );
   }
 
+  // Builds the column displaying all the times (1am-11pm) in a scroll view
   Widget _buildTimeColumn() {
+    // itemBuilder for a row containing a time (e.g. 10am)
+    Widget itemBuilder(BuildContext context, int index) {
+      return SizedBox(
+        height: _timeRowHeight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // Time text
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  _timeStrings[index],
+                  style: SchejFonts.body.copyWith(color: SchejColors.darkGray),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ),
+            // Divider Fragment
+            const SizedBox(
+              width: 5,
+              child: Divider(
+                color: SchejColors.lightGray,
+                thickness: 1.15,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SizedBox(
       width: _timeColWidth,
       child: Column(
@@ -170,35 +205,7 @@ class _CalendarState extends State<Calendar> {
               scrollDirection: Axis.vertical,
               itemCount: _timeStrings.length,
               controller: _timeScrollController,
-              itemBuilder: (BuildContext context, int index) {
-                return SizedBox(
-                  height: _timeRowHeight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            _timeStrings[index],
-                            style:
-                                SchejFonts.body.copyWith(color: SchejColors.darkGray),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 5,
-                        child: Divider(
-                          color: SchejColors.lightGray,
-                          thickness: 1.15,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              itemBuilder: itemBuilder,
             ),
           ),
         ],
