@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/models/calendar_event.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -32,9 +33,9 @@ class _CalendarState extends State<Calendar> {
   final DateTime _curDate = DateTime.now();
   final List<String> _timeStrings = <String>[];
   // Note: this _startDateOffset is hardcoded for now, i.e. if the user happens
-  // to scroll back farther than 20 days, then they won't be able to scroll back
+  // to scroll back farther than 100 days, then they won't be able to scroll back
   // any farther
-  final int _startDateOffset = -20;
+  final int _startDateOffset = -100;
 
   @override
   void initState() {
@@ -236,32 +237,70 @@ class CalendarDay extends StatefulWidget {
 }
 
 class _CalendarDayState extends State<CalendarDay> {
-  late final ScrollController _controller;
+  // Controllers
+  late final ScrollController _emptyController;
+  late final ScrollController _timeRowsController;
+
+  // Variables
+  final LayerLink _layerLink = LayerLink();
+  final List<CalendarEvent> _events = [
+    const CalendarEvent(title: 'event 1', startTime: 9.5, endTime: 11),
+    const CalendarEvent(title: 'event 2', startTime: 14, endTime: 15),
+  ];
 
   @override
   void initState() {
     super.initState();
 
-    _controller = widget.controllers.addAndGet();
+    _emptyController = widget.controllers.addAndGet();
+    _timeRowsController = widget.controllers.addAndGet();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _emptyController.dispose();
+    _timeRowsController.dispose();
 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return Stack(
+      clipBehavior: Clip.hardEdge,
+      children: [
+        _buildEmpty(),
+        _buildEvents(),
+        _buildTimeRows(),
+      ],
+    );
+  }
+
+  // Builds a list view containing the events for this day
+  Widget _buildEvents() {
+    return CompositedTransformFollower(
+      link: _layerLink,
+      showWhenUnlinked: false,
+      offset: const Offset(0, 400),
+      child: Container(
+        height: widget.rowHeight,
+        color: SchejColors.darkGreen,
+        child: Text('event #1',
+            style: SchejFonts.small.copyWith(color: SchejColors.white)),
+      ),
+    );
+  }
+
+  // Builds the listview containing the dividers representing the time rows
+  Widget _buildTimeRows() {
+    final timeRows = ListView.builder(
       scrollDirection: Axis.vertical,
       itemCount: widget.numRows,
-      controller: _controller,
+      controller: _timeRowsController,
       physics:
           const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       itemBuilder: (BuildContext context, int index) {
-        return SizedBox(
+        final divider = SizedBox(
           height: widget.rowHeight,
           child: Row(
             children: const [
@@ -280,7 +319,26 @@ class _CalendarDayState extends State<CalendarDay> {
             ],
           ),
         );
+
+        return divider;
       },
+    );
+
+    return timeRows;
+  }
+
+  // Builds an empty scrollable widget that takes up the entire screen for the
+  // event to use as an offset
+  Widget _buildEmpty() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      controller: _emptyController,
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      child: CompositedTransformTarget(
+        link: _layerLink,
+        child: SizedBox(height: widget.numRows * widget.rowHeight),
+      ),
     );
   }
 }
