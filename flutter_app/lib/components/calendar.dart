@@ -21,6 +21,7 @@ class _CalendarState extends State<Calendar> {
   // Constants
   final double _timeColWidth = 50;
   final double _timeRowHeight = 45;
+  final double _daySectionHeight = 62;
 
   // Controllers
   late final PageController _pageController;
@@ -51,12 +52,17 @@ class _CalendarState extends State<Calendar> {
       _dayScrollControllers[date] = _controllers.addAndGet();
     }
 
-    // _controllers.jumpTo(8.25 * _timeRowHeight);
+    // Set initial scroll
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controllers.jumpTo(8.25 * _timeRowHeight);
+    });
 
     _pageController = PageController(
       viewportFraction: 1 / 3,
       initialPage: _startDateOffset.abs() + 1,
     );
+    // TODO: could make this more efficient by only loading the day scroll
+    // containers for the currently visible days
     _pageController.addListener(() {
       // If we reach the end of the currently loaded dates, load 3 more dates
       // (by populating their scroll containers)
@@ -137,6 +143,8 @@ class _CalendarState extends State<Calendar> {
       scrollDirection: Axis.vertical,
       itemCount: _timeStrings.length,
       controller: controller,
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       itemBuilder: (BuildContext context, int index) {
         return SizedBox(
           height: _timeRowHeight,
@@ -149,6 +157,7 @@ class _CalendarState extends State<Calendar> {
               ),
               Expanded(
                 child: Divider(
+                  height: 1.15,
                   thickness: 1.15,
                   color: SchejColors.lightGray,
                 ),
@@ -163,16 +172,35 @@ class _CalendarState extends State<Calendar> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          height: 50,
+          height: _daySectionHeight,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(dayText, style: SchejFonts.body),
-              Text(dateNum.toString(), style: SchejFonts.header),
+              Text(dayText,
+                  style: date == _curDate
+                      ? SchejFonts.body.copyWith(color: SchejColors.darkGreen)
+                      : SchejFonts.body),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: date == _curDate
+                    ? const BoxDecoration(
+                        color: SchejColors.darkGreen,
+                        shape: BoxShape.circle,
+                      )
+                    : null,
+                child: Text(dateNum.toString(),
+                    style: date == _curDate
+                        ? SchejFonts.header.copyWith(color: SchejColors.white)
+                        : SchejFonts.header),
+              ),
             ],
           ),
         ),
-        const Divider(color: SchejColors.darkGray),
+        const Divider(
+          height: 1.15,
+          thickness: 1.15,
+          color: SchejColors.darkGray,
+        ),
         Expanded(child: hourIncrements),
       ],
     );
@@ -203,6 +231,7 @@ class _CalendarState extends State<Calendar> {
             const SizedBox(
               width: 5,
               child: Divider(
+                height: 1.15,
                 color: SchejColors.lightGray,
                 thickness: 1.15,
               ),
@@ -216,13 +245,19 @@ class _CalendarState extends State<Calendar> {
       width: _timeColWidth,
       child: Column(
         children: [
-          const SizedBox(height: 50),
-          const Divider(color: SchejColors.darkGray),
+          SizedBox(height: _daySectionHeight),
+          const Divider(
+            height: 1.15,
+            thickness: 1.15,
+            color: SchejColors.darkGray,
+          ),
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.vertical,
               itemCount: _timeStrings.length,
               controller: _timeScrollController,
+              physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics()),
               itemBuilder: itemBuilder,
             ),
           ),
