@@ -12,7 +12,12 @@ import 'package:intl/date_symbol_data_local.dart';
 // Overlaying the events look at this video: https://www.youtube.com/watch?v=OOEyJ0ct0Sg
 
 class Calendar extends StatefulWidget {
-  const Calendar({Key? key}) : super(key: key);
+  final CalendarEvents calendarEvents;
+
+  const Calendar({
+    Key? key,
+    required this.calendarEvents,
+  }) : super(key: key);
 
   @override
   State<Calendar> createState() => _CalendarState();
@@ -147,6 +152,7 @@ class _CalendarState extends State<Calendar> {
           child: CalendarDay(
             controllers: _controllers,
             date: date,
+            events: widget.calendarEvents.getEventsForDay(date),
             numRows: _timeStrings.length,
             rowHeight: _timeRowHeight,
           ),
@@ -159,6 +165,11 @@ class _CalendarState extends State<Calendar> {
   Widget _buildTimeColumn() {
     // itemBuilder for a row containing a time (e.g. 10am)
     Widget itemBuilder(BuildContext context, int index) {
+      // Account for the half hour before and half hour after for 12am
+      if (index == 0 || index == _timeStrings.length + 1) {
+        return SizedBox(height: _timeRowHeight / 2);
+      }
+
       return SizedBox(
         height: _timeRowHeight,
         child: Row(
@@ -170,7 +181,7 @@ class _CalendarState extends State<Calendar> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  _timeStrings[index],
+                  _timeStrings[index - 1],
                   style: SchejFonts.body.copyWith(color: SchejColors.darkGray),
                   textAlign: TextAlign.right,
                 ),
@@ -203,7 +214,7 @@ class _CalendarState extends State<Calendar> {
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.vertical,
-              itemCount: _timeStrings.length,
+              itemCount: _timeStrings.length + 2,
               controller: _timeScrollController,
               physics: const BouncingScrollPhysics(
                   parent: AlwaysScrollableScrollPhysics()),
@@ -221,6 +232,7 @@ class _CalendarState extends State<Calendar> {
 class CalendarDay extends StatefulWidget {
   final LinkedScrollControllerGroup controllers;
   final DateTime date;
+  final List<CalendarEvent>? events;
   final int numRows;
   final double rowHeight;
 
@@ -228,6 +240,7 @@ class CalendarDay extends StatefulWidget {
     Key? key,
     required this.controllers,
     required this.date,
+    required this.events,
     required this.numRows,
     required this.rowHeight,
   }) : super(key: key);
@@ -243,10 +256,6 @@ class _CalendarDayState extends State<CalendarDay> {
 
   // Variables
   final LayerLink _layerLink = LayerLink();
-  final List<CalendarEvent> _events = [
-    const CalendarEvent(title: 'event 1', startTime: 9.5, endTime: 11),
-    const CalendarEvent(title: 'event 2', startTime: 14, endTime: 15),
-  ];
 
   @override
   void initState() {
@@ -280,23 +289,16 @@ class _CalendarDayState extends State<CalendarDay> {
 
   // Builds a list view containing the events for this day
   Widget _buildEvents() {
-    return FractionallySizedBox(
-      widthFactor: 1,
-      child: CompositedTransformFollower(
-        link: _layerLink,
-        showWhenUnlinked: false,
-        offset: const Offset(0, 400),
-        child: Container(
-          margin: const EdgeInsets.all(1),
-          height: widget.rowHeight,
-          decoration: const BoxDecoration(
-            color: SchejColors.darkGreen,
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-          ),
-          child: Text('event #1',
-              style: SchejFonts.small.copyWith(color: SchejColors.white)),
-        ),
-      ),
+    return Stack(
+      children: widget.events == null
+          ? []
+          : widget.events!
+              .map((event) => CalendarEventWidget(
+                    event: event,
+                    hourHeight: widget.rowHeight,
+                    layerLink: _layerLink,
+                  ))
+              .toList(),
     );
   }
 
@@ -304,11 +306,26 @@ class _CalendarDayState extends State<CalendarDay> {
   Widget _buildTimeRows() {
     final timeRows = ListView.builder(
       scrollDirection: Axis.vertical,
-      itemCount: widget.numRows,
+      itemCount: widget.numRows + 2,
       controller: _timeRowsController,
       physics:
           const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       itemBuilder: (BuildContext context, int index) {
+        // Account for the half hour before and half hour after for 12am
+        if (index == 0 || index == widget.numRows + 1) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              height: widget.rowHeight / 2,
+              child: const VerticalDivider(
+                width: 1.15,
+                thickness: 1.15,
+                color: SchejColors.lightGray,
+              ),
+            ),
+          );
+        }
+
         final divider = SizedBox(
           height: widget.rowHeight,
           child: Row(
@@ -347,6 +364,49 @@ class _CalendarDayState extends State<CalendarDay> {
       child: CompositedTransformTarget(
         link: _layerLink,
         child: SizedBox(height: widget.numRows * widget.rowHeight),
+      ),
+    );
+  }
+}
+
+class CalendarEventWidget extends StatefulWidget {
+  final CalendarEvent event;
+  final double hourHeight;
+  final LayerLink layerLink;
+
+  const CalendarEventWidget({
+    Key? key,
+    required this.event,
+    required this.hourHeight,
+    required this.layerLink,
+  }) : super(key: key);
+
+  @override
+  State<CalendarEventWidget> createState() => _CalendarEventWidgetState();
+}
+
+class _CalendarEventWidgetState extends State<CalendarEventWidget> {
+  @override
+  Widget build(BuildContext context) {
+    // It looks like the stack is clipping the calendar event widgets for some reason
+    return FractionallySizedBox(
+      widthFactor: 1,
+      child: CompositedTransformFollower(
+        link: widget.layerLink,
+        showWhenUnlinked: false,
+        offset: Offset(0, widget.event.startTime * widget.hourHeight),
+        child: Container(
+          margin: const EdgeInsets.only(right: 2),
+          padding: const EdgeInsets.all(7),
+          height: (widget.event.endTime - widget.event.startTime) *
+              widget.hourHeight,
+          decoration: const BoxDecoration(
+            color: SchejColors.lightGreen,
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
+          child: Text(widget.event.title,
+              style: SchejFonts.body.copyWith(color: SchejColors.white)),
+        ),
       ),
     );
   }
