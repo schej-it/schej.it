@@ -278,15 +278,26 @@ class _CalendarDayState extends State<CalendarDay> {
 
   // Builds a list view containing the events for this day
   Widget _buildEvents() {
-    return CompositedTransformFollower(
-      link: _layerLink,
-      showWhenUnlinked: false,
-      offset: const Offset(0, 400),
-      child: Container(
-        height: widget.rowHeight,
-        color: SchejColors.darkGreen,
-        child: Text('event #1',
-            style: SchejFonts.small.copyWith(color: SchejColors.white)),
+    // This still has issues with the events overlapping the day display
+    // Possible fixes: Wrap composited transform follower in a positioned widget
+    // Hacky fix: set width of container to a width greater than the list view
+    // to force it to clip, positioned needs left:0, top:0
+    return FractionallySizedBox(
+      widthFactor: 1,
+      child: CompositedTransformFollower(
+        link: _layerLink,
+        showWhenUnlinked: false,
+        offset: const Offset(0, 400),
+        child: Container(
+          margin: const EdgeInsets.all(1),
+          height: widget.rowHeight,
+          decoration: const BoxDecoration(
+            color: SchejColors.darkGreen,
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
+          child: Text('event #1',
+              style: SchejFonts.small.copyWith(color: SchejColors.white)),
+        ),
       ),
     );
   }
