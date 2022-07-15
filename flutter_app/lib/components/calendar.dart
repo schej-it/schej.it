@@ -266,22 +266,20 @@ class _CalendarDayState extends State<CalendarDay> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.hardEdge,
-      children: [
-        _buildEmpty(),
-        _buildEvents(),
-        _buildTimeRows(),
-      ],
+    return ClipRect(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          _buildEmpty(),
+          _buildEvents(),
+          _buildTimeRows(),
+        ],
+      ),
     );
   }
 
   // Builds a list view containing the events for this day
   Widget _buildEvents() {
-    // This still has issues with the events overlapping the day display
-    // Possible fixes: Wrap composited transform follower in a positioned widget
-    // Hacky fix: set width of container to a width greater than the list view
-    // to force it to clip, positioned needs left:0, top:0
     return FractionallySizedBox(
       widthFactor: 1,
       child: CompositedTransformFollower(
