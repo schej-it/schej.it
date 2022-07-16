@@ -1,3 +1,7 @@
+import 'dart:collection';
+
+import 'package:table_calendar/table_calendar.dart';
+
 class CalendarEvent {
   final String title;
   final DateTime startDate;
@@ -21,27 +25,25 @@ class CalendarEvent {
 class CalendarEvents {
   // A map mapping a string representing the day ("7-15-2022") to the events
   // occurring on that day
-  final Map<String, List<CalendarEvent>> _eventsByDay =
-      <String, List<CalendarEvent>>{};
+  late final Map<DateTime, List<CalendarEvent>> _eventsByDay;
 
   CalendarEvents({
     required List<CalendarEvent> events,
   }) {
+    _eventsByDay = LinkedHashMap(equals: isSameDay, hashCode: _getHashCode);
+
     for (CalendarEvent event in events) {
-      String dayString = _getDayString(event.startDate);
-      if (_eventsByDay[dayString] == null) {
-        _eventsByDay[dayString] = [event];
+      if (_eventsByDay[event.startDate] == null) {
+        _eventsByDay[event.startDate] = [event];
       } else {
-        _eventsByDay[dayString]!.add(event);
+        _eventsByDay[event.startDate]!.add(event);
       }
     }
   }
 
-  List<CalendarEvent>? getEventsForDay(DateTime date) {
-    return _eventsByDay[_getDayString(date)];
-  }
+  Map<DateTime, List<CalendarEvent>> get eventsByDay => _eventsByDay;
 
-  String _getDayString(DateTime date) {
-    return date.toLocal().toIso8601String().substring(0, 10);
+  int _getHashCode(DateTime date) {
+    return date.toLocal().toIso8601String().substring(0, 10).hashCode;
   }
 }

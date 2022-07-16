@@ -4,7 +4,6 @@ import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 // Notes:
 // For calendar view, make the times column its own list view,
@@ -38,14 +37,13 @@ class _CalendarState extends State<Calendar> {
   final DateTime _curDate = DateTime.now();
   final List<String> _timeStrings = <String>[];
   // Note: this _startDateOffset is hardcoded for now, i.e. if the user happens
-  // to scroll back farther than 100 days, then they won't be able to scroll back
+  // to scroll back farther than 365 days, then they won't be able to scroll back
   // any farther
-  final int _startDateOffset = -100;
+  final int _startDateOffset = -365;
 
   @override
   void initState() {
     super.initState();
-    initializeDateFormatting();
 
     // Set up scroll controllers
     _controllers = LinkedScrollControllerGroup();
@@ -152,7 +150,7 @@ class _CalendarState extends State<Calendar> {
           child: CalendarDay(
             controllers: _controllers,
             date: date,
-            events: widget.calendarEvents.getEventsForDay(date),
+            events: widget.calendarEvents.eventsByDay[date],
             numRows: _timeStrings.length,
             rowHeight: _timeRowHeight,
           ),
@@ -397,7 +395,7 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
         offset: Offset(0, widget.event.startTime * widget.hourHeight),
         child: Container(
           margin: const EdgeInsets.only(right: 2),
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
           height: (widget.event.endTime - widget.event.startTime) *
               widget.hourHeight,
           decoration: const BoxDecoration(

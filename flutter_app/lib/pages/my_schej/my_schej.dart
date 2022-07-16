@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/calendar.dart';
+import 'package:flutter_app/components/expand_transition.dart';
+import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/models/calendar_event.dart';
@@ -21,28 +23,48 @@ class _MySchejPageState extends State<MySchejPage> {
 
   @override
   Widget build(BuildContext context) {
+    final testCalendarEvents = CalendarEvents(
+      events: [
+        CalendarEvent(
+          title: 'Event',
+          startDate: getDateWithTime(DateTime.now(), 9.5),
+          endDate: getDateWithTime(DateTime.now(), 12),
+        ),
+        CalendarEvent(
+          title: 'Introduction to Failure Analysis',
+          startDate: getDateWithTime(DateTime.now(), 13),
+          endDate: getDateWithTime(DateTime.now(), 14.5),
+        ),
+        CalendarEvent(
+          title: 'War',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 15),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 20),
+        ),
+      ],
+    );
+
     return Scaffold(
       appBar: _buildAppBar(),
       body: Container(
         color: SchejColors.white,
         padding: SchejConstants.pagePadding,
-        child: Calendar(
-          calendarEvents: CalendarEvents(
-            events: [
-              CalendarEvent(
-                title: 'Event',
-                startDate: getDateWithTime(DateTime.now(), 9.5),
-                endDate: getDateWithTime(DateTime.now(), 12),
+        child: Column(
+          children: [
+            ExpandTransition(
+              visible: _monthSelector,
+              child: const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: MonthCalendar(),
               ),
-              CalendarEvent(
-                title: 'War',
-                startDate: getDateWithTime(
-                    DateTime.now().add(const Duration(days: 1)), 14),
-                endDate: getDateWithTime(
-                    DateTime.now().add(const Duration(days: 1)), 15),
+            ),
+            Expanded(
+              child: Calendar(
+                calendarEvents: testCalendarEvents,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
