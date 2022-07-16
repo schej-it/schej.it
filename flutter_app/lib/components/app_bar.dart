@@ -4,6 +4,7 @@ import 'package:flutter_app/constants/fonts.dart';
 
 import '../constants/colors.dart';
 
+// SchejAppBar is the app bar to use across all pages of the app
 class SchejAppBar extends AppBar {
   SchejAppBar({
     Key? key,

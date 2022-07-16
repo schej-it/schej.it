@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:table_calendar/table_calendar.dart';
 
+// CalendarEvent contains data for a single event
 class CalendarEvent {
   final String title;
   final DateTime startDate;
@@ -22,9 +23,9 @@ class CalendarEvent {
   }
 }
 
+// CalendarEvents stores CalendarEvents and allows you to access them by the
+// day they occur on
 class CalendarEvents {
-  // A map mapping a string representing the day ("7-15-2022") to the events
-  // occurring on that day
   late final Map<DateTime, List<CalendarEvent>> _eventsByDay;
 
   CalendarEvents({

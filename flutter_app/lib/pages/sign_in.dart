@@ -17,7 +17,7 @@ class SignInPage extends StatelessWidget {
       ),
     );
   }
-  
+
   void _signIn(BuildContext context) {
     final authService = context.read<AuthService>();
     authService.authenticated = true;

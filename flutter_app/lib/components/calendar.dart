@@ -5,11 +5,7 @@ import 'package:flutter_app/models/calendar_event.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 
-// Notes:
-// For calendar view, make the times column its own list view,
-// Make each day its own list view, and make the 3 day section a page view of list views
-// Overlaying the events look at this video: https://www.youtube.com/watch?v=OOEyJ0ct0Sg
-
+// The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final CalendarEvents calendarEvents;
 
@@ -367,6 +363,9 @@ class _CalendarDayState extends State<CalendarDay> {
   }
 }
 
+// CalendarEventWidget is a graphical representation of a user's calendar event
+// The layerLink allows us to change the position of the event according to the
+// current scroll value
 class CalendarEventWidget extends StatefulWidget {
   final CalendarEvent event;
   final double hourHeight;

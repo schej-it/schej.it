@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+// ExpandTransition allows you to animate the appearance of a widget with a cool
+// little expand animation. To use it, wrap your widget in the child prop and
+// toggle the visibility boolean
 class ExpandTransition extends StatelessWidget {
   final bool visible;
   final Widget child;

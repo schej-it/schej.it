@@ -6,6 +6,8 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 
 import '../router/app_router.gr.dart';
 
+// Home page contains the bottom tab navigation bar as well as a scaffold to
+// display the rest of the screens
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 

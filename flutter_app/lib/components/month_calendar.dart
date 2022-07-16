@@ -5,6 +5,8 @@ import 'package:table_calendar/table_calendar.dart';
 import '../constants/colors.dart';
 import '../constants/fonts.dart';
 
+// MonthCalendar displays a month view of the calendar, and allows for date
+// selection
 class MonthCalendar extends StatefulWidget {
   const MonthCalendar({Key? key}) : super(key: key);
 
