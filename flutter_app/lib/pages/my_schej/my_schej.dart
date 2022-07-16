@@ -23,6 +23,7 @@ class _MySchejPageState extends State<MySchejPage> {
 
   @override
   Widget build(BuildContext context) {
+    // TODO: swipe up to dismiss the month selector
     final testCalendarEvents = CalendarEvents(
       events: [
         CalendarEvent(

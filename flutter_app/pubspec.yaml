@@ -91,6 +91,9 @@ flutter:
           weight: 500
         - asset: fonts/DMSans-Regular.ttf
           weight: 400
+    - family: icomoon
+      fonts:
+        - asset: fonts/icomoon.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
