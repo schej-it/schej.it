@@ -20,7 +20,7 @@ class MySchejPage extends StatefulWidget {
 
 class _MySchejPageState extends State<MySchejPage> {
   bool _monthSelector = false;
-  bool _viewMenu = false;
+  int _daysVisible = 3;
   bool _eventNamesVisible = false;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
 
@@ -72,6 +72,7 @@ class _MySchejPageState extends State<MySchejPage> {
                 children: [
                   Calendar(
                     calendarEvents: testCalendarEvents,
+                    daysVisible: _daysVisible,
                     selectedDay: _selectedDay,
                     onDaySelected: (selectedDay) => setState(() {
                       _selectedDay = selectedDay;
@@ -107,12 +108,26 @@ class _MySchejPageState extends State<MySchejPage> {
         ],
       ),
       actions: [
-        IconButton(
+        PopupMenuButton(
           icon: const Icon(MdiIcons.calendarBlankOutline),
           splashRadius: 15,
-          onPressed: () => setState(() {
-            _viewMenu = !_viewMenu;
+          onSelected: (int value) => setState(() {
+            _daysVisible = value;
           }),
+          itemBuilder: (context) => [
+            const PopupMenuItem(
+              value: 1,
+              child: Text('Day'),
+            ),
+            const PopupMenuItem(
+              value: 3,
+              child: Text('3 day'),
+            ),
+            const PopupMenuItem(
+              value: 7,
+              child: Text('Week'),
+            ),
+          ],
         ),
         IconButton(
           icon: const Icon(MdiIcons.eye),

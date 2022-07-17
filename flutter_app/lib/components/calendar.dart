@@ -11,12 +11,14 @@ class Calendar extends StatefulWidget {
   final CalendarEvents calendarEvents;
   final DateTime selectedDay;
   final void Function(DateTime) onDaySelected;
+  final int daysVisible;
 
   const Calendar({
     Key? key,
     required this.calendarEvents,
     required this.selectedDay,
     required this.onDaySelected,
+    this.daysVisible = 3,
   }) : super(key: key);
 
   @override
@@ -30,7 +32,7 @@ class _CalendarState extends State<Calendar> {
   final double _daySectionHeight = 62;
 
   // Controllers
-  late final PageController _pageController;
+  late PageController _pageController;
   late final LinkedScrollControllerGroup _controllers;
   late final ScrollController _timeScrollController;
 
@@ -58,21 +60,10 @@ class _CalendarState extends State<Calendar> {
 
     // Set up page controller
     _pageController = PageController(
-      viewportFraction: 1 / 3,
+      viewportFraction: 1 / widget.daysVisible,
       initialPage: _startDateOffset.abs() + 1,
     );
-    _pageController.addListener(() {
-      // Update selectedDay whenever the page changes
-      if (!_pageControllerAnimating &&
-          _pageController.page != null &&
-          _pageController.page!.truncate() == _pageController.page) {
-        int newOffset = _pageController.page!.truncate() + _startDateOffset - 1;
-        DateTime newDay = _curDate.add(Duration(days: newOffset));
-        if (newDay != widget.selectedDay) {
-          widget.onDaySelected(newDay);
-        }
-      }
-    });
+    _pageController.addListener(_pageControllerListener);
 
     // Create a list of all the visible times, 1am - 11pm
     for (int i = 1; i < 24; ++i) {
@@ -105,6 +96,14 @@ class _CalendarState extends State<Calendar> {
     if (widget.selectedDay != oldWidget.selectedDay) {
       _animateToDay(widget.selectedDay);
     }
+
+    // Change the number of days visible, and go back a few pages until the
+    // leftmost day of the previous view is still on the left
+    if (widget.daysVisible != oldWidget.daysVisible) {
+      _pageController =
+          PageController(viewportFraction: 1 / widget.daysVisible);
+      _pageController.addListener(_pageControllerListener);
+    }
   }
 
   // Animate the page to the given day
@@ -119,6 +118,20 @@ class _CalendarState extends State<Calendar> {
       curve: Curves.easeInOut,
     );
     _pageControllerAnimating = false;
+  }
+
+  // Listener for whenever the page controller changes
+  void _pageControllerListener() {
+    // Update selectedDay whenever the page changes
+    if (!_pageControllerAnimating &&
+        _pageController.page != null &&
+        _pageController.page!.truncate() == _pageController.page) {
+      int newOffset = _pageController.page!.truncate() + _startDateOffset - 1;
+      DateTime newDay = _curDate.add(Duration(days: newOffset));
+      if (newDay != widget.selectedDay) {
+        widget.onDaySelected(newDay);
+      }
+    }
   }
 
   @override
@@ -139,11 +152,12 @@ class _CalendarState extends State<Calendar> {
       child: PageView.builder(
         controller: _pageController,
         itemBuilder: (BuildContext context, int index) {
-          final utcDate =
-              _curDate.add(Duration(days: _startDateOffset + index));
+          int dayOffset =
+              _startDateOffset + index - 1 + (widget.daysVisible - 1) ~/ 2;
+          DateTime utcDate = _curDate.add(Duration(days: dayOffset));
           // Need to convert to local date in order to get all the events for
           // the local day
-          final localDate = getLocalDayFromUtcDay(utcDate);
+          DateTime localDate = getLocalDayFromUtcDay(utcDate);
           return _buildDay(localDate);
         },
       ),
