@@ -5,8 +5,10 @@ import 'package:flutter_app/components/expand_transition.dart';
 import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
+import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/utils.dart';
+import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class MySchejPage extends StatefulWidget {
@@ -89,7 +91,10 @@ class _MySchejPageState extends State<MySchejPage> {
     return SchejAppBar(
       title: Row(
         children: [
-          const Text('July'),
+          Text(
+            DateFormat.MMMM().format(_selectedDay),
+            style: SchejFonts.header,
+          ),
           IconButton(
             icon: _monthSelector
                 ? const Icon(MdiIcons.chevronUp)

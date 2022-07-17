@@ -107,6 +107,7 @@ class _CalendarState extends State<Calendar> {
     }
   }
 
+  // Animate the page to the given day
   void _animateToDay(DateTime day) async {
     Duration diff = day.difference(_curDate);
     int index = diff.inDays - _startDateOffset + 1;
@@ -138,8 +139,12 @@ class _CalendarState extends State<Calendar> {
       child: PageView.builder(
         controller: _pageController,
         itemBuilder: (BuildContext context, int index) {
-          final date = _curDate.add(Duration(days: _startDateOffset + index));
-          return _buildDay(date);
+          final utcDate =
+              _curDate.add(Duration(days: _startDateOffset + index));
+          // Need to convert to local date in order to get all the events for
+          // the local day
+          final localDate = getLocalDayFromUtcDay(utcDate);
+          return _buildDay(localDate);
         },
       ),
     );
@@ -150,6 +155,7 @@ class _CalendarState extends State<Calendar> {
   Widget _buildDay(DateTime date) {
     String dayText = DateFormat.E().format(date);
     int dateNum = date.day;
+    bool isCurDate = date == getLocalDayFromUtcDay(_curDate);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -160,19 +166,19 @@ class _CalendarState extends State<Calendar> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(dayText,
-                  style: date == _curDate
+                  style: isCurDate
                       ? SchejFonts.body.copyWith(color: SchejColors.darkGreen)
                       : SchejFonts.body),
               Container(
                 padding: const EdgeInsets.all(7),
-                decoration: date == _curDate
+                decoration: isCurDate
                     ? const BoxDecoration(
                         color: SchejColors.darkGreen,
                         shape: BoxShape.circle,
                       )
                     : null,
                 child: Text(dateNum.toString(),
-                    style: date == _curDate
+                    style: isCurDate
                         ? SchejFonts.header.copyWith(color: SchejColors.white)
                         : SchejFonts.header),
               ),

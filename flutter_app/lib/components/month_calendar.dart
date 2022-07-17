@@ -62,6 +62,11 @@ class _MonthCalendarState extends State<MonthCalendar> {
           widget.onDaySelected(selectedDay);
         }
       },
+      onPageChanged: (focusedDay) {
+        if (widget.selectedDay != focusedDay) {
+          widget.onDaySelected(focusedDay);
+        }
+      },
     );
   }
 }
