@@ -8,20 +8,24 @@ import '../constants/fonts.dart';
 // MonthCalendar displays a month view of the calendar, and allows for date
 // selection
 class MonthCalendar extends StatefulWidget {
-  const MonthCalendar({Key? key}) : super(key: key);
+  final DateTime selectedDay;
+  final void Function(DateTime) onDaySelected;
+
+  const MonthCalendar({
+    Key? key,
+    required this.selectedDay,
+    required this.onDaySelected,
+  }) : super(key: key);
 
   @override
   State<MonthCalendar> createState() => _MonthCalendarState();
 }
 
 class _MonthCalendarState extends State<MonthCalendar> {
-  DateTime? _selectedDay;
-  DateTime _focusedDay = DateTime.now();
-
   @override
   Widget build(BuildContext context) {
     return TableCalendar(
-      focusedDay: _focusedDay,
+      focusedDay: widget.selectedDay,
       firstDay: DateTime.now().subtract(const Duration(days: 365)),
       lastDay: DateTime.now().add(const Duration(days: 365)),
       headerVisible: false,
@@ -51,13 +55,12 @@ class _MonthCalendarState extends State<MonthCalendar> {
         ),
       ),
       selectedDayPredicate: (day) {
-        return isSameDay(_selectedDay, day);
+        return isSameDay(widget.selectedDay, day);
       },
       onDaySelected: (selectedDay, focusedDay) {
-        setState(() {
-          _selectedDay = selectedDay;
-          _focusedDay = focusedDay;
-        });
+        if (selectedDay != widget.selectedDay) {
+          widget.onDaySelected(selectedDay);
+        }
       },
     );
   }

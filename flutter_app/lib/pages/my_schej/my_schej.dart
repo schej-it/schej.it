@@ -20,10 +20,10 @@ class _MySchejPageState extends State<MySchejPage> {
   bool _monthSelector = false;
   bool _viewMenu = false;
   bool _eventNamesVisible = false;
+  DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
 
   @override
   Widget build(BuildContext context) {
-    // TODO: swipe up to dismiss the month selector
     final testCalendarEvents = CalendarEvents(
       events: [
         CalendarEvent(
@@ -55,14 +55,28 @@ class _MySchejPageState extends State<MySchejPage> {
           children: [
             ExpandTransition(
               visible: _monthSelector,
-              child: const Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: MonthCalendar(),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: MonthCalendar(
+                  selectedDay: _selectedDay,
+                  onDaySelected: (selectedDay) => setState(() {
+                    _selectedDay = selectedDay;
+                  }),
+                ),
               ),
             ),
             Expanded(
-              child: Calendar(
-                calendarEvents: testCalendarEvents,
+              child: Stack(
+                children: [
+                  Calendar(
+                    calendarEvents: testCalendarEvents,
+                    selectedDay: _selectedDay,
+                    onDaySelected: (selectedDay) => setState(() {
+                      _selectedDay = selectedDay;
+                    }),
+                  ),
+                  if (_monthSelector) _buildGestureDetector(),
+                ],
               ),
             ),
           ],
@@ -105,6 +119,29 @@ class _MySchejPageState extends State<MySchejPage> {
       ],
       underline: false,
       isRoot: true,
+    );
+  }
+
+  // Builds a gesture detector enabling the user to swipe up to dismiss the month
+  // calendar
+  double _totalDrag = 0;
+  Widget _buildGestureDetector() {
+    return GestureDetector(
+      onVerticalDragUpdate: (details) {
+        if (details.primaryDelta != null) {
+          _totalDrag += details.primaryDelta!;
+        }
+
+        if (_totalDrag < -20) {
+          setState(() {
+            _totalDrag = 0;
+            _monthSelector = false;
+          });
+        }
+      },
+      child: Container(
+        color: Colors.transparent,
+      ),
     );
   }
 }

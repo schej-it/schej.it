@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/calendar_event.dart';
+import 'package:flutter_app/utils.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final CalendarEvents calendarEvents;
+  final DateTime selectedDay;
+  final void Function(DateTime) onDaySelected;
 
   const Calendar({
     Key? key,
     required this.calendarEvents,
+    required this.selectedDay,
+    required this.onDaySelected,
   }) : super(key: key);
 
   @override
@@ -30,12 +35,13 @@ class _CalendarState extends State<Calendar> {
   late final ScrollController _timeScrollController;
 
   // Other variables
-  final DateTime _curDate = DateTime.now();
+  final DateTime _curDate = getDateWithTime(DateTime.now(), 0);
   final List<String> _timeStrings = <String>[];
   // Note: this _startDateOffset is hardcoded for now, i.e. if the user happens
   // to scroll back farther than 365 days, then they won't be able to scroll back
   // any farther
   final int _startDateOffset = -365;
+  bool _pageControllerAnimating = false;
 
   @override
   void initState() {
@@ -50,10 +56,23 @@ class _CalendarState extends State<Calendar> {
       _controllers.jumpTo(8.25 * _timeRowHeight);
     });
 
+    // Set up page controller
     _pageController = PageController(
       viewportFraction: 1 / 3,
       initialPage: _startDateOffset.abs() + 1,
     );
+    _pageController.addListener(() {
+      // Update selectedDay whenever the page changes
+      if (!_pageControllerAnimating &&
+          _pageController.page != null &&
+          _pageController.page!.truncate() == _pageController.page) {
+        int newOffset = _pageController.page!.truncate() + _startDateOffset - 1;
+        DateTime newDay = _curDate.add(Duration(days: newOffset));
+        if (newDay != widget.selectedDay) {
+          widget.onDaySelected(newDay);
+        }
+      }
+    });
 
     // Create a list of all the visible times, 1am - 11pm
     for (int i = 1; i < 24; ++i) {
@@ -76,6 +95,29 @@ class _CalendarState extends State<Calendar> {
     _timeScrollController.dispose();
 
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant Calendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If selectedDay changed, animate the page to the correct day
+    if (widget.selectedDay != oldWidget.selectedDay) {
+      _animateToDay(widget.selectedDay);
+    }
+  }
+
+  void _animateToDay(DateTime day) async {
+    Duration diff = day.difference(_curDate);
+    int index = diff.inDays - _startDateOffset + 1;
+
+    _pageControllerAnimating = true;
+    await _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+    _pageControllerAnimating = false;
   }
 
   @override
