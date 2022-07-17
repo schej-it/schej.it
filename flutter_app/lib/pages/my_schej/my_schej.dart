@@ -21,7 +21,7 @@ class MySchejPage extends StatefulWidget {
 class _MySchejPageState extends State<MySchejPage> {
   bool _monthSelector = false;
   int _daysVisible = 3;
-  bool _eventNamesVisible = false;
+  bool _eventTitlesVisible = true;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
 
   @override
@@ -73,6 +73,7 @@ class _MySchejPageState extends State<MySchejPage> {
                   Calendar(
                     calendarEvents: testCalendarEvents,
                     daysVisible: _daysVisible,
+                    eventTitlesVisible: _eventTitlesVisible,
                     selectedDay: _selectedDay,
                     onDaySelected: (selectedDay) => setState(() {
                       _selectedDay = selectedDay;
@@ -130,10 +131,12 @@ class _MySchejPageState extends State<MySchejPage> {
           ],
         ),
         IconButton(
-          icon: const Icon(MdiIcons.eye),
+          icon: _eventTitlesVisible
+              ? const Icon(MdiIcons.eye)
+              : const Icon(MdiIcons.eyeOff),
           splashRadius: 15,
           onPressed: () => setState(() {
-            _eventNamesVisible = !_eventNamesVisible;
+            _eventTitlesVisible = !_eventTitlesVisible;
           }),
         ),
       ],

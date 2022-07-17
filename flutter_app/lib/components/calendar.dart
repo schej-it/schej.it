@@ -12,6 +12,7 @@ class Calendar extends StatefulWidget {
   final DateTime selectedDay;
   final void Function(DateTime) onDaySelected;
   final int daysVisible;
+  final bool eventTitlesVisible;
 
   const Calendar({
     Key? key,
@@ -19,6 +20,7 @@ class Calendar extends StatefulWidget {
     required this.selectedDay,
     required this.onDaySelected,
     this.daysVisible = 3,
+    this.eventTitlesVisible = true,
   }) : super(key: key);
 
   @override
@@ -209,6 +211,7 @@ class _CalendarState extends State<Calendar> {
             controllers: _controllers,
             date: date,
             events: widget.calendarEvents.eventsByDay[date],
+            eventTitlesVisible: widget.eventTitlesVisible,
             numRows: _timeStrings.length,
             rowHeight: _timeRowHeight,
           ),
@@ -291,6 +294,7 @@ class CalendarDay extends StatefulWidget {
   final List<CalendarEvent>? events;
   final int numRows;
   final double rowHeight;
+  final bool eventTitlesVisible;
 
   const CalendarDay({
     Key? key,
@@ -299,6 +303,7 @@ class CalendarDay extends StatefulWidget {
     required this.events,
     required this.numRows,
     required this.rowHeight,
+    this.eventTitlesVisible = true,
   }) : super(key: key);
 
   @override
@@ -353,6 +358,7 @@ class _CalendarDayState extends State<CalendarDay> {
                     event: event,
                     hourHeight: widget.rowHeight,
                     layerLink: _layerLink,
+                    titleVisible: widget.eventTitlesVisible,
                   ))
               .toList(),
     );
@@ -432,12 +438,14 @@ class CalendarEventWidget extends StatefulWidget {
   final CalendarEvent event;
   final double hourHeight;
   final LayerLink layerLink;
+  final bool titleVisible;
 
   const CalendarEventWidget({
     Key? key,
     required this.event,
     required this.hourHeight,
     required this.layerLink,
+    this.titleVisible = true,
   }) : super(key: key);
 
   @override
@@ -459,12 +467,21 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
           padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
           height: (widget.event.endTime - widget.event.startTime) *
               widget.hourHeight,
-          decoration: const BoxDecoration(
-            color: SchejColors.lightGreen,
-            borderRadius: BorderRadius.all(Radius.circular(5)),
+          decoration: BoxDecoration(
+            color: widget.titleVisible
+                ? SchejColors.lightGreen
+                : SchejColors.fadedGreen,
+            borderRadius: const BorderRadius.all(Radius.circular(5)),
           ),
-          child: Text(widget.event.title,
-              style: SchejFonts.body.copyWith(color: SchejColors.white)),
+          child: widget.titleVisible
+              ? Text(
+                  widget.event.title,
+                  style: SchejFonts.body.copyWith(color: SchejColors.white),
+                )
+              : Text(
+                  'BUSY',
+                  style: SchejFonts.body.copyWith(color: SchejColors.darkGreen),
+                ),
         ),
       ),
     );
