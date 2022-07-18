@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
+import 'package:screenshot/screenshot.dart';
 
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
@@ -24,10 +27,10 @@ class Calendar extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<Calendar> createState() => _CalendarState();
+  State<Calendar> createState() => CalendarState();
 }
 
-class _CalendarState extends State<Calendar> {
+class CalendarState extends State<Calendar> {
   // Constants
   final double _timeColWidth = 50;
   final double _timeRowHeight = 45;
@@ -37,6 +40,7 @@ class _CalendarState extends State<Calendar> {
   late PageController _pageController;
   late final LinkedScrollControllerGroup _controllers;
   late final ScrollController _timeScrollController;
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   // Other variables
   final DateTime _curDate = getDateWithTime(DateTime.now(), 0);
@@ -46,6 +50,7 @@ class _CalendarState extends State<Calendar> {
   // any farther
   final int _startDateOffset = -365;
   bool _pageControllerAnimating = false;
+  bool _isTakingScreenshot = false;
 
   @override
   void initState() {
@@ -99,13 +104,32 @@ class _CalendarState extends State<Calendar> {
       _animateToDay(widget.selectedDay);
     }
 
-    // Change the number of days visible, and go back a few pages until the
-    // leftmost day of the previous view is still on the left
+    // Change the number of days visible
     if (widget.daysVisible != oldWidget.daysVisible) {
       _pageController =
           PageController(viewportFraction: 1 / widget.daysVisible);
       _pageController.addListener(_pageControllerListener);
     }
+  }
+
+  // Returns a Uint8List containing a screenshot of the user's schej
+  Future<Uint8List?> getScreenshot() async {
+    final oldPage = _pageController.page!.truncate();
+    setState(() {
+      _isTakingScreenshot = true;
+    });
+    final image = await _screenshotController.capture();
+    setState(() {
+      _isTakingScreenshot = false;
+    });
+
+    // HACK: reassign pagecontroller so it doesn't reset the page it's on
+    _pageController = PageController(
+      initialPage: oldPage,
+      viewportFraction: 1 / widget.daysVisible,
+    );
+
+    return image;
   }
 
   // Animate the page to the given day
@@ -138,21 +162,25 @@ class _CalendarState extends State<Calendar> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isTakingScreenshot) {
+      return _buildScreenshot();
+    }
+
     return Row(
       children: [
-        _buildTimeColumn(),
-        Expanded(child: _buildDaySection()),
+        _buildTimeColumn(_timeScrollController),
+        Expanded(child: _buildDaySection(_pageController)),
       ],
     );
   }
 
   // Builds the section containing all the days in a horizontally scrolling
   // page view
-  Widget _buildDaySection() {
+  Widget _buildDaySection(PageController controller) {
     return FractionallySizedBox(
       heightFactor: 1,
       child: PageView.builder(
-        controller: _pageController,
+        controller: controller,
         itemBuilder: (BuildContext context, int index) {
           int dayOffset =
               _startDateOffset + index - 1 + (widget.daysVisible - 1) ~/ 2;
@@ -221,7 +249,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   // Builds the column displaying all the times (1am-11pm) in a scroll view
-  Widget _buildTimeColumn() {
+  Widget _buildTimeColumn(ScrollController controller) {
     // itemBuilder for a row containing a time (e.g. 10am)
     Widget itemBuilder(BuildContext context, int index) {
       // Account for the half hour before and half hour after for 12am
@@ -274,7 +302,7 @@ class _CalendarState extends State<Calendar> {
             child: ListView.builder(
               scrollDirection: Axis.vertical,
               itemCount: _timeStrings.length + 2,
-              controller: _timeScrollController,
+              controller: controller,
               physics: const BouncingScrollPhysics(
                   parent: AlwaysScrollableScrollPhysics()),
               itemBuilder: itemBuilder,
@@ -282,6 +310,63 @@ class _CalendarState extends State<Calendar> {
           ),
         ],
       ),
+    );
+  }
+
+  // Builds the screenshot view when taking a screenshot
+  Widget _buildScreenshot() {
+    final localTimeScrollController = ScrollController(
+      initialScrollOffset: _timeScrollController.offset,
+    );
+    final localPageController = PageController(
+      initialPage: _pageController.page!.truncate(),
+      viewportFraction: 1 / widget.daysVisible,
+    );
+
+    return SingleChildScrollView(
+      child: Screenshot(
+        controller: _screenshotController,
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          color: SchejColors.white,
+          child: Column(
+            children: [
+              _buildScreenshotHeader(),
+              Expanded(
+                child: Row(
+                  children: [
+                    _buildTimeColumn(localTimeScrollController),
+                    Expanded(child: _buildDaySection(localPageController)),
+                  ],
+                ),
+              ),
+              _buildScreenshotFooter(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Builds the screenshot header containing the name of the user
+  Widget _buildScreenshotHeader() {
+    return Container(
+      padding: const EdgeInsets.only(top: 8, left: 8, right: 8, bottom: 20),
+      child: Column(
+        children: const [
+          Text('Lesley\'s schej', style: SchejFonts.header),
+          Text('June 5 - June 7', style: SchejFonts.body),
+        ],
+      ),
+    );
+  }
+
+  // Builds the screenshot footer containing timezone + logo
+  Widget _buildScreenshotFooter() {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      alignment: Alignment.centerLeft,
+      child: const Text('Timezone: PDT'),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/calendar.dart';
@@ -10,6 +12,8 @@ import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class MySchejPage extends StatefulWidget {
   const MySchejPage({Key? key}) : super(key: key);
@@ -23,6 +27,19 @@ class _MySchejPageState extends State<MySchejPage> {
   int _daysVisible = 3;
   bool _eventTitlesVisible = true;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
+  final GlobalKey<CalendarState> _calendar = GlobalKey();
+
+  void takeScreenshot() async {
+    if (_calendar.currentState == null) return;
+
+    final image = await _calendar.currentState!.getScreenshot();
+    if (image == null) return;
+
+    final directory = await getApplicationDocumentsDirectory();
+    final imagePath = await File('${directory.path}/screenshot.png').create();
+    await imagePath.writeAsBytes(image);
+    await Share.shareFiles([imagePath.path]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +67,11 @@ class _MySchejPageState extends State<MySchejPage> {
 
     return Scaffold(
       appBar: _buildAppBar(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: takeScreenshot,
+        backgroundColor: SchejColors.darkGreen,
+        child: const Icon(MdiIcons.share),
+      ),
       body: Container(
         color: SchejColors.white,
         padding: SchejConstants.pagePadding,
@@ -71,6 +93,7 @@ class _MySchejPageState extends State<MySchejPage> {
               child: Stack(
                 children: [
                   Calendar(
+                    key: _calendar,
                     calendarEvents: testCalendarEvents,
                     daysVisible: _daysVisible,
                     eventTitlesVisible: _eventTitlesVisible,
