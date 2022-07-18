@@ -9,6 +9,8 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
+// TODO: pinch to change rowHeight
+
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final CalendarEvents calendarEvents;
@@ -236,6 +238,7 @@ class CalendarState extends State<Calendar> {
         ),
         Expanded(
           child: CalendarDay(
+            key: ObjectKey(date),
             controllers: _controllers,
             date: date,
             events: widget.calendarEvents.eventsByDay[date],
@@ -324,6 +327,7 @@ class CalendarState extends State<Calendar> {
     );
 
     return SingleChildScrollView(
+      controller: ScrollController(initialScrollOffset: 73),
       child: Screenshot(
         controller: _screenshotController,
         child: Container(
@@ -348,14 +352,21 @@ class CalendarState extends State<Calendar> {
     );
   }
 
-  // Builds the screenshot header containing the name of the user
+  // Builds the screenshot header containing the name of the user + date ranges
   Widget _buildScreenshotHeader() {
+    final startDateString = DateFormat.MMMMd().format(widget.selectedDay);
+    final endDateString = DateFormat.MMMMd()
+        .format(widget.selectedDay.add(Duration(days: widget.daysVisible - 1)));
+    final dateString = widget.daysVisible == 1
+        ? startDateString
+        : '$startDateString - $endDateString';
+
     return Container(
       padding: const EdgeInsets.only(top: 8, left: 8, right: 8, bottom: 20),
       child: Column(
-        children: const [
-          Text('Lesley\'s schej', style: SchejFonts.header),
-          Text('June 5 - June 7', style: SchejFonts.body),
+        children: [
+          const Text('{USERNAME}\'s schej', style: SchejFonts.header),
+          Text(dateString, style: SchejFonts.body),
         ],
       ),
     );
@@ -366,7 +377,7 @@ class CalendarState extends State<Calendar> {
     return Container(
       padding: const EdgeInsets.all(8),
       alignment: Alignment.centerLeft,
-      child: const Text('Timezone: PDT'),
+      child: Text('Timezone: ${DateTime.now().timeZoneName}'),
     );
   }
 }
