@@ -41,6 +41,9 @@ dependencies:
   intl: ^0.17.0
   sorted_list: ^1.0.0
   table_calendar: ^3.0.6
+  screenshot: ^1.2.3
+  share_plus: ^4.0.10
+  path_provider: ^2.0.11
 
 dev_dependencies:
   flutter_test:
