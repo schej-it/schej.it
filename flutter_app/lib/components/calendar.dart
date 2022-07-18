@@ -9,8 +9,6 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
-// TODO: pinch to change rowHeight
-
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final CalendarEvents calendarEvents;
@@ -35,8 +33,9 @@ class Calendar extends StatefulWidget {
 class CalendarState extends State<Calendar> {
   // Constants
   final double _timeColWidth = 50;
-  final double _timeRowHeight = 45;
   final double _daySectionHeight = 62;
+  final double _minTimeRowHeight = 25;
+  final double _maxTimeRowHeight = 90;
 
   // Controllers
   late PageController _pageController;
@@ -53,6 +52,7 @@ class CalendarState extends State<Calendar> {
   final int _startDateOffset = -365;
   bool _pageControllerAnimating = false;
   bool _isTakingScreenshot = false;
+  double _timeRowHeight = 45;
 
   @override
   void initState() {
@@ -162,17 +162,37 @@ class CalendarState extends State<Calendar> {
     }
   }
 
+  double _oldTimeRowHeight = 0;
+  void _onScaleStart(ScaleStartDetails details) {
+    _oldTimeRowHeight = _timeRowHeight;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      _timeRowHeight = _oldTimeRowHeight * details.verticalScale;
+      if (_timeRowHeight < _minTimeRowHeight) {
+        _timeRowHeight = _minTimeRowHeight;
+      } else if (_timeRowHeight > _maxTimeRowHeight) {
+        _timeRowHeight = _maxTimeRowHeight;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isTakingScreenshot) {
       return _buildScreenshot();
     }
 
-    return Row(
-      children: [
-        _buildTimeColumn(_timeScrollController),
-        Expanded(child: _buildDaySection(_pageController)),
-      ],
+    return GestureDetector(
+      onScaleStart: _onScaleStart,
+      onScaleUpdate: _onScaleUpdate,
+      child: Row(
+        children: [
+          _buildTimeColumn(_timeScrollController),
+          Expanded(child: _buildDaySection(_pageController)),
+        ],
+      ),
     );
   }
 
