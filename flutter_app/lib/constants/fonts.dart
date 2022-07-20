@@ -15,7 +15,7 @@ class SchejFonts {
 
   static const TextStyle subtitle = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.darkGreen,
     fontSize: 16,
     fontWeight: FontWeight.w400,
   );

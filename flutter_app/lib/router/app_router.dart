@@ -54,4 +54,4 @@ import '../pages/home.dart';
     ),
   ],
 )
-class $AppRouter {}
+class $AppRouter {} 
