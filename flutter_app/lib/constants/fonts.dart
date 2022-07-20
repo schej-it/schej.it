@@ -9,13 +9,13 @@ class SchejFonts {
     fontFamily: 'DM Sans',
     color: SchejColors.black,
     fontSize: 20,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w600,
     height: 1.6,
   );
 
   static const TextStyle subtitle = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.darkGreen,
+    color: SchejColors.black,
     fontSize: 16,
     fontWeight: FontWeight.w400,
   );
