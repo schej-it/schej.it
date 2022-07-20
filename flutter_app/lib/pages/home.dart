@@ -2,10 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/icomoon/icomoon_icons.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../router/app_router.gr.dart';
 
+// Home page contains the bottom tab navigation bar as well as a scaffold to
+// display the rest of the screens
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -33,8 +36,8 @@ class HomePage extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: tabsRouter.activeIndex == 1
-              ? const Icon(MdiIcons.calendarMultipleCheck)
-              : const Icon(MdiIcons.calendarBlankMultiple),
+              ? const Icon(MdiIcons.calendarBlankMultiple)
+              : const Icon(Icomoon.calendarBlankMultipleOutline),
           label: 'My events',
         ),
         BottomNavigationBarItem(

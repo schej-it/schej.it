@@ -37,6 +37,13 @@ dependencies:
   material_design_icons_flutter: 5.0.6595
   auto_route: ^4.2.1
   provider: ^6.0.3
+  linked_scroll_controller: ^0.2.0
+  intl: ^0.17.0
+  sorted_list: ^1.0.0
+  table_calendar: ^3.0.6
+  screenshot: ^1.2.3
+  share_plus: ^4.0.10
+  path_provider: ^2.0.11
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +94,9 @@ flutter:
           weight: 500
         - asset: fonts/DMSans-Regular.ttf
           weight: 400
+    - family: icomoon
+      fonts:
+        - asset: fonts/icomoon.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
