@@ -9,6 +9,9 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
+// TODO: fix bug where if you pinch to zoom, the time scroll controller gets
+// out of sync with the individual day scroll controllers
+
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final CalendarEvents calendarEvents;
@@ -103,7 +106,7 @@ class CalendarState extends State<Calendar> {
 
     // If selectedDay changed, animate the page to the correct day
     if (widget.selectedDay != oldWidget.selectedDay) {
-      _animateToDay(widget.selectedDay);
+      _animateToDay(widget.selectedDay, oldDay: oldWidget.selectedDay);
     }
 
     // Change the number of days visible
@@ -135,14 +138,21 @@ class CalendarState extends State<Calendar> {
   }
 
   // Animate the page to the given day
-  void _animateToDay(DateTime day) async {
+  void _animateToDay(DateTime day, {DateTime? oldDay}) async {
     Duration diff = day.difference(_curDate);
     int index = diff.inDays - _startDateOffset + 1;
+
+    // Scale animation duration with difference between day and oldDay
+    Duration animDuration = const Duration(milliseconds: 1000);
+    if (oldDay != null) {
+      int dayDiff = day.difference(oldDay).inDays.abs();
+      animDuration = Duration(milliseconds: 270 + 30 * dayDiff);
+    }
 
     _pageControllerAnimating = true;
     await _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
+      duration: animDuration,
       curve: Curves.easeInOut,
     );
     _pageControllerAnimating = false;
@@ -281,6 +291,7 @@ class CalendarState extends State<Calendar> {
       }
 
       return SizedBox(
+        key: ValueKey(_timeStrings[index - 1]),
         height: _timeRowHeight,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -323,6 +334,7 @@ class CalendarState extends State<Calendar> {
           ),
           Expanded(
             child: ListView.builder(
+              key: const ValueKey('timeColumn'),
               scrollDirection: Axis.vertical,
               itemCount: _timeStrings.length + 2,
               controller: controller,
