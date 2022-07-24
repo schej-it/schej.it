@@ -24,8 +24,8 @@ class _EventsPageState extends State<EventsPage> {
           id: '39ajfa',
           ownerId: 'tonyxin',
           name: 'Fun times!',
-          startDate:
-              getDateWithTime(DateTime.now().subtract(Duration(days: 1)), 0),
+          startDate: getDateWithTime(
+              DateTime.now().subtract(const Duration(days: 1)), 0),
           endDate: getDateWithTime(DateTime.now(), 0),
           responses: List<String>.generate(5, (i) => "Tommy")));
 

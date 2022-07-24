@@ -74,7 +74,7 @@ class _MySchejPageState extends State<MySchejPage> {
       ),
       body: Container(
         color: SchejColors.white,
-        padding: SchejConstants.pagePadding,
+        // padding: SchejConstants.pagePadding,
         child: Column(
           children: [
             ExpandTransition(

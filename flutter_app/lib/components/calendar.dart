@@ -35,7 +35,7 @@ class Calendar extends StatefulWidget {
 
 class CalendarState extends State<Calendar> {
   // Constants
-  final double _timeColWidth = 50;
+  final double _timeColWidth = 60;
   final double _daySectionHeight = 62;
   final double _minTimeRowHeight = 25;
   final double _maxTimeRowHeight = 90;
