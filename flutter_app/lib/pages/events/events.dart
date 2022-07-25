@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/models/event.dart';
+import 'package:flutter_app/pages/events/create_event.dart';
 import 'package:flutter_app/router/app_router.gr.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -24,8 +25,8 @@ class _EventsPageState extends State<EventsPage> {
           id: '39ajfa',
           ownerId: 'tonyxin',
           name: 'Fun times!',
-          startDate:
-              getDateWithTime(DateTime.now().subtract(Duration(days: 1)), 0),
+          startDate: getDateWithTime(
+              DateTime.now().subtract(const Duration(days: 1)), 0),
           endDate: getDateWithTime(DateTime.now(), 0),
           responses: List<String>.generate(5, (i) => "Tommy")));
 
@@ -34,7 +35,7 @@ class _EventsPageState extends State<EventsPage> {
     return Scaffold(
       appBar: SchejAppBar(titleString: 'My events', isRoot: true),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => print('hi'),
+        onPressed: () => Navigator.of(context).push(_createRoute()),
         backgroundColor: SchejColors.darkGreen,
         child: const Icon(MdiIcons.plus),
       ),
@@ -88,4 +89,23 @@ class _EventsPageState extends State<EventsPage> {
       ],
     );
   }
+}
+
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        const CreateEvent(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(0.0, 1.0);
+      const end = Offset.zero;
+      const curve = Curves.ease;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      );
+    },
+  );
 }

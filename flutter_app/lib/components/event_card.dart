@@ -33,37 +33,20 @@ class EventCard extends StatelessWidget {
                   color: Colors.grey.withOpacity(0.3),
                   spreadRadius: 2,
                   blurRadius: 2,
-                  offset: Offset(0, 1), // changes position of shadow
+                  offset: const Offset(0, 1), // changes position of shadow
                 ),
               ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(event.name),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5.0),
-                          child: Text(DateFormat('Md').format(event.startDate),
-                              style: SchejFonts.small
-                                  .copyWith(color: SchejColors.darkGray)),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: _buildResponses(),
-                        ),
-                      ],
+                    _buildTitleDate(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: _buildResponses(),
                     ),
                   ],
                 ),
@@ -84,6 +67,21 @@ class EventCard extends StatelessWidget {
         ));
   }
 
+  Column _buildTitleDate() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(event.name),
+        Padding(
+          padding: const EdgeInsets.only(top: 5.0),
+          child: Text(DateFormat('Md').format(event.startDate),
+              style: SchejFonts.small.copyWith(color: SchejColors.darkGray)),
+        ),
+      ],
+    );
+  }
+
   // Builds responses icon section. Separated for readability.
   Container _buildResponses() {
     return Container(
@@ -93,8 +91,9 @@ class EventCard extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10.0))),
       child: Row(
         children: [
-          const Icon(MdiIcons.accountMultiple, size: 15.0),
-          Text("${event.responses.length}")
+          const Icon(MdiIcons.accountMultiple, size: 13.0),
+          const SizedBox(width: 2),
+          Text("${event.responses.length}", style: SchejFonts.small)
         ],
       ),
     );
