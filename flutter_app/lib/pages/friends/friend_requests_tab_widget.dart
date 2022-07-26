@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_app/components/friend_request_card.dart';
+import 'package:flutter_app/constants/constants.dart';
 
 class FriendRequestsTabWidget extends StatefulWidget {
   const FriendRequestsTabWidget({Key? key}) : super(key: key);
@@ -27,21 +26,27 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildFriendRequestCards();
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: SchejConstants.pagePadding.left,
+      ),
+      child: _buildFriendRequestCards(),
+    );
   }
 
   Widget _buildFriendRequestCards() {
-    final cards = <Widget>[];
-    for (final request in friendRequests) {
-      cards.add(Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: FriendRequestCard(
-          name: request['name'] as String,
-          requestTimestamp: request['requestTimestamp'] as DateTime,
-        ),
-      ));
-    }
-
-    return Column(children: cards);
+    return ListView.builder(
+      itemCount: friendRequests.length,
+      itemBuilder: (context, index) {
+        final request = friendRequests[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: FriendRequestCard(
+            name: request['name'] as String,
+            requestTimestamp: request['requestTimestamp'] as DateTime,
+          ),
+        );
+      },
+    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/friend_card.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
+import 'package:flutter_app/constants/fonts.dart';
 
 class FriendsTabWidget extends StatefulWidget {
   const FriendsTabWidget({Key? key}) : super(key: key);
@@ -38,47 +39,51 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildSearchTextField(),
-        _buildFriendCards(),
-      ],
-    );
-  }
-
-  Widget _buildSearchTextField() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
-        controller: _searchTextController,
-        autocorrect: false,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: SchejConstants.borderRadius,
-          ),
-          labelText: 'Search for a friend',
-          prefixIcon: const Icon(Icons.search),
-          prefixIconColor: SchejColors.black,
-          focusColor: SchejColors.green,
-          fillColor: Colors.red,
-        ),
+      padding: EdgeInsets.symmetric(
+        horizontal: SchejConstants.pagePadding.left,
+      ),
+      child: Column(
+        children: [
+          _buildSearchTextField(),
+          Expanded(child: _buildFriendCards()),
+        ],
       ),
     );
   }
 
-  Widget _buildFriendCards() {
-    final friendCards = <Widget>[];
-    for (final friend in friends) {
-      friendCards.add(Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: FriendCard(
-          name: friend['name'] as String,
-          status: friend['status'] as FriendStatus,
-          showOverflowMenu: () {},
-          curEventName: (friend['curEventName'] ?? '') as String,
+  Widget _buildSearchTextField() {
+    final textField = Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: _searchTextController,
+        autocorrect: false,
+        decoration: const InputDecoration(
+          hintText: 'Search for a friend',
+          prefixIcon: Icon(Icons.search),
         ),
-      ));
-    }
-    return Column(children: friendCards);
+        style: SchejFonts.subtitle.copyWith(color: SchejColors.black),
+      ),
+    );
+
+    return textField;
+  }
+
+  Widget _buildFriendCards() {
+    return ListView.builder(
+      itemCount: friends.length,
+      itemBuilder: (context, index) {
+        final friend = friends[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: FriendCard(
+            name: friend['name'] as String,
+            status: friend['status'] as FriendStatus,
+            showOverflowMenu: () {},
+            curEventName: (friend['curEventName'] ?? '') as String,
+          ),
+        );
+      },
+    );
   }
 }

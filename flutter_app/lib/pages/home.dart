@@ -2,8 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
-import 'package:flutter_app/icomoon/icomoon_icons.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../router/app_router.gr.dart';
 
@@ -17,7 +15,7 @@ class HomePage extends StatelessWidget {
     return AutoTabsScaffold(
       routes: const [
         MySchejTabRoute(),
-        EventsTabRoute(),
+        // EventsTabRoute(),
         FriendsTabRoute(),
         ProfileTabRoute(),
       ],
@@ -34,20 +32,20 @@ class HomePage extends StatelessWidget {
               : const Icon(Icons.calendar_today_outlined),
           label: 'My schej',
         ),
+        // BottomNavigationBarItem(
+        //   icon: tabsRouter.activeIndex == 1
+        //       ? const Icon(MdiIcons.calendarBlankMultiple)
+        //       : const Icon(Icomoon.calendarBlankMultipleOutline),
+        //   label: 'My events',
+        // ),
         BottomNavigationBarItem(
           icon: tabsRouter.activeIndex == 1
-              ? const Icon(MdiIcons.calendarBlankMultiple)
-              : const Icon(Icomoon.calendarBlankMultipleOutline),
-          label: 'My events',
-        ),
-        BottomNavigationBarItem(
-          icon: tabsRouter.activeIndex == 2
               ? const Icon(Icons.people)
               : const Icon(Icons.people_outline),
           label: 'Friends',
         ),
         BottomNavigationBarItem(
-          icon: tabsRouter.activeIndex == 3
+          icon: tabsRouter.activeIndex == 2
               ? const Icon(Icons.person)
               : const Icon(Icons.person_outline),
           label: 'Profile',

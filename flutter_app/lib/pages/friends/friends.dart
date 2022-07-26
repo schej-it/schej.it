@@ -56,11 +56,10 @@ class _FriendsPageState extends State<FriendsPage>
       ),
       body: Container(
         color: SchejColors.white,
-        padding: SchejConstants.pagePadding,
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(bottom: 32),
+              padding: SchejConstants.pagePadding.copyWith(bottom: 32),
               child: _buildTabBar(),
             ),
             Expanded(child: _buildTabBarView()),
@@ -71,8 +70,6 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Widget _buildTabBar() {
-    const double radius = 10;
-
     return Container(
       height: 42,
       decoration: BoxDecoration(
