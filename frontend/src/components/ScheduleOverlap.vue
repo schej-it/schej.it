@@ -297,7 +297,6 @@ export default {
 
       let t = this.startTime
       while (t != this.endTime) {
-        if (t > 23) t = 0
         times.push({
           timeInt: t,
           text: timeIntToTimeText(t),
@@ -306,6 +305,7 @@ export default {
           timeInt: t + 0.5,
         })
         t++
+        if (t > 23) t = 0
       }
 
       return times
