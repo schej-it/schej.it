@@ -11,11 +11,10 @@ class ProfilePage extends StatelessWidget {
       child: ElevatedButton(
         onPressed: () {
           final authService = context.read<AuthService>();
-          authService.authenticated = false;
-        }, 
+          authService.signOut();
+        },
         child: const Text('Sign out'),
       ),
-    ); 
+    );
   }
 }
-

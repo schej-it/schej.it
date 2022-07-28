@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -127,7 +126,7 @@ Widget _buildTimeInput(String text) {
           color: Colors.deepPurpleAccent,
         ),
         onChanged: (String? newValue) {
-          print(newValue);
+          // print(newValue);
         },
         items: <String>['One', 'Two', 'Free', 'Four']
             .map<DropdownMenuItem<String>>((String value) {

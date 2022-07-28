@@ -4,33 +4,32 @@ import 'package:flutter_app/router/app_router.gr.dart';
 
 class AuthGuard extends AutoRedirectGuard {
   final AuthService _authService;
+
   AuthGuard(this._authService) {
     _authService.addListener(() {
-      if (!_authService.authenticated) {
+      if (_authService.currentUser == null) {
         reevaluate();
-      } 
+      }
     });
   }
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) {
-    if (_authService.authenticated) {
+    if (_authService.currentUser != null) {
       return resolver.next();
     } else {
       router.push(SignInPageRoute(
-        onSignIn: (success) {
-          if (success) {
-            resolver.next(success);
-            router.removeLast();
-          }
+        onSignIn: () {
+          resolver.next();
+          router.removeLast();
         },
       ));
     }
   }
-  
+
   @override
   Future<bool> canNavigate(RouteMatch route) async {
-    if (!_authService.authenticated) {
+    if (_authService.currentUser == null) {
       return false;
     }
     return true;

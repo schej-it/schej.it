@@ -24,6 +24,18 @@ class _AppState extends State<App> {
   final _authService = AuthService();
   late final _appRouter = AppRouter(authGuard: AuthGuard(_authService));
 
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService.signInSilently().then((_) {
+      setState(() {
+        _initialized = true;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -33,6 +45,11 @@ class _AppState extends State<App> {
   }
 
   Widget _buildMaterialApp() {
+    if (!_initialized) {
+      // TODO: replace with a loading screen
+      return Container();
+    }
+
     return MaterialApp.router(
       routerDelegate: _appRouter.delegate(),
       routeInformationParser: _appRouter.defaultRouteParser(),

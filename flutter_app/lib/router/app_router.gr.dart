@@ -137,7 +137,7 @@ class AppRouter extends _i12.RootStackRouter {
 /// generated route for
 /// [_i1.SignInPage]
 class SignInPageRoute extends _i12.PageRouteInfo<SignInPageRouteArgs> {
-  SignInPageRoute({_i13.Key? key, required dynamic Function(bool) onSignIn})
+  SignInPageRoute({_i13.Key? key, required void Function() onSignIn})
       : super(SignInPageRoute.name,
             path: '/sign-in',
             args: SignInPageRouteArgs(key: key, onSignIn: onSignIn));
@@ -150,7 +150,7 @@ class SignInPageRouteArgs {
 
   final _i13.Key? key;
 
-  final dynamic Function(bool) onSignIn;
+  final void Function() onSignIn;
 
   @override
   String toString() {

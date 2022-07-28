@@ -6,7 +6,6 @@ import 'package:flutter_app/components/calendar.dart';
 import 'package:flutter_app/components/expand_transition.dart';
 import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
-import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/utils.dart';
