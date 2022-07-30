@@ -45,6 +45,9 @@ dependencies:
   share_plus: ^4.0.10
   path_provider: ^2.0.11
   google_sign_in: ^5.4.0
+  requests: ^4.4.1
+  http: ^0.13.4
+  json_annotation: ^4.6.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +56,7 @@ dev_dependencies:
   auto_route_generator: ^4.2.0
   build_runner:    
   change_app_package_name: ^1.1.0
+  json_serializable: 
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/constants/colors.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/auth_service.dart';
 import 'package:flutter_app/router/app_router.gr.dart';
 import 'package:flutter_app/router/auth_guard.dart';
@@ -21,7 +22,8 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final _authService = AuthService();
+  final _apiService = ApiService();
+  late final _authService = AuthService(apiService: _apiService);
   late final _appRouter = AppRouter(authGuard: AuthGuard(_authService));
 
   bool _initialized = false;
@@ -29,6 +31,8 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
+
+    // Sign in silently then set app to initialized
     _authService.signInSilently().then((_) {
       setState(() {
         _initialized = true;
@@ -38,8 +42,15 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => _authService,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => _authService,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => _apiService,
+        ),
+      ],
       child: _buildMaterialApp(),
     );
   }

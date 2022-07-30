@@ -69,14 +69,25 @@ func signIn(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 	res := struct {
-		AccessToken  string `json:"access_token"`
-		IdToken      string `json:"id_token"`
-		ExpiresIn    int    `json:"expires_in"`
-		RefreshToken string `json:"refresh_token"`
-		Scope        string `json:"scope"`
-		TokenType    string `json:"token_type"`
+		AccessToken      string `json:"access_token"`
+		IdToken          string `json:"id_token"`
+		ExpiresIn        int    `json:"expires_in"`
+		RefreshToken     string `json:"refresh_token"`
+		Scope            string `json:"scope"`
+		TokenType        string `json:"token_type"`
+		Error            string `json:"error"`
+		ErrorDescription string `json:"error_description"`
 	}{}
+
+	// defer resp.Body.Close()
+	// body, err := io.ReadAll(resp.Body)
+	// fmt.Printf("body: %v\n", string(body))
+	// return
 	json.NewDecoder(resp.Body).Decode(&res)
+	if len(res.Error) > 0 {
+		data, _ := json.MarshalIndent(res, "", "  ")
+		logger.StdErr.Panicln(string(data))
+	}
 
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
