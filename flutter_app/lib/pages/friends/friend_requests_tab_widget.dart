@@ -40,7 +40,7 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
       itemBuilder: (context, index) {
         final request = friendRequests[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: 10),
           child: FriendRequestCard(
             name: request['name'] as String,
             requestTimestamp: request['requestTimestamp'] as DateTime,

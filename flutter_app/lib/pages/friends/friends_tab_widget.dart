@@ -54,7 +54,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   Widget _buildSearchTextField() {
     final textField = Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
         controller: _searchTextController,
         autocorrect: false,
@@ -75,7 +75,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
       itemBuilder: (context, index) {
         final friend = friends[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: 10),
           child: FriendCard(
             name: friend['name'] as String,
             status: friend['status'] as FriendStatus,

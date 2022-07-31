@@ -59,7 +59,7 @@ class _FriendsPageState extends State<FriendsPage>
         child: Column(
           children: [
             Padding(
-              padding: SchejConstants.pagePadding.copyWith(bottom: 32),
+              padding: SchejConstants.pagePadding.copyWith(bottom: 20),
               child: _buildTabBar(),
             ),
             Expanded(child: _buildTabBarView()),

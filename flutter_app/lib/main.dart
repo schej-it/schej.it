@@ -111,17 +111,29 @@ class _AppState extends State<App> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: SchejConstants.borderRadius,
                 borderSide:
-                    const BorderSide(width: 2, color: SchejColors.darkGreen),
+                    const BorderSide(width: 1, color: SchejColors.lightGray),
               ),
-              prefixIconColor: MaterialStateColor.resolveWith((states) {
-                if (states.contains(MaterialState.focused)) {
-                  return SchejColors.darkGreen;
-                }
-                return SchejColors.darkGray;
-              }),
+              prefixIconColor: _conditionalColor(
+                focused: SchejColors.darkGreen,
+                unfocused: SchejColors.darkGray,
+              ),
+              filled: true,
+              fillColor: _conditionalColor(
+                focused: SchejColors.white,
+                unfocused: SchejColors.offWhite,
+              ),
             ),
       ),
       color: SchejColors.darkGreen,
     );
+  }
+
+  Color _conditionalColor({dynamic focused, dynamic unfocused}) {
+    return MaterialStateColor.resolveWith((states) {
+      if (states.contains(MaterialState.focused)) {
+        return focused;
+      }
+      return unfocused;
+    });
   }
 }
