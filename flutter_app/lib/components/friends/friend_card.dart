@@ -17,6 +17,7 @@ class FriendCard extends StatelessWidget {
   // curEventName is the name of the current event the friend is attending
   final String curEventName;
   final VoidCallback showOverflowMenu;
+  final GestureTapCallback? onTap;
 
   const FriendCard({
     Key? key,
@@ -25,6 +26,7 @@ class FriendCard extends StatelessWidget {
     required this.status,
     required this.showOverflowMenu,
     this.curEventName = '',
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class FriendCard extends StatelessWidget {
     return Container(
       decoration: SchejConstants.listTileDecoration,
       child: ListTile(
+        onTap: onTap,
         dense: true,
         leading: CircleAvatar(
           backgroundImage: NetworkImage(pic),

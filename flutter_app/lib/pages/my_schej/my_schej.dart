@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/calendar.dart';
+import 'package:flutter_app/components/calendar_view_selector.dart';
 import 'package:flutter_app/components/expand_transition.dart';
 import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
@@ -131,26 +132,10 @@ class _MySchejPageState extends State<MySchejPage> {
         ],
       ),
       actions: [
-        PopupMenuButton(
-          icon: const Icon(MdiIcons.calendarBlankOutline),
-          splashRadius: 15,
+        CalendarViewSelector(
           onSelected: (int value) => setState(() {
             _daysVisible = value;
           }),
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 1,
-              child: Text('Day'),
-            ),
-            const PopupMenuItem(
-              value: 3,
-              child: Text('3 day'),
-            ),
-            const PopupMenuItem(
-              value: 7,
-              child: Text('Week'),
-            ),
-          ],
         ),
         IconButton(
           icon: _eventTitlesVisible

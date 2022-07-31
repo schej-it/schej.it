@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter_app/pages/friends/friend_schej.dart';
 import 'package:flutter_app/router/auth_guard.dart';
 import '../pages/events/event.dart';
 import '../pages/events/events.dart';
@@ -21,15 +22,15 @@ import '../pages/home.dart';
       guards: [AuthGuard],
       children: [
         AutoRoute(
-          path: 'my-schej', 
-          page: MySchejTab, 
+          path: 'my-schej',
+          page: MySchejTab,
           initial: true,
           children: [
             AutoRoute(path: '', page: MySchejPage),
           ],
         ),
         AutoRoute(
-          path: 'events', 
+          path: 'events',
           page: EventsTab,
           children: [
             AutoRoute(path: '', page: EventsPage),
@@ -37,14 +38,15 @@ import '../pages/home.dart';
           ],
         ),
         AutoRoute(
-          path: 'friends', 
+          path: 'friends',
           page: FriendsTab,
           children: [
             AutoRoute(path: '', page: FriendsPage),
+            AutoRoute(path: 'schej', page: FriendSchejPage),
           ],
         ),
         AutoRoute(
-          path: 'profile', 
+          path: 'profile',
           page: ProfileTab,
           children: [
             AutoRoute(path: '', page: ProfilePage),
@@ -54,4 +56,4 @@ import '../pages/home.dart';
     ),
   ],
 )
-class $AppRouter {} 
+class $AppRouter {}

@@ -1,7 +1,9 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/friends/friend_card.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/router/app_router.gr.dart';
 
 class FriendsTabWidget extends StatefulWidget {
   const FriendsTabWidget({Key? key}) : super(key: key);
@@ -18,12 +20,12 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   var friends = [
     {'name': 'Winston Tilton', 'status': FriendStatus.free},
     {
-      'name': 'Winston Tilton',
+      'name': 'Samantha Jones',
       'status': FriendStatus.busy,
       'curEventName': 'BTG meeting'
     },
     {
-      'name': 'Winston Tilton',
+      'name': 'Tyler Smithson',
       'status': FriendStatus.busy,
       'curEventName': 'PSYC 336'
     },
@@ -85,11 +87,12 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: FriendCard(
-            name: friend['name'] as String,
-            status: friend['status'] as FriendStatus,
-            showOverflowMenu: () {},
-            curEventName: (friend['curEventName'] ?? '') as String,
-          ),
+              name: friend['name'] as String,
+              status: friend['status'] as FriendStatus,
+              showOverflowMenu: () {},
+              curEventName: (friend['curEventName'] ?? '') as String,
+              onTap: () => AutoRouter.of(context)
+                  .push(FriendSchejPageRoute(name: friend['name'] as String))),
         );
       },
     );

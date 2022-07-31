@@ -5,7 +5,9 @@ class SchejColors {
   static const Color green = Color(0xFF219653);
   static const Color darkGreen = Color(0xFF1C7D45);
   static const Color lightBlue = Color(0xFF6FACCF);
+  static const Color fadedLightBlue = Color(0x406FACCF);
   static const Color blue = Color(0xFF2F80ED);
+  static const Color fadedBlue = Color(0x402F80ED);
   static const Color offWhite = Color(0xFFF2F2F2);
   static const Color black = Color(0xFF4F4F4F);
   static const Color gray = Color(0xFFBDBDBD);

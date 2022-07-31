@@ -597,8 +597,8 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
               widget.hourHeight,
           decoration: BoxDecoration(
             color: widget.titleVisible
-                ? SchejColors.lightGreen
-                : SchejColors.fadedGreen,
+                ? SchejColors.lightBlue
+                : SchejColors.fadedLightBlue,
             borderRadius: const BorderRadius.all(Radius.circular(5)),
           ),
           child: widget.titleVisible
@@ -608,7 +608,7 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
                 )
               : Text(
                   'BUSY',
-                  style: SchejFonts.body.copyWith(color: SchejColors.darkGreen),
+                  style: SchejFonts.body.copyWith(color: SchejColors.lightBlue),
                 ),
         ),
       ),
