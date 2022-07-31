@@ -10,16 +10,18 @@ class SchejAppBar extends AppBar {
     Key? key,
     String titleString = '',
     Widget? title,
+    bool centerTitle = false,
     List<Widget>? actions,
     bool underline = true,
     bool isRoot = false,
   }) : super(
           key: key,
+          automaticallyImplyLeading: false,
           leading: isRoot ? null : const AutoLeadingButton(),
           title: titleString.isNotEmpty
               ? Text(titleString, style: SchejFonts.header)
               : title,
-          centerTitle: false,
+          centerTitle: centerTitle,
           actions: actions,
           foregroundColor: SchejColors.black,
           backgroundColor: SchejColors.white,

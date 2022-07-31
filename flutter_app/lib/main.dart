@@ -90,11 +90,11 @@ class _AppState extends State<App> {
         primaryColor: SchejColors.darkGreen,
         fontFamily: 'DM Sans',
         textTheme: Theme.of(context).textTheme.apply(
-              bodyColor: SchejColors.black,
-              displayColor: SchejColors.black,
+              bodyColor: SchejColors.pureBlack,
+              displayColor: SchejColors.pureBlack,
             ),
         textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: SchejColors.black,
+          cursorColor: SchejColors.pureBlack,
           selectionColor: SchejColors.darkGreen,
           selectionHandleColor: SchejColors.darkGreen,
         ),

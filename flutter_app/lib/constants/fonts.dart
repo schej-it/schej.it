@@ -7,7 +7,7 @@ import 'package:flutter_app/constants/colors.dart';
 class SchejFonts {
   static const TextStyle header = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 20,
     fontWeight: FontWeight.w600,
     height: 1.6,
@@ -15,14 +15,14 @@ class SchejFonts {
 
   static const TextStyle subtitle = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 16,
     fontWeight: FontWeight.w400,
   );
 
   static const TextStyle body = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 13,
     fontWeight: FontWeight.w400,
     height: 1,
@@ -30,7 +30,7 @@ class SchejFonts {
 
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 13,
     fontWeight: FontWeight.w500,
     height: 1,
@@ -38,21 +38,21 @@ class SchejFonts {
 
   static const TextStyle small = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 12,
     fontWeight: FontWeight.w400,
   );
 
   static const TextStyle smallBold = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 12,
     fontWeight: FontWeight.w500,
   );
 
   static const TextStyle smallMedium = TextStyle(
     fontFamily: 'DM Sans',
-    color: SchejColors.black,
+    color: SchejColors.pureBlack,
     fontSize: 12,
     fontWeight: FontWeight.w500,
   );

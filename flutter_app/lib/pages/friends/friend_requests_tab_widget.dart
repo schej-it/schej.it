@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/components/friend_request_card.dart';
+import 'package:flutter_app/components/friends/friend_request_card.dart';
 import 'package:flutter_app/constants/constants.dart';
 
 class FriendRequestsTabWidget extends StatefulWidget {
@@ -22,6 +22,15 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
       'name': 'Tyler Smithson',
       'requestTimestamp': DateTime.now().subtract(const Duration(days: 4))
     },
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
+    {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
   ];
 
   @override
@@ -36,8 +45,13 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
 
   Widget _buildFriendRequestCards() {
     return ListView.builder(
-      itemCount: friendRequests.length,
+      itemCount: friendRequests.length + 1,
       itemBuilder: (context, index) {
+        if (index == friendRequests.length) {
+          // Return sized box so FAB doesn't overlap
+          return const SizedBox(height: 70);
+        }
+
         final request = friendRequests[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),

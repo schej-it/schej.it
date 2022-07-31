@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/components/friend_card.dart';
-import 'package:flutter_app/constants/colors.dart';
+import 'package:flutter_app/components/friends/friend_card.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 
@@ -13,7 +12,7 @@ class FriendsTabWidget extends StatefulWidget {
 
 class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   // Controllers
-  late final TextEditingController _searchTextController;
+  final TextEditingController _searchTextController = TextEditingController();
 
   // Variables
   var friends = [
@@ -29,12 +28,16 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
       'curEventName': 'PSYC 336'
     },
     {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
+    {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
+    {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
+    {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
+    {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _searchTextController = TextEditingController();
+  void dispose() {
+    _searchTextController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,7 +65,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
           hintText: 'Search for a friend',
           prefixIcon: Icon(Icons.search),
         ),
-        style: SchejFonts.subtitle.copyWith(color: SchejColors.black),
+        style: SchejFonts.subtitle,
       ),
     );
 
@@ -71,8 +74,13 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   Widget _buildFriendCards() {
     return ListView.builder(
-      itemCount: friends.length,
+      itemCount: friends.length + 1,
       itemBuilder: (context, index) {
+        if (index == friends.length) {
+          // Return sized box so FAB doesn't overlap
+          return const SizedBox(height: 70);
+        }
+
         final friend = friends[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),

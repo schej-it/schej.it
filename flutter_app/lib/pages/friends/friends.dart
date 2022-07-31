@@ -1,7 +1,9 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
+import 'package:flutter_app/pages/friends/add_friend_dialog.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../constants/fonts.dart';
@@ -49,11 +51,7 @@ class _FriendsPageState extends State<FriendsPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: SchejAppBar(titleString: 'Friends', isRoot: true),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: SchejColors.darkGreen,
-        onPressed: () {},
-        child: const Icon(MdiIcons.accountPlus),
-      ),
+      floatingActionButton: _buildFab(),
       body: Container(
         color: SchejColors.white,
         child: Column(
@@ -66,6 +64,25 @@ class _FriendsPageState extends State<FriendsPage>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFab() {
+    return OpenContainer(
+      closedColor: SchejColors.darkGreen,
+      closedShape: const CircleBorder(),
+      closedBuilder: (context, openContainer) {
+        return FloatingActionButton(
+          backgroundColor: SchejColors.darkGreen,
+          onPressed: () {
+            openContainer();
+          },
+          child: const Icon(MdiIcons.accountPlus),
+        );
+      },
+      openBuilder: (context, closeContainer) {
+        return AddFriendDialog(onClose: closeContainer);
+      },
     );
   }
 

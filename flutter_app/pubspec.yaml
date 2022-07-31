@@ -49,6 +49,7 @@ dependencies:
   json_annotation: ^4.6.0
   oauth2_client: ^2.4.1
   flutter_secure_storage: ^5.0.2
+  animations: ^2.0.3
 
 dev_dependencies:
   flutter_test:
