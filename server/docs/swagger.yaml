@@ -109,6 +109,41 @@ paths:
       summary: Signs user in
       tags:
       - auth
+  /auth/sign-in-mobile:
+    post:
+      consumes:
+      - application/json
+      description: Signs user in and sets the access token session variable
+      parameters:
+      - description: Object containing the Google authorization code and the user's
+          timezone offset
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              accessToken:
+                type: string
+              expiresIn:
+                type: integer
+              idToken:
+                type: string
+              refreshToken:
+                type: string
+              scope:
+                type: string
+              timezoneOffset:
+                type: integer
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Signs user in from mobile
+      tags:
+      - auth
   /auth/sign-out:
     post:
       consumes:
@@ -388,24 +423,4 @@ paths:
       summary: Gets the user's profile
       tags:
       - user
-  /users:
-    get:
-      parameters:
-      - description: Search query matching users' names/emails
-        in: query
-        name: query
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: An array of user profile objects
-          schema:
-            items:
-              $ref: '#/definitions/models.UserProfile'
-            type: array
-      summary: Returns users that match the search query
-      tags:
-      - users
 swagger: "2.0"

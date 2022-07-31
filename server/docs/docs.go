@@ -69,6 +69,62 @@ var doc = `{
                 }
             }
         },
+        "/auth/sign-in-mobile": {
+            "post": {
+                "description": "Signs user in and sets the access token session variable",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Signs user in from mobile",
+                "parameters": [
+                    {
+                        "description": "Object containing the Google authorization code and the user's timezone offset",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "accessToken": {
+                                            "type": "string"
+                                        },
+                                        "expiresIn": {
+                                            "type": "integer"
+                                        },
+                                        "idToken": {
+                                            "type": "string"
+                                        },
+                                        "refreshToken": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "string"
+                                        },
+                                        "timezoneOffset": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/auth/sign-out": {
             "post": {
                 "description": "Signs user out and deletes the session",
@@ -506,37 +562,6 @@ var doc = `{
                         "description": "A user profile object",
                         "schema": {
                             "$ref": "#/definitions/models.UserProfile"
-                        }
-                    }
-                }
-            }
-        },
-        "/users": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Returns users that match the search query",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Search query matching users' names/emails",
-                        "name": "query",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "An array of user profile objects",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.UserProfile"
-                            }
                         }
                     }
                 }

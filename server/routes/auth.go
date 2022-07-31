@@ -26,6 +26,7 @@ func InitAuth(router *gin.Engine) {
 	authRouter := router.Group("/auth")
 
 	authRouter.POST("/sign-in", signIn)
+	authRouter.POST("/sign-in-mobile", signInMobile)
 	authRouter.POST("/sign-out", signOut)
 	authRouter.GET("/status", middleware.AuthRequired(), getStatus)
 }
@@ -53,6 +54,7 @@ func signIn(c *gin.Context) {
 		redirectUri = "https://schej.it/auth"
 	} else {
 		redirectUri = "http://localhost:8080/auth"
+		// redirectUri = "com.googleusercontent.apps.523323684219-vntbcabt43u6ago35a8s9mkjlhrserdg:/oauth2redirect"
 	}
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},
@@ -89,11 +91,43 @@ func signIn(c *gin.Context) {
 		logger.StdErr.Panicln(string(data))
 	}
 
+	signInHelper(c, res.AccessToken, res.IdToken, res.ExpiresIn, res.RefreshToken, payload.TimezoneOffset)
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Signs user in from mobile
+// @Description Signs user in and sets the access token session variable
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param payload body object{timezoneOffset=int,accessToken=string,idToken=string,expiresIn=int,refreshToken=string,scope=string} true "Object containing the Google authorization code and the user's timezone offset"
+// @Success 200
+// @Router /auth/sign-in-mobile [post]
+func signInMobile(c *gin.Context) {
+	payload := struct {
+		TimezoneOffset int    `json:"timezoneOffset" binding:"required"`
+		AccessToken    string `json:"accessToken" binding:"required"`
+		IdToken        string `json:"idToken" binding:"required"`
+		ExpiresIn      int    `json:"expiresIn" binding:"required"`
+		RefreshToken   string `json:"refreshToken" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	signInHelper(c, payload.AccessToken, payload.IdToken, payload.ExpiresIn, payload.RefreshToken, payload.TimezoneOffset)
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// Helper function to sign user in with the given parameters from the google oauth route
+func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn int, refreshToken string, timezoneOffset int) {
 	// Get access token expire time
-	accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(expiresIn)
 
 	// Get user info from JWT
-	claims := utils.ParseJWT(res.IdToken)
+	claims := utils.ParseJWT(idToken)
 	email, _ := claims.GetStr("email")
 	firstName, _ := claims.GetStr("given_name")
 	lastName, _ := claims.GetStr("family_name")
@@ -109,11 +143,11 @@ func signIn(c *gin.Context) {
 		FriendIds: make([]primitive.ObjectID, 0),
 		Calendars: make(map[string]models.Calendar),
 
-		AccessToken:           res.AccessToken,
+		AccessToken:           accessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-		RefreshToken:          res.RefreshToken,
+		RefreshToken:          refreshToken,
 
-		TimezoneOffset: payload.TimezoneOffset,
+		TimezoneOffset: timezoneOffset,
 	}
 
 	// Update user if exists
@@ -147,8 +181,6 @@ func signIn(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Set("userId", userId.Hex())
 	session.Save()
-
-	c.JSON(http.StatusOK, gin.H{})
 }
 
 // @Summary Signs user out

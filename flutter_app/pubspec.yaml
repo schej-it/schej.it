@@ -44,10 +44,11 @@ dependencies:
   screenshot: ^1.2.3
   share_plus: ^4.0.10
   path_provider: ^2.0.11
-  google_sign_in: ^5.4.0
   requests: ^4.4.1
   http: ^0.13.4
   json_annotation: ^4.6.0
+  oauth2_client: ^2.4.1
+  flutter_secure_storage: ^5.0.2
 
 dev_dependencies:
   flutter_test:

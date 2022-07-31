@@ -5,7 +5,10 @@ import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/auth_service.dart';
 import 'package:flutter_app/router/app_router.gr.dart';
 import 'package:flutter_app/router/auth_guard.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:requests/requests.dart';
+import 'package:requests/src/cookie.dart';
 
 import 'constants/constants.dart';
 import 'constants/fonts.dart';
@@ -32,11 +35,27 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
 
+    init();
+  }
+
+  Future<void> init() async {
+    // Read session cookie from storage if it exists
+    const storage = FlutterSecureStorage();
+    final String? sessionCookieString =
+        await storage.read(key: 'sessionCookie');
+    if (sessionCookieString != null) {
+      final CookieJar cookieJar =
+          CookieJar.parseCookiesString(sessionCookieString);
+      await Requests.setStoredCookies(
+        Requests.getHostname(ApiService.serverAddress),
+        cookieJar,
+      );
+    }
+
     // Sign in silently then set app to initialized
-    _authService.signInSilently().then((_) {
-      setState(() {
-        _initialized = true;
-      });
+    await _authService.signInSilently();
+    setState(() {
+      _initialized = true;
     });
   }
 

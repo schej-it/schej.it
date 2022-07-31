@@ -1,21 +1,61 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:requests/requests.dart';
 
 // Api is used to keep track of all the data retrieved from the API as well as
 // to make API requests
 class ApiService extends ChangeNotifier {
-  static const serverAddress =
-      kReleaseMode ? 'https://schej.it/api' : 'http://localhost:3002';
+  static final serverAddress = getServerAddress();
 
-  Future<void> signIn(String code) async {
+  static String getServerAddress() {
+    if (kReleaseMode) {
+      return 'https://schej.it/api';
+    }
+
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:3002';
+    } else {
+      return 'http://localhost:3002';
+    }
+  }
+
+  Future<bool> isSignedIn() async {
+    try {
+      await get('/auth/status');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> signIn(String accessToken, int expiresIn, String idToken,
+      String refreshToken) async {
     final int timezoneOffset = DateTime.now().timeZoneOffset.inMinutes;
-    final json = await post(
-      '/auth/sign-in',
-      {'code': code, 'timezoneOffset': timezoneOffset},
-    );
+    try {
+      await post(
+        '/auth/sign-in-mobile',
+        {
+          'timezoneOffset': timezoneOffset,
+          'accessToken': accessToken,
+          'expiresIn': expiresIn,
+          'idToken': idToken,
+          'refreshToken': refreshToken,
+        },
+      );
+      return true;
+    } catch (e) {
+      // TODO: show dialog that sign in failed
+      print('Sign in failed! $e');
+      return false;
+    }
+  }
+
+  Future<void> signOut() async {
+    await post('/auth/sign-out', {});
   }
 
   //
@@ -33,6 +73,7 @@ class ApiService extends ChangeNotifier {
     return await requestMethod(HttpMethod.PATCH, path, body: body);
   }
 
+  // Send the given request with the specified method
   static Future<Map<String, dynamic>> requestMethod(
       HttpMethod method, String path,
       {dynamic body = ''}) async {
@@ -59,11 +100,27 @@ class ApiService extends ChangeNotifier {
         return {};
     }
 
+    // Throw error if there was one
     if (r.hasError) {
       throw '[ERROR ${r.statusCode}] ${r.content()}';
     }
+
+    // Get json object to return
     String response = r.content();
     Map<String, dynamic> json = jsonDecode(response);
+
+    // Write sessionCookie to secure storage if it was set on this request
+    final cookieJar = Requests.extractResponseCookies(r.headers);
+    if (cookieJar.isNotEmpty) {
+      if (cookieJar['session'] != null) {
+        String sessionCookieString = cookieJar['session'].toString();
+        sessionCookieString =
+            sessionCookieString.substring(sessionCookieString.indexOf(':') + 1);
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'sessionCookie', value: sessionCookieString);
+      }
+    }
+
     return json;
   }
 }

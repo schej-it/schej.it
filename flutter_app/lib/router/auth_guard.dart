@@ -7,7 +7,7 @@ class AuthGuard extends AutoRedirectGuard {
 
   AuthGuard(this._authService) {
     _authService.addListener(() {
-      if (_authService.currentUser == null) {
+      if (!_authService.authenticated) {
         reevaluate();
       }
     });
@@ -15,7 +15,7 @@ class AuthGuard extends AutoRedirectGuard {
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) {
-    if (_authService.currentUser != null) {
+    if (_authService.authenticated) {
       return resolver.next();
     } else {
       router.push(SignInPageRoute(
@@ -29,7 +29,7 @@ class AuthGuard extends AutoRedirectGuard {
 
   @override
   Future<bool> canNavigate(RouteMatch route) async {
-    if (_authService.currentUser == null) {
+    if (!_authService.authenticated) {
       return false;
     }
     return true;
