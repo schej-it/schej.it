@@ -35,16 +35,12 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: SchejConstants.pagePadding.left,
-      ),
-      child: _buildFriendRequestCards(),
-    );
+    return _buildFriendRequestCards();
   }
 
   Widget _buildFriendRequestCards() {
     return ListView.builder(
+      clipBehavior: Clip.none,
       itemCount: friendRequests.length + 1,
       itemBuilder: (context, index) {
         if (index == friendRequests.length) {

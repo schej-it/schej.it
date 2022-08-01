@@ -44,16 +44,11 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: SchejConstants.pagePadding.left,
-      ),
-      child: Column(
-        children: [
-          _buildSearchTextField(),
-          Expanded(child: _buildFriendCards()),
-        ],
-      ),
+    return Column(
+      children: [
+        _buildSearchTextField(),
+        Expanded(child: _buildFriendCards()),
+      ],
     );
   }
 
@@ -76,6 +71,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   Widget _buildFriendCards() {
     return ListView.builder(
+      clipBehavior: Clip.none,
       itemCount: friends.length + 1,
       itemBuilder: (context, index) {
         if (index == friends.length) {
