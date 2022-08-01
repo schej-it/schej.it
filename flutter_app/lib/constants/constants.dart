@@ -11,6 +11,7 @@ class SchejConstants {
 
   static final BoxShadow boxShadow = BoxShadow(
     color: SchejColors.pureBlack.withOpacity(0.1),
+    // color: SchejColors.pureBlack.withOpacity(.9),
     spreadRadius: 0,
     blurRadius: 4,
     offset: const Offset(0, 1),

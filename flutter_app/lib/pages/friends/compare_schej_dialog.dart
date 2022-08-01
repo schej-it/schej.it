@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_app/components/app_bar.dart';
+import 'package:flutter_app/components/friends/compare_schej_card.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -17,6 +16,13 @@ class CompareSchejDialog extends StatefulWidget {
 
 class _CompareSchejDialogState extends State<CompareSchejDialog> {
   final _focusNode = FocusNode();
+
+  var results = [
+    {'name': 'Winston Tilton', 'added': false},
+    {'name': 'Samantha Hutchinson', 'added': false},
+    {'name': 'Tyler Smithson', 'added': true},
+    {'name': 'Arthi Singh', 'added': false},
+  ];
 
   @override
   initState() {
@@ -50,6 +56,7 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
         child: Column(
           children: [
             _buildSearchTextField(),
+            Expanded(child: _buildResults()),
           ],
         ),
       ),
@@ -71,5 +78,26 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
     );
 
     return textField;
+  }
+
+  Widget _buildResults() {
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final result = results[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: CompareSchejCard(
+            name: result['name'] as String,
+            added: result['added'] as bool,
+            onToggle: (bool value) {
+              setState(() {
+                results[index]['added'] = value;
+              });
+            },
+          ),
+        );
+      },
+    );
   }
 }

@@ -175,15 +175,9 @@ class _FriendsPageState extends State<FriendsPage>
   Widget _buildTabBarView() {
     return TabBarView(
       controller: _tabController,
-      children: [
-        Padding(
-          padding: SchejConstants.pagePadding.copyWith(top: 20),
-          child: const FriendsTabWidget(),
-        ),
-        Padding(
-          padding: SchejConstants.pagePadding.copyWith(top: 20),
-          child: const FriendRequestsTabWidget(),
-        ),
+      children: const [
+        FriendsTabWidget(),
+        FriendRequestsTabWidget(),
       ],
     );
   }

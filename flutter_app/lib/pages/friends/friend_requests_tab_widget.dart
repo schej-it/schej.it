@@ -35,12 +35,14 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildFriendRequestCards();
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: _buildFriendRequestCards(),
+    );
   }
 
   Widget _buildFriendRequestCards() {
     return ListView.builder(
-      clipBehavior: Clip.none,
       itemCount: friendRequests.length + 1,
       itemBuilder: (context, index) {
         if (index == friendRequests.length) {
@@ -50,7 +52,8 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
 
         final request = friendRequests[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: SchejConstants.pagePadding
+              .copyWith(top: index == 0 ? 10 : 0, bottom: 10),
           child: FriendRequestCard(
             name: request['name'] as String,
             requestTimestamp: request['requestTimestamp'] as DateTime,

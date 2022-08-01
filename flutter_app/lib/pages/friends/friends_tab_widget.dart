@@ -54,7 +54,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   Widget _buildSearchTextField() {
     final textField = Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: SchejConstants.pagePadding.copyWith(top: 20, bottom: 10),
       child: TextField(
         controller: _searchTextController,
         autocorrect: false,
@@ -71,7 +71,6 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
   Widget _buildFriendCards() {
     return ListView.builder(
-      clipBehavior: Clip.none,
       itemCount: friends.length + 1,
       itemBuilder: (context, index) {
         if (index == friends.length) {
@@ -81,7 +80,8 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
 
         final friend = friends[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: SchejConstants.pagePadding
+              .copyWith(top: index == 0 ? 10 : 0, bottom: 10),
           child: FriendCard(
               name: friend['name'] as String,
               status: friend['status'] as FriendStatus,
