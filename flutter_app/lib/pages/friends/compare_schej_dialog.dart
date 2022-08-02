@@ -1,32 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/friends/compare_schej_card.dart';
+import 'package:flutter_app/components/friends/compare_schej_text_field.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
-import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/user.dart';
+import 'package:provider/provider.dart';
 
 class CompareSchejDialog extends StatefulWidget {
   final VoidCallback onClose;
+  final Set<String> addedUsers;
+  final void Function(String userId, bool added) onAddUser;
 
-  const CompareSchejDialog({Key? key, required this.onClose}) : super(key: key);
+  const CompareSchejDialog({
+    Key? key,
+    required this.addedUsers,
+    required this.onAddUser,
+    required this.onClose,
+  }) : super(key: key);
 
   @override
   State<CompareSchejDialog> createState() => _CompareSchejDialogState();
 }
 
 class _CompareSchejDialogState extends State<CompareSchejDialog> {
+  // Controllers
   final _focusNode = FocusNode();
+  final _textEditingController = TextEditingController();
 
-  var results = [
-    {'name': 'Winston Tilton', 'added': false},
-    {'name': 'Samantha Hutchinson', 'added': false},
-    {'name': 'Tyler Smithson', 'added': true},
-    {'name': 'Arthi Singh', 'added': false},
-  ];
+  // Variables
+  String _query = '';
 
   @override
   initState() {
     super.initState();
+
+    // When widget is built, automatically focus text field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
@@ -55,7 +65,13 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
         padding: SchejConstants.pagePadding,
         child: Column(
           children: [
-            _buildSearchTextField(),
+            CompareSchejTextField(
+              focusNode: _focusNode,
+              controller: _textEditingController,
+              onChanged: (value) => setState(() {
+                _query = value;
+              }),
+            ),
             Expanded(child: _buildResults()),
           ],
         ),
@@ -63,41 +79,26 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
     );
   }
 
-  Widget _buildSearchTextField() {
-    final textField = Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextField(
-        focusNode: _focusNode,
-        autocorrect: false,
-        decoration: const InputDecoration(
-          hintText: 'Type a name...',
-          prefixIcon: Icon(Icons.search),
-        ),
-        style: SchejFonts.subtitle,
-      ),
-    );
-
-    return textField;
-  }
-
   Widget _buildResults() {
-    return ListView.builder(
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final result = results[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: CompareSchejCard(
-            name: result['name'] as String,
-            added: result['added'] as bool,
-            onToggle: (bool value) {
-              setState(() {
-                results[index]['added'] = value;
-              });
-            },
-          ),
-        );
-      },
-    );
+    return Consumer<ApiService>(builder: (context, api, child) {
+      List<User> results = api.getFriendsByQuery(_query);
+      return ListView.builder(
+        itemCount: results.length,
+        itemBuilder: (context, index) {
+          final friend = results[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: CompareSchejCard(
+              name: friend.fullName,
+              picture: friend.picture,
+              added: widget.addedUsers.contains(friend.id),
+              onToggle: (bool value) {
+                widget.onAddUser(friend.id, value);
+              },
+            ),
+          );
+        },
+      );
+    });
   }
 }

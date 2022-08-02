@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_app/models/user.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:requests/requests.dart';
@@ -9,9 +10,8 @@ import 'package:requests/requests.dart';
 // Api is used to keep track of all the data retrieved from the API as well as
 // to make API requests
 class ApiService extends ChangeNotifier {
-  static final serverAddress = getServerAddress();
-
-  static String getServerAddress() {
+  // [serverAddress] is the correct api address to use
+  static String get serverAddress {
     if (kReleaseMode) {
       return 'https://schej.it/api';
     }
@@ -23,6 +23,58 @@ class ApiService extends ChangeNotifier {
     }
   }
 
+  ///////////////////////////////////////////
+  // Friends
+  ///////////////////////////////////////////
+
+  final Map<String, User> _friends = <String, User>{
+    '123': const User(
+      id: '123',
+      email: 'liu.z.jonathan@gmail.com',
+      firstName: 'Jonathan',
+      lastName: 'Liu',
+      picture:
+          'https://lh3.googleusercontent.com/a-/AFdZucrz7tSsASL-GwauN8bw3wMswC_Kiuo6Ut8ZGvRtnO4=s96-c',
+    ),
+    '321': const User(
+      id: '321',
+      email: 'tonyxin@berkeley.edu',
+      firstName: 'Tony',
+      lastName: 'Xin',
+      picture:
+          'https://lh3.googleusercontent.com/a-/AFdZucowznIWn8H4iYmZ1SYTMdRKvBOOgO8sBYTOhfp_3Q=s64-p-k-rw-no',
+    ),
+    'lol': const User(
+      id: 'lol',
+      email: 'lesleym@usc.edu',
+      firstName: 'Lesley',
+      lastName: 'Moon',
+      picture:
+          'https://lh3.googleusercontent.com/a-/AFdZucrm6jLuiTfc8e-wKD3KZsFLfLhocVKUYoSRaLHfBQ=s64-p-k-rw-no',
+    ),
+  };
+  Map<String, User> get friends => _friends;
+
+  User? getFriendById(String id) {
+    return friends[id];
+  }
+
+  List<User> getFriendsByQuery(String query) {
+    final queryRegex = RegExp('.*$query.*', caseSensitive: false);
+    List<User> filteredFriends = <User>[];
+    _friends.forEach((_, friend) {
+      if (queryRegex.hasMatch(friend.fullName)) {
+        filteredFriends.add(friend);
+      }
+    });
+    return filteredFriends;
+  }
+
+  ////////////////////////////////////////////
+  // Auth
+  ////////////////////////////////////////////
+
+  // Returns whether user is authenticated on server based on session cookie
   Future<bool> isSignedIn() async {
     try {
       await get('/auth/status');
@@ -32,6 +84,7 @@ class ApiService extends ChangeNotifier {
     }
   }
 
+  // Signs user in on the API and returns true if succeeded
   Future<bool> signIn(String accessToken, int expiresIn, String idToken,
       String refreshToken) async {
     final int timezoneOffset = DateTime.now().timeZoneOffset.inMinutes;
@@ -54,13 +107,15 @@ class ApiService extends ChangeNotifier {
     }
   }
 
+  // Signs user out on the API
   Future<void> signOut() async {
     await post('/auth/sign-out', {});
   }
 
-  //
+  /////////////////////////////////////////////
   // Methods to send http requests to the API
-  //
+  /////////////////////////////////////////////
+
   static Future<Map<String, dynamic>> get(String path) async {
     return await requestMethod(HttpMethod.GET, path);
   }

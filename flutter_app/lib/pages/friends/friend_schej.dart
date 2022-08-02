@@ -22,6 +22,7 @@ class FriendSchejPage extends StatefulWidget {
 class _FriendSchejPageState extends State<FriendSchejPage> {
   int _daysVisible = 3;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
+  final Set<String> _addedUsers = <String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +112,21 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
             );
           },
           openBuilder: (context, closeContainer) {
-            return CompareSchejDialog(onClose: closeContainer);
+            return StatefulBuilder(
+              builder: (context, setState) => CompareSchejDialog(
+                addedUsers: _addedUsers,
+                onAddUser: ((userId, added) {
+                  setState(() {
+                    if (added) {
+                      _addedUsers.add(userId);
+                    } else {
+                      _addedUsers.remove(userId);
+                    }
+                  });
+                }),
+                onClose: closeContainer,
+              ),
+            );
           },
         ),
       ),
