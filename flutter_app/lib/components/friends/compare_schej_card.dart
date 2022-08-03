@@ -4,16 +4,18 @@ import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
+// Card widget for the CompareSchejDialog to display the friend search results
+// and to add / remove them from the schej comparison
 class CompareSchejCard extends StatelessWidget {
   final String name;
-  final String pic;
+  final String picture;
   final bool added;
   final void Function(bool) onToggle;
 
   const CompareSchejCard({
     Key? key,
     required this.name,
-    this.pic = 'https://pbs.twimg.com/media/D8dDZukXUAAXLdY.jpg',
+    required this.picture,
     this.added = false,
     required this.onToggle,
   }) : super(key: key);
@@ -25,9 +27,8 @@ class CompareSchejCard extends StatelessWidget {
       decoration: SchejConstants.listTileDecoration
           .copyWith(color: added ? SchejColors.green : SchejColors.white),
       child: ListTile(
-        // tileColor: added ? SchejColors.green : SchejColors.white,
         leading: CircleAvatar(
-          backgroundImage: NetworkImage(pic),
+          backgroundImage: NetworkImage(picture),
         ),
         title: Text(name,
             style: SchejFonts.subtitle.copyWith(

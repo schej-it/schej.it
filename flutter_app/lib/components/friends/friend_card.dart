@@ -12,7 +12,7 @@ enum FriendStatus {
 
 class FriendCard extends StatelessWidget {
   final String name;
-  final String pic;
+  final String picture;
   final FriendStatus status;
   // curEventName is the name of the current event the friend is attending
   final String curEventName;
@@ -22,7 +22,7 @@ class FriendCard extends StatelessWidget {
   const FriendCard({
     Key? key,
     required this.name,
-    this.pic = 'https://pbs.twimg.com/media/D8dDZukXUAAXLdY.jpg',
+    required this.picture,
     required this.status,
     required this.showOverflowMenu,
     this.curEventName = '',
@@ -37,7 +37,7 @@ class FriendCard extends StatelessWidget {
         onTap: onTap,
         dense: true,
         leading: CircleAvatar(
-          backgroundImage: NetworkImage(pic),
+          backgroundImage: NetworkImage(picture),
         ),
         title: Text(name, style: SchejFonts.subtitle),
         subtitle: _buildStatusText(),

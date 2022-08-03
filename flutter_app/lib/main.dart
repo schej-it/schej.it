@@ -8,6 +8,7 @@ import 'package:flutter_app/router/auth_guard.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:requests/requests.dart';
+// ignore: implementation_imports
 import 'package:requests/src/cookie.dart';
 
 import 'constants/constants.dart';
@@ -123,6 +124,19 @@ class _AppState extends State<App> {
                 unfocused: SchejColors.offWhite,
               ),
             ),
+        checkboxTheme: CheckboxThemeData(
+          fillColor: MaterialStateProperty.resolveWith((states) {
+            // const interactiveStates = <MaterialState>{
+            //   MaterialState.pressed,
+            //   MaterialState.hovered,
+            //   MaterialState.focused,
+            // };
+            // if (states.any(interactiveStates.contains)) {
+            //   return SchejColors.darkGreen;
+            // }
+            return SchejColors.darkGreen;
+          }),
+        ),
       ),
       color: SchejColors.darkGreen,
     );
