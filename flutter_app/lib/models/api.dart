@@ -27,6 +27,19 @@ class ApiService extends ChangeNotifier {
   // Friends
   ///////////////////////////////////////////
 
+  User? _authUser;
+  User? get authUser => _authUser;
+
+  // Gets the user's profile and sets [_authUser] to it
+  Future<void> refreshAuthUserProfile() async {
+    final userMap = await get('/user/profile');
+    _authUser = User.fromJson(userMap);
+  }
+
+  ///////////////////////////////////////////
+  // Friends
+  ///////////////////////////////////////////
+
   final Map<String, User> _friends = <String, User>{
     '123': const User(
       id: '123',
@@ -54,6 +67,13 @@ class ApiService extends ChangeNotifier {
     ),
   };
   Map<String, User> get friends => _friends;
+  List<User> get friendsList {
+    List<User> list = <User>[];
+    for (User friend in _friends.values) {
+      list.add(friend);
+    }
+    return list;
+  }
 
   User? getFriendById(String id) {
     return friends[id];
@@ -78,6 +98,7 @@ class ApiService extends ChangeNotifier {
   Future<bool> isSignedIn() async {
     try {
       await get('/auth/status');
+      await refreshAuthUserProfile();
       return true;
     } catch (e) {
       return false;
@@ -99,6 +120,7 @@ class ApiService extends ChangeNotifier {
           'refreshToken': refreshToken,
         },
       );
+      await refreshAuthUserProfile();
       return true;
     } catch (e) {
       // TODO: show dialog that sign in failed

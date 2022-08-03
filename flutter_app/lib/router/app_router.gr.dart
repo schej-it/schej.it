@@ -88,7 +88,7 @@ class AppRouter extends _i13.RootStackRouter {
       final args = routeData.argsAs<FriendSchejPageRouteArgs>();
       return _i13.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i11.FriendSchejPage(key: args.key, name: args.name));
+          child: _i11.FriendSchejPage(key: args.key, friendId: args.friendId));
     },
     ProfilePageRoute.name: (routeData) {
       return _i13.MaterialPageX<dynamic>(
@@ -266,24 +266,24 @@ class FriendsPageRoute extends _i13.PageRouteInfo<void> {
 /// [_i11.FriendSchejPage]
 class FriendSchejPageRoute
     extends _i13.PageRouteInfo<FriendSchejPageRouteArgs> {
-  FriendSchejPageRoute({_i14.Key? key, required String name})
+  FriendSchejPageRoute({_i14.Key? key, required String friendId})
       : super(FriendSchejPageRoute.name,
             path: 'schej',
-            args: FriendSchejPageRouteArgs(key: key, name: name));
+            args: FriendSchejPageRouteArgs(key: key, friendId: friendId));
 
   static const String name = 'FriendSchejPageRoute';
 }
 
 class FriendSchejPageRouteArgs {
-  const FriendSchejPageRouteArgs({this.key, required this.name});
+  const FriendSchejPageRouteArgs({this.key, required this.friendId});
 
   final _i14.Key? key;
 
-  final String name;
+  final String friendId;
 
   @override
   String toString() {
-    return 'FriendSchejPageRouteArgs{key: $key, name: $name}';
+    return 'FriendSchejPageRouteArgs{key: $key, friendId: $friendId}';
   }
 }
 

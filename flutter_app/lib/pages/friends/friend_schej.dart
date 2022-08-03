@@ -3,26 +3,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/calendar.dart';
 import 'package:flutter_app/components/calendar_view_selector.dart';
+import 'package:flutter_app/components/friends/compare_schej_text_field.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
-import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/pages/friends/compare_schej_dialog.dart';
 import 'package:flutter_app/utils.dart';
 
 class FriendSchejPage extends StatefulWidget {
-  final String name;
+  final String friendId;
 
-  const FriendSchejPage({Key? key, required this.name}) : super(key: key);
+  const FriendSchejPage({Key? key, required this.friendId}) : super(key: key);
 
   @override
   State<FriendSchejPage> createState() => _FriendSchejPageState();
 }
 
 class _FriendSchejPageState extends State<FriendSchejPage> {
+  // Calendar variables
   int _daysVisible = 3;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
+
+  // Compare schej dialog variables
   final Set<String> _addedUsers = <String>{};
+  bool _includeSelf = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _addedUsers.add(widget.friendId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +63,7 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
       appBar: SchejAppBar(
         centerTitle: true,
         underline: false,
-        titleString: '${widget.name}\'s Schej',
+        titleString: 'Compare schej',
         actions: [
           CalendarViewSelector(
             onSelected: (int value) => setState(() {
@@ -93,20 +104,21 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
             borderRadius: SchejConstants.borderRadius,
           ),
           closedBuilder: (context, openContainer) {
-            return FocusScope(
-              child: Focus(
-                onFocusChange: (focus) {
-                  if (focus) {
-                    openContainer();
-                  }
-                },
-                child: const TextField(
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: 'Compare schej',
-                    prefixIcon: Icon(Icons.search),
+            return StatefulBuilder(
+              builder: (context, setState) => FocusScope(
+                child: Focus(
+                  onFocusChange: (focus) {
+                    if (focus) {
+                      openContainer();
+                    }
+                  },
+                  child: CompareSchejTextField(
+                    addedUsers: _addedUsers,
+                    onRemoveUser: (userId) => setState(() {
+                      _addedUsers.remove(userId);
+                    }),
+                    includeSelf: _includeSelf,
                   ),
-                  style: SchejFonts.subtitle,
                 ),
               ),
             );
@@ -124,6 +136,9 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
                     }
                   });
                 }),
+                includeSelf: _includeSelf,
+                onUpdateIncludeSelf: (value) =>
+                    setState(() => _includeSelf = value),
                 onClose: closeContainer,
               ),
             );

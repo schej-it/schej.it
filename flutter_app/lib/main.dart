@@ -124,6 +124,19 @@ class _AppState extends State<App> {
                 unfocused: SchejColors.offWhite,
               ),
             ),
+        checkboxTheme: CheckboxThemeData(
+          fillColor: MaterialStateProperty.resolveWith((states) {
+            // const interactiveStates = <MaterialState>{
+            //   MaterialState.pressed,
+            //   MaterialState.hovered,
+            //   MaterialState.focused,
+            // };
+            // if (states.any(interactiveStates.contains)) {
+            //   return SchejColors.darkGreen;
+            // }
+            return SchejColors.darkGreen;
+          }),
+        ),
       ),
       color: SchejColors.darkGreen,
     );
