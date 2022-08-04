@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/models/user.dart';
+import 'package:flutter_app/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:requests/requests.dart';
@@ -24,7 +26,7 @@ class ApiService extends ChangeNotifier {
   }
 
   ///////////////////////////////////////////
-  // Friends
+  // Current user
   ///////////////////////////////////////////
 
   User? _authUser;
@@ -35,6 +37,29 @@ class ApiService extends ChangeNotifier {
     final userMap = await get('/user/profile');
     _authUser = User.fromJson(userMap);
   }
+
+  final CalendarEvents _authUserSchedule = CalendarEvents(
+    events: [
+      CalendarEvent(
+        title: 'Event',
+        startDate: getDateWithTime(DateTime.now(), 9.5),
+        endDate: getDateWithTime(DateTime.now(), 12),
+      ),
+      CalendarEvent(
+        title: 'Introduction to Failure Analysis',
+        startDate: getDateWithTime(DateTime.now(), 13),
+        endDate: getDateWithTime(DateTime.now(), 14.5),
+      ),
+      CalendarEvent(
+        title: 'War',
+        startDate:
+            getDateWithTime(DateTime.now().add(const Duration(days: 1)), 15),
+        endDate:
+            getDateWithTime(DateTime.now().add(const Duration(days: 1)), 20),
+      ),
+    ],
+  );
+  CalendarEvents get authUserSchedule => _authUserSchedule;
 
   ///////////////////////////////////////////
   // Friends
@@ -88,6 +113,118 @@ class ApiService extends ChangeNotifier {
       }
     });
     return filteredFriends;
+  }
+
+  final Map<String, CalendarEvents> _friendSchedules = {
+    '123': CalendarEvents(
+      events: [
+        CalendarEvent(
+          title: 'Hang out',
+          startDate: getDateWithTime(DateTime.now(), 7),
+          endDate: getDateWithTime(DateTime.now(), 11),
+        ),
+        CalendarEvent(
+          title: 'hehe xd',
+          startDate: getDateWithTime(DateTime.now(), 14),
+          endDate: getDateWithTime(DateTime.now(), 16),
+        ),
+        CalendarEvent(
+          title: 'Idk man you decide',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 11),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 13),
+        ),
+        CalendarEvent(
+          title: 'nice',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 17),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 20),
+        ),
+        CalendarEvent(
+          title: 'okay then',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 10),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 12),
+        ),
+      ],
+    ),
+    '321': CalendarEvents(
+      events: [
+        CalendarEvent(
+          title: 'Hang out',
+          startDate: getDateWithTime(DateTime.now(), 12),
+          endDate: getDateWithTime(DateTime.now(), 13),
+        ),
+        CalendarEvent(
+          title: 'hehe xd',
+          startDate: getDateWithTime(DateTime.now(), 22),
+          endDate: getDateWithTime(DateTime.now(), 23),
+        ),
+        CalendarEvent(
+          title: 'Idk man you decide',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 10),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 11),
+        ),
+        CalendarEvent(
+          title: 'nice',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 22),
+          endDate: getDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 22.5),
+        ),
+        CalendarEvent(
+          title: 'okay then',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 13),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 15),
+        ),
+      ],
+    ),
+    'lol': CalendarEvents(
+      events: [
+        CalendarEvent(
+          title: 'Hang out',
+          startDate: getDateWithTime(DateTime.now(), 15),
+          endDate: getDateWithTime(DateTime.now(), 16),
+        ),
+        CalendarEvent(
+          title: 'hehe xd',
+          startDate: getDateWithTime(DateTime.now(), 18),
+          endDate: getDateWithTime(DateTime.now(), 21),
+        ),
+        CalendarEvent(
+          title: 'Idk man you decide',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 17),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 19),
+        ),
+        CalendarEvent(
+          title: 'nice',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 9),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 15),
+        ),
+        CalendarEvent(
+          title: 'okay then',
+          startDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 19),
+          endDate:
+              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 20),
+        ),
+      ],
+    )
+  };
+
+  CalendarEvents? getFriendScheduleById(String id) {
+    return _friendSchedules[id];
   }
 
   ////////////////////////////////////////////

@@ -16,7 +16,7 @@ import 'package:flutter/material.dart' as _i14;
 import '../pages/events/event.dart' as _i9;
 import '../pages/events/events.dart' as _i8;
 import '../pages/events/events_tab.dart' as _i4;
-import '../pages/friends/friend_schej.dart' as _i11;
+import '../pages/friends/compare_schej.dart' as _i11;
 import '../pages/friends/friends.dart' as _i10;
 import '../pages/friends/friends_tab.dart' as _i5;
 import '../pages/home.dart' as _i2;
@@ -84,11 +84,11 @@ class AppRouter extends _i13.RootStackRouter {
       return _i13.MaterialPageX<dynamic>(
           routeData: routeData, child: const _i10.FriendsPage());
     },
-    FriendSchejPageRoute.name: (routeData) {
-      final args = routeData.argsAs<FriendSchejPageRouteArgs>();
+    CompareSchejPageRoute.name: (routeData) {
+      final args = routeData.argsAs<CompareSchejPageRouteArgs>();
       return _i13.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i11.FriendSchejPage(key: args.key, friendId: args.friendId));
+          child: _i11.CompareSchejPage(key: args.key, friendId: args.friendId));
     },
     ProfilePageRoute.name: (routeData) {
       return _i13.MaterialPageX<dynamic>(
@@ -129,7 +129,7 @@ class AppRouter extends _i13.RootStackRouter {
               children: [
                 _i13.RouteConfig(FriendsPageRoute.name,
                     path: '', parent: FriendsTabRoute.name),
-                _i13.RouteConfig(FriendSchejPageRoute.name,
+                _i13.RouteConfig(CompareSchejPageRoute.name,
                     path: 'schej', parent: FriendsTabRoute.name)
               ]),
           _i13.RouteConfig(ProfileTabRoute.name,
@@ -263,19 +263,19 @@ class FriendsPageRoute extends _i13.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i11.FriendSchejPage]
-class FriendSchejPageRoute
-    extends _i13.PageRouteInfo<FriendSchejPageRouteArgs> {
-  FriendSchejPageRoute({_i14.Key? key, required String friendId})
-      : super(FriendSchejPageRoute.name,
+/// [_i11.CompareSchejPage]
+class CompareSchejPageRoute
+    extends _i13.PageRouteInfo<CompareSchejPageRouteArgs> {
+  CompareSchejPageRoute({_i14.Key? key, required String friendId})
+      : super(CompareSchejPageRoute.name,
             path: 'schej',
-            args: FriendSchejPageRouteArgs(key: key, friendId: friendId));
+            args: CompareSchejPageRouteArgs(key: key, friendId: friendId));
 
-  static const String name = 'FriendSchejPageRoute';
+  static const String name = 'CompareSchejPageRoute';
 }
 
-class FriendSchejPageRouteArgs {
-  const FriendSchejPageRouteArgs({this.key, required this.friendId});
+class CompareSchejPageRouteArgs {
+  const CompareSchejPageRouteArgs({this.key, required this.friendId});
 
   final _i14.Key? key;
 
@@ -283,7 +283,7 @@ class FriendSchejPageRouteArgs {
 
   @override
   String toString() {
-    return 'FriendSchejPageRouteArgs{key: $key, friendId: $friendId}';
+    return 'CompareSchejPageRouteArgs{key: $key, friendId: $friendId}';
   }
 }
 

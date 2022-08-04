@@ -115,8 +115,14 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
   }
 
   Widget _buildResults() {
-    return Consumer<ApiService>(builder: (context, api, child) {
-      List<User> results = api.getFriendsByQuery(_query);
+    return Consumer2<ApiService, CompareSchejTextFieldController>(
+        builder: (context, api, controller, child) {
+      // Get the friends that match the query and who have not already been added yet
+      List<User> results = api.getFriendsByQuery(_query)
+        ..removeWhere((friend) {
+          return controller.userIds.contains(friend.id);
+        });
+
       return ListView.builder(
         itemCount: results.length,
         itemBuilder: (context, index) {
@@ -124,19 +130,17 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
           return Padding(
             key: ValueKey(friend.id),
             padding: const EdgeInsets.only(bottom: 10),
-            child: Consumer<CompareSchejTextFieldController>(
-              builder: (context, controller, child) => CompareSchejCard(
-                name: friend.fullName,
-                picture: friend.picture,
-                added: widget.controller.userIds.contains(friend.id),
-                onToggle: (bool value) {
-                  if (value) {
-                    widget.controller.addUserId(friend.id);
-                  } else {
-                    widget.controller.removeUserId(friend.id);
-                  }
-                },
-              ),
+            child: CompareSchejCard(
+              name: friend.fullName,
+              picture: friend.picture,
+              added: widget.controller.userIds.contains(friend.id),
+              onToggle: (bool value) {
+                if (value) {
+                  widget.controller.addUserId(friend.id);
+                } else {
+                  widget.controller.removeUserId(friend.id);
+                }
+              },
             ),
           );
         },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/components/user_avatar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -27,9 +28,7 @@ class CompareSchejCard extends StatelessWidget {
       decoration: SchejConstants.listTileDecoration
           .copyWith(color: added ? SchejColors.green : SchejColors.white),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: NetworkImage(picture),
-        ),
+        leading: UserAvatar(src: picture),
         title: Text(name,
             style: SchejFonts.subtitle.copyWith(
                 color: added ? SchejColors.white : SchejColors.pureBlack)),

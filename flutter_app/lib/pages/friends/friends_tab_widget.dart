@@ -93,7 +93,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
               showOverflowMenu: () {},
               // curEventName: (friend['curEventName'] ?? '') as String,
               onTap: () => AutoRouter.of(context)
-                  .push(FriendSchejPageRoute(friendId: friend.id))),
+                  .push(CompareSchejPageRoute(friendId: friend.id))),
         );
       },
     );

@@ -13,16 +13,16 @@ import 'package:flutter_app/utils.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:provider/provider.dart';
 
-class FriendSchejPage extends StatefulWidget {
+class CompareSchejPage extends StatefulWidget {
   final String friendId;
 
-  const FriendSchejPage({Key? key, required this.friendId}) : super(key: key);
+  const CompareSchejPage({Key? key, required this.friendId}) : super(key: key);
 
   @override
-  State<FriendSchejPage> createState() => _FriendSchejPageState();
+  State<CompareSchejPage> createState() => _CompareSchejPageState();
 }
 
-class _FriendSchejPageState extends State<FriendSchejPage> {
+class _CompareSchejPageState extends State<CompareSchejPage> {
   // Controllers
   late final CompareSchejTextFieldController _compareSchejTextFieldController;
   late final LinkedScrollControllerGroup _controllers;

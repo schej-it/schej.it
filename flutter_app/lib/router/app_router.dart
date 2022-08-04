@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter_app/pages/friends/friend_schej.dart';
+import 'package:flutter_app/pages/friends/compare_schej.dart';
 import 'package:flutter_app/router/auth_guard.dart';
 import '../pages/events/event.dart';
 import '../pages/events/events.dart';
@@ -42,7 +42,7 @@ import '../pages/home.dart';
           page: FriendsTab,
           children: [
             AutoRoute(path: '', page: FriendsPage),
-            AutoRoute(path: 'schej', page: FriendSchejPage),
+            AutoRoute(path: 'schej', page: CompareSchejPage),
           ],
         ),
         AutoRoute(

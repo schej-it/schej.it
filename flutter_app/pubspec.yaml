@@ -50,6 +50,7 @@ dependencies:
   oauth2_client: ^2.4.1
   flutter_secure_storage: ^5.0.2
   animations: ^2.0.3
+  cached_network_image: ^3.2.1
 
 dependency_overrides:
   flutter_web_auth:

@@ -8,11 +8,12 @@ import 'package:flutter_app/components/expand_transition.dart';
 import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
-import 'package:flutter_app/models/calendar_event.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MySchejPage extends StatefulWidget {
@@ -43,28 +44,6 @@ class _MySchejPageState extends State<MySchejPage> {
 
   @override
   Widget build(BuildContext context) {
-    final testCalendarEvents = CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Event',
-          startDate: getDateWithTime(DateTime.now(), 9.5),
-          endDate: getDateWithTime(DateTime.now(), 12),
-        ),
-        CalendarEvent(
-          title: 'Introduction to Failure Analysis',
-          startDate: getDateWithTime(DateTime.now(), 13),
-          endDate: getDateWithTime(DateTime.now(), 14.5),
-        ),
-        CalendarEvent(
-          title: 'War',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 15),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 20),
-        ),
-      ],
-    );
-
     return Scaffold(
       appBar: _buildAppBar(),
       floatingActionButton: FloatingActionButton(
@@ -89,21 +68,23 @@ class _MySchejPageState extends State<MySchejPage> {
                 ),
               ),
             ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Calendar(
-                    key: _calendar,
-                    calendarEvents: testCalendarEvents,
-                    daysVisible: _daysVisible,
-                    eventTitlesVisible: _eventTitlesVisible,
-                    selectedDay: _selectedDay,
-                    onDaySelected: (selectedDay) => setState(() {
-                      _selectedDay = selectedDay;
-                    }),
-                  ),
-                  if (_monthSelector) _buildGestureDetector(),
-                ],
+            Consumer<ApiService>(
+              builder: (context, api, child) => Expanded(
+                child: Stack(
+                  children: [
+                    Calendar(
+                      key: _calendar,
+                      calendarEvents: api.authUserSchedule,
+                      daysVisible: _daysVisible,
+                      eventTitlesVisible: _eventTitlesVisible,
+                      selectedDay: _selectedDay,
+                      onDaySelected: (selectedDay) => setState(() {
+                        _selectedDay = selectedDay;
+                      }),
+                    ),
+                    if (_monthSelector) _buildGestureDetector(),
+                  ],
+                ),
               ),
             ),
           ],

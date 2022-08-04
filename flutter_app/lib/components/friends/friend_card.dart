@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/components/user_avatar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -36,9 +37,7 @@ class FriendCard extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         dense: true,
-        leading: CircleAvatar(
-          backgroundImage: NetworkImage(picture),
-        ),
+        leading: UserAvatar(src: picture),
         title: Text(name, style: SchejFonts.subtitle),
         subtitle: _buildStatusText(),
         trailing: IconButton(
