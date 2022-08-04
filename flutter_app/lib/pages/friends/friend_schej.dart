@@ -10,6 +10,7 @@ import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/pages/friends/compare_schej_dialog.dart';
 import 'package:flutter_app/utils.dart';
+import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:provider/provider.dart';
 
 class FriendSchejPage extends StatefulWidget {
@@ -24,6 +25,9 @@ class FriendSchejPage extends StatefulWidget {
 class _FriendSchejPageState extends State<FriendSchejPage> {
   // Controllers
   late final CompareSchejTextFieldController _compareSchejTextFieldController;
+  late final LinkedScrollControllerGroup _controllers;
+  late final ScrollController _textFieldScrollController;
+  late final ScrollController _dialogScrollController;
 
   // Calendar variables
   int _daysVisible = 3;
@@ -37,11 +41,17 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
       initialUserIds: <String>{widget.friendId},
       initialIncludeSelf: true,
     );
+
+    _controllers = LinkedScrollControllerGroup();
+    _textFieldScrollController = _controllers.addAndGet();
+    _dialogScrollController = _controllers.addAndGet();
   }
 
   @override
   void dispose() {
     _compareSchejTextFieldController.dispose();
+    _textFieldScrollController.dispose();
+    _dialogScrollController.dispose();
 
     super.dispose();
   }
@@ -130,6 +140,7 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
                   },
                   child: CompareSchejTextField(
                     controller: _compareSchejTextFieldController,
+                    scrollController: _textFieldScrollController,
                   ),
                 ),
               ),
@@ -140,6 +151,7 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
               value: _compareSchejTextFieldController,
               child: CompareSchejDialog(
                 controller: _compareSchejTextFieldController,
+                scrollController: _dialogScrollController,
                 onClose: closeContainer,
               ),
             );

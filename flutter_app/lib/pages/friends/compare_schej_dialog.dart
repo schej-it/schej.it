@@ -12,12 +12,13 @@ import 'package:provider/provider.dart';
 
 class CompareSchejDialog extends StatefulWidget {
   final CompareSchejTextFieldController controller;
+  final ScrollController? scrollController;
   final VoidCallback onClose;
 
-  // TODO: need to automatically scroll textfield to end when dialog is opened
   const CompareSchejDialog({
     Key? key,
     required this.controller,
+    this.scrollController,
     required this.onClose,
   }) : super(key: key);
 
@@ -80,6 +81,7 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
               focusNode: _focusNode,
               textEditingController: _textEditingController,
               controller: widget.controller,
+              scrollController: widget.scrollController,
             ),
             _buildCheckbox(),
             Expanded(child: _buildResults()),

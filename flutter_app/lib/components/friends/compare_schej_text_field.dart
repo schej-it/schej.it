@@ -11,12 +11,14 @@ import 'package:provider/provider.dart';
 class CompareSchejTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextEditingController? textEditingController;
+  final ScrollController? scrollController;
   final CompareSchejTextFieldController controller;
 
   const CompareSchejTextField({
     Key? key,
     this.focusNode,
     this.textEditingController,
+    this.scrollController,
     required this.controller,
   }) : super(key: key);
 
@@ -96,6 +98,7 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
       ),
       child: Consumer<CompareSchejTextFieldController>(
         builder: (context, controller, child) => SingleChildScrollView(
+          controller: widget.scrollController,
           scrollDirection: Axis.horizontal,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
