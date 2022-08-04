@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/components/friends/compare_schej_text_field_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -9,20 +10,14 @@ import 'package:provider/provider.dart';
 // as well as a text field at the right to search for more people
 class CompareSchejTextField extends StatefulWidget {
   final FocusNode? focusNode;
-  final TextEditingController? controller;
-  final Set<String> addedUsers;
-  final bool includeSelf;
-  // final ValueChanged<String>? onChanged;
-  final void Function(String userId) onRemoveUser;
+  final TextEditingController? textEditingController;
+  final CompareSchejTextFieldController controller;
 
   const CompareSchejTextField({
     Key? key,
     this.focusNode,
-    this.controller,
-    required this.addedUsers,
-    this.includeSelf = true,
-    // this.onChanged,
-    required this.onRemoveUser,
+    this.textEditingController,
+    required this.controller,
   }) : super(key: key);
 
   @override
@@ -37,28 +32,17 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
   @override
   void initState() {
     super.initState();
+
     if (widget.focusNode != null) widget.focusNode!.addListener(setFocused);
+    widget.controller.addListener(_clearTextIfUserAdded);
   }
 
   @override
   void dispose() {
     if (widget.focusNode != null) widget.focusNode!.removeListener(setFocused);
+    widget.controller.removeListener(_clearTextIfUserAdded);
+
     super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant CompareSchejTextField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // If user was added, clear text field
-    if (widget.addedUsers.length > _oldLength) {
-      if (widget.controller != null) {
-        widget.controller!.clear();
-      }
-      // if (widget.onChanged != null) {
-      //   widget.onChanged!('');
-      // }
-    }
   }
 
   void setFocused() {
@@ -69,21 +53,24 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
     }
   }
 
-  bool areTagsEmpty() {
-    return widget.addedUsers.isEmpty && !widget.includeSelf;
+  void _clearTextIfUserAdded() {
+    if (widget.controller.userIds.length > _oldLength) {
+      if (widget.textEditingController != null) {
+        widget.textEditingController!.clear();
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // Keep track of old length of addedUsers to detect when it increases
-    _oldLength = widget.addedUsers.length;
+    _oldLength = widget.controller.userIds.length;
 
     final textField = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 255),
       child: TextField(
         focusNode: widget.focusNode,
-        controller: widget.controller,
-        // onChanged: widget.onChanged,
+        controller: widget.textEditingController,
         autocorrect: false,
         decoration: const InputDecoration(
           isDense: true,
@@ -107,30 +94,32 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
         borderRadius: SchejConstants.borderRadius,
         border: Border.all(width: 1, color: SchejColors.lightGray),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            ..._getTags(),
-            textField,
-          ],
+      child: Consumer<CompareSchejTextFieldController>(
+        builder: (context, controller, child) => SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ..._getTags(controller),
+              textField,
+            ],
+          ),
         ),
       ),
     );
   }
 
   // Returns a list of all the tags to display
-  List<Widget> _getTags() {
+  List<Widget> _getTags(CompareSchejTextFieldController controller) {
     final api = context.read<ApiService>();
     List<Widget> tags = <Widget>[];
 
-    if (widget.includeSelf) {
+    if (controller.includeSelf) {
       tags.add(_buildTag('Me', allowRemove: false));
     }
 
-    for (String userId in widget.addedUsers) {
+    for (String userId in controller.userIds) {
       final friend = api.getFriendById(userId);
       tags.add(_buildTag(friend!.fullName, userId: userId));
     }
@@ -165,7 +154,7 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
               ),
               onTap: () {
                 if (userId != null) {
-                  widget.onRemoveUser(userId);
+                  widget.controller.removeUserId(userId);
                 }
               },
             ),

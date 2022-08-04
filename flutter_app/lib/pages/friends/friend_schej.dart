@@ -4,11 +4,13 @@ import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/calendar.dart';
 import 'package:flutter_app/components/calendar_view_selector.dart';
 import 'package:flutter_app/components/friends/compare_schej_text_field.dart';
+import 'package:flutter_app/components/friends/compare_schej_text_field_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/pages/friends/compare_schej_dialog.dart';
 import 'package:flutter_app/utils.dart';
+import 'package:provider/provider.dart';
 
 class FriendSchejPage extends StatefulWidget {
   final String friendId;
@@ -20,19 +22,28 @@ class FriendSchejPage extends StatefulWidget {
 }
 
 class _FriendSchejPageState extends State<FriendSchejPage> {
+  // Controllers
+  late final CompareSchejTextFieldController _compareSchejTextFieldController;
+
   // Calendar variables
   int _daysVisible = 3;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
-
-  // Compare schej dialog variables
-  final Set<String> _addedUsers = <String>{};
-  bool _includeSelf = true;
 
   @override
   void initState() {
     super.initState();
 
-    _addedUsers.add(widget.friendId);
+    _compareSchejTextFieldController = CompareSchejTextFieldController(
+      initialUserIds: <String>{widget.friendId},
+      initialIncludeSelf: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _compareSchejTextFieldController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -104,8 +115,13 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
             borderRadius: SchejConstants.borderRadius,
           ),
           closedBuilder: (context, openContainer) {
-            return StatefulBuilder(
-              builder: (context, setState) => FocusScope(
+            // TODO: don't wrap this with focus widget because it should be
+            // the raw text field that is focused, right now if I tap ANYWHERE
+            // in the text field it focuses, even if I tapped a tag
+            // Maybe have an onFocus callback??
+            return ChangeNotifierProvider.value(
+              value: _compareSchejTextFieldController,
+              child: FocusScope(
                 child: Focus(
                   onFocusChange: (focus) {
                     if (focus) {
@@ -113,32 +129,17 @@ class _FriendSchejPageState extends State<FriendSchejPage> {
                     }
                   },
                   child: CompareSchejTextField(
-                    addedUsers: _addedUsers,
-                    onRemoveUser: (userId) => setState(() {
-                      _addedUsers.remove(userId);
-                    }),
-                    includeSelf: _includeSelf,
+                    controller: _compareSchejTextFieldController,
                   ),
                 ),
               ),
             );
           },
           openBuilder: (context, closeContainer) {
-            return StatefulBuilder(
-              builder: (context, setState) => CompareSchejDialog(
-                addedUsers: _addedUsers,
-                onAddUser: ((userId, added) {
-                  setState(() {
-                    if (added) {
-                      _addedUsers.add(userId);
-                    } else {
-                      _addedUsers.remove(userId);
-                    }
-                  });
-                }),
-                includeSelf: _includeSelf,
-                onUpdateIncludeSelf: (value) =>
-                    setState(() => _includeSelf = value),
+            return ChangeNotifierProvider.value(
+              value: _compareSchejTextFieldController,
+              child: CompareSchejDialog(
+                controller: _compareSchejTextFieldController,
                 onClose: closeContainer,
               ),
             );

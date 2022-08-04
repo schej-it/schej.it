@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/friends/compare_schej_card.dart';
 import 'package:flutter_app/components/friends/compare_schej_text_field.dart';
+import 'package:flutter_app/components/friends/compare_schej_text_field_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -10,22 +11,13 @@ import 'package:flutter_app/models/user.dart';
 import 'package:provider/provider.dart';
 
 class CompareSchejDialog extends StatefulWidget {
-  final Set<String> addedUsers;
-  final void Function(String userId, bool added) onAddUser;
-  final bool includeSelf;
-  final void Function(bool includeSelf) onUpdateIncludeSelf;
+  final CompareSchejTextFieldController controller;
   final VoidCallback onClose;
 
-  // TODO: Replace callback stuff with just a single CompareSchejController
-  // to manage all the adding/removing of users and checking of includeself
-  // checkbox
   // TODO: need to automatically scroll textfield to end when dialog is opened
   const CompareSchejDialog({
     Key? key,
-    required this.addedUsers,
-    required this.onAddUser,
-    required this.includeSelf,
-    required this.onUpdateIncludeSelf,
+    required this.controller,
     required this.onClose,
   }) : super(key: key);
 
@@ -62,7 +54,9 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
   }
 
   void _textChanged() {
-    setState(() => _query = _textEditingController.text);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() => _query = _textEditingController.text);
+    });
   }
 
   @override
@@ -84,10 +78,8 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
           children: [
             CompareSchejTextField(
               focusNode: _focusNode,
-              controller: _textEditingController,
-              addedUsers: widget.addedUsers,
-              includeSelf: widget.includeSelf,
-              onRemoveUser: (userId) => widget.onAddUser(userId, false),
+              textEditingController: _textEditingController,
+              controller: widget.controller,
             ),
             _buildCheckbox(),
             Expanded(child: _buildResults()),
@@ -105,13 +97,15 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           const Text('Include myself', style: SchejFonts.subtitle),
-          Checkbox(
-            visualDensity: const VisualDensity(
-              vertical: VisualDensity.minimumDensity,
-              horizontal: VisualDensity.minimumDensity,
+          Consumer<CompareSchejTextFieldController>(
+            builder: (context, controller, child) => Checkbox(
+              visualDensity: const VisualDensity(
+                vertical: VisualDensity.minimumDensity,
+                horizontal: VisualDensity.minimumDensity,
+              ),
+              value: controller.includeSelf,
+              onChanged: (value) => controller.includeSelf = value!,
             ),
-            value: widget.includeSelf,
-            onChanged: (value) => widget.onUpdateIncludeSelf(value!),
           ),
         ],
       ),
@@ -126,14 +120,21 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
         itemBuilder: (context, index) {
           final friend = results[index];
           return Padding(
+            key: ValueKey(friend.id),
             padding: const EdgeInsets.only(bottom: 10),
-            child: CompareSchejCard(
-              name: friend.fullName,
-              picture: friend.picture,
-              added: widget.addedUsers.contains(friend.id),
-              onToggle: (bool value) {
-                widget.onAddUser(friend.id, value);
-              },
+            child: Consumer<CompareSchejTextFieldController>(
+              builder: (context, controller, child) => CompareSchejCard(
+                name: friend.fullName,
+                picture: friend.picture,
+                added: widget.controller.userIds.contains(friend.id),
+                onToggle: (bool value) {
+                  if (value) {
+                    widget.controller.addUserId(friend.id);
+                  } else {
+                    widget.controller.removeUserId(friend.id);
+                  }
+                },
+              ),
             ),
           );
         },

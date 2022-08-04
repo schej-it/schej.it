@@ -124,7 +124,9 @@ class ApiService extends ChangeNotifier {
       return true;
     } catch (e) {
       // TODO: show dialog that sign in failed
-      print('Sign in failed! $e');
+      if (kDebugMode) {
+        print('Sign in failed! $e');
+      }
       return false;
     }
   }
