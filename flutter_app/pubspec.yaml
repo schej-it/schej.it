@@ -51,6 +51,7 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   animations: ^2.0.3
   cached_network_image: ^3.2.1
+  property_change_notifier: ^0.3.0
 
 dependency_overrides:
   flutter_web_auth:

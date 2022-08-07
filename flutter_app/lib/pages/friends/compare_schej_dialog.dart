@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/friends/compare_schej_card.dart';
 import 'package:flutter_app/components/friends/compare_schej_text_field.dart';
-import 'package:flutter_app/components/friends/compare_schej_text_field_controller.dart';
+import 'package:flutter_app/components/friends/compare_schej_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -11,7 +11,7 @@ import 'package:flutter_app/models/user.dart';
 import 'package:provider/provider.dart';
 
 class CompareSchejDialog extends StatefulWidget {
-  final CompareSchejTextFieldController controller;
+  final CompareSchejController controller;
   final ScrollController? scrollController;
   final VoidCallback onClose;
 
@@ -99,7 +99,7 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           const Text('Include myself', style: SchejFonts.subtitle),
-          Consumer<CompareSchejTextFieldController>(
+          Consumer<CompareSchejController>(
             builder: (context, controller, child) => Checkbox(
               visualDensity: const VisualDensity(
                 vertical: VisualDensity.minimumDensity,
@@ -115,7 +115,7 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
   }
 
   Widget _buildResults() {
-    return Consumer2<ApiService, CompareSchejTextFieldController>(
+    return Consumer2<ApiService, CompareSchejController>(
         builder: (context, api, controller, child) {
       // Get the friends that match the query and who have not already been added yet
       List<User> results = api.getFriendsByQuery(_query)

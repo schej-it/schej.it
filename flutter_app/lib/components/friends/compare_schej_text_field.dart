@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/components/friends/compare_schej_text_field_controller.dart';
+import 'package:flutter_app/components/friends/compare_schej_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
@@ -12,7 +12,7 @@ class CompareSchejTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextEditingController? textEditingController;
   final ScrollController? scrollController;
-  final CompareSchejTextFieldController controller;
+  final CompareSchejController controller;
 
   const CompareSchejTextField({
     Key? key,
@@ -35,19 +35,21 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
   void initState() {
     super.initState();
 
-    if (widget.focusNode != null) widget.focusNode!.addListener(setFocused);
-    widget.controller.addListener(_clearTextIfUserAdded);
+    if (widget.focusNode != null) widget.focusNode!.addListener(_setFocused);
+    widget.controller.addListener(
+        _clearTextIfUserAdded, [CompareSchejControllerProperties.userIds]);
   }
 
   @override
   void dispose() {
-    if (widget.focusNode != null) widget.focusNode!.removeListener(setFocused);
-    widget.controller.removeListener(_clearTextIfUserAdded);
+    if (widget.focusNode != null) widget.focusNode!.removeListener(_setFocused);
+    widget.controller.removeListener(
+        _clearTextIfUserAdded, [CompareSchejControllerProperties.userIds]);
 
     super.dispose();
   }
 
-  void setFocused() {
+  void _setFocused() {
     if (widget.focusNode != null) {
       setState(() {
         _focused = widget.focusNode!.hasFocus;
@@ -60,6 +62,40 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
       if (widget.textEditingController != null) {
         widget.textEditingController!.clear();
       }
+    }
+  }
+
+  // Set the given user as active when tag is tapped
+  void _onTagTapped(String? userId) {
+    if (userId != null) {
+      if (widget.controller.activeUserId == userId) {
+        widget.controller.activeUserId = null;
+      } else {
+        widget.controller.activeUserId = userId;
+      }
+    } else {
+      // The tapped tag is the authUser
+      final api = context.read<ApiService>();
+      final authUserId = api.authUser!.id;
+      if (widget.controller.activeUserId == authUserId) {
+        widget.controller.activeUserId = null;
+      } else {
+        widget.controller.activeUserId = authUserId;
+      }
+    }
+  }
+
+  // Returns whether the given user's tag should display as active
+  bool _isUserActive(String? userId) {
+    if (widget.controller.activeUserId == null) return true;
+
+    if (userId != null) {
+      return widget.controller.activeUserId == userId;
+    } else {
+      // The tapped tag is the authUser
+      final api = context.read<ApiService>();
+      final authUserId = api.authUser!.id;
+      return widget.controller.activeUserId == authUserId;
     }
   }
 
@@ -96,7 +132,7 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
         borderRadius: SchejConstants.borderRadius,
         border: Border.all(width: 1, color: SchejColors.lightGray),
       ),
-      child: Consumer<CompareSchejTextFieldController>(
+      child: Consumer<CompareSchejController>(
         builder: (context, controller, child) => SingleChildScrollView(
           controller: widget.scrollController,
           scrollDirection: Axis.horizontal,
@@ -114,7 +150,7 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
   }
 
   // Returns a list of all the tags to display
-  List<Widget> _getTags(CompareSchejTextFieldController controller) {
+  List<Widget> _getTags(CompareSchejController controller) {
     final api = context.read<ApiService>();
     List<Widget> tags = <Widget>[];
 
@@ -130,11 +166,29 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
   }
 
   // Builds an individual tag
-  Widget _buildTag(String name, {bool allowRemove = true, String? userId}) {
+  Widget _buildTag(
+    String name, {
+    bool allowRemove = true,
+    String? userId,
+  }) {
+    Color textColor;
+    Color containerColor;
+    bool outlined;
+    if (_isUserActive(userId)) {
+      textColor = SchejColors.white;
+      containerColor = SchejColors.darkGreen;
+      outlined = false;
+    } else {
+      textColor = SchejColors.darkGreen;
+      containerColor = SchejColors.white;
+      outlined = true;
+    }
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: SchejConstants.borderRadius,
-        color: SchejColors.green,
+        color: containerColor,
+        border: Border.all(color: SchejColors.darkGreen),
       ),
       margin: const EdgeInsets.only(left: 5),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -142,18 +196,18 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
         children: [
           InkWell(
             child: Text(name,
-                style: SchejFonts.subtitle.copyWith(color: SchejColors.white)),
+                style: SchejFonts.subtitle.copyWith(color: textColor)),
             onTap: () {
-              // print('$tag selected!');
+              _onTagTapped(userId);
             },
           ),
           if (allowRemove) ...[
             const SizedBox(width: 4),
             InkWell(
-              child: const Icon(
+              child: Icon(
                 Icons.cancel,
                 size: 14,
-                color: SchejColors.white,
+                color: textColor,
               ),
               onTap: () {
                 if (userId != null) {

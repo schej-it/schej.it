@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
-import 'package:flutter_app/components/calendar.dart';
-import 'package:flutter_app/components/calendar_view_selector.dart';
+import 'package:flutter_app/components/calendar/calendar.dart';
+import 'package:flutter_app/components/calendar/calendar_view_selector.dart';
 import 'package:flutter_app/components/expand_transition.dart';
 import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -74,9 +75,11 @@ class _MySchejPageState extends State<MySchejPage> {
                   children: [
                     Calendar(
                       key: _calendar,
-                      calendarEvents: api.authUserSchedule,
+                      calendarEvents: <String, CalendarEvents>{
+                        api.authUser!.id: api.authUserSchedule
+                      },
                       daysVisible: _daysVisible,
-                      eventTitlesVisible: _eventTitlesVisible,
+                      showEventTitles: _eventTitlesVisible,
                       selectedDay: _selectedDay,
                       onDaySelected: (selectedDay) => setState(() {
                         _selectedDay = selectedDay;

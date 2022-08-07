@@ -1,12 +1,16 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/components/user_avatar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/calendar_event.dart';
+import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 // TODO: fix bug where if you pinch to zoom, the time scroll controller gets
@@ -14,11 +18,13 @@ import 'package:screenshot/screenshot.dart';
 
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
-  final CalendarEvents calendarEvents;
+  final Map<String, CalendarEvents> calendarEvents;
   final DateTime selectedDay;
   final void Function(DateTime) onDaySelected;
   final int daysVisible;
-  final bool eventTitlesVisible;
+  final bool showEventTitles;
+  final bool showAvatars;
+  final String? activeUserId;
 
   const Calendar({
     Key? key,
@@ -26,7 +32,9 @@ class Calendar extends StatefulWidget {
     required this.selectedDay,
     required this.onDaySelected,
     this.daysVisible = 3,
-    this.eventTitlesVisible = true,
+    this.showEventTitles = true,
+    this.showAvatars = false,
+    this.activeUserId,
   }) : super(key: key);
 
   @override
@@ -271,8 +279,11 @@ class CalendarState extends State<Calendar> {
             key: ObjectKey(date),
             controllers: _controllers,
             date: date,
-            events: widget.calendarEvents.eventsByDay[date],
-            eventTitlesVisible: widget.eventTitlesVisible,
+            events: widget.calendarEvents.map((id, calendarEvents) =>
+                MapEntry(id, calendarEvents.getEventsForDay(date))),
+            showEventTitles: widget.showEventTitles,
+            showAvatars: widget.showAvatars,
+            activeUserId: widget.activeUserId,
             numRows: _timeStrings.length,
             rowHeight: _timeRowHeight,
           ),
@@ -419,10 +430,12 @@ class CalendarState extends State<Calendar> {
 class CalendarDay extends StatefulWidget {
   final LinkedScrollControllerGroup controllers;
   final DateTime date;
-  final List<CalendarEvent>? events;
+  final Map<String, List<CalendarEvent>> events;
   final int numRows;
   final double rowHeight;
-  final bool eventTitlesVisible;
+  final bool showEventTitles;
+  final bool showAvatars;
+  final String? activeUserId;
 
   const CalendarDay({
     Key? key,
@@ -431,7 +444,9 @@ class CalendarDay extends StatefulWidget {
     required this.events,
     required this.numRows,
     required this.rowHeight,
-    this.eventTitlesVisible = true,
+    this.showEventTitles = true,
+    this.showAvatars = false,
+    this.activeUserId,
   }) : super(key: key);
 
   @override
@@ -478,17 +493,26 @@ class _CalendarDayState extends State<CalendarDay> {
 
   // Builds a list view containing the events for this day
   Widget _buildEvents() {
+    final children = <Widget>[];
+    int i = 0;
+    for (String userId in widget.events.keys) {
+      children.addAll(widget.events[userId]!
+          .map((event) => CalendarEventWidget(
+                event: event,
+                hourHeight: widget.rowHeight,
+                layerLink: _layerLink,
+                showTitle: widget.showEventTitles,
+                showAvatar: widget.showAvatars,
+                userId: userId,
+                activeUserId: widget.activeUserId,
+                // marginLeftPercent: .20 * i,
+              ))
+          .toList());
+      ++i;
+    }
+
     return Stack(
-      children: widget.events == null
-          ? []
-          : widget.events!
-              .map((event) => CalendarEventWidget(
-                    event: event,
-                    hourHeight: widget.rowHeight,
-                    layerLink: _layerLink,
-                    titleVisible: widget.eventTitlesVisible,
-                  ))
-              .toList(),
+      children: children,
     );
   }
 
@@ -566,14 +590,22 @@ class CalendarEventWidget extends StatefulWidget {
   final CalendarEvent event;
   final double hourHeight;
   final LayerLink layerLink;
-  final bool titleVisible;
+  final bool showTitle;
+  final String? userId;
+  final String? activeUserId;
+  final bool showAvatar;
+  final double marginLeftPercent;
 
   const CalendarEventWidget({
     Key? key,
     required this.event,
     required this.hourHeight,
     required this.layerLink,
-    this.titleVisible = true,
+    this.showTitle = true,
+    this.userId,
+    this.activeUserId,
+    this.showAvatar = true,
+    this.marginLeftPercent = 0,
   }) : super(key: key);
 
   @override
@@ -581,35 +613,95 @@ class CalendarEventWidget extends StatefulWidget {
 }
 
 class _CalendarEventWidgetState extends State<CalendarEventWidget> {
+  late final Color _containerColor;
+  late final Color _textColor;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Determine containerColor and textColor
+    if (widget.showTitle &&
+        (widget.activeUserId == null || widget.userId == widget.activeUserId)) {
+      _containerColor = SchejColors.lightBlue;
+      _textColor = SchejColors.white;
+    } else {
+      _containerColor = SchejColors.fadedLightBlue;
+      _textColor = SchejColors.lightBlue;
+    }
+  }
+
+  String _getProfileImage(ApiService api) {
+    if (widget.userId == null) return '';
+
+    if (widget.userId! == api.authUser!.id) return api.authUser!.picture;
+
+    User? friend = api.getFriendById(widget.userId!);
+    if (friend == null) return '';
+
+    return friend.picture;
+  }
+
+  // Build a CompositedTransformFollower that scrolls with the scrollview
   @override
   Widget build(BuildContext context) {
-    // It looks like the stack is clipping the calendar event widgets for some reason
-    return FractionallySizedBox(
-      widthFactor: 1,
-      child: CompositedTransformFollower(
-        link: widget.layerLink,
-        showWhenUnlinked: false,
-        offset: Offset(0, widget.event.startTime * widget.hourHeight),
-        child: Container(
-          margin: const EdgeInsets.only(right: 2),
-          padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
-          height: (widget.event.endTime - widget.event.startTime) *
-              widget.hourHeight,
-          decoration: BoxDecoration(
-            color: widget.titleVisible
-                ? SchejColors.lightBlue
-                : SchejColors.fadedLightBlue,
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
+    return CompositedTransformFollower(
+      link: widget.layerLink,
+      showWhenUnlinked: false,
+      offset: Offset(0, widget.event.startTime * widget.hourHeight),
+      child: Align(
+        alignment: Alignment.topRight,
+        child: FractionallySizedBox(
+          widthFactor: 1 - widget.marginLeftPercent,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 2),
+            child: Stack(
+              children: [
+                _buildContainer(),
+                if (widget.showAvatar) _buildAvatar(),
+              ],
+            ),
           ),
-          child: widget.titleVisible
-              ? Text(
-                  widget.event.title,
-                  style: SchejFonts.body.copyWith(color: SchejColors.white),
-                )
-              : Text(
-                  'BUSY',
-                  style: SchejFonts.body.copyWith(color: SchejColors.lightBlue),
-                ),
+        ),
+      ),
+    );
+  }
+
+  // Build the main container for the event, with the event text and time block
+  Widget _buildContainer() {
+    return Container(
+      padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
+      height:
+          (widget.event.endTime - widget.event.startTime) * widget.hourHeight,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: _containerColor,
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+      ),
+      child: widget.showTitle
+          ? Text(
+              widget.event.title,
+              style: SchejFonts.body.copyWith(color: _textColor),
+            )
+          : Text(
+              'BUSY',
+              style: SchejFonts.body.copyWith(color: _textColor),
+            ),
+    );
+  }
+
+  // Build the avatar of the user that owns this event
+  Widget _buildAvatar() {
+    return Positioned(
+      right: 0,
+      bottom: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(3),
+        child: Consumer<ApiService>(
+          builder: (context, api, child) => UserAvatar(
+            src: _getProfileImage(api),
+            radius: 10,
+          ),
         ),
       ),
     );

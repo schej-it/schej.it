@@ -42,7 +42,13 @@ class CalendarEvents {
     }
   }
 
-  Map<DateTime, List<CalendarEvent>> get eventsByDay => _eventsByDay;
+  List<CalendarEvent> getEventsForDay(DateTime day) {
+    final events = _eventsByDay[day];
+    if (events == null) {
+      return <CalendarEvent>[];
+    }
+    return events;
+  }
 
   int _getHashCode(DateTime date) {
     return date.toLocal().toIso8601String().substring(0, 10).hashCode;

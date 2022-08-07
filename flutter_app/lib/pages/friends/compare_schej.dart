@@ -1,12 +1,13 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
-import 'package:flutter_app/components/calendar.dart';
-import 'package:flutter_app/components/calendar_view_selector.dart';
+import 'package:flutter_app/components/calendar/calendar.dart';
+import 'package:flutter_app/components/calendar/calendar_view_selector.dart';
 import 'package:flutter_app/components/friends/compare_schej_text_field.dart';
-import 'package:flutter_app/components/friends/compare_schej_text_field_controller.dart';
+import 'package:flutter_app/components/friends/compare_schej_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/pages/friends/compare_schej_dialog.dart';
 import 'package:flutter_app/utils.dart';
@@ -24,7 +25,7 @@ class CompareSchejPage extends StatefulWidget {
 
 class _CompareSchejPageState extends State<CompareSchejPage> {
   // Controllers
-  late final CompareSchejTextFieldController _compareSchejTextFieldController;
+  late final CompareSchejController _compareSchejController;
   late final LinkedScrollControllerGroup _controllers;
   late final ScrollController _textFieldScrollController;
   late final ScrollController _dialogScrollController;
@@ -37,10 +38,13 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
   void initState() {
     super.initState();
 
-    _compareSchejTextFieldController = CompareSchejTextFieldController(
+    _compareSchejController = CompareSchejController(
       initialUserIds: <String>{widget.friendId},
+      initialActiveUserId: widget.friendId,
       initialIncludeSelf: true,
     );
+    _compareSchejController.addListener(
+        setActiveUserId, [CompareSchejControllerProperties.userIds]);
 
     _controllers = LinkedScrollControllerGroup();
     _textFieldScrollController = _controllers.addAndGet();
@@ -49,37 +53,41 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
 
   @override
   void dispose() {
-    _compareSchejTextFieldController.dispose();
+    _compareSchejController.removeListener(setActiveUserId);
+    _compareSchejController.dispose();
     _textFieldScrollController.dispose();
     _dialogScrollController.dispose();
 
     super.dispose();
   }
 
+  // Sets the active user id when the compareSchejController changes
+  void setActiveUserId() {
+    final api = context.read<ApiService>();
+
+    if (_compareSchejController.userIds.length == 1) {
+      _compareSchejController.activeUserId =
+          _compareSchejController.userIds.first;
+    } else {
+      _compareSchejController.activeUserId = null;
+    }
+  }
+
+  // Returns the currently selected calendars based on the people in controller.userIds
+  Map<String, CalendarEvents> _getCalendars(
+      ApiService api, CompareSchejController controller) {
+    final calendars = <String, CalendarEvents>{};
+    if (controller.includeSelf) {
+      calendars[api.authUser!.id] = api.authUserSchedule;
+    }
+    for (String userId in controller.userIds) {
+      calendars[userId] = api.getFriendScheduleById(userId)!;
+    }
+    return calendars;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final testCalendarEvents = CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Event',
-          startDate: getDateWithTime(DateTime.now(), 9.5),
-          endDate: getDateWithTime(DateTime.now(), 12),
-        ),
-        CalendarEvent(
-          title: 'Introduction to Failure Analysis',
-          startDate: getDateWithTime(DateTime.now(), 13),
-          endDate: getDateWithTime(DateTime.now(), 14.5),
-        ),
-        CalendarEvent(
-          title: 'War',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 15),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 20),
-        ),
-      ],
-    );
-
     return Scaffold(
       appBar: SchejAppBar(
         centerTitle: true,
@@ -93,22 +101,29 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
           ),
         ],
       ),
-      body: Container(
-        color: SchejColors.white,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Calendar(
-                calendarEvents: testCalendarEvents,
-                daysVisible: _daysVisible,
-                selectedDay: _selectedDay,
-                onDaySelected: (selectedDay) => setState(() {
-                  _selectedDay = selectedDay;
-                }),
+      body: ChangeNotifierProvider.value(
+        value: _compareSchejController,
+        child: Container(
+          color: SchejColors.white,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Consumer2<ApiService, CompareSchejController>(
+                  builder: (context, api, controller, child) => Calendar(
+                    calendarEvents: _getCalendars(api, controller),
+                    daysVisible: _daysVisible,
+                    selectedDay: _selectedDay,
+                    onDaySelected: (selectedDay) => setState(() {
+                      _selectedDay = selectedDay;
+                    }),
+                    showAvatars: true,
+                    activeUserId: controller.activeUserId,
+                  ),
+                ),
               ),
-            ),
-            _buildTextField(),
-          ],
+              _buildTextField(),
+            ],
+          ),
         ),
       ),
     );
@@ -125,12 +140,11 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
             borderRadius: SchejConstants.borderRadius,
           ),
           closedBuilder: (context, openContainer) {
-            // TODO: don't wrap this with focus widget because it should be
-            // the raw text field that is focused, right now if I tap ANYWHERE
-            // in the text field it focuses, even if I tapped a tag
-            // Maybe have an onFocus callback??
             return ChangeNotifierProvider.value(
-              value: _compareSchejTextFieldController,
+              value: _compareSchejController,
+              // TODO: Instead of this, make it so that this on focus change stuff
+              // is contained within the CompareSchejTextField component, and only
+              // surrounding the text field. then have an onFocusChanged callback
               child: FocusScope(
                 child: Focus(
                   onFocusChange: (focus) {
@@ -139,7 +153,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
                     }
                   },
                   child: CompareSchejTextField(
-                    controller: _compareSchejTextFieldController,
+                    controller: _compareSchejController,
                     scrollController: _textFieldScrollController,
                   ),
                 ),
@@ -148,9 +162,9 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
           },
           openBuilder: (context, closeContainer) {
             return ChangeNotifierProvider.value(
-              value: _compareSchejTextFieldController,
+              value: _compareSchejController,
               child: CompareSchejDialog(
-                controller: _compareSchejTextFieldController,
+                controller: _compareSchejController,
                 scrollController: _dialogScrollController,
                 onClose: closeContainer,
               ),
