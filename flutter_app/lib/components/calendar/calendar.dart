@@ -497,7 +497,15 @@ class _CalendarDayState extends State<CalendarDay> {
   Widget _buildEvents() {
     final children = <Widget>[];
     // int i = 0;
-    for (String userId in widget.events.keys) {
+    List<String> userIds = List.from(widget.events.keys);
+    if (widget.activeUserId != null) {
+      // Make sure activeUser is the last user to be displayed. This ensures
+      // activeUser's events are at the very front
+      userIds.remove(widget.activeUserId!);
+      userIds.add(widget.activeUserId!);
+    }
+
+    for (String userId in userIds) {
       children.addAll(widget.events[userId]!
           .map((event) => CalendarEventWidget(
                 event: event,

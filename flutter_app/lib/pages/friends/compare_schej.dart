@@ -43,8 +43,10 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
       initialActiveUserId: widget.friendId,
       initialIncludeSelf: true,
     );
-    _compareSchejController.addListener(
-        setActiveUserId, [CompareSchejControllerProperties.userIds]);
+    _compareSchejController.addListener(setActiveUserId, [
+      CompareSchejControllerProperties.userIds,
+      CompareSchejControllerProperties.includeSelf,
+    ]);
 
     _controllers = LinkedScrollControllerGroup();
     _textFieldScrollController = _controllers.addAndGet();
@@ -63,7 +65,11 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
 
   // Sets the active user id when the compareSchejController changes
   void setActiveUserId() {
-    if (_compareSchejController.userIds.length == 1) {
+    print('ok');
+    int numUsers = _compareSchejController.userIds.length;
+    if (_compareSchejController.includeSelf) numUsers++;
+
+    if (numUsers == 2) {
       _compareSchejController.activeUserId =
           _compareSchejController.userIds.first;
     } else {

@@ -6,7 +6,7 @@ import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/pages/friends/add_friend_dialog.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-import '../../constants/fonts.dart';
+import 'package:flutter_app/constants/fonts.dart';
 import 'friend_requests_tab_widget.dart';
 import 'friends_tab_widget.dart';
 

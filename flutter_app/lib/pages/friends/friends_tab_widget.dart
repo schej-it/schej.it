@@ -18,26 +18,6 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   // Controllers
   final TextEditingController _searchTextController = TextEditingController();
 
-  // Variables
-  // var friends = [
-  //   {'name': 'Winston Tilton', 'status': FriendStatus.free},
-  //   {
-  //     'name': 'Samantha Jones',
-  //     'status': FriendStatus.busy,
-  //     'curEventName': 'BTG meeting'
-  //   },
-  //   {
-  //     'name': 'Tyler Smithson',
-  //     'status': FriendStatus.busy,
-  //     'curEventName': 'PSYC 336'
-  //   },
-  //   {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
-  //   {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
-  //   {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
-  //   {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
-  //   {'name': 'Winston Tilton', 'status': FriendStatus.invisible},
-  // ];
-
   @override
   void dispose() {
     _searchTextController.dispose();
