@@ -63,8 +63,6 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
 
   // Sets the active user id when the compareSchejController changes
   void setActiveUserId() {
-    final api = context.read<ApiService>();
-
     if (_compareSchejController.userIds.length == 1) {
       _compareSchejController.activeUserId =
           _compareSchejController.userIds.first;
@@ -142,9 +140,6 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
           closedBuilder: (context, openContainer) {
             return ChangeNotifierProvider.value(
               value: _compareSchejController,
-              // TODO: Instead of this, make it so that this on focus change stuff
-              // is contained within the CompareSchejTextField component, and only
-              // surrounding the text field. then have an onFocusChanged callback
               child: FocusScope(
                 child: Focus(
                   onFocusChange: (focus) {

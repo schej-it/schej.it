@@ -104,7 +104,36 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
     // Keep track of old length of addedUsers to detect when it increases
     _oldLength = widget.controller.userIds.length;
 
-    final textField = ConstrainedBox(
+    return GestureDetector(
+      onTap: () {}, // Needed so open container doesn't intercept this event
+      child: Container(
+        height: 45,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: _focused ? SchejColors.white : SchejColors.offWhite,
+          borderRadius: SchejConstants.borderRadius,
+          border: Border.all(width: 1, color: SchejColors.lightGray),
+        ),
+        child: Consumer<CompareSchejController>(
+          builder: (context, controller, child) => SingleChildScrollView(
+            controller: widget.scrollController,
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                ..._getTags(controller),
+                _buildTextField(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField() {
+    return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 255),
       child: TextField(
         focusNode: widget.focusNode,
@@ -121,30 +150,6 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
           focusedBorder: InputBorder.none,
         ),
         style: SchejFonts.subtitle,
-      ),
-    );
-
-    return Container(
-      height: 45,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: _focused ? SchejColors.white : SchejColors.offWhite,
-        borderRadius: SchejConstants.borderRadius,
-        border: Border.all(width: 1, color: SchejColors.lightGray),
-      ),
-      child: Consumer<CompareSchejController>(
-        builder: (context, controller, child) => SingleChildScrollView(
-          controller: widget.scrollController,
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              ..._getTags(controller),
-              textField,
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -173,15 +178,12 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
   }) {
     Color textColor;
     Color containerColor;
-    bool outlined;
     if (_isUserActive(userId)) {
       textColor = SchejColors.white;
       containerColor = SchejColors.darkGreen;
-      outlined = false;
     } else {
       textColor = SchejColors.darkGreen;
       containerColor = SchejColors.white;
-      outlined = true;
     }
 
     return Container(
@@ -191,32 +193,38 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
         border: Border.all(color: SchejColors.darkGreen),
       ),
       margin: const EdgeInsets.only(left: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: Row(
-        children: [
-          InkWell(
-            child: Text(name,
-                style: SchejFonts.subtitle.copyWith(color: textColor)),
-            onTap: () {
-              _onTagTapped(userId);
-            },
-          ),
-          if (allowRemove) ...[
-            const SizedBox(width: 4),
-            InkWell(
-              child: Icon(
-                Icons.cancel,
-                size: 14,
-                color: textColor,
-              ),
-              onTap: () {
-                if (userId != null) {
-                  widget.controller.removeUserId(userId);
-                }
-              },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: SchejConstants.borderRadius,
+          onTap: () {
+            _onTagTapped(userId);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Row(
+              children: [
+                Text(name,
+                    style: SchejFonts.subtitle.copyWith(color: textColor)),
+                if (allowRemove) ...[
+                  const SizedBox(width: 4),
+                  InkWell(
+                    child: Icon(
+                      Icons.cancel,
+                      size: 14,
+                      color: textColor,
+                    ),
+                    onTap: () {
+                      if (userId != null) {
+                        widget.controller.removeUserId(userId);
+                      }
+                    },
+                  ),
+                ]
+              ],
             ),
-          ]
-        ],
+          ),
+        ),
       ),
     );
   }

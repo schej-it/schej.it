@@ -16,6 +16,8 @@ import 'package:screenshot/screenshot.dart';
 // TODO: fix bug where if you pinch to zoom, the time scroll controller gets
 // out of sync with the individual day scroll controllers
 
+// TODO: make the activeUser's events show above everybody else's
+
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final Map<String, CalendarEvents> calendarEvents;
@@ -494,7 +496,7 @@ class _CalendarDayState extends State<CalendarDay> {
   // Builds a list view containing the events for this day
   Widget _buildEvents() {
     final children = <Widget>[];
-    int i = 0;
+    // int i = 0;
     for (String userId in widget.events.keys) {
       children.addAll(widget.events[userId]!
           .map((event) => CalendarEventWidget(
@@ -508,7 +510,7 @@ class _CalendarDayState extends State<CalendarDay> {
                 // marginLeftPercent: .20 * i,
               ))
           .toList());
-      ++i;
+      // ++i;
     }
 
     return Stack(
