@@ -28,6 +28,14 @@ class SchejFonts {
     height: 1,
   );
 
+  static const TextStyle medium = TextStyle(
+    fontFamily: 'DM Sans',
+    color: SchejColors.pureBlack,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    height: 1,
+  );
+
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: 'DM Sans',
     color: SchejColors.pureBlack,
