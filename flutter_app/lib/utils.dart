@@ -8,6 +8,10 @@ DateTime getDateWithTime(DateTime date, double time, {bool local = false}) {
       ((time - time.truncate()) * 60).truncate());
 }
 
+DateTime getLocalDateWithTime(DateTime date, double time) {
+  return getDateWithTime(date, time, local: true);
+}
+
 // Returns a local datetime with the same day as the given datetime
 DateTime getLocalDayFromUtcDay(DateTime day) {
   return DateTime(day.year, day.month, day.day);

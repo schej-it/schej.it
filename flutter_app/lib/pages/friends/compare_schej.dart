@@ -65,7 +65,6 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
 
   // Sets the active user id when the compareSchejController changes
   void setActiveUserId() {
-    print('ok');
     int numUsers = _compareSchejController.userIds.length;
     if (_compareSchejController.includeSelf) numUsers++;
 

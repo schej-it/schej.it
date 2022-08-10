@@ -5,6 +5,7 @@ import 'package:flutter_app/components/user_avatar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/availabilities.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/utils.dart';
@@ -16,8 +17,6 @@ import 'package:screenshot/screenshot.dart';
 // TODO: fix bug where if you pinch to zoom, the time scroll controller gets
 // out of sync with the individual day scroll controllers
 
-// TODO: make the activeUser's events show above everybody else's
-
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final Map<String, CalendarEvents> calendarEvents;
@@ -26,6 +25,7 @@ class Calendar extends StatefulWidget {
   final int daysVisible;
   final bool showEventTitles;
   final bool showAvatars;
+  final bool showAvailability;
   final String? activeUserId;
 
   const Calendar({
@@ -36,6 +36,7 @@ class Calendar extends StatefulWidget {
     this.daysVisible = 3,
     this.showEventTitles = true,
     this.showAvatars = false,
+    this.showAvailability = false,
     this.activeUserId,
   }) : super(key: key);
 
@@ -243,6 +244,10 @@ class CalendarState extends State<Calendar> {
     int dateNum = date.day;
     bool isCurDate = date == getLocalDayFromUtcDay(_curDate);
 
+    Map<String, List<CalendarEvent>> events = widget.calendarEvents.map(
+        (id, calendarEvents) =>
+            MapEntry(id, calendarEvents.getEventsForDay(date)));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -281,10 +286,10 @@ class CalendarState extends State<Calendar> {
             key: ObjectKey(date),
             controllers: _controllers,
             date: date,
-            events: widget.calendarEvents.map((id, calendarEvents) =>
-                MapEntry(id, calendarEvents.getEventsForDay(date))),
+            events: events,
             showEventTitles: widget.showEventTitles,
             showAvatars: widget.showAvatars,
+            showAvailability: widget.showAvailability,
             activeUserId: widget.activeUserId,
             numRows: _timeStrings.length,
             rowHeight: _timeRowHeight,
@@ -437,6 +442,7 @@ class CalendarDay extends StatefulWidget {
   final double rowHeight;
   final bool showEventTitles;
   final bool showAvatars;
+  final bool showAvailability;
   final String? activeUserId;
 
   const CalendarDay({
@@ -448,6 +454,7 @@ class CalendarDay extends StatefulWidget {
     required this.rowHeight,
     this.showEventTitles = true,
     this.showAvatars = false,
+    this.showAvailability = false,
     this.activeUserId,
   }) : super(key: key);
 
@@ -496,29 +503,68 @@ class _CalendarDayState extends State<CalendarDay> {
   // Builds a list view containing the events for this day
   Widget _buildEvents() {
     final children = <Widget>[];
-    // int i = 0;
-    List<String> userIds = List.from(widget.events.keys);
-    if (widget.activeUserId != null) {
-      // Make sure activeUser is the last user to be displayed. This ensures
-      // activeUser's events are at the very front
-      userIds.remove(widget.activeUserId!);
-      userIds.add(widget.activeUserId!);
-    }
 
-    for (String userId in userIds) {
-      children.addAll(widget.events[userId]!
-          .map((event) => CalendarEventWidget(
-                event: event,
+    if (widget.showAvailability) {
+      final availabilities =
+          Availabilities.getUsersAvailabilityForDay(widget.date, widget.events);
+      children.addAll(availabilities
+          .map((a) => CalendarEventWidget(
+                event: CalendarEvent(
+                  startDate: a.startDate,
+                  endDate: a.endDate,
+                  title: '${a.usersAvailable.length} users available',
+                ),
                 hourHeight: widget.rowHeight,
                 layerLink: _layerLink,
                 showTitle: widget.showEventTitles,
-                showAvatar: widget.showAvatars,
-                userId: userId,
+                showAvatar: false,
                 activeUserId: widget.activeUserId,
-                // marginLeftPercent: .20 * i,
               ))
           .toList());
-      // ++i;
+    } else {
+      List<String> userIds = List.from(widget.events.keys);
+      if (widget.activeUserId != null) {
+        // Make sure activeUser is the last user to be displayed. This ensures
+        // activeUser's events are at the very front
+        userIds.remove(widget.activeUserId!);
+        userIds.add(widget.activeUserId!);
+      }
+
+      for (String userId in userIds) {
+        children.addAll(widget.events[userId]!
+            .map((event) => CalendarEventWidget(
+                  event: event,
+                  hourHeight: widget.rowHeight,
+                  layerLink: _layerLink,
+                  showTitle: widget.showEventTitles,
+                  showAvatar: widget.showAvatars,
+                  userId: userId,
+                  activeUserId: widget.activeUserId,
+                  // marginLeftPercent: .20 * i,
+                ))
+            .toList());
+
+        /* Uncomment below to show parsed availabilities */
+        // final availabilities =
+        //     Availabilities.parseDayAvailabilityFromCalendarEvents(
+        //   widget.date,
+        //   userId,
+        //   widget.events[userId]!,
+        // );
+        // children.addAll(availabilities.map((a) => CalendarEventWidget(
+        //       event: CalendarEvent(
+        //         startDate: a.startDate,
+        //         endDate: a.endDate,
+        //         title: 'AVAILABLE',
+        //       ),
+        //       hourHeight: widget.rowHeight,
+        //       layerLink: _layerLink,
+        //       showTitle: widget.showEventTitles,
+        //       showAvatar: widget.showAvatars,
+        //       userId: userId,
+        //       activeUserId: widget.activeUserId,
+        //     )));
+      }
     }
 
     return Stack(
@@ -666,9 +712,9 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
           child: Padding(
             padding: const EdgeInsets.only(right: 2),
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 _buildContainer(),
-                if (widget.showAvatar) _buildAvatar(),
               ],
             ),
           ),
@@ -678,25 +724,43 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
   }
 
   // Build the main container for the event, with the event text and time block
+  // TODO: this crashes when endTime is on the next day!!! (so if somebody has a late event)
   Widget _buildContainer() {
-    return Container(
-      padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
-      height:
-          (widget.event.endTime - widget.event.startTime) * widget.hourHeight,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: _containerColor,
-        borderRadius: const BorderRadius.all(Radius.circular(5)),
-      ),
-      child: widget.showTitle
-          ? Text(
-              widget.event.title,
-              style: SchejFonts.body.copyWith(color: _textColor),
-            )
-          : Text(
-              'BUSY',
-              style: SchejFonts.body.copyWith(color: _textColor),
+    final height =
+        (widget.event.endTime - widget.event.startTime) * widget.hourHeight;
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      height: height,
+      child: Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
+            height: height,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: _containerColor,
+              borderRadius: const BorderRadius.all(Radius.circular(5)),
+              border: Border.all(
+                color: SchejColors.white,
+                width: 2,
+              ),
             ),
+            child: widget.showTitle
+                ? Text(
+                    widget.event.title,
+                    style: SchejFonts.body.copyWith(color: _textColor),
+                  )
+                : Text(
+                    'BUSY',
+                    style: SchejFonts.body.copyWith(color: _textColor),
+                  ),
+          ),
+          if (widget.showAvatar) _buildAvatar(),
+        ],
+      ),
     );
   }
 

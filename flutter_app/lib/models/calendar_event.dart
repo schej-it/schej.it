@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:sorted_list/sorted_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 // CalendarEvent contains data for a single event
@@ -35,12 +36,15 @@ class CalendarEvents {
 
     for (CalendarEvent event in events) {
       if (_eventsByDay[event.startDate] == null) {
-        _eventsByDay[event.startDate] = [event];
-      } else {
-        _eventsByDay[event.startDate]!.add(event);
+        _eventsByDay[event.startDate] =
+            SortedList<CalendarEvent>(_sortByStartDate);
       }
+
+      _eventsByDay[event.startDate]!.add(event);
     }
   }
+
+  Iterable<DateTime> get days => _eventsByDay.keys;
 
   List<CalendarEvent> getEventsForDay(DateTime day) {
     final events = _eventsByDay[day];
@@ -52,5 +56,12 @@ class CalendarEvents {
 
   int _getHashCode(DateTime date) {
     return date.toLocal().toIso8601String().substring(0, 10).hashCode;
+  }
+
+  int _sortByStartDate(a, b) => a.startDate.compareTo(b.startDate);
+
+  @override
+  String toString() {
+    return '{CalendarEvents eventsByDay:${_eventsByDay.toString()}}';
   }
 }

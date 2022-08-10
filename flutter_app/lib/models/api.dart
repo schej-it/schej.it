@@ -42,20 +42,34 @@ class ApiService extends ChangeNotifier {
     events: [
       CalendarEvent(
         title: 'Event',
-        startDate: getDateWithTime(DateTime.now(), 9.5),
-        endDate: getDateWithTime(DateTime.now(), 12),
+        startDate: getLocalDateWithTime(DateTime.now(), 9.5),
+        endDate: getLocalDateWithTime(DateTime.now(), 12),
       ),
       CalendarEvent(
         title: 'Introduction to Failure Analysis',
-        startDate: getDateWithTime(DateTime.now(), 13),
-        endDate: getDateWithTime(DateTime.now(), 14.5),
+        startDate: getLocalDateWithTime(DateTime.now(), 13),
+        endDate: getLocalDateWithTime(DateTime.now(), 14.5),
+      ),
+      // CalendarEvent(
+      //   title: 'cool',
+      //   startDate: getLocalDateWithTime(
+      //       DateTime.now().add(const Duration(days: 1)), 0),
+      //   endDate: getLocalDateWithTime(
+      //       DateTime.now().add(const Duration(days: 1)), 15),
+      // ),
+      CalendarEvent(
+        title: 'what',
+        startDate: getLocalDateWithTime(
+            DateTime.now().add(const Duration(days: 1)), 15),
+        endDate: getLocalDateWithTime(
+            DateTime.now().add(const Duration(days: 1)), 20),
       ),
       CalendarEvent(
-        title: 'War',
-        startDate:
-            getDateWithTime(DateTime.now().add(const Duration(days: 1)), 15),
-        endDate:
-            getDateWithTime(DateTime.now().add(const Duration(days: 1)), 20),
+        title: 'coolio',
+        startDate: getLocalDateWithTime(
+            DateTime.now().add(const Duration(days: 1)), 18),
+        endDate: getLocalDateWithTime(
+            DateTime.now().add(const Duration(days: 1)), 21),
       ),
     ],
   );
@@ -120,34 +134,34 @@ class ApiService extends ChangeNotifier {
       events: [
         CalendarEvent(
           title: 'Hang out',
-          startDate: getDateWithTime(DateTime.now(), 7),
-          endDate: getDateWithTime(DateTime.now(), 11),
+          startDate: getLocalDateWithTime(DateTime.now(), 7),
+          endDate: getLocalDateWithTime(DateTime.now(), 11),
         ),
         CalendarEvent(
           title: 'hehe xd',
-          startDate: getDateWithTime(DateTime.now(), 14),
-          endDate: getDateWithTime(DateTime.now(), 16),
+          startDate: getLocalDateWithTime(DateTime.now(), 14),
+          endDate: getLocalDateWithTime(DateTime.now(), 16),
         ),
         CalendarEvent(
           title: 'Idk man you decide',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 11),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 13),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 11),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 13),
         ),
         CalendarEvent(
           title: 'nice',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 17),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 20),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 17),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 20),
         ),
         CalendarEvent(
           title: 'okay then',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 10),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 12),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 10),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 12),
         ),
       ],
     ),
@@ -155,34 +169,34 @@ class ApiService extends ChangeNotifier {
       events: [
         CalendarEvent(
           title: 'Hang out',
-          startDate: getDateWithTime(DateTime.now(), 12),
-          endDate: getDateWithTime(DateTime.now(), 13),
+          startDate: getLocalDateWithTime(DateTime.now(), 12),
+          endDate: getLocalDateWithTime(DateTime.now(), 13),
         ),
         CalendarEvent(
           title: 'hehe xd',
-          startDate: getDateWithTime(DateTime.now(), 22),
-          endDate: getDateWithTime(DateTime.now(), 23),
+          startDate: getLocalDateWithTime(DateTime.now(), 22),
+          endDate: getLocalDateWithTime(DateTime.now(), 23),
         ),
         CalendarEvent(
           title: 'Idk man you decide',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 10),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 11),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 10),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 11),
         ),
         CalendarEvent(
           title: 'nice',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 22),
-          endDate: getDateWithTime(
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 22),
+          endDate: getLocalDateWithTime(
               DateTime.now().add(const Duration(days: 2)), 22.5),
         ),
         CalendarEvent(
           title: 'okay then',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 13),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 15),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 13),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 15),
         ),
       ],
     ),
@@ -190,34 +204,34 @@ class ApiService extends ChangeNotifier {
       events: [
         CalendarEvent(
           title: 'Hang out',
-          startDate: getDateWithTime(DateTime.now(), 15),
-          endDate: getDateWithTime(DateTime.now(), 16),
+          startDate: getLocalDateWithTime(DateTime.now(), 15),
+          endDate: getLocalDateWithTime(DateTime.now(), 16),
         ),
         CalendarEvent(
           title: 'hehe xd',
-          startDate: getDateWithTime(DateTime.now(), 18),
-          endDate: getDateWithTime(DateTime.now(), 21),
+          startDate: getLocalDateWithTime(DateTime.now(), 18),
+          endDate: getLocalDateWithTime(DateTime.now(), 21),
         ),
         CalendarEvent(
           title: 'Idk man you decide',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 17),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 1)), 19),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 17),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 19),
         ),
         CalendarEvent(
           title: 'nice',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 9),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 15),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 9),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 15),
         ),
         CalendarEvent(
           title: 'okay then',
-          startDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 19),
-          endDate:
-              getDateWithTime(DateTime.now().add(const Duration(days: 2)), 20),
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 19),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 2)), 20),
         ),
       ],
     )

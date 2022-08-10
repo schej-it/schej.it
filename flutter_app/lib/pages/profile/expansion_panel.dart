@@ -8,12 +8,10 @@ const double _kPanelHeaderExpandedHeight = 64.0;
 class CustomExpansionPanelList extends StatelessWidget {
   const CustomExpansionPanelList(
       {required Key key,
-      this.children: const <ExpansionPanel>[],
+      this.children = const <ExpansionPanel>[],
       required this.expansionCallback,
-      this.animationDuration: kThemeAnimationDuration})
-      : assert(children != null),
-        assert(animationDuration != null),
-        super(key: key);
+      this.animationDuration = kThemeAnimationDuration})
+      : super(key: key);
 
   final List<ExpansionPanel> children;
 
@@ -28,27 +26,30 @@ class CustomExpansionPanelList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> items = <Widget>[];
-    const EdgeInsets kExpandedEdgeInsets = const EdgeInsets.symmetric(
+    const EdgeInsets kExpandedEdgeInsets = EdgeInsets.symmetric(
         vertical: _kPanelHeaderExpandedHeight - _kPanelHeaderCollapsedHeight);
 
     for (int index = 0; index < children.length; index += 1) {
-      if (_isChildExpanded(index) && index != 0 && !_isChildExpanded(index - 1))
-        items.add(new Divider(
-          key: new _SaltedKey<BuildContext, int>(context, index * 2 - 1),
+      if (_isChildExpanded(index) &&
+          index != 0 &&
+          !_isChildExpanded(index - 1)) {
+        items.add(Divider(
+          key: _SaltedKey<BuildContext, int>(context, index * 2 - 1),
           height: 15.0,
           color: Colors.transparent,
         ));
+      }
 
-      final Row header = new Row(
+      final Row header = Row(
         children: <Widget>[
-          new Expanded(
-            child: new AnimatedContainer(
+          Expanded(
+            child: AnimatedContainer(
               duration: animationDuration,
               curve: Curves.fastOutSlowIn,
               margin: _isChildExpanded(index)
                   ? kExpandedEdgeInsets
                   : EdgeInsets.zero,
-              child: new SizedBox(
+              child: SizedBox(
                 height: _kPanelHeaderCollapsedHeight,
                 child: children[index].headerBuilder(
                   context,
@@ -57,39 +58,37 @@ class CustomExpansionPanelList extends StatelessWidget {
               ),
             ),
           ),
-          new Container(
+          Container(
             margin: const EdgeInsetsDirectional.only(end: 8.0),
-            child: new ExpandIcon(
+            child: ExpandIcon(
               isExpanded: _isChildExpanded(index),
               color: SchejColors.pureBlack,
               size: 30.0,
               padding: const EdgeInsets.all(16.0),
               onPressed: (bool isExpanded) {
-                if (expansionCallback != null)
-                  expansionCallback(index, isExpanded);
+                expansionCallback(index, isExpanded);
               },
             ),
           ),
         ],
       );
 
-      double _radiusValue = 10.0;
+      double radiusValue = 10.0;
       items.add(
-        new Container(
-          key: new _SaltedKey<BuildContext, int>(context, index * 2),
+        Container(
+          key: _SaltedKey<BuildContext, int>(context, index * 2),
           decoration: BoxDecoration(
             boxShadow: [SchejConstants.boxShadow],
             borderRadius: const BorderRadius.all(Radius.circular(10.0)),
           ),
-          child: new Material(
+          child: Material(
             color: SchejColors.white,
-            borderRadius:
-                new BorderRadius.all(new Radius.circular(_radiusValue)),
-            child: new Column(
+            borderRadius: BorderRadius.all(Radius.circular(radiusValue)),
+            child: Column(
               children: <Widget>[
                 header,
-                new AnimatedCrossFade(
-                  firstChild: new Container(height: 0.0),
+                AnimatedCrossFade(
+                  firstChild: Container(height: 0.0),
                   secondChild: children[index].body,
                   firstCurve:
                       const Interval(0.0, 0.6, curve: Curves.fastOutSlowIn),
@@ -107,14 +106,15 @@ class CustomExpansionPanelList extends StatelessWidget {
         ),
       );
 
-      if (_isChildExpanded(index) && index != children.length - 1)
-        items.add(new Divider(
-          key: new _SaltedKey<BuildContext, int>(context, index * 2 + 1),
+      if (_isChildExpanded(index) && index != children.length - 1) {
+        items.add(Divider(
+          key: _SaltedKey<BuildContext, int>(context, index * 2 + 1),
           height: 15.0,
         ));
+      }
     }
 
-    return new Column(
+    return Column(
       children: items,
     );
   }
