@@ -80,7 +80,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
       setState(() {
         _showAvailability = true;
       });
-    } else if (_showAvailability) {
+    } else if (numUsers <= 2 && _showAvailability) {
       setState(() {
         _showAvailability = false;
       });

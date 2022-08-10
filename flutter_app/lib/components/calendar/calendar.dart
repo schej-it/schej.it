@@ -834,7 +834,12 @@ class _AvailabilityBlockWidgetState extends State<AvailabilityBlockWidget> {
     double alpha = (widget.availabilityBlock.usersAvailable.length /
             widget.maxNumUsersAvailable) *
         255;
-    final backgroundColor = SchejColors.darkGreen.withAlpha(alpha.round());
+    // Scale alpha if not everybody is available to make the times where everybody
+    // is available stand out more
+    if (alpha.round() != 255) {
+      alpha *= 0.9;
+    }
+    final backgroundColor = SchejColors.green.withAlpha(alpha.round());
 
     return CalendarEventWidget(
       event: CalendarEvent(

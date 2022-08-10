@@ -185,6 +185,13 @@ class ApiService extends ChangeNotifier {
               DateTime.now().add(const Duration(days: 1)), 11),
         ),
         CalendarEvent(
+          title: 'Cooliooo',
+          startDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 15),
+          endDate: getLocalDateWithTime(
+              DateTime.now().add(const Duration(days: 1)), 18),
+        ),
+        CalendarEvent(
           title: 'nice',
           startDate: getLocalDateWithTime(
               DateTime.now().add(const Duration(days: 2)), 22),
