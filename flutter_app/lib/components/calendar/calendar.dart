@@ -505,9 +505,18 @@ class _CalendarDayState extends State<CalendarDay> {
     final children = <Widget>[];
 
     if (widget.showAvailability) {
-      // TODO: maybe show active user's schedule ON TOP of the availabilities??
-      // Only show current user's schedule if there's an active user, otherwise
-      // show availabilities
+      final availabilities =
+          Availabilities.getUsersAvailabilityForDay(widget.date, widget.events);
+      children.addAll(availabilities
+          .map((a) => AvailabilityBlockWidget(
+                availabilityBlock: a,
+                maxNumUsersAvailable: widget.events.keys.length,
+                hourHeight: widget.rowHeight,
+                layerLink: _layerLink,
+              ))
+          .toList());
+
+      // Only show current user's schedule if there's an active user
       if (widget.activeUserId != null) {
         children.addAll(widget.events[widget.activeUserId]!
             .map((event) => CalendarEventWidget(
@@ -517,23 +526,6 @@ class _CalendarDayState extends State<CalendarDay> {
                   showTitle: widget.showEventTitles,
                   showAvatar: widget.showAvatars,
                   userId: widget.activeUserId,
-                  activeUserId: widget.activeUserId,
-                ))
-            .toList());
-      } else {
-        final availabilities = Availabilities.getUsersAvailabilityForDay(
-            widget.date, widget.events);
-        children.addAll(availabilities
-            .map((a) => CalendarEventWidget(
-                  event: CalendarEvent(
-                    startDate: a.startDate,
-                    endDate: a.endDate,
-                    title: '${a.usersAvailable.length} users available',
-                  ),
-                  hourHeight: widget.rowHeight,
-                  layerLink: _layerLink,
-                  showTitle: widget.showEventTitles,
-                  showAvatar: false,
                   activeUserId: widget.activeUserId,
                 ))
             .toList());
@@ -663,11 +655,15 @@ class CalendarEventWidget extends StatefulWidget {
   final CalendarEvent event;
   final double hourHeight;
   final LayerLink layerLink;
+
   final bool showTitle;
+  final bool showBusy;
+  final bool showAvatar;
+  final bool noBorder;
   final String? userId;
   final String? activeUserId;
-  final bool showAvatar;
   final double marginLeftPercent;
+  final Color? backgroundColor;
 
   const CalendarEventWidget({
     Key? key,
@@ -675,10 +671,14 @@ class CalendarEventWidget extends StatefulWidget {
     required this.hourHeight,
     required this.layerLink,
     this.showTitle = true,
+    // Whether to show "BUSY" when title not shown
+    this.showBusy = true,
+    this.showAvatar = false,
+    this.noBorder = false,
     this.userId,
     this.activeUserId,
-    this.showAvatar = true,
     this.marginLeftPercent = 0,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -694,13 +694,19 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
     super.initState();
 
     // Determine containerColor and textColor
-    if (widget.showTitle &&
-        (widget.activeUserId == null || widget.userId == widget.activeUserId)) {
-      _containerColor = SchejColors.lightBlue;
+    if (widget.backgroundColor != null) {
+      _containerColor = widget.backgroundColor!;
       _textColor = SchejColors.white;
     } else {
-      _containerColor = SchejColors.fadedLightBlue;
-      _textColor = SchejColors.lightBlue;
+      if (widget.showTitle &&
+          (widget.activeUserId == null ||
+              widget.userId == widget.activeUserId)) {
+        _containerColor = SchejColors.lightBlue;
+        _textColor = SchejColors.white;
+      } else {
+        _containerColor = SchejColors.fadedLightBlue;
+        _textColor = SchejColors.lightBlue;
+      }
     }
   }
 
@@ -760,10 +766,12 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
             decoration: BoxDecoration(
               color: _containerColor,
               borderRadius: const BorderRadius.all(Radius.circular(5)),
-              border: Border.all(
-                color: SchejColors.white,
-                width: 2,
-              ),
+              border: !widget.noBorder
+                  ? Border.all(
+                      color: SchejColors.white,
+                      width: 2,
+                    )
+                  : null,
             ),
             child: widget.showTitle
                 ? Text(
@@ -771,7 +779,7 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
                     style: SchejFonts.body.copyWith(color: _textColor),
                   )
                 : Text(
-                    'BUSY',
+                    widget.showBusy ? 'BUSY' : '',
                     style: SchejFonts.body.copyWith(color: _textColor),
                   ),
           ),
@@ -795,6 +803,51 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class AvailabilityBlockWidget extends StatefulWidget {
+  final AvailabilityBlock availabilityBlock;
+  final int maxNumUsersAvailable;
+  final double hourHeight;
+  final LayerLink layerLink;
+  final double marginLeftPercent;
+
+  const AvailabilityBlockWidget({
+    Key? key,
+    required this.availabilityBlock,
+    required this.maxNumUsersAvailable,
+    required this.hourHeight,
+    required this.layerLink,
+    this.marginLeftPercent = 0,
+  }) : super(key: key);
+
+  @override
+  State<AvailabilityBlockWidget> createState() =>
+      _AvailabilityBlockWidgetState();
+}
+
+class _AvailabilityBlockWidgetState extends State<AvailabilityBlockWidget> {
+  @override
+  Widget build(BuildContext context) {
+    double alpha = (widget.availabilityBlock.usersAvailable.length /
+            widget.maxNumUsersAvailable) *
+        255;
+    final backgroundColor = SchejColors.darkGreen.withAlpha(alpha.round());
+
+    return CalendarEventWidget(
+      event: CalendarEvent(
+        title: '',
+        startDate: widget.availabilityBlock.startDate,
+        endDate: widget.availabilityBlock.endDate,
+      ),
+      backgroundColor: backgroundColor,
+      hourHeight: widget.hourHeight,
+      layerLink: widget.layerLink,
+      showTitle: false,
+      showBusy: false,
+      noBorder: true,
     );
   }
 }

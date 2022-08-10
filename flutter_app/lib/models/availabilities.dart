@@ -3,6 +3,8 @@ import 'package:flutter_app/utils.dart';
 import 'package:sorted_list/sorted_list.dart';
 
 class Availabilities {
+  // Calculates and returns a list of availability blocks for all the provided
+  // user events for the given day
   static List<AvailabilityBlock> getUsersAvailabilityForDay(
     DateTime day,
     Map<String, List<CalendarEvent>> userEvents,
@@ -15,7 +17,7 @@ class Availabilities {
         userEvents[userId]!,
       ));
     }
-    return calculateAvailabilities(initialAvailabilities);
+    return _calculateAvailabilities(initialAvailabilities);
   }
 
   // Calculates and returns an initial list of availability blocks from calendar
@@ -62,14 +64,12 @@ class Availabilities {
     );
     if (!_isEmptyAvailabilityBlock(block)) availability.add(block);
 
-    // print('availability: $availability');
-
     return availability;
   }
 
   // Calculates and returns overlapping availabilities from initial availabilities
   // parsed from calendar events
-  static List<AvailabilityBlock> calculateAvailabilities(
+  static List<AvailabilityBlock> _calculateAvailabilities(
     List<AvailabilityBlock> initialAvailabilities,
   ) {
     final availabilities = <AvailabilityBlock>[];
@@ -203,17 +203,4 @@ class AvailabilityBlock {
   String toString() {
     return '{AvailabilityBlock startDate:$startDate endDate:$endDate usersAvailable:$usersAvailable}';
   }
-
-  // @override
-  // bool operator ==(Object other) =>
-  //     other is AvailabilityBlock &&
-  //     other.runtimeType == runtimeType &&
-  //     other.startDate == startDate &&
-  //     other.endDate == endDate &&
-  //     setEquals(other.usersAvailable, usersAvailable);
-
-  // @override
-  // int get hashCode =>
-  //     '${startDate.toIso8601String()}|${endDate.toIso8601String()}|$usersAvailable'
-  //         .hashCode;
 }
