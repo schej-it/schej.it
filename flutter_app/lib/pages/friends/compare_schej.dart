@@ -33,6 +33,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
   // Calendar variables
   int _daysVisible = 3;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
+  bool _showAvailability = false;
 
   @override
   void initState() {
@@ -73,6 +74,16 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
           _compareSchejController.userIds.first;
     } else {
       _compareSchejController.activeUserId = null;
+    }
+
+    if (numUsers > 2 && !_showAvailability) {
+      setState(() {
+        _showAvailability = true;
+      });
+    } else if (_showAvailability) {
+      setState(() {
+        _showAvailability = false;
+      });
     }
   }
 
@@ -120,6 +131,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
                       _selectedDay = selectedDay;
                     }),
                     showAvatars: true,
+                    showAvailability: _showAvailability,
                     activeUserId: controller.activeUserId,
                   ),
                 ),

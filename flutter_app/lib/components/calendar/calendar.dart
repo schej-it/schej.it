@@ -505,22 +505,39 @@ class _CalendarDayState extends State<CalendarDay> {
     final children = <Widget>[];
 
     if (widget.showAvailability) {
-      final availabilities =
-          Availabilities.getUsersAvailabilityForDay(widget.date, widget.events);
-      children.addAll(availabilities
-          .map((a) => CalendarEventWidget(
-                event: CalendarEvent(
-                  startDate: a.startDate,
-                  endDate: a.endDate,
-                  title: '${a.usersAvailable.length} users available',
-                ),
-                hourHeight: widget.rowHeight,
-                layerLink: _layerLink,
-                showTitle: widget.showEventTitles,
-                showAvatar: false,
-                activeUserId: widget.activeUserId,
-              ))
-          .toList());
+      // TODO: maybe show active user's schedule ON TOP of the availabilities??
+      // Only show current user's schedule if there's an active user, otherwise
+      // show availabilities
+      if (widget.activeUserId != null) {
+        children.addAll(widget.events[widget.activeUserId]!
+            .map((event) => CalendarEventWidget(
+                  event: event,
+                  hourHeight: widget.rowHeight,
+                  layerLink: _layerLink,
+                  showTitle: widget.showEventTitles,
+                  showAvatar: widget.showAvatars,
+                  userId: widget.activeUserId,
+                  activeUserId: widget.activeUserId,
+                ))
+            .toList());
+      } else {
+        final availabilities = Availabilities.getUsersAvailabilityForDay(
+            widget.date, widget.events);
+        children.addAll(availabilities
+            .map((a) => CalendarEventWidget(
+                  event: CalendarEvent(
+                    startDate: a.startDate,
+                    endDate: a.endDate,
+                    title: '${a.usersAvailable.length} users available',
+                  ),
+                  hourHeight: widget.rowHeight,
+                  layerLink: _layerLink,
+                  showTitle: widget.showEventTitles,
+                  showAvatar: false,
+                  activeUserId: widget.activeUserId,
+                ))
+            .toList());
+      }
     } else {
       List<String> userIds = List.from(widget.events.keys);
       if (widget.activeUserId != null) {
