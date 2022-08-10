@@ -3,6 +3,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -24,6 +25,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.GET("/profile", getProfile)
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendar", getCalendar)
+	userRouter.POST("/visibility", updateVisibility)
 }
 
 // @Summary Gets the user's profile
@@ -125,4 +127,41 @@ func getCalendar(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, calendarEvents)
+}
+
+// @Summary Updates the current user's visibility
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{visibility=int} true "Visibility of user from 0 to 2"
+// @Success 200
+// @Router /user/visibility [post]
+func updateVisibility(c *gin.Context) {
+
+	// Bind query parameters
+	payload := struct {
+		Visibility int `json:"visibility" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	fmt.Println(payload)
+
+	session := sessions.Default(c)
+	userId := utils.GetUserId(session)
+
+	_, err := db.UsersCollection.UpdateByID(
+		context.Background(),
+		userId,
+		bson.M{
+			"$set": bson.M{
+				"visibility": payload.Visibility,
+			},
+		},
+	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
