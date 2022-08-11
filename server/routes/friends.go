@@ -41,10 +41,38 @@ func InitFriends(router *gin.Engine) {
 // @Router /friends [get]
 func getFriends(c *gin.Context) {
 
-	userInterface, _ := c.Get("authUser")
-	user := userInterface.(*models.User)
+	session := sessions.Default(c)
+	userId := utils.GetUserId(session)
 
-	c.JSON(http.StatusOK, user.Friends)
+	var result []models.User
+
+	// Find and populate
+	cursor, err := db.UsersCollection.Aggregate(context.Background(), []bson.M{
+		{"$match": bson.M{
+			"_id": userId,
+		}},
+		{"$lookup": bson.M{
+			"from":         "users",
+			"localField":   "friendIds",
+			"foreignField": "_id",
+			"as":           "friends",
+		}},
+		{"$project": bson.M{
+			"friends._id":       1,
+			"friends.firstName": 1,
+			"friends.picture":   1,
+			"friends.lastName":  1,
+			"friends.email":     1,
+		}},
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	if err := cursor.All(context.Background(), &result); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, result[0].Friends)
 
 }
 

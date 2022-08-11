@@ -140,6 +140,8 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		LastName:  lastName,
 		Picture:   picture,
 
+		Visibility: 0,
+
 		FriendIds: make([]primitive.ObjectID, 0),
 		Calendars: make(map[string]models.Calendar),
 

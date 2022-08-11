@@ -423,4 +423,47 @@ paths:
       summary: Gets the user's profile
       tags:
       - user
+  /user/visibility:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Visibility of user from 0 to 2
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              visibility:
+                type: integer
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Updates the current user's visibility
+      tags:
+      - user
+  /users:
+    get:
+      parameters:
+      - description: Search query matching users' names/emails
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: An array of user profile objects
+          schema:
+            items:
+              $ref: '#/definitions/models.UserProfile'
+            type: array
+      summary: Returns users that match the search query
+      tags:
+      - users
 swagger: "2.0"

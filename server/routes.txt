@@ -24,3 +24,6 @@ GET /event/:id
 
 POST /event
 - creates a new event
+
+POST /users
+- searches for users

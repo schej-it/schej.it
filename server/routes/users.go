@@ -1,13 +1,79 @@
 /* The /users group contains all the routes to get information about all users */
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"schej.it/server/db"
+	"schej.it/server/logger"
+	"schej.it/server/models"
+	"schej.it/server/utils"
+)
 
 func InitUsers(router *gin.Engine) {
 	userRouter := router.Group("/users")
 	userRouter.GET("", searchUsers)
 }
 
+// @Summary Returns users that match the search query
+// @Tags users
+// @Produce json
+// @Param query query string true "Search query matching users' names/emails"
+// @Success 200 {object} []models.UserProfile "An array of user profile objects"
+// @Router /users [get]
 func searchUsers(c *gin.Context) {
 
+	// Bind query parameters
+	payload := struct {
+		Query string `form:"query" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	queryTermsRegex := make([]primitive.Regex, 0)
+
+	for _, s := range strings.Split(payload.Query, " ") {
+		r := primitive.Regex{Pattern: utils.EscapeRegExp(s), Options: "i"}
+		queryTermsRegex = append(queryTermsRegex, r)
+	}
+
+	users := make([]models.User, 0)
+
+	cursor, err := db.UsersCollection.Find(context.Background(), bson.M{
+		"$expr": bson.M{
+			"$reduce": bson.M{
+				"input":        queryTermsRegex,
+				"initialValue": true,
+				"in": bson.M{
+					"$and": bson.A{
+						"$$value",
+						bson.M{
+							"$regexMatch": bson.M{
+								"input": bson.M{
+									"$concat": bson.A{
+										"$firstName", " ", "$lastName", " ", "$email",
+									},
+								},
+								"regex": "$$this",
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	if err := cursor.All(context.Background(), &users); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, users)
 }

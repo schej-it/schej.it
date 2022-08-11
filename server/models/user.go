@@ -18,6 +18,9 @@ type User struct {
 	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
+	// Settings
+	Visibility int `json:"visibility" bson:"visibility,omitempty"`
+
 	// Friends
 	FriendIds []primitive.ObjectID `json:"-" bson:"friendIds"`
 	Friends   []UserProfile        `json:"friends" bson:",omitempty"`
