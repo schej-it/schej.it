@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/brianvoe/sjwt"
@@ -193,4 +194,10 @@ func Insert[T any](arr []T, index int, value T) ([]T, error) {
 	arr[index] = value
 
 	return arr, nil
+}
+
+// Escapes regex for a string
+func EscapeRegExp(str string) string {
+	check := regexp.MustCompile(`([.*+?^${}()|[\]\\])`)
+	return check.ReplaceAllString(str, "\\${1}")
 }

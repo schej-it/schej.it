@@ -106,6 +106,13 @@ class ApiService extends ChangeNotifier {
     ),
   };
   Map<String, User> get friends => _friends;
+
+  // Gets the user's profile and sets [_authUser] to it
+  Future<void> refreshFriendsList() async {
+    final friendsArray = await get('/friends');
+    print(friendsArray);
+  }
+
   List<User> get friendsList {
     List<User> list = <User>[];
     for (User friend in _friends.values) {
@@ -115,6 +122,7 @@ class ApiService extends ChangeNotifier {
   }
 
   User? getFriendById(String id) {
+    refreshFriendsList();
     return friends[id];
   }
 
