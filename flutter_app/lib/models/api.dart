@@ -38,6 +38,11 @@ class ApiService extends ChangeNotifier {
     _authUser = User.fromJson(userMap);
   }
 
+  Future<void> updateUserVisibility(int visibility) async {
+    print(visibility);
+    await post('/user/visibility', {'visibility': visibility});
+  }
+
   final CalendarEvents _authUserSchedule = CalendarEvents(
     events: [
       CalendarEvent(
@@ -79,7 +84,7 @@ class ApiService extends ChangeNotifier {
   // Friends
   ///////////////////////////////////////////
 
-  final Map<String, User> _friends = <String, User>{
+  Map<String, User> _friends = <String, User>{
     '123': const User(
       id: '123',
       email: 'liu.z.jonathan@gmail.com',
@@ -87,6 +92,7 @@ class ApiService extends ChangeNotifier {
       lastName: 'Liu',
       picture:
           'https://lh3.googleusercontent.com/a-/AFdZucrz7tSsASL-GwauN8bw3wMswC_Kiuo6Ut8ZGvRtnO4=s96-c',
+      visibility: 0,
     ),
     '321': const User(
       id: '321',
@@ -95,6 +101,7 @@ class ApiService extends ChangeNotifier {
       lastName: 'Xin',
       picture:
           'https://lh3.googleusercontent.com/a-/AFdZucowznIWn8H4iYmZ1SYTMdRKvBOOgO8sBYTOhfp_3Q=s64-p-k-rw-no',
+      visibility: 0,
     ),
     'lol': const User(
       id: 'lol',
@@ -103,14 +110,15 @@ class ApiService extends ChangeNotifier {
       lastName: 'Moon',
       picture:
           'https://lh3.googleusercontent.com/a-/AFdZucrm6jLuiTfc8e-wKD3KZsFLfLhocVKUYoSRaLHfBQ=s64-p-k-rw-no',
+      visibility: 0,
     ),
   };
   Map<String, User> get friends => _friends;
 
-  // Gets the user's profile and sets [_authUser] to it
+  // Gets a user's friends and sets [_friends] to it
   Future<void> refreshFriendsList() async {
     final friendsArray = await get('/friends');
-    print(friendsArray);
+    _friends = friendsArray;
   }
 
   List<User> get friendsList {
@@ -122,7 +130,6 @@ class ApiService extends ChangeNotifier {
   }
 
   User? getFriendById(String id) {
-    refreshFriendsList();
     return friends[id];
   }
 
@@ -145,10 +152,15 @@ class ApiService extends ChangeNotifier {
   }
 
   Future<void> deleteFriendRequest(String id) async {
-    await post('/friend/requests', {
-      'from': authUser!.id,
-      'to': id,
-    });
+    await delete('/friend/requests/$id');
+  }
+
+  Future<void> acceptFriendRequest(String id) async {
+    await post('/friend/requests/$id/accept', {});
+  }
+
+  Future<void> rejectFriendRequest(String id) async {
+    await post('/friend/requests/$id/reject', {});
   }
 
   final Map<String, CalendarEvents> _friendSchedules = {

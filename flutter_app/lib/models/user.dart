@@ -11,6 +11,7 @@ class User {
   final String firstName;
   final String lastName;
   final String picture;
+  final int visibility;
 
   const User({
     required this.id,
@@ -18,13 +19,14 @@ class User {
     required this.firstName,
     required this.lastName,
     required this.picture,
+    required this.visibility,
   });
 
   String get fullName => '$firstName $lastName';
 
   @override
   String toString() {
-    return '{User id:"$id" email:"$email" firstName:"$firstName" lastName:"$lastName" picture:"$picture"}';
+    return '{User id:"$id" email:"$email" firstName:"$firstName" lastName:"$lastName" picture:"$picture" visibility:"$visibility"}';
   }
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

@@ -43,11 +43,12 @@ type Calendar struct {
 
 // User profile to return as json to frontend
 type UserProfile struct {
-	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	Email     string             `json:"email" bson:"email,omitempty"`
-	FirstName string             `json:"firstName" bson:"firstName,omitempty"`
-	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
-	Picture   string             `json:"picture" bson:"picture,omitempty"`
+	Id         primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Email      string             `json:"email" bson:"email,omitempty"`
+	FirstName  string             `json:"firstName" bson:"firstName,omitempty"`
+	LastName   string             `json:"lastName" bson:"lastName,omitempty"`
+	Picture    string             `json:"picture" bson:"picture,omitempty"`
+	Visibility *int               `json:"visibility" bson:"visibility,omitempty"`
 }
 
 // Get a UserProfile object from the given User object

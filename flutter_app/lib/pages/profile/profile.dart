@@ -3,6 +3,7 @@ import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/auth_service.dart';
 import 'package:flutter_app/pages/profile/expansion_panel.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +23,7 @@ class Setting {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool _active = false;
-  int _visibility = 1;
+  int _visibility = 0;
   bool _noficiations = false;
   double settingHeight = 61.0;
   var options = [
@@ -36,31 +37,33 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: SchejAppBar(titleString: 'Friends', isRoot: true),
       body: Container(
-        padding: const EdgeInsets.all(25.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildProfileSection(),
-              const SizedBox(height: 40.0),
-              _buildSettingsSection(),
-              const SizedBox(height: 150.0),
-              _buildSignOutSection(),
-            ],
-          ),
-        ),
-      ),
+          padding: const EdgeInsets.all(25.0),
+          child: Consumer<ApiService>(
+            builder: (context, api, child) => SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildProfileSection(api),
+                  const SizedBox(height: 40.0),
+                  _buildSettingsSection(api),
+                  const SizedBox(height: 150.0),
+                  _buildSignOutSection(),
+                ],
+              ),
+            ),
+          )),
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(ApiService api) {
     return Center(
-      child: Column(children: const [
+      child: Column(children: [
         CircleAvatar(
-          backgroundImage: NetworkImage('https://i.imgur.com/HkLY72h.jpg'),
+          backgroundImage: NetworkImage('${api.authUser?.picture}'),
           radius: 35,
         ),
-        Text("Tony Xin", style: SchejFonts.header),
-        Text("tonyxin@berkeley.edu", style: SchejFonts.body),
+        Text('${api.authUser?.firstName} ${api.authUser?.lastName}',
+            style: SchejFonts.header),
+        Text('${api.authUser?.email}', style: SchejFonts.body),
       ]),
     );
   }
@@ -78,17 +81,17 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSettingsSection() {
+  Widget _buildSettingsSection(ApiService api) {
     return Column(
       children: [
-        _buildVisibilitySetting(),
+        _buildVisibilitySetting(api),
         const SizedBox(height: 10),
         _buildNotificationsSetting(),
       ],
     );
   }
 
-  Widget _buildVisibilitySetting() {
+  Widget _buildVisibilitySetting(ApiService api) {
     return CustomExpansionPanelList(
       expansionCallback: (panelIndex, isExpanded) {
         _active = !_active;
@@ -108,7 +111,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   Row(
                     children: [
-                      Text(options[_visibility].name, style: SchejFonts.body),
+                      Text(options[api.authUser?.visibility ?? 0].name,
+                          style: SchejFonts.body),
                     ],
                   ),
                 ],
@@ -138,11 +142,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         scale: 1.4,
                         child: Radio(
                           value: i,
-                          groupValue: _visibility,
+                          groupValue: api.authUser?.visibility,
                           activeColor: SchejColors.green,
                           onChanged: (int? value) {
                             setState(() {
                               _visibility = value!;
+                              api.updateUserVisibility(_visibility);
                             });
                           },
                         ),
