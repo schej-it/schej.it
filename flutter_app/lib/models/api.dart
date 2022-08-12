@@ -137,6 +137,13 @@ class ApiService extends ChangeNotifier {
     return filteredFriends;
   }
 
+  Future<void> sendFriendRequest(String id) async {
+    await post('/friend/requests', {
+      'from': authUser!.id,
+      'to': id,
+    });
+  }
+
   final Map<String, CalendarEvents> _friendSchedules = {
     '123': CalendarEvents(
       events: [
@@ -306,21 +313,20 @@ class ApiService extends ChangeNotifier {
   // Methods to send http requests to the API
   /////////////////////////////////////////////
 
-  static Future<Map<String, dynamic>> get(String path) async {
+  static Future<dynamic> get(String path) async {
     return await requestMethod(HttpMethod.GET, path);
   }
 
-  static Future<Map<String, dynamic>> post(String path, dynamic body) async {
+  static Future<dynamic> post(String path, dynamic body) async {
     return await requestMethod(HttpMethod.POST, path, body: body);
   }
 
-  static Future<Map<String, dynamic>> patch(String path, dynamic body) async {
+  static Future<dynamic> patch(String path, dynamic body) async {
     return await requestMethod(HttpMethod.PATCH, path, body: body);
   }
 
   // Send the given request with the specified method
-  static Future<Map<String, dynamic>> requestMethod(
-      HttpMethod method, String path,
+  static Future<dynamic> requestMethod(HttpMethod method, String path,
       {dynamic body = ''}) async {
     String url = '$serverAddress$path';
     Response r;
@@ -352,7 +358,7 @@ class ApiService extends ChangeNotifier {
 
     // Get json object to return
     String response = r.content();
-    Map<String, dynamic> json = jsonDecode(response);
+    dynamic json = jsonDecode(response);
 
     // Write sessionCookie to secure storage if it was set on this request
     final cookieJar = Requests.extractResponseCookies(r.headers);
