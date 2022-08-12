@@ -144,6 +144,13 @@ class ApiService extends ChangeNotifier {
     });
   }
 
+  Future<void> deleteFriendRequest(String id) async {
+    await post('/friend/requests', {
+      'from': authUser!.id,
+      'to': id,
+    });
+  }
+
   final Map<String, CalendarEvents> _friendSchedules = {
     '123': CalendarEvents(
       events: [
@@ -321,6 +328,10 @@ class ApiService extends ChangeNotifier {
     return await requestMethod(HttpMethod.POST, path, body: body);
   }
 
+  static Future<dynamic> delete(String path) async {
+    return await requestMethod(HttpMethod.DELETE, path);
+  }
+
   static Future<dynamic> patch(String path, dynamic body) async {
     return await requestMethod(HttpMethod.PATCH, path, body: body);
   }
@@ -340,6 +351,9 @@ class ApiService extends ChangeNotifier {
           url,
           json: body,
         );
+        break;
+      case HttpMethod.DELETE:
+        r = await Requests.delete(url);
         break;
       case HttpMethod.PATCH:
         r = await Requests.patch(
