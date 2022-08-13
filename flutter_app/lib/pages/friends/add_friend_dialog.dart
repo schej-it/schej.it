@@ -4,6 +4,8 @@ import 'package:flutter_app/components/friends/add_friend_card.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/models/api.dart';
+import 'package:provider/provider.dart';
 
 class AddFriendDialog extends StatefulWidget {
   final VoidCallback onClose;
@@ -25,10 +27,26 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     {'name': 'Arthi Singh', 'sent': false},
   ];
 
+  var realResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    _searchTextController.addListener(_updateSearchResults);
+  }
+
   @override
   void dispose() {
     _searchTextController.dispose();
     super.dispose();
+  }
+
+  void _updateSearchResults() {
+    ApiService api = context.read<ApiService>();
+    api.refreshUserSearchResults(_searchTextController.text);
+    print('Second text field: ${_searchTextController.text}');
   }
 
   @override
@@ -49,7 +67,11 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
         child: Column(
           children: [
             _buildSearchTextField(),
-            Expanded(child: _buildResults()),
+            Expanded(
+              child: Consumer<ApiService>(
+                builder: (context, api, child) => _buildResults(api),
+              ),
+            ),
           ],
         ),
       ),
@@ -74,16 +96,16 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     return textField;
   }
 
-  Widget _buildResults() {
+  Widget _buildResults(ApiService api) {
     return ListView.builder(
-      itemCount: results.length,
+      itemCount: api.userSearchResults.length,
       itemBuilder: (context, index) {
-        final result = results[index];
+        final result = api.userSearchResults[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: AddFriendCard(
-            name: result['name'] as String,
-            requestAlreadySent: result['sent'] as bool,
+            name: result.fullName,
+            requestAlreadySent: false,
           ),
         );
       },

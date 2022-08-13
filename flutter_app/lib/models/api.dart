@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_app/models/calendar_event.dart';
+import 'package:flutter_app/models/friend_request.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -116,23 +117,27 @@ class ApiService extends ChangeNotifier {
   };
   Map<String, User> get friends => _friends;
 
-  List<dynamic>? _friendRequests;
-  List<dynamic>? get friendRequests => _friendRequests;
-
-  // Gets a user's friends and sets [_friends] to it
+  // Gets a user's friends and sets [_friends] to it.
   Future<void> refreshFriendsList() async {
     _friends.clear();
-    final friendsArray = await get('/friends');
-    for (var friend in friendsArray) {
+    final result = await get('/friends');
+    for (var friend in result) {
       final f = User.fromJson(friend);
       _friends[f.id] = f;
     }
   }
 
-  // Gets a user's friend requests and sets [_friendRequests] to it
+  final Map<String, FriendRequest> _friendRequests = <String, FriendRequest>{};
+  Map<String, FriendRequest> get friendRequests => _friendRequests;
+
+  // Gets a user's friend requests and sets [_friendRequests] to it.
   Future<void> refreshFriendRequestsList() async {
-    final friendRequests = await get('/friends/requests');
-    _friendRequests = friendRequests;
+    _friendRequests.clear();
+    final result = await get('/friends/requests');
+    for (var request in result) {
+      final r = FriendRequest.fromJson(request);
+      _friendRequests[r.id] = r;
+    }
   }
 
   List<User> get friendsList {
@@ -144,7 +149,7 @@ class ApiService extends ChangeNotifier {
   }
 
   User? getFriendById(String id) {
-    print('hi');
+    refreshFriendRequestsList();
     return friends[id];
   }
 
@@ -304,20 +309,25 @@ class ApiService extends ChangeNotifier {
   // Users
   ///////////////////////////////////////////
 
-  List<dynamic>? _searchResults;
-  List<dynamic>? get searchResults => _searchResults;
+  final List<User> _userSearchResults = [];
+  List<User> get userSearchResults => _userSearchResults;
 
-  // Gets a search results [_searchResults] to it
+  // Gets search results and sets [_searchResults] to it.
   Future<void> refreshUserSearchResults(String query) async {
+    _userSearchResults.clear();
     final result = await get('/users?query=$query');
-    _searchResults = result;
+    for (var user in result) {
+      final u = User.fromJson(user);
+      _userSearchResults.add(u);
+    }
+    print(_userSearchResults);
   }
 
   ////////////////////////////////////////////
   // Auth
   ////////////////////////////////////////////
 
-  // Returns whether user is authenticated on server based on session cookie
+  // Returns whether user is authenticated on server based on session cookie.
   Future<bool> isSignedIn() async {
     try {
       await get('/auth/status');
