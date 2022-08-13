@@ -58,11 +58,12 @@ func getFriends(c *gin.Context) {
 			"as":           "friends",
 		}},
 		{"$project": bson.M{
-			"friends._id":       1,
-			"friends.firstName": 1,
-			"friends.picture":   1,
-			"friends.lastName":  1,
-			"friends.email":     1,
+			"friends._id":        1,
+			"friends.firstName":  1,
+			"friends.picture":    1,
+			"friends.lastName":   1,
+			"friends.email":      1,
+			"friends.visibility": 1,
 		}},
 	})
 	if err != nil {

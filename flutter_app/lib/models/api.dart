@@ -40,6 +40,7 @@ class ApiService extends ChangeNotifier {
 
   // Updates a user's visibility
   Future<void> updateUserVisibility(int visibility) async {
+    refreshFriendsList();
     await post('/user/visibility', {'visibility': visibility});
   }
 
@@ -84,7 +85,7 @@ class ApiService extends ChangeNotifier {
   // Friends
   ///////////////////////////////////////////
 
-  Map<String, User> _friends = <String, User>{
+  final Map<String, User> _friends = <String, User>{
     '123': const User(
       id: '123',
       email: 'liu.z.jonathan@gmail.com',
@@ -120,8 +121,15 @@ class ApiService extends ChangeNotifier {
 
   // Gets a user's friends and sets [_friends] to it
   Future<void> refreshFriendsList() async {
+    print('in here');
+    _friends.clear();
     final friendsArray = await get('/friends');
-    _friends = friendsArray;
+    print(friendsArray);
+    for (var friend in friendsArray) {
+      final f = User.fromJson(friend);
+      _friends[f.id] = f;
+    }
+    print(_friends);
   }
 
   // Gets a user's friend requests and sets [_friendRequests] to it
@@ -139,6 +147,7 @@ class ApiService extends ChangeNotifier {
   }
 
   User? getFriendById(String id) {
+    print('hi');
     return friends[id];
   }
 
@@ -153,21 +162,24 @@ class ApiService extends ChangeNotifier {
     return filteredFriends;
   }
 
+  // Sends a friend request to a user with [id].
   Future<void> sendFriendRequest(String id) async {
     await post('/friend/requests', {
-      'from': authUser!.id,
       'to': id,
     });
   }
 
+  // Deletes a friend request with [id].
   Future<void> deleteFriendRequest(String id) async {
     await delete('/friend/requests/$id');
   }
 
+  // Accept a friend request with [id].
   Future<void> acceptFriendRequest(String id) async {
     await post('/friend/requests/$id/accept', {});
   }
 
+  // Reject a friend request with [id].
   Future<void> rejectFriendRequest(String id) async {
     await post('/friend/requests/$id/reject', {});
   }
