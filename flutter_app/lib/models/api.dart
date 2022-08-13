@@ -121,15 +121,12 @@ class ApiService extends ChangeNotifier {
 
   // Gets a user's friends and sets [_friends] to it
   Future<void> refreshFriendsList() async {
-    print('in here');
     _friends.clear();
     final friendsArray = await get('/friends');
-    print(friendsArray);
     for (var friend in friendsArray) {
       final f = User.fromJson(friend);
       _friends[f.id] = f;
     }
-    print(_friends);
   }
 
   // Gets a user's friend requests and sets [_friendRequests] to it
