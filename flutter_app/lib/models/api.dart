@@ -38,8 +38,8 @@ class ApiService extends ChangeNotifier {
     _authUser = User.fromJson(userMap);
   }
 
+  // Updates a user's visibility
   Future<void> updateUserVisibility(int visibility) async {
-    print(visibility);
     await post('/user/visibility', {'visibility': visibility});
   }
 
@@ -115,10 +115,19 @@ class ApiService extends ChangeNotifier {
   };
   Map<String, User> get friends => _friends;
 
+  List<dynamic>? _friendRequests;
+  List<dynamic>? get friendRequests => _friendRequests;
+
   // Gets a user's friends and sets [_friends] to it
   Future<void> refreshFriendsList() async {
     final friendsArray = await get('/friends');
     _friends = friendsArray;
+  }
+
+  // Gets a user's friend requests and sets [_friendRequests] to it
+  Future<void> refreshFriendRequestsList() async {
+    final friendRequests = await get('/friends/requests');
+    _friendRequests = friendRequests;
   }
 
   List<User> get friendsList {
@@ -280,6 +289,19 @@ class ApiService extends ChangeNotifier {
 
   CalendarEvents? getFriendScheduleById(String id) {
     return _friendSchedules[id];
+  }
+
+  ///////////////////////////////////////////
+  // Users
+  ///////////////////////////////////////////
+
+  List<dynamic>? _searchResults;
+  List<dynamic>? get searchResults => _searchResults;
+
+  // Gets a search results [_searchResults] to it
+  Future<void> refreshUserSearchResults(String query) async {
+    final result = await get('/users?query=$query');
+    _searchResults = result;
   }
 
   ////////////////////////////////////////////

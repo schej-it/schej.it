@@ -33,24 +33,33 @@ class _ProfilePageState extends State<ProfilePage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    final api = context.read<ApiService>();
+    _visibility = api.authUser?.visibility ?? 0;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: SchejAppBar(titleString: 'Friends', isRoot: true),
-      body: Container(
+      body: SingleChildScrollView(
+        child: Container(
           padding: const EdgeInsets.all(25.0),
           child: Consumer<ApiService>(
-            builder: (context, api, child) => SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildProfileSection(api),
-                  const SizedBox(height: 40.0),
-                  _buildSettingsSection(api),
-                  const SizedBox(height: 150.0),
-                  _buildSignOutSection(),
-                ],
-              ),
+            builder: (context, api, child) => Column(
+              children: [
+                _buildProfileSection(api),
+                const SizedBox(height: 40.0),
+                _buildSettingsSection(api),
+                const SizedBox(height: 150.0),
+                _buildSignOutSection(),
+              ],
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
@@ -111,8 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   Row(
                     children: [
-                      Text(options[api.authUser?.visibility ?? 0].name,
-                          style: SchejFonts.body),
+                      Text(options[_visibility].name, style: SchejFonts.body),
                     ],
                   ),
                 ],
@@ -142,7 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         scale: 1.4,
                         child: Radio(
                           value: i,
-                          groupValue: api.authUser?.visibility,
+                          groupValue: _visibility,
                           activeColor: SchejColors.green,
                           onChanged: (int? value) {
                             setState(() {
