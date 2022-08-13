@@ -105,6 +105,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
           padding: const EdgeInsets.only(bottom: 10),
           child: AddFriendCard(
             name: result.fullName,
+            picture: result.picture,
             requestAlreadySent: false,
           ),
         );

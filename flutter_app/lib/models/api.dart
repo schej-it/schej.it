@@ -320,7 +320,6 @@ class ApiService extends ChangeNotifier {
       final u = User.fromJson(user);
       _userSearchResults.add(u);
     }
-    print(_userSearchResults);
   }
 
   ////////////////////////////////////////////
