@@ -38,6 +38,11 @@ class ApiService extends ChangeNotifier {
     _authUser = User.fromJson(userMap);
   }
 
+  // Updates a user's visibility
+  Future<void> updateUserVisibility(int visibility) async {
+    await post('/user/visibility', {'visibility': visibility});
+  }
+
   final CalendarEvents _authUserSchedule = CalendarEvents(
     events: [
       CalendarEvent(
@@ -79,7 +84,7 @@ class ApiService extends ChangeNotifier {
   // Friends
   ///////////////////////////////////////////
 
-  final Map<String, User> _friends = <String, User>{
+  Map<String, User> _friends = <String, User>{
     '123': const User(
       id: '123',
       email: 'liu.z.jonathan@gmail.com',
@@ -87,6 +92,7 @@ class ApiService extends ChangeNotifier {
       lastName: 'Liu',
       picture:
           'https://lh3.googleusercontent.com/a-/AFdZucrz7tSsASL-GwauN8bw3wMswC_Kiuo6Ut8ZGvRtnO4=s96-c',
+      visibility: 0,
     ),
     '321': const User(
       id: '321',
@@ -95,6 +101,7 @@ class ApiService extends ChangeNotifier {
       lastName: 'Xin',
       picture:
           'https://lh3.googleusercontent.com/a-/AFdZucowznIWn8H4iYmZ1SYTMdRKvBOOgO8sBYTOhfp_3Q=s64-p-k-rw-no',
+      visibility: 0,
     ),
     'lol': const User(
       id: 'lol',
@@ -103,14 +110,24 @@ class ApiService extends ChangeNotifier {
       lastName: 'Moon',
       picture:
           'https://lh3.googleusercontent.com/a-/AFdZucrm6jLuiTfc8e-wKD3KZsFLfLhocVKUYoSRaLHfBQ=s64-p-k-rw-no',
+      visibility: 0,
     ),
   };
   Map<String, User> get friends => _friends;
 
-  // Gets the user's profile and sets [_authUser] to it
+  List<dynamic>? _friendRequests;
+  List<dynamic>? get friendRequests => _friendRequests;
+
+  // Gets a user's friends and sets [_friends] to it
   Future<void> refreshFriendsList() async {
     final friendsArray = await get('/friends');
-    print(friendsArray);
+    _friends = friendsArray;
+  }
+
+  // Gets a user's friend requests and sets [_friendRequests] to it
+  Future<void> refreshFriendRequestsList() async {
+    final friendRequests = await get('/friends/requests');
+    _friendRequests = friendRequests;
   }
 
   List<User> get friendsList {
@@ -122,7 +139,6 @@ class ApiService extends ChangeNotifier {
   }
 
   User? getFriendById(String id) {
-    refreshFriendsList();
     return friends[id];
   }
 
@@ -135,6 +151,25 @@ class ApiService extends ChangeNotifier {
       }
     });
     return filteredFriends;
+  }
+
+  Future<void> sendFriendRequest(String id) async {
+    await post('/friend/requests', {
+      'from': authUser!.id,
+      'to': id,
+    });
+  }
+
+  Future<void> deleteFriendRequest(String id) async {
+    await delete('/friend/requests/$id');
+  }
+
+  Future<void> acceptFriendRequest(String id) async {
+    await post('/friend/requests/$id/accept', {});
+  }
+
+  Future<void> rejectFriendRequest(String id) async {
+    await post('/friend/requests/$id/reject', {});
   }
 
   final Map<String, CalendarEvents> _friendSchedules = {
@@ -256,6 +291,19 @@ class ApiService extends ChangeNotifier {
     return _friendSchedules[id];
   }
 
+  ///////////////////////////////////////////
+  // Users
+  ///////////////////////////////////////////
+
+  List<dynamic>? _searchResults;
+  List<dynamic>? get searchResults => _searchResults;
+
+  // Gets a search results [_searchResults] to it
+  Future<void> refreshUserSearchResults(String query) async {
+    final result = await get('/users?query=$query');
+    _searchResults = result;
+  }
+
   ////////////////////////////////////////////
   // Auth
   ////////////////////////////////////////////
@@ -306,21 +354,24 @@ class ApiService extends ChangeNotifier {
   // Methods to send http requests to the API
   /////////////////////////////////////////////
 
-  static Future<Map<String, dynamic>> get(String path) async {
+  static Future<dynamic> get(String path) async {
     return await requestMethod(HttpMethod.GET, path);
   }
 
-  static Future<Map<String, dynamic>> post(String path, dynamic body) async {
+  static Future<dynamic> post(String path, dynamic body) async {
     return await requestMethod(HttpMethod.POST, path, body: body);
   }
 
-  static Future<Map<String, dynamic>> patch(String path, dynamic body) async {
+  static Future<dynamic> delete(String path) async {
+    return await requestMethod(HttpMethod.DELETE, path);
+  }
+
+  static Future<dynamic> patch(String path, dynamic body) async {
     return await requestMethod(HttpMethod.PATCH, path, body: body);
   }
 
   // Send the given request with the specified method
-  static Future<Map<String, dynamic>> requestMethod(
-      HttpMethod method, String path,
+  static Future<dynamic> requestMethod(HttpMethod method, String path,
       {dynamic body = ''}) async {
     String url = '$serverAddress$path';
     Response r;
@@ -334,6 +385,9 @@ class ApiService extends ChangeNotifier {
           url,
           json: body,
         );
+        break;
+      case HttpMethod.DELETE:
+        r = await Requests.delete(url);
         break;
       case HttpMethod.PATCH:
         r = await Requests.patch(
@@ -352,7 +406,7 @@ class ApiService extends ChangeNotifier {
 
     // Get json object to return
     String response = r.content();
-    Map<String, dynamic> json = jsonDecode(response);
+    dynamic json = jsonDecode(response);
 
     // Write sessionCookie to secure storage if it was set on this request
     final cookieJar = Requests.extractResponseCookies(r.headers);

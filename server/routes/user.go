@@ -3,7 +3,6 @@ package routes
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -140,12 +139,12 @@ func updateVisibility(c *gin.Context) {
 
 	// Bind query parameters
 	payload := struct {
-		Visibility int `json:"visibility" binding:"required"`
+		Visibility *int `json:"visibility" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		logger.StdErr.Panicln(err)
 		return
 	}
-	fmt.Println(payload)
 
 	session := sessions.Default(c)
 	userId := utils.GetUserId(session)
