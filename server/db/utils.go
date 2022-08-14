@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -198,4 +199,27 @@ func UpdateDailyUserLog(user *models.User) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+}
+
+func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
+	RefreshUserTokenIfNecessary(user)
+
+	calendars, err := utils.GetCalendarList(user.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// Call the google calendar API to get a list of calendar events from the user's gcal
+	// TODO: get events for all user's calendars, not just selected calendars
+	calendarEvents := make([]models.CalendarEvent, 0)
+	for _, calendar := range calendars {
+		events, err := utils.GetCalendarEvents(user.AccessToken, calendar.Id, timeMin, timeMax)
+		if err != nil {
+			return nil, err
+		}
+
+		calendarEvents = append(calendarEvents, events...)
+	}
+
+	return calendarEvents, nil
 }

@@ -196,6 +196,16 @@ func Insert[T any](arr []T, index int, value T) ([]T, error) {
 	return arr, nil
 }
 
+// Returns whether the given slice contains the given value
+func Contains[T comparable](arr []T, value T) bool {
+	for _, v := range arr {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
 // Escapes regex for a string
 func EscapeRegExp(str string) string {
 	check := regexp.MustCompile(`([.*+?^${}()|[\]\\])`)
