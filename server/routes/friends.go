@@ -59,11 +59,12 @@ func getFriends(c *gin.Context) {
 			"as":           "friends",
 		}},
 		{"$project": bson.M{
-			"friends._id":       1,
-			"friends.firstName": 1,
-			"friends.picture":   1,
-			"friends.lastName":  1,
-			"friends.email":     1,
+			"friends._id":        1,
+			"friends.firstName":  1,
+			"friends.picture":    1,
+			"friends.lastName":   1,
+			"friends.email":      1,
+			"friends.visibility": 1,
 		}},
 	})
 	if err != nil {
@@ -167,21 +168,56 @@ func getFriendRequests(c *gin.Context) {
 	userId := utils.GetUserId(session)
 
 	// Get the friend requests associated with the current user
-	friendRequests := make([]models.FriendRequest, 0)
-	cursor, err := db.FriendRequestsCollection.Find(context.Background(), bson.M{
-		"$or": bson.A{
-			bson.M{"to": userId},
-			bson.M{"from": userId},
-		},
+	// friendRequests := make([]models.FriendRequest, 0)
+	// cursor, err := db.FriendRequestsCollection.Find(context.Background(), bson.M{
+	// 	"$or": bson.A{
+	// 		bson.M{"to": userId},
+	// 		bson.M{"from": userId},
+	// 	},
+	// })
+	// if err != nil {
+	// 	logger.StdErr.Panicln(err)
+	// }
+	// if err := cursor.All(context.Background(), &friendRequests); err != nil {
+	// 	logger.StdErr.Panicln(err)
+	// }
+
+	// c.JSON(http.StatusOK, friendRequests)
+
+	var result []models.FriendRequest
+
+	// Find and populate
+	cursor, err := db.FriendRequestsCollection.Aggregate(context.Background(), []bson.M{
+		{"$match": bson.M{
+			"$or": bson.A{
+				bson.M{"to": userId},
+				bson.M{"from": userId},
+			},
+		}},
+		{"$lookup": bson.M{
+			"from":         "users",
+			"localField":   "to",
+			"foreignField": "_id",
+			"as":           "toUser",
+		}},
+		{"$unwind": "$toUser"},
+		{"$lookup": bson.M{
+			"from":         "users",
+			"localField":   "from",
+			"foreignField": "_id",
+			"as":           "fromUser",
+		}},
+		{"$unwind": "$fromUser"},
 	})
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-	if err := cursor.All(context.Background(), &friendRequests); err != nil {
+	if err := cursor.All(context.Background(), &result); err != nil {
+		logger.StdOut.Println(result)
 		logger.StdErr.Panicln(err)
 	}
 
-	c.JSON(http.StatusOK, friendRequests)
+	c.JSON(http.StatusOK, result)
 }
 
 // @Summary Creates a new friend request

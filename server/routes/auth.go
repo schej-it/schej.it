@@ -140,6 +140,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		LastName:  lastName,
 		Picture:   picture,
 
+		// TODO: make sure this doesn't result in bugs, make sure doesn't reset to 0 randomly
 		Visibility: 0,
 
 		FriendIds: make([]primitive.ObjectID, 0),

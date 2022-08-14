@@ -30,15 +30,17 @@ func searchUsers(c *gin.Context) {
 
 	// Bind query parameters
 	payload := struct {
-		Query string `form:"query" binding:"required"`
+		Query *string `form:"query" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		logger.StdErr.Panicln(err)
 		return
 	}
 
+	query := *payload.Query
 	queryTermsRegex := make([]primitive.Regex, 0)
 
-	for _, s := range strings.Split(payload.Query, " ") {
+	for _, s := range strings.Split(query, " ") {
 		r := primitive.Regex{Pattern: utils.EscapeRegExp(s), Options: "i"}
 		queryTermsRegex = append(queryTermsRegex, r)
 	}
