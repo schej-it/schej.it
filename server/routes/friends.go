@@ -224,35 +224,38 @@ func getFriendRequests(c *gin.Context) {
 // @Tags friends
 // @Accept json
 // @Produce json
-// @Param payload body object{from=string,to=string} true "Object specifying the user IDs of who this request is sent from and to"
+// @Param payload body object{to=string} true "Object specifying the user IDs of who this request is sent from and to"
 // @Success 201 {object} models.FriendRequest "Friend request created"
 // @Success 200 "Friend request already exists from \"to\" to \"from\", and it was accepted"
 // @Router /friends/requests [post]
 func createFriendRequest(c *gin.Context) {
 	payload := struct {
-		From primitive.ObjectID `json:"from" binding:"required"`
-		To   primitive.ObjectID `json:"to" binding:"required"`
+		To primitive.ObjectID `json:"to" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 
-	// Check if user is allowed to create this friend request
+	// Get user info
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	if user.Id != payload.From {
-		c.JSON(http.StatusForbidden, gin.H{})
-		return
-	}
 
 	// TODOS: (not essential, because frontend should prevent these errors)
 	// TODO: If user is already friends with the user, return an error
-	// TODO: If user already sent a friend request with the same parameters, return an error
 
-	// If friend request already exists, accept it
+	// If friend request already exists, throw an error
+	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
+		"to":   payload.To,
+		"from": user.Id,
+	}); result.Err() != mongo.ErrNoDocuments {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	// If friend request already exists from the other user, accept it
 	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
 		"from": payload.To,
-		"to":   payload.From,
+		"to":   user.Id,
 	}); result.Err() != mongo.ErrNoDocuments {
 		var friendRequest models.FriendRequest
 		result.Decode(&friendRequest)
@@ -262,7 +265,7 @@ func createFriendRequest(c *gin.Context) {
 
 	// Insert new friend request
 	friendRequest := models.FriendRequest{
-		From:      payload.From,
+		From:      user.Id,
 		To:        payload.To,
 		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}

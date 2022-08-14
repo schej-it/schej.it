@@ -66,6 +66,8 @@ definitions:
         type: string
       picture:
         type: string
+      visibility:
+        type: integer
     type: object
   responses.Error:
     properties:
@@ -257,14 +259,52 @@ paths:
       summary: Gets all of users current friends
       tags:
       - friends
-  /friends/:id:
+  /friends/{id}:
     delete:
       consumes:
       - application/json
+      parameters:
+      - description: ID of friend
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200": {}
+      summary: Removes an existing friend
+      tags:
+      - friends
+  /friends/{id}/schedule:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID of friend
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Lower bound for event's start time to filter by
+        in: query
+        name: timeMin
+        required: true
+        type: string
+      - description: Upper bound for event's end time to filter by
+        in: query
+        name: timeMax
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CalendarEvent'
+            type: array
       summary: Removes an existing friend
       tags:
       - friends
@@ -292,8 +332,6 @@ paths:
           allOf:
           - type: object
           - properties:
-              from:
-                type: string
               to:
                 type: string
             type: object
