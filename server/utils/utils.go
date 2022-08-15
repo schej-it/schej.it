@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -153,12 +152,15 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	// Format response to return
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, item := range res.Items {
-		// Restructure event
-		calendarEvents = append(calendarEvents, models.CalendarEvent{
-			Summary:   item.Summary,
-			StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
-			EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
-		})
+		// Only include events that are not all day events
+		if !item.Start.DateTime.IsZero() {
+			// Restructure event
+			calendarEvents = append(calendarEvents, models.CalendarEvent{
+				Summary:   item.Summary,
+				StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
+				EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
+			})
+		}
 	}
 
 	return calendarEvents, nil
@@ -180,34 +182,20 @@ func GetDateAtTime(date time.Time, timeString string) time.Time {
 	return newDate
 }
 
-// Inserts the given value at the specified index in the slice. Returns the updated slice
-func Insert[T any](arr []T, index int, value T) ([]T, error) {
-	if index < 0 {
-		return nil, errors.New("index cannot be less than 0")
-	}
-
-	if index >= len(arr) {
-		return append(arr, value), nil
-	}
-
-	arr = append(arr[:index+1], arr[index:]...)
-	arr[index] = value
-
-	return arr, nil
-}
-
-// Returns whether the given slice contains the given value
-func Contains[T comparable](arr []T, value T) bool {
-	for _, v := range arr {
-		if v == value {
-			return true
-		}
-	}
-	return false
-}
-
 // Escapes regex for a string
 func EscapeRegExp(str string) string {
 	check := regexp.MustCompile(`([.*+?^${}()|[\]\\])`)
 	return check.ReplaceAllString(str, "\\${1}")
+}
+
+// Returns the correct client id given the token origin
+func GetClientIdFromTokenOrigin(tokenOrigin models.TokenOriginType) string {
+	switch tokenOrigin {
+	case models.ANDROID:
+		return os.Getenv("ANDROID_CLIENT_ID")
+	case models.IOS:
+		return os.Getenv("IOS_CLIENT_ID")
+	default:
+		return os.Getenv("CLIENT_ID")
+	}
 }

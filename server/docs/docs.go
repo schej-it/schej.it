@@ -485,7 +485,7 @@ var doc = `{
                 "tags": [
                     "friends"
                 ],
-                "summary": "Removes an existing friend",
+                "summary": "Returns the specified friend's schedule",
                 "parameters": [
                     {
                         "type": "string",

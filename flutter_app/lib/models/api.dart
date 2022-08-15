@@ -340,7 +340,7 @@ class ApiService extends ChangeNotifier {
   // Signs user in on the API and returns true if succeeded
   Future<bool> signIn(String accessToken, int expiresIn, String idToken,
       String refreshToken) async {
-    final int timezoneOffset = DateTime.now().timeZoneOffset.inMinutes;
+    final int timezoneOffset = -1 * DateTime.now().timeZoneOffset.inMinutes;
     try {
       await post(
         '/auth/sign-in-mobile',
@@ -350,6 +350,7 @@ class ApiService extends ChangeNotifier {
           'expiresIn': expiresIn,
           'idToken': idToken,
           'refreshToken': refreshToken,
+          'tokenOrigin': Platform.isAndroid ? 'android' : 'ios',
         },
       );
       await refreshAuthUserProfile();

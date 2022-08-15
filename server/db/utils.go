@@ -103,13 +103,13 @@ func DeleteFriendRequestById(friendRequestId string) {
 
 // If access token has expired, get a new token, update the user object, and save it to the database
 func RefreshUserTokenIfNecessary(u *models.User) {
-	//logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
+	// logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		//logger.StdOut.Println("REFRESHING TOKEN")
+		// logger.StdOut.Println("REFRESHING TOKEN")
 
 		// Refresh token by calling google token endpoint
 		values := url.Values{
-			"client_id":     {os.Getenv("CLIENT_ID")},
+			"client_id":     {utils.GetClientIdFromTokenOrigin(u.TokenOrigin)},
 			"client_secret": {os.Getenv("CLIENT_SECRET")},
 			"grant_type":    {"refresh_token"},
 			"refresh_token": {u.RefreshToken},
@@ -127,6 +127,9 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 			Scope       string `json:"scope"`
 			TokenType   string `json:"token_type"`
 		}{}
+		// defer resp.Body.Close()
+		// body, _ := io.ReadAll(resp.Body)
+		// logger.StdOut.Println(string(body))
 		json.NewDecoder(resp.Body).Decode(&res)
 
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)

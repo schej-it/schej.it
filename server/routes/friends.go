@@ -78,7 +78,7 @@ func getFriends(c *gin.Context) {
 
 }
 
-// @Summary Removes an existing friend
+// @Summary Returns the specified friend's schedule
 // @Tags friends
 // @Accept json
 // @Produce json

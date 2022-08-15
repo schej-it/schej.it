@@ -305,7 +305,7 @@ paths:
             items:
               $ref: '#/definitions/models.CalendarEvent'
             type: array
-      summary: Removes an existing friend
+      summary: Returns the specified friend's schedule
       tags:
       - friends
   /friends/requests:
