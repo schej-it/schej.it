@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/friends/friend_request_card.dart';
 import 'package:flutter_app/constants/constants.dart';
+import 'package:flutter_app/models/api.dart';
+import 'package:provider/provider.dart';
 
 class FriendRequestsTabWidget extends StatefulWidget {
   const FriendRequestsTabWidget({Key? key}) : super(key: key);
@@ -11,7 +13,7 @@ class FriendRequestsTabWidget extends StatefulWidget {
 }
 
 class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
-  // Variables
+  // Dummy test data.
   var friendRequests = [
     {'name': 'Winston Tilton', 'requestTimestamp': DateTime.now()},
     {
@@ -34,29 +36,41 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: _buildFriendRequestCards(),
-    );
+  void initState() {
+    super.initState();
+
+    final api = context.read<ApiService>();
+    api.refreshFriendRequestsList();
   }
 
-  Widget _buildFriendRequestCards() {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: Consumer<ApiService>(
+          builder: (context, api, child) => _buildFriendRequestCards(api),
+        ));
+  }
+
+  Widget _buildFriendRequestCards(ApiService api) {
     return ListView.builder(
-      itemCount: friendRequests.length + 1,
+      itemCount: api.friendRequests.length + 1,
       itemBuilder: (context, index) {
-        if (index == friendRequests.length) {
+        if (index == api.friendRequests.length) {
           // Return sized box so FAB doesn't overlap
           return const SizedBox(height: 70);
         }
 
-        final request = friendRequests[index];
+        final request = api.friendRequests[index];
         return Padding(
           padding: SchejConstants.pagePadding
               .copyWith(top: index == 0 ? 10 : 0, bottom: 10),
           child: FriendRequestCard(
-            name: request['name'] as String,
-            requestTimestamp: request['requestTimestamp'] as DateTime,
+            id: request.id,
+            name: request.fromUser.fullName,
+            requestTimestamp: request.createdAt,
+            picture: request.fromUser.picture,
+            api: context.read<ApiService>(),
           ),
         );
       },

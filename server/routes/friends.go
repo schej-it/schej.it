@@ -118,23 +118,6 @@ func getFriendRequests(c *gin.Context) {
 	session := sessions.Default(c)
 	userId := utils.GetUserId(session)
 
-	// Get the friend requests associated with the current user
-	// friendRequests := make([]models.FriendRequest, 0)
-	// cursor, err := db.FriendRequestsCollection.Find(context.Background(), bson.M{
-	// 	"$or": bson.A{
-	// 		bson.M{"to": userId},
-	// 		bson.M{"from": userId},
-	// 	},
-	// })
-	// if err != nil {
-	// 	logger.StdErr.Panicln(err)
-	// }
-	// if err := cursor.All(context.Background(), &friendRequests); err != nil {
-	// 	logger.StdErr.Panicln(err)
-	// }
-
-	// c.JSON(http.StatusOK, friendRequests)
-
 	var result []models.FriendRequest
 
 	// Find and populate

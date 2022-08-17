@@ -19,15 +19,13 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
   // Controllers
   final TextEditingController _searchTextController = TextEditingController();
 
-  // Variables
+  // Dummy data.
   var results = [
     {'name': 'Winston Tilton', 'sent': false},
     {'name': 'Samantha Jones', 'sent': true},
     {'name': 'Tyler Smithson', 'sent': false},
     {'name': 'Arthi Singh', 'sent': false},
   ];
-
-  var realResults = [];
 
   @override
   void initState() {
@@ -46,7 +44,6 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
   void _updateSearchResults() {
     ApiService api = context.read<ApiService>();
     api.refreshUserSearchResults(_searchTextController.text);
-    print('Second text field: ${_searchTextController.text}');
   }
 
   @override

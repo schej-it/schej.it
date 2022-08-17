@@ -22,9 +22,6 @@ class FriendRequest {
     required this.createdAt,
   });
 
-  String get fromUserFullName => '${fromUser.firstName} ${fromUser.lastName}';
-  String get toUserFullName => '${toUser.firstName} ${toUser.lastName}';
-
   @override
   String toString() {
     return '{User id:"$id" from:"$from" to:"$to" createdAt:"$createdAt"}';
