@@ -26,6 +26,16 @@ class ApiService extends ChangeNotifier {
     }
   }
 
+  // Initialize everything
+  Future<void> init() async {
+    await Future.wait([
+      refreshAuthUserProfile(),
+      refreshAuthUserSchedule(),
+      refreshFriendRequestsList(),
+      refreshFriendsList(),
+    ]);
+  }
+
   ///////////////////////////////////////////
   // Current user
   ///////////////////////////////////////////
@@ -39,47 +49,32 @@ class ApiService extends ChangeNotifier {
     _authUser = User.fromJson(userMap);
   }
 
+  // Gets the user's schedule and sets [_authUserSchedule] to it
+  Future<void> refreshAuthUserSchedule() async {
+    final calendarEvents = <CalendarEvent>[];
+
+    final timeMin =
+        getLocalDateWithTime(DateTime.now(), 0).toUtc().toIso8601String();
+    final timeMax = getLocalDateWithTime(
+      DateTime.now().add(const Duration(days: 7)),
+      23.99,
+    ).toUtc().toIso8601String();
+
+    final jsonEvents =
+        await get('/user/calendar?timeMin=$timeMin&timeMax=$timeMax');
+    for (final event in jsonEvents) {
+      calendarEvents.add(CalendarEvent.fromJson(event));
+    }
+    _authUserSchedule = CalendarEvents(events: calendarEvents);
+  }
+
   // Updates a user's visibility
   Future<void> updateUserVisibility(int visibility) async {
     refreshFriendsList();
     await post('/user/visibility', {'visibility': visibility});
   }
 
-  final CalendarEvents _authUserSchedule = CalendarEvents(
-    events: [
-      CalendarEvent(
-        title: 'Event',
-        startDate: getLocalDateWithTime(DateTime.now(), 9.5),
-        endDate: getLocalDateWithTime(DateTime.now(), 12),
-      ),
-      CalendarEvent(
-        title: 'Introduction to Failure Analysis',
-        startDate: getLocalDateWithTime(DateTime.now(), 13),
-        endDate: getLocalDateWithTime(DateTime.now(), 14.5),
-      ),
-      // CalendarEvent(
-      //   title: 'cool',
-      //   startDate: getLocalDateWithTime(
-      //       DateTime.now().add(const Duration(days: 1)), 0),
-      //   endDate: getLocalDateWithTime(
-      //       DateTime.now().add(const Duration(days: 1)), 15),
-      // ),
-      CalendarEvent(
-        title: 'what',
-        startDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 15),
-        endDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 20),
-      ),
-      CalendarEvent(
-        title: 'coolio',
-        startDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 18),
-        endDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 21),
-      ),
-    ],
-  );
+  CalendarEvents _authUserSchedule = CalendarEvents(events: []);
   CalendarEvents get authUserSchedule => _authUserSchedule;
 
   ///////////////////////////////////////////
@@ -330,7 +325,13 @@ class ApiService extends ChangeNotifier {
   Future<bool> isSignedIn() async {
     try {
       await get('/auth/status');
-      await refreshAuthUserProfile();
+      try {
+        await init();
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
+      }
       return true;
     } catch (e) {
       return false;
@@ -353,7 +354,14 @@ class ApiService extends ChangeNotifier {
           'tokenOrigin': Platform.isAndroid ? 'android' : 'ios',
         },
       );
-      await refreshAuthUserProfile();
+
+      try {
+        await init();
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
+      }
       return true;
     } catch (e) {
       // TODO: show dialog that sign in failed

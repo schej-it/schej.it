@@ -184,7 +184,7 @@ func getFriendRequests(c *gin.Context) {
 
 	// c.JSON(http.StatusOK, friendRequests)
 
-	var result []models.FriendRequest
+	result := make([]models.FriendRequest, 0)
 
 	// Find and populate
 	cursor, err := db.FriendRequestsCollection.Aggregate(context.Background(), []bson.M{

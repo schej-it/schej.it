@@ -110,10 +110,13 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 		// Refresh token by calling google token endpoint
 		values := url.Values{
 			"client_id":     {utils.GetClientIdFromTokenOrigin(u.TokenOrigin)},
-			"client_secret": {os.Getenv("CLIENT_SECRET")},
 			"grant_type":    {"refresh_token"},
 			"refresh_token": {u.RefreshToken},
 		}
+		if u.TokenOrigin == models.WEB {
+			values.Add("client_secret", os.Getenv("CLIENT_SECRET"))
+		}
+
 		resp, err := http.PostForm(
 			"https://oauth2.googleapis.com/token",
 			values,
@@ -126,6 +129,7 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 			ExpiresIn   int    `json:"expires_in"`
 			Scope       string `json:"scope"`
 			TokenType   string `json:"token_type"`
+			Error       bson.M `json:"error"`
 		}{}
 		// defer resp.Body.Close()
 		// body, _ := io.ReadAll(resp.Body)
