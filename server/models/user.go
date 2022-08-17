@@ -32,6 +32,7 @@ type User struct {
 	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty"`
 	AccessTokenExpireDate primitive.DateTime `json:"accessTokenExpireDate" bson:"accessTokenExpireDate,omitempty"`
 	RefreshToken          string             `json:"refreshToken" bson:"refreshToken,omitempty"`
+	TokenOrigin           TokenOriginType    `json:"tokenOrigin" bson:"tokenOrigin,omitempty"`
 }
 
 // Calendar contains information about a user's calendar
@@ -65,3 +66,13 @@ func (u *User) GetProfile() *UserProfile {
 	}
 	return &profile
 }
+
+// Declare the possible types of TokenOrigin
+type TokenOriginType string
+
+const (
+	Undefined TokenOriginType = ""
+	IOS       TokenOriginType = "ios"
+	ANDROID   TokenOriginType = "android"
+	WEB       TokenOriginType = "web"
+)

@@ -91,7 +91,7 @@ func signIn(c *gin.Context) {
 		logger.StdErr.Panicln(string(data))
 	}
 
-	signInHelper(c, res.AccessToken, res.IdToken, res.ExpiresIn, res.RefreshToken, payload.TimezoneOffset)
+	signInHelper(c, res.AccessToken, res.IdToken, res.ExpiresIn, res.RefreshToken, payload.TimezoneOffset, models.WEB)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -106,23 +106,24 @@ func signIn(c *gin.Context) {
 // @Router /auth/sign-in-mobile [post]
 func signInMobile(c *gin.Context) {
 	payload := struct {
-		TimezoneOffset int    `json:"timezoneOffset" binding:"required"`
-		AccessToken    string `json:"accessToken" binding:"required"`
-		IdToken        string `json:"idToken" binding:"required"`
-		ExpiresIn      int    `json:"expiresIn" binding:"required"`
-		RefreshToken   string `json:"refreshToken" binding:"required"`
+		TimezoneOffset int                    `json:"timezoneOffset" binding:"required"`
+		AccessToken    string                 `json:"accessToken" binding:"required"`
+		IdToken        string                 `json:"idToken" binding:"required"`
+		ExpiresIn      int                    `json:"expiresIn" binding:"required"`
+		RefreshToken   string                 `json:"refreshToken" binding:"required"`
+		TokenOrigin    models.TokenOriginType `json:"tokenOrigin" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
-	signInHelper(c, payload.AccessToken, payload.IdToken, payload.ExpiresIn, payload.RefreshToken, payload.TimezoneOffset)
+	signInHelper(c, payload.AccessToken, payload.IdToken, payload.ExpiresIn, payload.RefreshToken, payload.TimezoneOffset, payload.TokenOrigin)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Helper function to sign user in with the given parameters from the google oauth route
-func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn int, refreshToken string, timezoneOffset int) {
+func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn int, refreshToken string, timezoneOffset int, tokenOrigin models.TokenOriginType) {
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(expiresIn)
 
@@ -151,6 +152,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		RefreshToken:          refreshToken,
 
 		TimezoneOffset: timezoneOffset,
+		TokenOrigin:    tokenOrigin,
 	}
 
 	// Update user if exists

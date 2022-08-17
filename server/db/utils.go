@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -102,13 +103,13 @@ func DeleteFriendRequestById(friendRequestId string) {
 
 // If access token has expired, get a new token, update the user object, and save it to the database
 func RefreshUserTokenIfNecessary(u *models.User) {
-	//logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
+	// logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		//logger.StdOut.Println("REFRESHING TOKEN")
+		// logger.StdOut.Println("REFRESHING TOKEN")
 
 		// Refresh token by calling google token endpoint
 		values := url.Values{
-			"client_id":     {os.Getenv("CLIENT_ID")},
+			"client_id":     {utils.GetClientIdFromTokenOrigin(u.TokenOrigin)},
 			"client_secret": {os.Getenv("CLIENT_SECRET")},
 			"grant_type":    {"refresh_token"},
 			"refresh_token": {u.RefreshToken},
@@ -126,6 +127,9 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 			Scope       string `json:"scope"`
 			TokenType   string `json:"token_type"`
 		}{}
+		// defer resp.Body.Close()
+		// body, _ := io.ReadAll(resp.Body)
+		// logger.StdOut.Println(string(body))
 		json.NewDecoder(resp.Body).Decode(&res)
 
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
@@ -198,4 +202,27 @@ func UpdateDailyUserLog(user *models.User) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+}
+
+func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
+	RefreshUserTokenIfNecessary(user)
+
+	calendars, err := utils.GetCalendarList(user.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	// Call the google calendar API to get a list of calendar events from the user's gcal
+	// TODO: get events for all user's calendars, not just selected calendars
+	calendarEvents := make([]models.CalendarEvent, 0)
+	for _, calendar := range calendars {
+		events, err := utils.GetCalendarEvents(user.AccessToken, calendar.Id, timeMin, timeMax)
+		if err != nil {
+			return nil, err
+		}
+
+		calendarEvents = append(calendarEvents, events...)
+	}
+
+	return calendarEvents, nil
 }

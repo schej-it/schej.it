@@ -307,23 +307,6 @@ var doc = `{
                 }
             }
         },
-        "/friends/:id": {
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Removes an existing friend",
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
         "/friends/requests": {
             "get": {
                 "consumes": [
@@ -365,9 +348,6 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "from": {
-                                            "type": "string"
-                                        },
                                         "to": {
                                             "type": "string"
                                         }
@@ -465,6 +445,80 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {}
+                }
+            }
+        },
+        "/friends/{id}": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Removes an existing friend",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of friend",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/friends/{id}/schedule": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Returns the specified friend's schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of friend",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lower bound for event's start time to filter by",
+                        "name": "timeMin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upper bound for event's end time to filter by",
+                        "name": "timeMax",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CalendarEvent"
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -740,6 +794,9 @@ var doc = `{
                 },
                 "picture": {
                     "type": "string"
+                },
+                "visibility": {
+                    "type": "integer"
                 }
             }
         },

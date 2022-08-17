@@ -25,6 +25,7 @@ func InitFriends(router *gin.Engine) {
 	friendsRouter.Use(middleware.AuthRequired())
 
 	friendsRouter.GET("", getFriends)
+	friendsRouter.GET("/:id/schedule", getFriendsSchedule)
 	friendsRouter.DELETE("/:id", deleteFriend)
 	friendsRouter.GET("/requests", getFriendRequests)
 	friendsRouter.POST("/requests", createFriendRequest)
@@ -77,24 +78,72 @@ func getFriends(c *gin.Context) {
 
 }
 
+// @Summary Returns the specified friend's schedule
+// @Tags friends
+// @Accept json
+// @Produce json
+// @Param id path string true "ID of friend"
+// @Param timeMin query string true "Lower bound for event's start time to filter by"
+// @Param timeMax query string true "Upper bound for event's end time to filter by"
+// @Success 200 {object} []models.CalendarEvent
+// @Router /friends/{id}/schedule [get]
+func getFriendsSchedule(c *gin.Context) {
+	// Bind query parameters
+	payload := struct {
+		TimeMin time.Time `form:"timeMin" binding:"required"`
+		TimeMax time.Time `form:"timeMax" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	friendId := c.Param("id")
+
+	// See if friend to check schedule of is an existing user
+	friend := db.GetUserById(friendId)
+	if friend == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.UserDoesNotExist})
+		return
+	}
+
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	friendObjectID, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		logger.StdErr.Panic(err)
+	}
+
+	// Make sure user is friends with the given friend
+	if !utils.Contains(user.FriendIds, friendObjectID) {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotFriends})
+		return
+	}
+
+	// Get calendar events
+	calendarEvents, googleErr := db.GetUsersCalendarEvents(friend, payload.TimeMin, payload.TimeMax)
+	if googleErr != nil {
+		c.JSON(googleErr.Code, responses.Error{Error: *googleErr})
+		return
+	}
+
+	c.JSON(http.StatusOK, calendarEvents)
+}
+
 // @Summary Removes an existing friend
 // @Tags friends
 // @Accept json
 // @Produce json
+// @Param id path string true "ID of friend"
 // @Success 200
-// @Router /friends/:id [delete]
+// @Router /friends/{id} [delete]
 func deleteFriend(c *gin.Context) {
 	session := sessions.Default(c)
 	userId := utils.GetUserId(session)
 	friendId := c.Param("id")
 
 	// See if friend to be deleted is an existing user
-	result := db.UsersCollection.FindOne(context.Background(), bson.M{
-		"_id": friendId,
-	})
-	if result.Err() == mongo.ErrNoDocuments {
-		// Event does not exist!
-		logger.StdErr.Panicln("user-not-found")
+	friend := db.GetUserById(friendId)
+	if friend == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.UserDoesNotExist})
 		return
 	}
 
@@ -158,35 +207,38 @@ func getFriendRequests(c *gin.Context) {
 // @Tags friends
 // @Accept json
 // @Produce json
-// @Param payload body object{from=string,to=string} true "Object specifying the user IDs of who this request is sent from and to"
+// @Param payload body object{to=string} true "Object specifying the user IDs of who this request is sent from and to"
 // @Success 201 {object} models.FriendRequest "Friend request created"
 // @Success 200 "Friend request already exists from \"to\" to \"from\", and it was accepted"
 // @Router /friends/requests [post]
 func createFriendRequest(c *gin.Context) {
 	payload := struct {
-		From primitive.ObjectID `json:"from" binding:"required"`
-		To   primitive.ObjectID `json:"to" binding:"required"`
+		To primitive.ObjectID `json:"to" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 
-	// Check if user is allowed to create this friend request
+	// Get user info
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	if user.Id != payload.From {
-		c.JSON(http.StatusForbidden, gin.H{})
-		return
-	}
 
 	// TODOS: (not essential, because frontend should prevent these errors)
 	// TODO: If user is already friends with the user, return an error
-	// TODO: If user already sent a friend request with the same parameters, return an error
 
-	// If friend request already exists, accept it
+	// If friend request already exists, throw an error
+	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
+		"to":   payload.To,
+		"from": user.Id,
+	}); result.Err() != mongo.ErrNoDocuments {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	// If friend request already exists from the other user, accept it
 	if result := db.FriendRequestsCollection.FindOne(context.Background(), bson.M{
 		"from": payload.To,
-		"to":   payload.From,
+		"to":   user.Id,
 	}); result.Err() != mongo.ErrNoDocuments {
 		var friendRequest models.FriendRequest
 		result.Decode(&friendRequest)
@@ -196,7 +248,7 @@ func createFriendRequest(c *gin.Context) {
 
 	// Insert new friend request
 	friendRequest := models.FriendRequest{
-		From:      payload.From,
+		From:      user.Id,
 		To:        payload.To,
 		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}

@@ -104,25 +104,11 @@ func getCalendar(c *gin.Context) {
 	// Refresh token if necessary
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	db.RefreshUserTokenIfNecessary(user)
 
-	calendars, err := utils.GetCalendarList(user.AccessToken)
+	calendarEvents, err := db.GetUsersCalendarEvents(user, payload.TimeMin, payload.TimeMax)
 	if err != nil {
 		c.JSON(err.Code, responses.Error{Error: *err})
 		return
-	}
-
-	// Call the google calendar API to get a list of calendar events from the user's gcal
-	// TODO: get events for all user's calendars, not just primary
-	calendarEvents := make([]models.CalendarEvent, 0)
-	for _, calendar := range calendars {
-		events, err := utils.GetCalendarEvents(user.AccessToken, calendar.Id, payload.TimeMin, payload.TimeMax)
-		if err != nil {
-			c.JSON(err.Code, responses.Error{Error: *err})
-			return
-		}
-
-		calendarEvents = append(calendarEvents, events...)
 	}
 
 	c.JSON(http.StatusOK, calendarEvents)
