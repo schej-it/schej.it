@@ -3,20 +3,25 @@ import 'package:flutter_app/components/user_avatar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class FriendRequestCard extends StatelessWidget {
+  final String id;
   final String name;
   final String picture;
   final DateTime requestTimestamp;
+  final ApiService api;
 
-  const FriendRequestCard({
-    Key? key,
-    required this.name,
-    this.picture = 'https://pbs.twimg.com/media/D8dDZukXUAAXLdY.jpg',
-    required this.requestTimestamp,
-  }) : super(key: key);
+  const FriendRequestCard(
+      {Key? key,
+      required this.id,
+      required this.name,
+      this.picture = 'https://pbs.twimg.com/media/D8dDZukXUAAXLdY.jpg',
+      required this.requestTimestamp,
+      required this.api})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +38,16 @@ class FriendRequestCard extends StatelessWidget {
             IconButton(
               icon: const Icon(MdiIcons.close),
               color: SchejColors.black,
-              onPressed: () {},
+              onPressed: () {
+                api.rejectFriendRequest(id);
+              },
             ),
             IconButton(
               icon: const Icon(MdiIcons.check),
               color: SchejColors.darkGreen,
-              onPressed: () {},
+              onPressed: () {
+                api.acceptFriendRequest(id);
+              },
             ),
           ],
         ),

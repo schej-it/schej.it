@@ -122,8 +122,8 @@ class ApiService extends ChangeNotifier {
     }
   }
 
-  final Map<String, FriendRequest> _friendRequests = <String, FriendRequest>{};
-  Map<String, FriendRequest> get friendRequests => _friendRequests;
+  final List<FriendRequest> _friendRequests = <FriendRequest>[];
+  List<FriendRequest> get friendRequests => _friendRequests;
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
   Future<void> refreshFriendRequestsList() async {
@@ -131,8 +131,9 @@ class ApiService extends ChangeNotifier {
     final result = await get('/friends/requests');
     for (var request in result) {
       final r = FriendRequest.fromJson(request);
-      _friendRequests[r.id] = r;
+      _friendRequests.add(r);
     }
+    notifyListeners();
   }
 
   List<User> get friendsList {
@@ -304,7 +305,7 @@ class ApiService extends ChangeNotifier {
   // Users
   ///////////////////////////////////////////
 
-  final List<User> _userSearchResults = [];
+  final List<User> _userSearchResults = <User>[];
   List<User> get userSearchResults => _userSearchResults;
 
   // Gets search results and sets [_searchResults] to it.
@@ -315,6 +316,7 @@ class ApiService extends ChangeNotifier {
       final u = User.fromJson(user);
       _userSearchResults.add(u);
     }
+    notifyListeners();
   }
 
   ////////////////////////////////////////////
