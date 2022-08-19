@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:requests/requests.dart';
 
-enum ApiProperties {
+enum ApiServiceProperties {
   authUser,
   authUserSchedule,
   friends,
@@ -58,7 +58,7 @@ class ApiService extends PropertyChangeNotifier {
   Future<void> refreshAuthUserProfile() async {
     final userMap = await get('/user/profile');
     _authUser = User.fromJson(userMap);
-    notifyListeners(ApiProperties.authUser);
+    notifyListeners(ApiServiceProperties.authUser);
   }
 
   // Gets the user's schedule and sets [_authUserSchedule] to it
@@ -78,7 +78,7 @@ class ApiService extends PropertyChangeNotifier {
       calendarEvents.add(CalendarEvent.fromJson(event));
     }
     _authUserSchedule = CalendarEvents(events: calendarEvents);
-    notifyListeners(ApiProperties.authUserSchedule);
+    notifyListeners(ApiServiceProperties.authUserSchedule);
   }
 
   // Updates a user's visibility
@@ -105,7 +105,7 @@ class ApiService extends PropertyChangeNotifier {
       final f = User.fromJson(friend);
       _friends[f.id] = f;
     }
-    notifyListeners(ApiProperties.friends);
+    notifyListeners(ApiServiceProperties.friends);
   }
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
@@ -116,7 +116,7 @@ class ApiService extends PropertyChangeNotifier {
       final r = FriendRequest.fromJson(request);
       _friendRequests.add(r);
     }
-    notifyListeners(ApiProperties.friendRequests);
+    notifyListeners(ApiServiceProperties.friendRequests);
   }
 
   List<User> get friendsList {
