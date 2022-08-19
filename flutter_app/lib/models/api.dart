@@ -8,11 +8,19 @@ import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
+import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:requests/requests.dart';
+
+enum ApiProperties {
+  authUser,
+  authUserSchedule,
+  friends,
+  friendRequests,
+}
 
 // Api is used to keep track of all the data retrieved from the API as well as
 // to make API requests
-class ApiService extends ChangeNotifier {
+class ApiService extends PropertyChangeNotifier {
   // [serverAddress] is the correct api address to use
   static String get serverAddress {
     if (kReleaseMode) {
@@ -43,10 +51,14 @@ class ApiService extends ChangeNotifier {
   User? _authUser;
   User? get authUser => _authUser;
 
+  CalendarEvents _authUserSchedule = CalendarEvents(events: []);
+  CalendarEvents get authUserSchedule => _authUserSchedule;
+
   // Gets the user's profile and sets [_authUser] to it
   Future<void> refreshAuthUserProfile() async {
     final userMap = await get('/user/profile');
     _authUser = User.fromJson(userMap);
+    notifyListeners(ApiProperties.authUser);
   }
 
   // Gets the user's schedule and sets [_authUserSchedule] to it
@@ -66,6 +78,7 @@ class ApiService extends ChangeNotifier {
       calendarEvents.add(CalendarEvent.fromJson(event));
     }
     _authUserSchedule = CalendarEvents(events: calendarEvents);
+    notifyListeners(ApiProperties.authUserSchedule);
   }
 
   // Updates a user's visibility
@@ -74,43 +87,15 @@ class ApiService extends ChangeNotifier {
     await post('/user/visibility', {'visibility': visibility});
   }
 
-  CalendarEvents _authUserSchedule = CalendarEvents(events: []);
-  CalendarEvents get authUserSchedule => _authUserSchedule;
-
   ///////////////////////////////////////////
   // Friends
   ///////////////////////////////////////////
 
-  final Map<String, User> _friends = <String, User>{
-    '123': const User(
-      id: '123',
-      email: 'liu.z.jonathan@gmail.com',
-      firstName: 'Jonathan',
-      lastName: 'Liu',
-      picture:
-          'https://lh3.googleusercontent.com/a-/AFdZucrz7tSsASL-GwauN8bw3wMswC_Kiuo6Ut8ZGvRtnO4=s96-c',
-      visibility: 0,
-    ),
-    '321': const User(
-      id: '321',
-      email: 'tonyxin@berkeley.edu',
-      firstName: 'Tony',
-      lastName: 'Xin',
-      picture:
-          'https://lh3.googleusercontent.com/a-/AFdZucowznIWn8H4iYmZ1SYTMdRKvBOOgO8sBYTOhfp_3Q=s64-p-k-rw-no',
-      visibility: 0,
-    ),
-    'lol': const User(
-      id: 'lol',
-      email: 'lesleym@usc.edu',
-      firstName: 'Lesley',
-      lastName: 'Moon',
-      picture:
-          'https://lh3.googleusercontent.com/a-/AFdZucrm6jLuiTfc8e-wKD3KZsFLfLhocVKUYoSRaLHfBQ=s64-p-k-rw-no',
-      visibility: 0,
-    ),
-  };
+  final Map<String, User> _friends = <String, User>{};
   Map<String, User> get friends => _friends;
+
+  final List<FriendRequest> _friendRequests = <FriendRequest>[];
+  List<FriendRequest> get friendRequests => _friendRequests;
 
   // Gets a user's friends and sets [_friends] to it.
   Future<void> refreshFriendsList() async {
@@ -120,10 +105,8 @@ class ApiService extends ChangeNotifier {
       final f = User.fromJson(friend);
       _friends[f.id] = f;
     }
+    notifyListeners(ApiProperties.friends);
   }
-
-  final List<FriendRequest> _friendRequests = <FriendRequest>[];
-  List<FriendRequest> get friendRequests => _friendRequests;
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
   Future<void> refreshFriendRequestsList() async {
@@ -133,7 +116,7 @@ class ApiService extends ChangeNotifier {
       final r = FriendRequest.fromJson(request);
       _friendRequests.add(r);
     }
-    notifyListeners();
+    notifyListeners(ApiProperties.friendRequests);
   }
 
   List<User> get friendsList {
@@ -328,7 +311,7 @@ class ApiService extends ChangeNotifier {
     try {
       await get('/auth/status');
       try {
-        await init();
+        init();
       } catch (e) {
         if (kDebugMode) {
           print(e);
@@ -358,7 +341,7 @@ class ApiService extends ChangeNotifier {
       );
 
       try {
-        await init();
+        init();
       } catch (e) {
         if (kDebugMode) {
           print(e);
