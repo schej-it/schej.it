@@ -24,7 +24,7 @@ class FriendRequest {
 
   @override
   String toString() {
-    return '{User id:"$id" from:"$from" to:"$to" createdAt:"$createdAt"}';
+    return '{FriendRequest id:"$id" from:"$from" to:"$to" createdAt:"$createdAt"}';
   }
 
   factory FriendRequest.fromJson(Map<String, dynamic> json) =>

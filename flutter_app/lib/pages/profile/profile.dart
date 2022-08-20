@@ -43,7 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SchejAppBar(titleString: 'Friends', isRoot: true),
+      appBar: SchejAppBar(titleString: 'Profile', isRoot: true),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(25.0),

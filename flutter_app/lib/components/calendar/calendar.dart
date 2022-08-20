@@ -749,8 +749,11 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
   // Build the main container for the event, with the event text and time block
   // TODO: this crashes when endTime is on the next day!!! (so if somebody has a late event)
   Widget _buildContainer() {
-    final height =
+    double height =
         (widget.event.endTime - widget.event.startTime) * widget.hourHeight;
+    if (height < 0) {
+      height = 0;
+    }
 
     return Positioned(
       top: 0,

@@ -14,7 +14,7 @@ class Availabilities {
       initialAvailabilities.addAll(parseDayAvailabilityFromCalendarEvents(
         day,
         userId,
-        userEvents[userId]!,
+        CalendarEvents(events: userEvents[userId]!),
       ));
     }
     return _calculateAvailabilities(initialAvailabilities);
@@ -25,14 +25,12 @@ class Availabilities {
   static List<AvailabilityBlock> parseDayAvailabilityFromCalendarEvents(
     DateTime day,
     String userId,
-    List<CalendarEvent> events,
+    CalendarEvents calendarEvents,
   ) {
-    // TODO: need to catch the case where someone's event starts on the previous
-    // day and ends on the current day
-
     final availability = <AvailabilityBlock>[];
 
     // If there are no events, then user is available all day
+    final events = calendarEvents.events;
     if (events.isEmpty) {
       availability.add(AvailabilityBlock(
         startDate: getDateWithTime(day, 0, local: true),

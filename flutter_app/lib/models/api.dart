@@ -9,11 +9,19 @@ import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
+import 'package:property_change_notifier/property_change_notifier.dart';
 import 'package:requests/requests.dart';
+
+enum ApiServiceProperties {
+  authUser,
+  authUserSchedule,
+  friends,
+  friendRequests,
+}
 
 // Api is used to keep track of all the data retrieved from the API as well as
 // to make API requests
-class ApiService extends ChangeNotifier {
+class ApiService extends PropertyChangeNotifier {
   // [serverAddress] is the correct api address to use
   static String get serverAddress {
     if (kReleaseMode) {
@@ -27,6 +35,16 @@ class ApiService extends ChangeNotifier {
     }
   }
 
+  // Initialize everything
+  Future<void> init() async {
+    await Future.wait([
+      refreshAuthUserProfile(),
+      refreshAuthUserSchedule(),
+      refreshFriendRequestsList(),
+      refreshFriendsList(),
+    ]);
+  }
+
   ///////////////////////////////////////////
   // Current user
   ///////////////////////////////////////////
@@ -34,10 +52,34 @@ class ApiService extends ChangeNotifier {
   User? _authUser;
   User? get authUser => _authUser;
 
+  CalendarEvents _authUserSchedule = CalendarEvents(events: []);
+  CalendarEvents get authUserSchedule => _authUserSchedule;
+
   // Gets the user's profile and sets [_authUser] to it
   Future<void> refreshAuthUserProfile() async {
     final userMap = await get('/user/profile');
     _authUser = User.fromJson(userMap);
+    notifyListeners(ApiServiceProperties.authUser);
+  }
+
+  // Gets the user's schedule and sets [_authUserSchedule] to it
+  Future<void> refreshAuthUserSchedule() async {
+    final calendarEvents = <CalendarEvent>[];
+
+    final timeMin =
+        getLocalDateWithTime(DateTime.now(), 0).toUtc().toIso8601String();
+    final timeMax = getLocalDateWithTime(
+      DateTime.now().add(const Duration(days: 7)),
+      23.99,
+    ).toUtc().toIso8601String();
+
+    final jsonEvents =
+        await get('/user/calendar?timeMin=$timeMin&timeMax=$timeMax');
+    for (final event in jsonEvents) {
+      calendarEvents.add(CalendarEvent.fromJson(event));
+    }
+    _authUserSchedule = CalendarEvents(events: calendarEvents);
+    notifyListeners(ApiServiceProperties.authUserSchedule);
   }
 
   // Updates a user's visibility
@@ -45,77 +87,15 @@ class ApiService extends ChangeNotifier {
     await post('/user/visibility', {'visibility': visibility});
   }
 
-  final CalendarEvents _authUserSchedule = CalendarEvents(
-    events: [
-      CalendarEvent(
-        title: 'Event',
-        startDate: getLocalDateWithTime(DateTime.now(), 9.5),
-        endDate: getLocalDateWithTime(DateTime.now(), 12),
-      ),
-      CalendarEvent(
-        title: 'Introduction to Failure Analysis',
-        startDate: getLocalDateWithTime(DateTime.now(), 13),
-        endDate: getLocalDateWithTime(DateTime.now(), 14.5),
-      ),
-      // CalendarEvent(
-      //   title: 'cool',
-      //   startDate: getLocalDateWithTime(
-      //       DateTime.now().add(const Duration(days: 1)), 0),
-      //   endDate: getLocalDateWithTime(
-      //       DateTime.now().add(const Duration(days: 1)), 15),
-      // ),
-      CalendarEvent(
-        title: 'what',
-        startDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 15),
-        endDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 20),
-      ),
-      CalendarEvent(
-        title: 'coolio',
-        startDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 18),
-        endDate: getLocalDateWithTime(
-            DateTime.now().add(const Duration(days: 1)), 21),
-      ),
-    ],
-  );
-  CalendarEvents get authUserSchedule => _authUserSchedule;
-
   ///////////////////////////////////////////
   // Friends
   ///////////////////////////////////////////
 
-  final Map<String, User> _friends = <String, User>{
-    '123': const User(
-      id: '123',
-      email: 'liu.z.jonathan@gmail.com',
-      firstName: 'Jonathan',
-      lastName: 'Liu',
-      picture:
-          'https://lh3.googleusercontent.com/a-/AFdZucrz7tSsASL-GwauN8bw3wMswC_Kiuo6Ut8ZGvRtnO4=s96-c',
-      visibility: 0,
-    ),
-    '321': const User(
-      id: '321',
-      email: 'tonyxin@berkeley.edu',
-      firstName: 'Tony',
-      lastName: 'Xin',
-      picture:
-          'https://lh3.googleusercontent.com/a-/AFdZucowznIWn8H4iYmZ1SYTMdRKvBOOgO8sBYTOhfp_3Q=s64-p-k-rw-no',
-      visibility: 0,
-    ),
-    'lol': const User(
-      id: 'lol',
-      email: 'lesleym@usc.edu',
-      firstName: 'Lesley',
-      lastName: 'Moon',
-      picture:
-          'https://lh3.googleusercontent.com/a-/AFdZucrm6jLuiTfc8e-wKD3KZsFLfLhocVKUYoSRaLHfBQ=s64-p-k-rw-no',
-      visibility: 0,
-    ),
-  };
+  final Map<String, User> _friends = <String, User>{};
   Map<String, User> get friends => _friends;
+
+  final List<FriendRequest> _friendRequests = <FriendRequest>[];
+  List<FriendRequest> get friendRequests => _friendRequests;
 
   // Gets a user's friends and sets [_friends] to it.
   Future<void> refreshFriendsList() async {
@@ -125,10 +105,8 @@ class ApiService extends ChangeNotifier {
       final f = User.fromJson(friend);
       _friends[f.id] = f;
     }
+    notifyListeners(ApiServiceProperties.friends);
   }
-
-  final List<FriendRequest> _friendRequests = <FriendRequest>[];
-  List<FriendRequest> get friendRequests => _friendRequests;
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
   Future<void> refreshFriendRequestsList() async {
@@ -138,7 +116,7 @@ class ApiService extends ChangeNotifier {
       final r = FriendRequest.fromJson(request);
       _friendRequests.add(r);
     }
-    notifyListeners();
+    notifyListeners(ApiServiceProperties.friendRequests);
   }
 
   // Refreshes every friend related variable.
@@ -370,7 +348,13 @@ class ApiService extends ChangeNotifier {
   Future<bool> isSignedIn() async {
     try {
       await get('/auth/status');
-      await refreshAuthUserProfile();
+      try {
+        init();
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
+      }
       return true;
     } catch (e) {
       return false;
@@ -393,7 +377,14 @@ class ApiService extends ChangeNotifier {
           'tokenOrigin': Platform.isAndroid ? 'android' : 'ios',
         },
       );
-      await refreshAuthUserProfile();
+
+      try {
+        init();
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
+      }
       return true;
     } catch (e) {
       // TODO: show dialog that sign in failed
