@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
+import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/pages/friends/add_friend_dialog.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import 'package:flutter_app/constants/fonts.dart';
+import 'package:provider/provider.dart';
 import 'friend_requests_tab_widget.dart';
 import 'friends_tab_widget.dart';
 
@@ -28,6 +30,9 @@ class _FriendsPageState extends State<FriendsPage>
   @override
   void initState() {
     super.initState();
+
+    final api = context.read<ApiService>();
+    api.refreshFriends();
 
     _tabController =
         TabController(initialIndex: _tabIndex, length: 2, vsync: this);
@@ -105,33 +110,35 @@ class _FriendsPageState extends State<FriendsPage>
           ),
         ],
       ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          borderRadius: SchejConstants.borderRadius,
-          color: SchejColors.green,
+      child: Consumer<ApiService>(
+        builder: (context, api, child) => TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            borderRadius: SchejConstants.borderRadius,
+            color: SchejColors.green,
+          ),
+          labelColor: SchejColors.white,
+          labelStyle: SchejFonts.body,
+          unselectedLabelColor: SchejColors.pureBlack,
+          unselectedLabelStyle: SchejFonts.body,
+          tabs: [
+            _buildTab(
+              name: 'Friends',
+              // badgeCount: 4,
+              active: _tabIndex == 0,
+            ),
+            _buildTab(
+              name: 'Requests',
+              badgeCount: api.getIncomingFriendRequests().length,
+              active: _tabIndex == 1,
+            ),
+            // _buildTab(
+            //   name: 'Groups',
+            //   // badgeCount: 1,
+            //   active: _tabIndex == 2,
+            // ),
+          ],
         ),
-        labelColor: SchejColors.white,
-        labelStyle: SchejFonts.body,
-        unselectedLabelColor: SchejColors.pureBlack,
-        unselectedLabelStyle: SchejFonts.body,
-        tabs: [
-          _buildTab(
-            name: 'Friends',
-            // badgeCount: 4,
-            active: _tabIndex == 0,
-          ),
-          _buildTab(
-            name: 'Requests',
-            badgeCount: 3,
-            active: _tabIndex == 1,
-          ),
-          // _buildTab(
-          //   name: 'Groups',
-          //   // badgeCount: 1,
-          //   active: _tabIndex == 2,
-          // ),
-        ],
       ),
     );
   }

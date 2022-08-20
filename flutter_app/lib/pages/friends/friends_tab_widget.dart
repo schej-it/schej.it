@@ -4,6 +4,7 @@ import 'package:flutter_app/components/friends/friend_card.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/router/app_router.gr.dart';
 import 'package:provider/provider.dart';
 
@@ -17,11 +18,32 @@ class FriendsTabWidget extends StatefulWidget {
 class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   // Controllers
   final TextEditingController _searchTextController = TextEditingController();
+  List<User> _friendsSearchResults = [];
 
   @override
   void dispose() {
     _searchTextController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    _searchTextController.addListener(_updateSearchResults);
+
+    // Initialize the friend search results.
+
+    final api = context.read<ApiService>();
+    print(api.friendsList);
+  }
+
+  void _updateSearchResults() {
+    final api = context.read<ApiService>();
+    setState(() {
+      _friendsSearchResults = api.getFriendsByQuery(_searchTextController.text);
+    });
   }
 
   @override
@@ -52,17 +74,15 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   }
 
   Widget _buildFriendCards() {
-    final api = context.read<ApiService>();
-    final friends = api.friendsList;
     return ListView.builder(
-      itemCount: friends.length + 1,
+      itemCount: _friendsSearchResults.length + 1,
       itemBuilder: (context, index) {
-        if (index == friends.length) {
+        if (index == _friendsSearchResults.length) {
           // Return sized box so FAB doesn't overlap
           return const SizedBox(height: 70);
         }
 
-        final friend = friends[index];
+        final friend = _friendsSearchResults[index];
         return Padding(
           padding: SchejConstants.pagePadding
               .copyWith(top: index == 0 ? 10 : 0, bottom: 10),

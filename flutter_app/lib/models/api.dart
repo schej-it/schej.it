@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -41,7 +42,6 @@ class ApiService extends ChangeNotifier {
 
   // Updates a user's visibility
   Future<void> updateUserVisibility(int visibility) async {
-    refreshFriendsList();
     await post('/user/visibility', {'visibility': visibility});
   }
 
@@ -141,6 +141,41 @@ class ApiService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Refreshes every friend related variable.
+  Future<void> refreshFriends() async {
+    refreshFriendsList();
+    refreshFriendRequestsList();
+  }
+
+  // Returns the incoming friend requests.
+  List<FriendRequest> getIncomingFriendRequests() {
+    List<FriendRequest> list = <FriendRequest>[];
+    for (FriendRequest r in _friendRequests) {
+      if (r.to == _authUser?.id) list.add(r);
+    }
+    return list;
+  }
+
+  // Returns the outgoing friend requests.
+  List<FriendRequest> getOutgoingFriendRequests() {
+    List<FriendRequest> list = <FriendRequest>[];
+    for (FriendRequest r in _friendRequests) {
+      if (r.from == _authUser?.id) list.add(r);
+    }
+    return list;
+  }
+
+  // Generates an array of friends that you've sent a friend request to.
+  HashSet<String> getOutgoingFriendRequestsUserIds() {
+    final HashSet<String> result = HashSet<String>();
+    for (FriendRequest r in _friendRequests) {
+      if (r.from == _authUser?.id) {
+        result.add(r.to);
+      }
+    }
+    return result;
+  }
+
   List<User> get friendsList {
     List<User> list = <User>[];
     for (User friend in _friends.values) {
@@ -167,24 +202,27 @@ class ApiService extends ChangeNotifier {
 
   // Sends a friend request to a user with [id].
   Future<void> sendFriendRequest(String id) async {
-    await post('/friend/requests', {
+    await post('/friends/requests', {
       'to': id,
     });
+    refreshFriendRequestsList();
   }
 
   // Deletes a friend request with [id].
   Future<void> deleteFriendRequest(String id) async {
-    await delete('/friend/requests/$id');
+    await delete('/friends/requests/$id');
   }
 
   // Accept a friend request with [id].
   Future<void> acceptFriendRequest(String id) async {
-    await post('/friend/requests/$id/accept', {});
+    await post('/friends/requests/$id/accept', {});
+    refreshFriends();
   }
 
   // Reject a friend request with [id].
   Future<void> rejectFriendRequest(String id) async {
-    await post('/friend/requests/$id/reject', {});
+    await post('/friends/requests/$id/reject', {});
+    refreshFriends();
   }
 
   final Map<String, CalendarEvents> _friendSchedules = {

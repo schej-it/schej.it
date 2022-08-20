@@ -167,7 +167,7 @@ func getFriendRequests(c *gin.Context) {
 	session := sessions.Default(c)
 	userId := utils.GetUserId(session)
 
-	var result []models.FriendRequest
+	var result = make([]models.FriendRequest, 0)
 
 	// Find and populate
 	cursor, err := db.FriendRequestsCollection.Aggregate(context.Background(), []bson.M{

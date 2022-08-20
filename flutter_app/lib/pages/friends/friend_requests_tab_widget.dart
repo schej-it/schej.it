@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/components/friends/friend_request_card.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/friend_request.dart';
 import 'package:provider/provider.dart';
 
 class FriendRequestsTabWidget extends StatefulWidget {
@@ -38,9 +39,6 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
   @override
   void initState() {
     super.initState();
-
-    final api = context.read<ApiService>();
-    api.refreshFriendRequestsList();
   }
 
   @override
@@ -53,15 +51,18 @@ class _FriendRequestsTabWidgetState extends State<FriendRequestsTabWidget> {
   }
 
   Widget _buildFriendRequestCards(ApiService api) {
+    // CHECK: might not rerender when changed.
+    List<FriendRequest> incomingFriendRequests =
+        api.getIncomingFriendRequests();
     return ListView.builder(
-      itemCount: api.friendRequests.length + 1,
+      itemCount: incomingFriendRequests.length + 1,
       itemBuilder: (context, index) {
-        if (index == api.friendRequests.length) {
+        if (index == incomingFriendRequests.length) {
           // Return sized box so FAB doesn't overlap
           return const SizedBox(height: 70);
         }
 
-        final request = api.friendRequests[index];
+        final request = incomingFriendRequests[index];
         return Padding(
           padding: SchejConstants.pagePadding
               .copyWith(top: index == 0 ? 10 : 0, bottom: 10),

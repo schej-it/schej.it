@@ -42,8 +42,10 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
   }
 
   void _updateSearchResults() {
-    ApiService api = context.read<ApiService>();
-    api.refreshUserSearchResults(_searchTextController.text);
+    if (_searchTextController.text != '') {
+      ApiService api = context.read<ApiService>();
+      api.refreshUserSearchResults(_searchTextController.text);
+    }
   }
 
   @override
@@ -101,6 +103,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: AddFriendCard(
+            id: result.id,
             name: result.fullName,
             picture: result.picture,
             requestAlreadySent: false,
