@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
 import 'package:flutter_app/components/friends/add_friend_card.dart';
@@ -16,8 +18,11 @@ class AddFriendDialog extends StatefulWidget {
 }
 
 class _AddFriendDialogState extends State<AddFriendDialog> {
-  // Variables.
+  // Display variables.
   var userSearchResults = [];
+
+  // Delayed query variables.
+  var callNum = 0;
 
   // Controllers.
   final TextEditingController _searchTextController = TextEditingController();
@@ -35,13 +40,25 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     super.initState();
 
     // Start listening to changes.
-    _searchTextController.addListener(_updateSearchResults);
+    _searchTextController.addListener(delaySearch);
   }
 
   @override
   void dispose() {
     _searchTextController.dispose();
     super.dispose();
+  }
+
+  void delaySearch() {
+    setState(() {
+      callNum++;
+    });
+    final currCall = callNum;
+    Timer(const Duration(milliseconds: 300), () {
+      if (callNum == currCall) {
+        _updateSearchResults();
+      }
+    });
   }
 
   Future<void> _updateSearchResults() async {
@@ -51,8 +68,9 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
       });
     } else {
       ApiService api = context.read<ApiService>();
-      final results =
-          await api.getUserSearchResults(_searchTextController.text);
+      // Replace all needed because semi-colon creates error in query, might want to move to backend later.
+      final results = await api.getUserSearchResults(
+          _searchTextController.text.replaceAll(';', '-'));
       setState(() {
         userSearchResults = results;
       });
