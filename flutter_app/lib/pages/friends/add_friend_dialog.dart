@@ -16,7 +16,10 @@ class AddFriendDialog extends StatefulWidget {
 }
 
 class _AddFriendDialogState extends State<AddFriendDialog> {
-  // Controllers
+  // Variables.
+  var userSearchResults = [];
+
+  // Controllers.
   final TextEditingController _searchTextController = TextEditingController();
 
   // Dummy data.
@@ -41,10 +44,18 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     super.dispose();
   }
 
-  void _updateSearchResults() {
-    if (_searchTextController.text != '') {
+  Future<void> _updateSearchResults() async {
+    if (_searchTextController.text == '') {
+      setState(() {
+        userSearchResults = [];
+      });
+    } else {
       ApiService api = context.read<ApiService>();
-      api.refreshUserSearchResults(_searchTextController.text);
+      final results =
+          await api.getUserSearchResults(_searchTextController.text);
+      setState(() {
+        userSearchResults = results;
+      });
     }
   }
 
@@ -97,9 +108,9 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
 
   Widget _buildResults(ApiService api) {
     return ListView.builder(
-      itemCount: api.userSearchResults.length,
+      itemCount: userSearchResults.length,
       itemBuilder: (context, index) {
-        final result = api.userSearchResults[index];
+        final result = userSearchResults[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: AddFriendCard(

@@ -19,7 +19,6 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   // Controllers
   final TextEditingController _searchTextController = TextEditingController();
   List<User> _friendsSearchResults = [];
-  final 
 
   @override
   void dispose() {
@@ -37,15 +36,16 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
     // Initialize the friend search results.
     final api = context.read<ApiService>();
     _updateSearchResults();
-    
+
     // Add listener to the friends property in ApiService.
     api.addListener(_updateSearchResults, [ApiServiceProperties.friends]);
-
   }
 
   void _updateSearchResults() {
     setState(() {
-      _friendsSearchResults = context.read<ApiService>().getFriendsByQuery(_searchTextController.text);
+      _friendsSearchResults = context
+          .read<ApiService>()
+          .getFriendsByQuery(_searchTextController.text);
     });
   }
 
