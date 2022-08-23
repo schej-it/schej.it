@@ -334,18 +334,15 @@ class ApiService extends PropertyChangeNotifier {
   // Users
   ///////////////////////////////////////////
 
-  final List<User> _userSearchResults = <User>[];
-  List<User> get userSearchResults => _userSearchResults;
-
-  // Gets search results and sets [_searchResults] to it.
-  Future<void> refreshUserSearchResults(String query) async {
-    _userSearchResults.clear();
+  // Returns a filtered list of users using query.
+  Future<List<User>> getUserSearchResults(String query) async {
+    final List<User> userSearchResults = <User>[];
     final result = await get('/users?query=$query');
     for (var user in result) {
       final u = User.fromJson(user);
-      _userSearchResults.add(u);
+      userSearchResults.add(u);
     }
-    notifyListeners();
+    return userSearchResults;
   }
 
   ////////////////////////////////////////////
