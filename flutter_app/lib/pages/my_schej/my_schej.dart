@@ -9,7 +9,6 @@ import 'package:flutter_app/components/month_calendar.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
-import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -75,9 +74,7 @@ class _MySchejPageState extends State<MySchejPage> {
                   children: [
                     Calendar(
                       key: _calendar,
-                      calendarEvents: <String, CalendarEvents>{
-                        api.authUser!.id: api.authUserSchedule
-                      },
+                      userIds: {api.authUser!.id},
                       daysVisible: _daysVisible,
                       showEventTitles: _eventTitlesVisible,
                       selectedDay: _selectedDay,

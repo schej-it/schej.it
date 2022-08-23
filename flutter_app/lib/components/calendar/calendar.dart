@@ -19,7 +19,7 @@ import 'package:screenshot/screenshot.dart';
 
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
-  final Map<String, CalendarEvents> calendarEvents;
+  final Set<String> userIds;
   final DateTime selectedDay;
   final void Function(DateTime) onDaySelected;
   final int daysVisible;
@@ -30,7 +30,7 @@ class Calendar extends StatefulWidget {
 
   const Calendar({
     Key? key,
-    required this.calendarEvents,
+    required this.userIds,
     required this.selectedDay,
     required this.onDaySelected,
     this.daysVisible = 3,
@@ -45,21 +45,30 @@ class Calendar extends StatefulWidget {
 }
 
 class CalendarState extends State<Calendar> {
+  //
   // Constants
+  //
   final double _timeColWidth = 60;
   final double _daySectionHeight = 62;
   final double _minTimeRowHeight = 25;
   final double _maxTimeRowHeight = 90;
 
+  //
   // Controllers
+  //
   late PageController _pageController;
   late final LinkedScrollControllerGroup _controllers;
   late final ScrollController _timeScrollController;
   final ScreenshotController _screenshotController = ScreenshotController();
 
+  //
   // Other variables
+  //
   final DateTime _curDate = getDateWithTime(DateTime.now(), 0);
   final List<String> _timeStrings = <String>[];
+  late final Map<String, CalendarEvents> _calendarEvents =
+      <String, CalendarEvents>{};
+  final Map<String, DayRange> _loadedDayRanges = <String, DayRange>{};
   // Note: this _startDateOffset is hardcoded for now, i.e. if the user happens
   // to scroll back farther than 365 days, then they won't be able to scroll back
   // any farther
@@ -100,6 +109,9 @@ class CalendarState extends State<Calendar> {
       }
       _timeStrings.add(timeText);
     }
+
+    // Create calendarEvents map
+    _updateCalendarEvents();
   }
 
   @override
@@ -126,6 +138,8 @@ class CalendarState extends State<Calendar> {
           PageController(viewportFraction: 1 / widget.daysVisible);
       _pageController.addListener(_pageControllerListener);
     }
+
+    _updateCalendarEvents();
   }
 
   // Returns a Uint8List containing a screenshot of the user's schej
@@ -199,6 +213,84 @@ class CalendarState extends State<Calendar> {
     });
   }
 
+  // Updates the calendarEvents map and dates loaded based on the current day
+  void _updateCalendarEvents() {
+    const int rangeRadius = 7;
+    DateTime left =
+        widget.selectedDay.subtract(const Duration(days: rangeRadius));
+    DateTime right = widget.selectedDay.add(const Duration(days: rangeRadius));
+
+    for (String userId in widget.userIds) {
+      DayRange dayRangeToLoad;
+
+      if (_loadedDayRanges[userId] == null) {
+        // Load the initial set of calendar events
+        _loadedDayRanges[userId] = DayRange(start: left, end: right);
+        dayRangeToLoad = DayRange(start: left, end: right);
+      } else {
+        // Determine the direction in which to extend the day range
+        DayRange loadedDayRange = _loadedDayRanges[userId]!;
+        String extendDirection = '';
+        if (!loadedDayRange.isInRange(left) &&
+            !loadedDayRange.isInRange(right)) {
+          if (loadedDayRange.compareToDay(left) < 0) {
+            // Day range is to the left of local range
+            extendDirection = 'right';
+          } else {
+            // Day range is to the right of local range
+            extendDirection = 'left';
+          }
+        } else if (!loadedDayRange.isInRange(left)) {
+          extendDirection = 'left';
+        } else if (!loadedDayRange.isInRange(right)) {
+          extendDirection = 'right';
+        } else {
+          continue;
+        }
+
+        // Extend the day range in that direction
+        if (extendDirection == 'left') {
+          final newStart = left.subtract(const Duration(days: rangeRadius));
+          dayRangeToLoad = DayRange(
+            start: loadedDayRange.start.subtract(const Duration(days: 1)),
+            end: newStart,
+          );
+          _loadedDayRanges[userId]!.start = newStart;
+        } else if (extendDirection == 'right') {
+          final newEnd = right.add(const Duration(days: rangeRadius));
+          dayRangeToLoad = DayRange(
+            start: loadedDayRange.end.add(const Duration(days: 1)),
+            end: newEnd,
+          );
+          _loadedDayRanges[userId]!.end = newEnd;
+        } else {
+          continue;
+        }
+      }
+
+      // Load the specified day range
+      _loadDayRangeForUser(dayRangeToLoad, userId);
+    }
+  }
+
+  // Loads all calendar events for the given day range for the given user
+  Future<void> _loadDayRangeForUser(DayRange dayRange, String userId) async {
+    final api = context.read<ApiService>();
+    final events = await api.getCalendarEvents(
+      id: userId,
+      startDate: dayRange.start,
+      endDate: dayRange.end,
+    );
+
+    setState(() {
+      if (_calendarEvents[userId] == null) {
+        _calendarEvents[userId] = CalendarEvents(events: events);
+      } else {
+        _calendarEvents[userId]!.addEvents(events);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isTakingScreenshot) {
@@ -244,7 +336,7 @@ class CalendarState extends State<Calendar> {
     int dateNum = date.day;
     bool isCurDate = date == getLocalDayFromUtcDay(_curDate);
 
-    Map<String, List<CalendarEvent>> events = widget.calendarEvents.map(
+    Map<String, List<CalendarEvent>> events = _calendarEvents.map(
         (id, calendarEvents) =>
             MapEntry(id, calendarEvents.getEventsForDay(date)));
 
@@ -540,39 +632,20 @@ class _CalendarDayState extends State<CalendarDay> {
       }
 
       for (String userId in userIds) {
-        children.addAll(widget.events[userId]!
-            .map((event) => CalendarEventWidget(
-                  event: event,
-                  hourHeight: widget.rowHeight,
-                  layerLink: _layerLink,
-                  showTitle: widget.showEventTitles,
-                  showAvatar: widget.showAvatars,
-                  userId: userId,
-                  activeUserId: widget.activeUserId,
-                  // marginLeftPercent: .20 * i,
-                ))
-            .toList());
-
-        /* Uncomment below to show parsed availabilities */
-        // final availabilities =
-        //     Availabilities.parseDayAvailabilityFromCalendarEvents(
-        //   widget.date,
-        //   userId,
-        //   widget.events[userId]!,
-        // );
-        // children.addAll(availabilities.map((a) => CalendarEventWidget(
-        //       event: CalendarEvent(
-        //         startDate: a.startDate,
-        //         endDate: a.endDate,
-        //         title: 'AVAILABLE',
-        //       ),
-        //       hourHeight: widget.rowHeight,
-        //       layerLink: _layerLink,
-        //       showTitle: widget.showEventTitles,
-        //       showAvatar: widget.showAvatars,
-        //       userId: userId,
-        //       activeUserId: widget.activeUserId,
-        //     )));
+        if (widget.events[userId] != null) {
+          children.addAll(widget.events[userId]!
+              .map((event) => CalendarEventWidget(
+                    event: event,
+                    hourHeight: widget.rowHeight,
+                    layerLink: _layerLink,
+                    showTitle: widget.showEventTitles,
+                    showAvatar: widget.showAvatars,
+                    userId: userId,
+                    activeUserId: widget.activeUserId,
+                    // marginLeftPercent: .20 * i,
+                  ))
+              .toList());
+        }
       }
     }
 

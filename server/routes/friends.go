@@ -25,7 +25,7 @@ func InitFriends(router *gin.Engine) {
 	friendsRouter.Use(middleware.AuthRequired())
 
 	friendsRouter.GET("", getFriends)
-	friendsRouter.GET("/:id/schedule", getFriendsSchedule)
+	friendsRouter.GET("/:id/calendar", getFriendsCalendar)
 	friendsRouter.DELETE("/:id", deleteFriend)
 	friendsRouter.GET("/requests", getFriendRequests)
 	friendsRouter.POST("/requests", createFriendRequest)
@@ -86,8 +86,8 @@ func getFriends(c *gin.Context) {
 // @Param timeMin query string true "Lower bound for event's start time to filter by"
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
 // @Success 200 {object} []models.CalendarEvent
-// @Router /friends/{id}/schedule [get]
-func getFriendsSchedule(c *gin.Context) {
+// @Router /friends/{id}/calendar [get]
+func getFriendsCalendar(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
 		TimeMin time.Time `form:"timeMin" binding:"required"`

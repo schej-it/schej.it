@@ -16,3 +16,14 @@ DateTime getLocalDateWithTime(DateTime date, double time) {
 DateTime getLocalDayFromUtcDay(DateTime day) {
   return DateTime(day.year, day.month, day.day);
 }
+
+// Returns if [val] is in between the given range
+bool inRange(Comparable val, Comparable min, Comparable max) {
+  if (min.compareTo(max) > 0) {
+    // Swap min and max if min > max
+    final tmp = min;
+    min = max;
+    max = tmp;
+  }
+  return val.compareTo(min) >= 0 && val.compareTo(max) <= 0;
+}

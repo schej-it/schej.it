@@ -14,7 +14,6 @@ import 'package:requests/requests.dart';
 
 enum ApiServiceProperties {
   authUser,
-  authUserSchedule,
   friends,
   friendRequests,
 }
@@ -39,7 +38,6 @@ class ApiService extends PropertyChangeNotifier {
   Future<void> init() async {
     await Future.wait([
       refreshAuthUserProfile(),
-      refreshAuthUserSchedule(),
       refreshFriendRequestsList(),
       refreshFriendsList(),
     ]);
@@ -52,9 +50,6 @@ class ApiService extends PropertyChangeNotifier {
   User? _authUser;
   User? get authUser => _authUser;
 
-  CalendarEvents _authUserSchedule = CalendarEvents(events: []);
-  CalendarEvents get authUserSchedule => _authUserSchedule;
-
   // Gets the user's profile and sets [_authUser] to it
   Future<void> refreshAuthUserProfile() async {
     final userMap = await get('/user/profile');
@@ -62,24 +57,37 @@ class ApiService extends PropertyChangeNotifier {
     notifyListeners(ApiServiceProperties.authUser);
   }
 
-  // Gets the user's schedule and sets [_authUserSchedule] to it
-  Future<void> refreshAuthUserSchedule() async {
+  // Returns a list of all calendar events for the given user between the given
+  // dates
+  Future<List<CalendarEvent>> getCalendarEvents({
+    required String id,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
     final calendarEvents = <CalendarEvent>[];
 
     final timeMin =
-        getLocalDateWithTime(DateTime.now(), 0).toUtc().toIso8601String();
+        getLocalDateWithTime(startDate, 0).toUtc().toIso8601String();
     final timeMax = getLocalDateWithTime(
-      DateTime.now().add(const Duration(days: 7)),
+      endDate,
       23.99,
     ).toUtc().toIso8601String();
 
+    String urlPrefix = '';
+    if (id == authUser!.id) {
+      urlPrefix = '/user/calendar';
+    } else {
+      urlPrefix = '/friends/$id/calendar';
+    }
+
+    print('$urlPrefix?timeMin=$timeMin&timeMax=$timeMax');
+
     final jsonEvents =
-        await get('/user/calendar?timeMin=$timeMin&timeMax=$timeMax');
+        await get('$urlPrefix?timeMin=$timeMin&timeMax=$timeMax');
     for (final event in jsonEvents) {
       calendarEvents.add(CalendarEvent.fromJson(event));
     }
-    _authUserSchedule = CalendarEvents(events: calendarEvents);
-    notifyListeners(ApiServiceProperties.authUserSchedule);
+    return calendarEvents;
   }
 
   // Updates a user's visibility
@@ -349,7 +357,7 @@ class ApiService extends PropertyChangeNotifier {
     try {
       await get('/auth/status');
       try {
-        init();
+        await init();
       } catch (e) {
         if (kDebugMode) {
           print(e);
@@ -379,7 +387,7 @@ class ApiService extends PropertyChangeNotifier {
       );
 
       try {
-        init();
+        await init();
       } catch (e) {
         if (kDebugMode) {
           print(e);
