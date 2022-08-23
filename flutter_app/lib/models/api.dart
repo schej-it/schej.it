@@ -80,8 +80,6 @@ class ApiService extends PropertyChangeNotifier {
       urlPrefix = '/friends/$id/calendar';
     }
 
-    print('$urlPrefix?timeMin=$timeMin&timeMax=$timeMax');
-
     final jsonEvents =
         await get('$urlPrefix?timeMin=$timeMin&timeMax=$timeMax');
     for (final event in jsonEvents) {
@@ -171,7 +169,7 @@ class ApiService extends PropertyChangeNotifier {
   }
 
   User? getFriendById(String id) {
-    refreshFriendRequestsList();
+    // refreshFriendRequestsList();
     return friends[id];
   }
 
