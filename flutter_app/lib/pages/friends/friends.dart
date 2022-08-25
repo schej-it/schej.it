@@ -78,6 +78,7 @@ class _FriendsPageState extends State<FriendsPage>
       closedShape: const CircleBorder(),
       closedBuilder: (context, openContainer) {
         return FloatingActionButton(
+          heroTag: 'friendsFab',
           backgroundColor: SchejColors.darkGreen,
           onPressed: () {
             openContainer();

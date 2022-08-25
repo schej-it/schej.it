@@ -47,6 +47,7 @@ class _MySchejPageState extends State<MySchejPage> {
     return Scaffold(
       appBar: _buildAppBar(),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'schejFab',
         onPressed: takeScreenshot,
         backgroundColor: SchejColors.darkGreen,
         child: const Icon(MdiIcons.share),

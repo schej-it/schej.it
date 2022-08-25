@@ -35,6 +35,7 @@ class _EventsPageState extends State<EventsPage> {
     return Scaffold(
       appBar: SchejAppBar(titleString: 'My events', isRoot: true),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'eventsFab',
         onPressed: () => Navigator.of(context).push(_createRoute()),
         backgroundColor: SchejColors.darkGreen,
         child: const Icon(MdiIcons.plus),
