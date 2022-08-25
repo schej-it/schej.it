@@ -7,6 +7,7 @@ import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/user.dart';
 import 'package:provider/provider.dart';
 
 class AddFriendDialog extends StatefulWidget {
@@ -19,7 +20,7 @@ class AddFriendDialog extends StatefulWidget {
 
 class _AddFriendDialogState extends State<AddFriendDialog> {
   // Display variables.
-  var userSearchResults = [];
+  List<User> userSearchResults = [];
 
   // Delayed query variables.
   var callNum = 0;
@@ -135,6 +136,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
             id: result.id,
             name: result.fullName,
             picture: result.picture,
+            email: result.email,
             requestAlreadySent: false,
           ),
         );
