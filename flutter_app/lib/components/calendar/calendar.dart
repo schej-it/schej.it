@@ -220,6 +220,14 @@ class CalendarState extends State<Calendar> {
         widget.selectedDay.subtract(const Duration(days: rangeRadius));
     DateTime right = widget.selectedDay.add(const Duration(days: rangeRadius));
 
+    // Remove the events of users who aren't in the userIds set
+    final loadedUserIds = _calendarEvents.keys.toSet();
+    final userIdsToDelete = loadedUserIds.difference(widget.userIds);
+    for (final userId in userIdsToDelete) {
+      _calendarEvents.remove(userId);
+      _loadedDayRanges.remove(userId);
+    }
+
     for (String userId in widget.userIds) {
       DayRange dayRangeToLoad;
 
@@ -252,8 +260,8 @@ class CalendarState extends State<Calendar> {
         if (extendDirection == 'left') {
           final newStart = left.subtract(const Duration(days: rangeRadius));
           dayRangeToLoad = DayRange(
-            start: loadedDayRange.start.subtract(const Duration(days: 1)),
-            end: newStart,
+            start: newStart,
+            end: loadedDayRange.start.subtract(const Duration(days: 1)),
           );
           _loadedDayRanges[userId]!.start = newStart;
         } else if (extendDirection == 'right') {
