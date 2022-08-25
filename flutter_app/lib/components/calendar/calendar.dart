@@ -415,7 +415,8 @@ class CalendarState extends State<Calendar> {
       padding: const EdgeInsets.only(top: 8, left: 8, right: 8, bottom: 20),
       child: Column(
         children: [
-          const Text('{USERNAME}\'s schej', style: SchejFonts.header),
+          Text('${context.read<ApiService>().authUser?.firstName}\'s schej',
+              style: SchejFonts.header),
           Text(dateString, style: SchejFonts.body),
         ],
       ),

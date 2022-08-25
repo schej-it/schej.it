@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/app_bar.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/user.dart';
 import 'package:provider/provider.dart';
 
 class AddFriendDialog extends StatefulWidget {
@@ -77,6 +79,10 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     }
   }
 
+  bool _isPotentialFriend(ApiService api, User u) {
+    return api.authUser?.id != u.id && !api.friends.containsKey(u.id);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,19 +131,22 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
   }
 
   Widget _buildResults(ApiService api) {
+    HashSet<String> outgoing = api.getOutgoingFriendRequestsUserIds();
     return ListView.builder(
       itemCount: userSearchResults.length,
       itemBuilder: (context, index) {
         final result = userSearchResults[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: AddFriendCard(
-            id: result.id,
-            name: result.fullName,
-            picture: result.picture,
-            requestAlreadySent: false,
-          ),
-        );
+        return _isPotentialFriend(api, result)
+            ? Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: AddFriendCard(
+                  id: result.id,
+                  name: result.fullName,
+                  picture: result.picture,
+                  requestAlreadySent: outgoing.contains(result.id),
+                ),
+              )
+            : const SizedBox(height: 0);
       },
     );
   }
