@@ -474,7 +474,7 @@ var doc = `{
                 }
             }
         },
-        "/friends/{id}/schedule": {
+        "/friends/{id}/calendar": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -517,6 +517,52 @@ var doc = `{
                             "items": {
                                 "$ref": "#/definitions/models.CalendarEvent"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/friends/{id}/status": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friends"
+                ],
+                "summary": "Returns whether the friend is free or busy",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of friend",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "eventName": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "$ref": "#/definitions/models.UserStatus"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -799,6 +845,9 @@ var doc = `{
                     "type": "integer"
                 }
             }
+        },
+        "models.UserStatus": {
+            "type": "string"
         },
         "responses.Error": {
             "type": "object",

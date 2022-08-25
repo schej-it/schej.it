@@ -47,8 +47,29 @@ class CalendarEvents {
   }) {
     _eventsByDay = LinkedHashMap(equals: isSameDay, hashCode: _getHashCode);
 
+    addEvents(events);
+  }
+
+  Iterable<DateTime> get days => _eventsByDay.keys;
+  List<CalendarEvent> get events =>
+      _eventsByDay.values.expand((i) => i).toList();
+
+  List<CalendarEvent> getEventsForDay(DateTime day) {
+    final events = _eventsByDay[day];
+    if (events == null) {
+      return <CalendarEvent>[];
+    }
+    return events;
+  }
+
+  void addEvents(List<CalendarEvent> newEvents) {
+    // TODO: This won't necessarily remove duplicate events spanning multiple
+    //       days since those events have been split and therefore won't be
+    //       equal.
     // Remove duplicates
-    final uniqueEvents = events.toSet().toList();
+    final uniqueEventsSet = newEvents.toSet();
+    final difference = uniqueEventsSet.difference(events.toSet());
+    final uniqueEvents = difference.toList();
 
     while (uniqueEvents.isNotEmpty) {
       CalendarEvent event = uniqueEvents[0];
@@ -88,20 +109,6 @@ class CalendarEvents {
     }
   }
 
-  Iterable<DateTime> get days => _eventsByDay.keys;
-  List<CalendarEvent> get events =>
-      _eventsByDay.values.expand((i) => i).toList();
-
-  List<CalendarEvent> getEventsForDay(DateTime day) {
-    final events = _eventsByDay[day];
-    if (events == null) {
-      return <CalendarEvent>[];
-    }
-    return events;
-  }
-
-  void addEvents(List<CalendarEvent> events) {}
-
   int _getHashCode(DateTime date) {
     return date.toLocal().toIso8601String().substring(0, 10).hashCode;
   }
@@ -111,5 +118,33 @@ class CalendarEvents {
   @override
   String toString() {
     return '{CalendarEvents eventsByDay:${_eventsByDay.toString()}}';
+  }
+}
+
+// DayRange represents a day range
+class DayRange {
+  DateTime start;
+  DateTime end;
+
+  DayRange({
+    required this.start,
+    required this.end,
+  });
+
+  bool isInRange(DateTime day) {
+    return compareToDay(day) == 0;
+  }
+
+  int compareToDay(DateTime day) {
+    if (inRange(day, start, end)) {
+      return 0;
+    } else {
+      return start.compareTo(day);
+    }
+  }
+
+  @override
+  String toString() {
+    return '{DayRange start:$start end:$end }';
   }
 }

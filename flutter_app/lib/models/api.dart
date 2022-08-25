@@ -14,7 +14,6 @@ import 'package:requests/requests.dart';
 
 enum ApiServiceProperties {
   authUser,
-  authUserSchedule,
   friends,
   friendRequests,
 }
@@ -39,7 +38,6 @@ class ApiService extends PropertyChangeNotifier {
   Future<void> init() async {
     await Future.wait([
       refreshAuthUserProfile(),
-      refreshAuthUserSchedule(),
       refreshFriendRequestsList(),
       refreshFriendsList(),
     ]);
@@ -52,9 +50,6 @@ class ApiService extends PropertyChangeNotifier {
   User? _authUser;
   User? get authUser => _authUser;
 
-  CalendarEvents _authUserSchedule = CalendarEvents(events: []);
-  CalendarEvents get authUserSchedule => _authUserSchedule;
-
   // Gets the user's profile and sets [_authUser] to it
   Future<void> refreshAuthUserProfile() async {
     final userMap = await get('/user/profile');
@@ -62,24 +57,35 @@ class ApiService extends PropertyChangeNotifier {
     notifyListeners(ApiServiceProperties.authUser);
   }
 
-  // Gets the user's schedule and sets [_authUserSchedule] to it
-  Future<void> refreshAuthUserSchedule() async {
+  // Returns a list of all calendar events for the given user between the given
+  // dates
+  Future<List<CalendarEvent>> getCalendarEvents({
+    required String id,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
     final calendarEvents = <CalendarEvent>[];
 
     final timeMin =
-        getLocalDateWithTime(DateTime.now(), 0).toUtc().toIso8601String();
+        getLocalDateWithTime(startDate, 0).toUtc().toIso8601String();
     final timeMax = getLocalDateWithTime(
-      DateTime.now().add(const Duration(days: 7)),
+      endDate,
       23.99,
     ).toUtc().toIso8601String();
 
+    String urlPrefix = '';
+    if (id == authUser!.id) {
+      urlPrefix = '/user/calendar';
+    } else {
+      urlPrefix = '/friends/$id/calendar';
+    }
+
     final jsonEvents =
-        await get('/user/calendar?timeMin=$timeMin&timeMax=$timeMax');
+        await get('$urlPrefix?timeMin=$timeMin&timeMax=$timeMax');
     for (final event in jsonEvents) {
       calendarEvents.add(CalendarEvent.fromJson(event));
     }
-    _authUserSchedule = CalendarEvents(events: calendarEvents);
-    notifyListeners(ApiServiceProperties.authUserSchedule);
+    return calendarEvents;
   }
 
   // Updates a user's visibility
@@ -163,7 +169,7 @@ class ApiService extends PropertyChangeNotifier {
   }
 
   User? getFriendById(String id) {
-    refreshFriendRequestsList();
+    // refreshFriendRequestsList();
     return friends[id];
   }
 
@@ -176,6 +182,11 @@ class ApiService extends PropertyChangeNotifier {
       }
     });
     return filteredFriends;
+  }
+
+  Future<void> deleteFriend(String id) async {
+    await delete('/friends/$id');
+    refreshFriendsList();
   }
 
   // Sends a friend request to a user with [id].
@@ -203,125 +214,6 @@ class ApiService extends PropertyChangeNotifier {
     refreshFriends();
   }
 
-  final Map<String, CalendarEvents> _friendSchedules = {
-    '123': CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Hang out',
-          startDate: getLocalDateWithTime(DateTime.now(), 7),
-          endDate: getLocalDateWithTime(DateTime.now(), 11),
-        ),
-        CalendarEvent(
-          title: 'hehe xd',
-          startDate: getLocalDateWithTime(DateTime.now(), 14),
-          endDate: getLocalDateWithTime(DateTime.now(), 16),
-        ),
-        CalendarEvent(
-          title: 'Idk man you decide',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 11),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 13),
-        ),
-        CalendarEvent(
-          title: 'nice',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 17),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 20),
-        ),
-        CalendarEvent(
-          title: 'okay then',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 10),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 12),
-        ),
-      ],
-    ),
-    '321': CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Hang out',
-          startDate: getLocalDateWithTime(DateTime.now(), 12),
-          endDate: getLocalDateWithTime(DateTime.now(), 13),
-        ),
-        CalendarEvent(
-          title: 'hehe xd',
-          startDate: getLocalDateWithTime(DateTime.now(), 22),
-          endDate: getLocalDateWithTime(DateTime.now(), 23),
-        ),
-        CalendarEvent(
-          title: 'Idk man you decide',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 10),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 11),
-        ),
-        CalendarEvent(
-          title: 'Cooliooo',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 15),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 18),
-        ),
-        CalendarEvent(
-          title: 'nice',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 22),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 22.5),
-        ),
-        CalendarEvent(
-          title: 'okay then',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 13),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 15),
-        ),
-      ],
-    ),
-    'lol': CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Hang out',
-          startDate: getLocalDateWithTime(DateTime.now(), 15),
-          endDate: getLocalDateWithTime(DateTime.now(), 16),
-        ),
-        CalendarEvent(
-          title: 'hehe xd',
-          startDate: getLocalDateWithTime(DateTime.now(), 18),
-          endDate: getLocalDateWithTime(DateTime.now(), 21),
-        ),
-        CalendarEvent(
-          title: 'Idk man you decide',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 17),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 19),
-        ),
-        CalendarEvent(
-          title: 'nice',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 9),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 15),
-        ),
-        CalendarEvent(
-          title: 'okay then',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 19),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 20),
-        ),
-      ],
-    )
-  };
-
-  CalendarEvents? getFriendScheduleById(String id) {
-    return _friendSchedules[id];
-  }
-
   ///////////////////////////////////////////
   // Users
   ///////////////////////////////////////////
@@ -346,7 +238,7 @@ class ApiService extends PropertyChangeNotifier {
     try {
       await get('/auth/status');
       try {
-        init();
+        await init();
       } catch (e) {
         if (kDebugMode) {
           print(e);
@@ -376,7 +268,7 @@ class ApiService extends PropertyChangeNotifier {
       );
 
       try {
-        init();
+        await init();
       } catch (e) {
         if (kDebugMode) {
           print(e);
@@ -453,7 +345,12 @@ class ApiService extends PropertyChangeNotifier {
 
     // Get json object to return
     String response = r.content();
-    dynamic json = jsonDecode(response);
+    dynamic json;
+    if (response.isNotEmpty) {
+      json = jsonDecode(response);
+    } else {
+      json = null;
+    }
 
     // Write sessionCookie to secure storage if it was set on this request
     final cookieJar = Requests.extractResponseCookies(r.headers);

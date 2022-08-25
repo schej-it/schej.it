@@ -144,8 +144,8 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		// TODO: make sure this doesn't result in bugs, make sure doesn't reset to 0 randomly
 		Visibility: 0,
 
-		FriendIds: make([]primitive.ObjectID, 0),
-		Calendars: make(map[string]models.Calendar),
+		// FriendIds: make([]primitive.ObjectID, 0),
+		// Calendars: make(map[string]models.Calendar),
 
 		AccessToken:           accessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),

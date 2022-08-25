@@ -1,12 +1,18 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/components/friends/friend_card.dart';
+import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/router/app_router.gr.dart';
 import 'package:provider/provider.dart';
+
+enum _MenuAction {
+  compare,
+  remove,
+}
 
 class FriendsTabWidget extends StatefulWidget {
   const FriendsTabWidget({Key? key}) : super(key: key);
@@ -47,6 +53,40 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
           .read<ApiService>()
           .getFriendsByQuery(_searchTextController.text);
     });
+  }
+
+  Future<void> _showMenu(String id, RelativeRect position) async {
+    final action = await showMenu<_MenuAction>(
+        context: context,
+        position: position,
+        items: [
+          const PopupMenuItem<_MenuAction>(
+            value: _MenuAction.compare,
+            child: Text('Compare your schej'),
+          ),
+          const PopupMenuItem<_MenuAction>(
+            value: _MenuAction.remove,
+            child: Text(
+              'Remove friend',
+              style: TextStyle(color: SchejColors.red),
+            ),
+          ),
+        ]);
+
+    final api = context.read<ApiService>();
+    switch (action) {
+      case _MenuAction.compare:
+        AutoRouter.of(context).push(CompareSchejPageRoute(
+          friendId: id,
+          initialIncludeSelf: true,
+        ));
+        break;
+      case _MenuAction.remove:
+        api.deleteFriend(id);
+        break;
+      default:
+        break;
+    }
   }
 
   @override
@@ -93,7 +133,9 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
               name: friend.fullName,
               picture: friend.picture,
               status: FriendStatus.free /*friend['status'] as FriendStatus*/,
-              showOverflowMenu: () {},
+              showOverflowMenu: (RelativeRect position) {
+                _showMenu(friend.id, position);
+              },
               // curEventName: (friend['curEventName'] ?? '') as String,
               onTap: () => AutoRouter.of(context)
                   .push(CompareSchejPageRoute(friendId: friend.id))),

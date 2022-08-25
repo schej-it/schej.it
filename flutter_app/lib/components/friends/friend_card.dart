@@ -17,10 +17,12 @@ class FriendCard extends StatelessWidget {
   final FriendStatus status;
   // curEventName is the name of the current event the friend is attending
   final String curEventName;
-  final VoidCallback showOverflowMenu;
+  final Function(RelativeRect position) showOverflowMenu;
   final GestureTapCallback? onTap;
 
-  const FriendCard({
+  final _buttonKey = GlobalKey();
+
+  FriendCard({
     Key? key,
     required this.name,
     required this.picture,
@@ -29,6 +31,15 @@ class FriendCard extends StatelessWidget {
     this.curEventName = '',
     this.onTap,
   }) : super(key: key);
+
+  void _onButtonPressed() {
+    RenderBox? box =
+        _buttonKey.currentContext!.findRenderObject() as RenderBox?;
+    Offset position = box!.localToGlobal(Offset.zero);
+    RelativeRect rect = RelativeRect.fromLTRB(position.dx, position.dy, 0, 0);
+
+    showOverflowMenu(rect);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +52,9 @@ class FriendCard extends StatelessWidget {
         title: Text(name, style: SchejFonts.subtitle),
         subtitle: _buildStatusText(),
         trailing: IconButton(
+          key: _buttonKey,
           icon: const Icon(MdiIcons.dotsVertical),
-          onPressed: showOverflowMenu,
+          onPressed: _onButtonPressed,
         ),
       ),
     );

@@ -25,7 +25,8 @@ func InitFriends(router *gin.Engine) {
 	friendsRouter.Use(middleware.AuthRequired())
 
 	friendsRouter.GET("", getFriends)
-	friendsRouter.GET("/:id/schedule", getFriendsSchedule)
+	friendsRouter.GET("/:id/calendar", getFriendsCalendar)
+	friendsRouter.GET("/:id/status", getFriendsStatus)
 	friendsRouter.DELETE("/:id", deleteFriend)
 	friendsRouter.GET("/requests", getFriendRequests)
 	friendsRouter.POST("/requests", createFriendRequest)
@@ -86,8 +87,8 @@ func getFriends(c *gin.Context) {
 // @Param timeMin query string true "Lower bound for event's start time to filter by"
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
 // @Success 200 {object} []models.CalendarEvent
-// @Router /friends/{id}/schedule [get]
-func getFriendsSchedule(c *gin.Context) {
+// @Router /friends/{id}/calendar [get]
+func getFriendsCalendar(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
 		TimeMin time.Time `form:"timeMin" binding:"required"`
@@ -128,6 +129,57 @@ func getFriendsSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, calendarEvents)
 }
 
+// @Summary Returns whether the friend is free or busy
+// @Tags friends
+// @Accept json
+// @Produce json
+// @Param id path string true "ID of friend"
+// @Success 200 {object} object{status=models.UserStatus,eventName=string}
+// @Router /friends/{id}/status [get]
+func getFriendsStatus(c *gin.Context) {
+	// Bind query parameters
+	friendId := c.Param("id")
+
+	// See if friend to check schedule of is an existing user
+	friend := db.GetUserById(friendId)
+	if friend == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.UserDoesNotExist})
+		return
+	}
+
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	friendObjectID, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		logger.StdErr.Panic(err)
+	}
+
+	// Make sure user is friends with the given friend
+	if !utils.Contains(user.FriendIds, friendObjectID) {
+		c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotFriends})
+		return
+	}
+
+	// Get calendar events
+	calendarEvents, googleErr := db.GetUsersCalendarEvents(friend, time.Now(), time.Now().Add(time.Second))
+	if googleErr != nil {
+		c.JSON(googleErr.Code, responses.Error{Error: *googleErr})
+		return
+	}
+
+	// Format response
+	var status models.UserStatus
+	eventName := ""
+	if len(calendarEvents) > 0 {
+		status = models.BUSY
+		eventName = calendarEvents[0].Summary
+	} else {
+		status = models.FREE
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": status, "eventName": eventName})
+}
+
 // @Summary Removes an existing friend
 // @Tags friends
 // @Accept json
@@ -148,13 +200,30 @@ func deleteFriend(c *gin.Context) {
 	}
 
 	// Remove friend from friend array
-	db.UsersCollection.UpdateOne(context.Background(),
+	friendObjectID, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{})
+	}
+	_, err = db.UsersCollection.UpdateOne(context.Background(),
 		bson.M{
 			"_id": userId,
 		},
-		bson.M{"$pullAll": bson.M{"friendIds": friendId}},
+		bson.M{"$pullAll": bson.M{"friendIds": bson.A{friendObjectID}}},
 	)
+	if err != nil {
+		logger.StdErr.Panic(err)
+	}
 
+	// Need to also remove self from friend's friendIds array
+	_, err = db.UsersCollection.UpdateOne(context.Background(),
+		bson.M{
+			"_id": friendObjectID,
+		},
+		bson.M{"$pullAll": bson.M{"friendIds": bson.A{userId}}},
+	)
+	if err != nil {
+		logger.StdErr.Panic(err)
+	}
 }
 
 // @Summary Gets all the current incoming and outgoing friend requests

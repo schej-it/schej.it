@@ -22,11 +22,11 @@ type User struct {
 	Visibility int `json:"visibility" bson:"visibility"`
 
 	// Friends
-	FriendIds []primitive.ObjectID `json:"-" bson:"friendIds"`
+	FriendIds []primitive.ObjectID `json:"-" bson:"friendIds,omitempty"`
 	Friends   []UserProfile        `json:"friends" bson:",omitempty"`
 
 	// Calendars maps the calendar's id to the calendar object
-	Calendars map[string]Calendar `json:"calendars" bson:"calendars"`
+	Calendars map[string]Calendar `json:"calendars" bson:"calendars,omitempty"`
 
 	// Google OAuth stuff
 	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty"`
@@ -75,4 +75,11 @@ const (
 	IOS       TokenOriginType = "ios"
 	ANDROID   TokenOriginType = "android"
 	WEB       TokenOriginType = "web"
+)
+
+type UserStatus string
+
+const (
+	FREE UserStatus = "free"
+	BUSY UserStatus = "busy"
 )

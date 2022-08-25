@@ -11,13 +11,15 @@ class AddFriendCard extends StatelessWidget {
   final String id;
   final String name;
   final String picture;
+  final String email;
   final bool requestAlreadySent;
 
   const AddFriendCard({
     Key? key,
     required this.id,
     required this.name,
-    this.picture = 'https://pbs.twimg.com/media/D8dDZukXUAAXLdY.jpg',
+    required this.picture,
+    required this.email,
     this.requestAlreadySent = false,
   }) : super(key: key);
 
@@ -29,6 +31,12 @@ class AddFriendCard extends StatelessWidget {
         builder: (context, api, child) => ListTile(
           leading: UserAvatar(src: picture),
           title: Text(name, style: SchejFonts.subtitle),
+          subtitle: Text(
+            email,
+            style: SchejFonts.body.copyWith(
+              color: SchejColors.darkGray,
+            ),
+          ),
           trailing: IconButton(
             onPressed: () {
               api.sendFriendRequest(id);

@@ -78,7 +78,9 @@ class _AppState extends State<App> {
   Widget _buildMaterialApp() {
     if (!_initialized) {
       // TODO: replace with a loading screen
-      return Container();
+      return Container(
+        color: SchejColors.white,
+      );
     }
 
     return MaterialApp.router(

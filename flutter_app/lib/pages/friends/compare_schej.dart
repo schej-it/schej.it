@@ -8,7 +8,6 @@ import 'package:flutter_app/components/friends/compare_schej_controller.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/models/api.dart';
-import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/pages/friends/compare_schej_dialog.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
@@ -16,8 +15,13 @@ import 'package:provider/provider.dart';
 
 class CompareSchejPage extends StatefulWidget {
   final String friendId;
+  final bool initialIncludeSelf;
 
-  const CompareSchejPage({Key? key, required this.friendId}) : super(key: key);
+  const CompareSchejPage({
+    Key? key,
+    required this.friendId,
+    this.initialIncludeSelf = false,
+  }) : super(key: key);
 
   @override
   State<CompareSchejPage> createState() => _CompareSchejPageState();
@@ -42,9 +46,9 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
     _compareSchejController = CompareSchejController(
       initialUserIds: <String>{widget.friendId},
       initialActiveUserId: widget.friendId,
-      initialIncludeSelf: true,
+      initialIncludeSelf: widget.initialIncludeSelf,
     );
-    _compareSchejController.addListener(setActiveUserId, [
+    _compareSchejController.addListener(_setActiveUserId, [
       CompareSchejControllerProperties.userIds,
       CompareSchejControllerProperties.includeSelf,
     ]);
@@ -56,7 +60,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
 
   @override
   void dispose() {
-    _compareSchejController.removeListener(setActiveUserId);
+    _compareSchejController.removeListener(_setActiveUserId);
     _compareSchejController.dispose();
     _textFieldScrollController.dispose();
     _dialogScrollController.dispose();
@@ -65,7 +69,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
   }
 
   // Sets the active user id when the compareSchejController changes
-  void setActiveUserId() {
+  void _setActiveUserId() {
     int numUsers = _compareSchejController.userIds.length;
     if (_compareSchejController.includeSelf) numUsers++;
 
@@ -87,17 +91,10 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
     }
   }
 
-  // Returns the currently selected calendars based on the people in controller.userIds
-  Map<String, CalendarEvents> _getCalendars(
-      ApiService api, CompareSchejController controller) {
-    final calendars = <String, CalendarEvents>{};
-    if (controller.includeSelf) {
-      calendars[api.authUser!.id] = api.authUserSchedule;
-    }
-    for (String userId in controller.userIds) {
-      calendars[userId] = api.getFriendScheduleById(userId)!;
-    }
-    return calendars;
+  Set<String> _getUserIds(ApiService api, CompareSchejController controller) {
+    if (!controller.includeSelf) return controller.userIds;
+
+    return Set.from(controller.userIds)..add(api.authUser!.id);
   }
 
   @override
@@ -124,7 +121,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
               Positioned.fill(
                 child: Consumer2<ApiService, CompareSchejController>(
                   builder: (context, api, controller, child) => Calendar(
-                    calendarEvents: _getCalendars(api, controller),
+                    userIds: _getUserIds(api, controller),
                     daysVisible: _daysVisible,
                     selectedDay: _selectedDay,
                     onDaySelected: (selectedDay) => setState(() {

@@ -21,7 +21,7 @@ class AddFriendDialog extends StatefulWidget {
 
 class _AddFriendDialogState extends State<AddFriendDialog> {
   // Display variables.
-  var userSearchResults = [];
+  List<User> userSearchResults = [];
 
   // Delayed query variables.
   var callNum = 0;
@@ -143,6 +143,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                   id: result.id,
                   name: result.fullName,
                   picture: result.picture,
+                  email: result.email,
                   requestAlreadySent: outgoing.contains(result.id),
                 ),
               )
