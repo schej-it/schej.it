@@ -60,10 +60,6 @@ class AuthService extends ChangeNotifier {
     String idToken = res.getRespField('id_token');
     bool success = await apiService.signIn(
         res.accessToken!, res.expiresIn!, idToken, res.refreshToken!);
-    // if (success) {
-    //   final events = await ApiService.get('/user/events');
-    //   print(events);
-    // }
 
     return success;
   }

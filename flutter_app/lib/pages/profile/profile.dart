@@ -6,7 +6,9 @@ import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/auth_service.dart';
 import 'package:flutter_app/pages/profile/expansion_panel.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -96,6 +98,8 @@ class _ProfilePageState extends State<ProfilePage> {
         _buildVisibilitySetting(api),
         const SizedBox(height: 10),
         _buildNotificationsSetting(),
+        const SizedBox(height: 10),
+        _buildFeedbackSection(),
       ],
     );
   }
@@ -201,5 +205,38 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildFeedbackSection() {
+    return Container(
+      height: settingHeight,
+      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+      decoration: BoxDecoration(
+        boxShadow: [SchejConstants.boxShadow],
+        color: SchejColors.white,
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text("Feedback", style: SchejFonts.medium),
+          Row(
+            children: [
+              IconButton(
+                  onPressed: () => {_launchUrl()},
+                  icon: const Icon(MdiIcons.openInNew))
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchUrl() async {
+    final Uri url = Uri.parse('https://forms.gle/9AgRy4PQfWfVuBnw8');
+    if (!await launchUrl(url)) {
+      throw 'Could not launch $url';
+    }
   }
 }
