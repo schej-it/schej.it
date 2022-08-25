@@ -76,3 +76,10 @@ const (
 	ANDROID   TokenOriginType = "android"
 	WEB       TokenOriginType = "web"
 )
+
+type UserStatus string
+
+const (
+	FREE UserStatus = "free"
+	BUSY UserStatus = "busy"
+)

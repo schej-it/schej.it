@@ -69,6 +69,8 @@ definitions:
       visibility:
         type: integer
     type: object
+  models.UserStatus:
+    type: string
   responses.Error:
     properties:
       error:
@@ -276,7 +278,7 @@ paths:
       summary: Removes an existing friend
       tags:
       - friends
-  /friends/{id}/schedule:
+  /friends/{id}/calendar:
     get:
       consumes:
       - application/json
@@ -306,6 +308,33 @@ paths:
               $ref: '#/definitions/models.CalendarEvent'
             type: array
       summary: Returns the specified friend's schedule
+      tags:
+      - friends
+  /friends/{id}/status:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID of friend
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                eventName:
+                  type: string
+                status:
+                  $ref: '#/definitions/models.UserStatus'
+              type: object
+      summary: Returns whether the friend is free or busy
       tags:
       - friends
   /friends/requests:
