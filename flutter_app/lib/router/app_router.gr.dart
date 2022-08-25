@@ -88,7 +88,10 @@ class AppRouter extends _i13.RootStackRouter {
       final args = routeData.argsAs<CompareSchejPageRouteArgs>();
       return _i13.MaterialPageX<dynamic>(
           routeData: routeData,
-          child: _i11.CompareSchejPage(key: args.key, friendId: args.friendId));
+          child: _i11.CompareSchejPage(
+              key: args.key,
+              friendId: args.friendId,
+              initialIncludeSelf: args.initialIncludeSelf));
     },
     ProfilePageRoute.name: (routeData) {
       return _i13.MaterialPageX<dynamic>(
@@ -266,24 +269,33 @@ class FriendsPageRoute extends _i13.PageRouteInfo<void> {
 /// [_i11.CompareSchejPage]
 class CompareSchejPageRoute
     extends _i13.PageRouteInfo<CompareSchejPageRouteArgs> {
-  CompareSchejPageRoute({_i14.Key? key, required String friendId})
+  CompareSchejPageRoute(
+      {_i14.Key? key,
+      required String friendId,
+      bool initialIncludeSelf = false})
       : super(CompareSchejPageRoute.name,
             path: 'schej',
-            args: CompareSchejPageRouteArgs(key: key, friendId: friendId));
+            args: CompareSchejPageRouteArgs(
+                key: key,
+                friendId: friendId,
+                initialIncludeSelf: initialIncludeSelf));
 
   static const String name = 'CompareSchejPageRoute';
 }
 
 class CompareSchejPageRouteArgs {
-  const CompareSchejPageRouteArgs({this.key, required this.friendId});
+  const CompareSchejPageRouteArgs(
+      {this.key, required this.friendId, this.initialIncludeSelf = false});
 
   final _i14.Key? key;
 
   final String friendId;
 
+  final bool initialIncludeSelf;
+
   @override
   String toString() {
-    return 'CompareSchejPageRouteArgs{key: $key, friendId: $friendId}';
+    return 'CompareSchejPageRouteArgs{key: $key, friendId: $friendId, initialIncludeSelf: $initialIncludeSelf}';
   }
 }
 

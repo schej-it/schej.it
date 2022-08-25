@@ -148,13 +148,30 @@ func deleteFriend(c *gin.Context) {
 	}
 
 	// Remove friend from friend array
-	db.UsersCollection.UpdateOne(context.Background(),
+	friendObjectID, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{})
+	}
+	_, err = db.UsersCollection.UpdateOne(context.Background(),
 		bson.M{
 			"_id": userId,
 		},
-		bson.M{"$pullAll": bson.M{"friendIds": friendId}},
+		bson.M{"$pullAll": bson.M{"friendIds": bson.A{friendObjectID}}},
 	)
+	if err != nil {
+		logger.StdErr.Panic(err)
+	}
 
+	// Need to also remove self from friend's friendIds array
+	_, err = db.UsersCollection.UpdateOne(context.Background(),
+		bson.M{
+			"_id": friendObjectID,
+		},
+		bson.M{"$pullAll": bson.M{"friendIds": bson.A{userId}}},
+	)
+	if err != nil {
+		logger.StdErr.Panic(err)
+	}
 }
 
 // @Summary Gets all the current incoming and outgoing friend requests

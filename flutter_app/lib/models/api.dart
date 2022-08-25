@@ -184,6 +184,11 @@ class ApiService extends PropertyChangeNotifier {
     return filteredFriends;
   }
 
+  Future<void> deleteFriend(String id) async {
+    await delete('/friends/$id');
+    refreshFriendsList();
+  }
+
   // Sends a friend request to a user with [id].
   Future<void> sendFriendRequest(String id) async {
     await post('/friends/requests', {
@@ -207,125 +212,6 @@ class ApiService extends PropertyChangeNotifier {
   Future<void> rejectFriendRequest(String id) async {
     await post('/friends/requests/$id/reject', {});
     refreshFriends();
-  }
-
-  final Map<String, CalendarEvents> _friendSchedules = {
-    '123': CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Hang out',
-          startDate: getLocalDateWithTime(DateTime.now(), 7),
-          endDate: getLocalDateWithTime(DateTime.now(), 11),
-        ),
-        CalendarEvent(
-          title: 'hehe xd',
-          startDate: getLocalDateWithTime(DateTime.now(), 14),
-          endDate: getLocalDateWithTime(DateTime.now(), 16),
-        ),
-        CalendarEvent(
-          title: 'Idk man you decide',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 11),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 13),
-        ),
-        CalendarEvent(
-          title: 'nice',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 17),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 20),
-        ),
-        CalendarEvent(
-          title: 'okay then',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 10),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 12),
-        ),
-      ],
-    ),
-    '321': CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Hang out',
-          startDate: getLocalDateWithTime(DateTime.now(), 12),
-          endDate: getLocalDateWithTime(DateTime.now(), 13),
-        ),
-        CalendarEvent(
-          title: 'hehe xd',
-          startDate: getLocalDateWithTime(DateTime.now(), 22),
-          endDate: getLocalDateWithTime(DateTime.now(), 23),
-        ),
-        CalendarEvent(
-          title: 'Idk man you decide',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 10),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 11),
-        ),
-        CalendarEvent(
-          title: 'Cooliooo',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 15),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 18),
-        ),
-        CalendarEvent(
-          title: 'nice',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 22),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 22.5),
-        ),
-        CalendarEvent(
-          title: 'okay then',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 13),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 15),
-        ),
-      ],
-    ),
-    'lol': CalendarEvents(
-      events: [
-        CalendarEvent(
-          title: 'Hang out',
-          startDate: getLocalDateWithTime(DateTime.now(), 15),
-          endDate: getLocalDateWithTime(DateTime.now(), 16),
-        ),
-        CalendarEvent(
-          title: 'hehe xd',
-          startDate: getLocalDateWithTime(DateTime.now(), 18),
-          endDate: getLocalDateWithTime(DateTime.now(), 21),
-        ),
-        CalendarEvent(
-          title: 'Idk man you decide',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 17),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 1)), 19),
-        ),
-        CalendarEvent(
-          title: 'nice',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 9),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 15),
-        ),
-        CalendarEvent(
-          title: 'okay then',
-          startDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 19),
-          endDate: getLocalDateWithTime(
-              DateTime.now().add(const Duration(days: 2)), 20),
-        ),
-      ],
-    )
-  };
-
-  CalendarEvents? getFriendScheduleById(String id) {
-    return _friendSchedules[id];
   }
 
   ///////////////////////////////////////////
@@ -459,7 +345,12 @@ class ApiService extends PropertyChangeNotifier {
 
     // Get json object to return
     String response = r.content();
-    dynamic json = jsonDecode(response);
+    dynamic json;
+    if (response.isNotEmpty) {
+      json = jsonDecode(response);
+    } else {
+      json = null;
+    }
 
     // Write sessionCookie to secure storage if it was set on this request
     final cookieJar = Requests.extractResponseCookies(r.headers);

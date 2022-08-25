@@ -55,20 +55,38 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
     });
   }
 
-  void _showMenu(RelativeRect position) {
-    showMenu(context: context, position: position, items: [
-      const PopupMenuItem<_MenuAction>(
-        value: _MenuAction.compare,
-        child: Text('Compare your schej'),
-      ),
-      const PopupMenuItem<_MenuAction>(
-        value: _MenuAction.remove,
-        child: Text(
-          'Remove friend',
-          style: TextStyle(color: SchejColors.red),
-        ),
-      ),
-    ]);
+  Future<void> _showMenu(String id, RelativeRect position) async {
+    final action = await showMenu<_MenuAction>(
+        context: context,
+        position: position,
+        items: [
+          const PopupMenuItem<_MenuAction>(
+            value: _MenuAction.compare,
+            child: Text('Compare your schej'),
+          ),
+          const PopupMenuItem<_MenuAction>(
+            value: _MenuAction.remove,
+            child: Text(
+              'Remove friend',
+              style: TextStyle(color: SchejColors.red),
+            ),
+          ),
+        ]);
+
+    final api = context.read<ApiService>();
+    switch (action) {
+      case _MenuAction.compare:
+        AutoRouter.of(context).push(CompareSchejPageRoute(
+          friendId: id,
+          initialIncludeSelf: true,
+        ));
+        break;
+      case _MenuAction.remove:
+        api.deleteFriend(id);
+        break;
+      default:
+        break;
+    }
   }
 
   @override
@@ -116,7 +134,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
               picture: friend.picture,
               status: FriendStatus.free /*friend['status'] as FriendStatus*/,
               showOverflowMenu: (RelativeRect position) {
-                _showMenu(position);
+                _showMenu(friend.id, position);
               },
               // curEventName: (friend['curEventName'] ?? '') as String,
               onTap: () => AutoRouter.of(context)

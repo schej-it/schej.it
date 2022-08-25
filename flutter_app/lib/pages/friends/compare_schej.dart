@@ -15,8 +15,13 @@ import 'package:provider/provider.dart';
 
 class CompareSchejPage extends StatefulWidget {
   final String friendId;
+  final bool initialIncludeSelf;
 
-  const CompareSchejPage({Key? key, required this.friendId}) : super(key: key);
+  const CompareSchejPage({
+    Key? key,
+    required this.friendId,
+    this.initialIncludeSelf = false,
+  }) : super(key: key);
 
   @override
   State<CompareSchejPage> createState() => _CompareSchejPageState();
@@ -41,7 +46,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
     _compareSchejController = CompareSchejController(
       initialUserIds: <String>{widget.friendId},
       initialActiveUserId: widget.friendId,
-      initialIncludeSelf: false,
+      initialIncludeSelf: widget.initialIncludeSelf,
     );
     _compareSchejController.addListener(_setActiveUserId, [
       CompareSchejControllerProperties.userIds,
