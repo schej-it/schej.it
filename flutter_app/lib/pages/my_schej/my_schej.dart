@@ -74,6 +74,7 @@ class _MySchejPageState extends State<MySchejPage> {
                 child: Stack(
                   children: [
                     Calendar(
+                      mode: CalendarMode.schej,
                       key: _calendar,
                       userIds: {api.authUser!.id},
                       daysVisible: _daysVisible,

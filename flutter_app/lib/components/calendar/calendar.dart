@@ -18,6 +18,11 @@ import 'package:table_calendar/table_calendar.dart';
 // TODO: fix bug where if you pinch to zoom, the time scroll controller gets
 // out of sync with the individual day scroll controllers
 
+enum CalendarMode {
+  schej,
+  compare,
+}
+
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
   final Set<String> userIds;
@@ -28,12 +33,14 @@ class Calendar extends StatefulWidget {
   final bool showAvatars;
   final bool showAvailability;
   final String? activeUserId;
+  final CalendarMode mode;
 
   const Calendar({
     Key? key,
     required this.userIds,
     required this.selectedDay,
     required this.onDaySelected,
+    required this.mode,
     this.daysVisible = 3,
     this.showEventTitles = true,
     this.showAvatars = false,
@@ -420,7 +427,17 @@ class CalendarState extends State<Calendar> {
       width: _timeColWidth,
       child: Column(
         children: [
-          SizedBox(height: _daySectionHeight),
+          SizedBox(
+            height: _daySectionHeight,
+            child: widget.mode == CalendarMode.compare
+                ? Center(
+                    child: Text(
+                      DateFormat.MMM().format(widget.selectedDay),
+                      style: SchejFonts.body,
+                    ),
+                  )
+                : null,
+          ),
           const Divider(
             height: 1.15,
             thickness: 1.15,

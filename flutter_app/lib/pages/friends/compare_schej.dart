@@ -121,6 +121,7 @@ class _CompareSchejPageState extends State<CompareSchejPage> {
               Positioned.fill(
                 child: Consumer2<ApiService, CompareSchejController>(
                   builder: (context, api, controller, child) => Calendar(
+                    mode: CalendarMode.compare,
                     userIds: _getUserIds(api, controller),
                     daysVisible: _daysVisible,
                     selectedDay: _selectedDay,
