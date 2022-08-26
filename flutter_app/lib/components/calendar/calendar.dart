@@ -341,10 +341,6 @@ class CalendarState extends State<Calendar> {
   // Builds a column containing the given day and a scrollable list with
   // dividers representing the hour increments
   Widget _buildDay(DateTime date) {
-    String dayText = DateFormat.E().format(date);
-    int dateNum = date.day;
-    bool isCurDate = date == getLocalDayFromUtcDay(_curDate);
-
     Map<String, List<CalendarEvent>> events = _calendarEvents.map(
         (id, calendarEvents) =>
             MapEntry(id, calendarEvents.getEventsForDay(date)));
@@ -354,28 +350,7 @@ class CalendarState extends State<Calendar> {
       children: [
         SizedBox(
           height: _daySectionHeight,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(dayText,
-                  style: isCurDate
-                      ? SchejFonts.body.copyWith(color: SchejColors.darkGreen)
-                      : SchejFonts.body),
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: isCurDate
-                    ? const BoxDecoration(
-                        color: SchejColors.darkGreen,
-                        shape: BoxShape.circle,
-                      )
-                    : null,
-                child: Text(dateNum.toString(),
-                    style: isCurDate
-                        ? SchejFonts.header.copyWith(color: SchejColors.white)
-                        : SchejFonts.header),
-              ),
-            ],
-          ),
+          child: _buildDayText(date),
         ),
         const Divider(
           height: 1.15,
@@ -464,6 +439,64 @@ class CalendarState extends State<Calendar> {
           ),
         ],
       ),
+    );
+  }
+
+  // Builds the day text displayed over a day
+  Widget _buildDayText(DateTime date) {
+    String dayText = DateFormat.E().format(date);
+    int dateNum = date.day;
+    int dateCompare = date.compareTo(getLocalDayFromUtcDay(_curDate));
+
+    List<Widget> children = <Widget>[];
+    if (dateCompare < 0) {
+      // Date is before curDate
+      children = [
+        Text(
+          dayText,
+          style: SchejFonts.body.copyWith(color: SchejColors.gray),
+        ),
+        Container(
+          padding: const EdgeInsets.all(7),
+          child: Text(
+            dateNum.toString(),
+            style: SchejFonts.header.copyWith(color: SchejColors.gray),
+          ),
+        ),
+      ];
+    } else if (dateCompare == 0) {
+      // Date is curDate
+      children = [
+        Text(
+          dayText,
+          style: SchejFonts.body.copyWith(color: SchejColors.darkGreen),
+        ),
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: const BoxDecoration(
+            color: SchejColors.darkGreen,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            dateNum.toString(),
+            style: SchejFonts.header.copyWith(color: SchejColors.white),
+          ),
+        )
+      ];
+    } else {
+      // Date is after curDate
+      children = [
+        Text(dayText, style: SchejFonts.body),
+        Container(
+          padding: const EdgeInsets.all(7),
+          child: Text(dateNum.toString(), style: SchejFonts.header),
+        )
+      ];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: children,
     );
   }
 
