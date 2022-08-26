@@ -13,6 +13,7 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 // TODO: fix bug where if you pinch to zoom, the time scroll controller gets
 // out of sync with the individual day scroll controllers
@@ -658,8 +659,41 @@ class _CalendarDayState extends State<CalendarDay> {
       }
     }
 
+    if (isSameDay(DateTime.now().toLocal(), widget.date)) {
+      children.add(_buildTimeIndicator());
+    }
+
     return Stack(
       children: children,
+    );
+  }
+
+  Widget _buildTimeIndicator() {
+    final curDate = DateTime.now().toLocal();
+    final curHour = curDate.hour + curDate.minute / 60;
+    return CompositedTransformFollower(
+      link: _layerLink,
+      showWhenUnlinked: false,
+      offset: Offset(0, curHour * widget.rowHeight),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.only(left: 1),
+            decoration: const BoxDecoration(
+              color: SchejColors.red,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 2,
+              color: SchejColors.red,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -742,6 +776,7 @@ class CalendarEventWidget extends StatefulWidget {
   final bool showBusy;
   final bool showAvatar;
   final bool noBorder;
+  final bool roundedCorners;
   final String? userId;
   final String? activeUserId;
   final double marginLeftPercent;
@@ -757,6 +792,7 @@ class CalendarEventWidget extends StatefulWidget {
     this.showBusy = true,
     this.showAvatar = false,
     this.noBorder = false,
+    this.roundedCorners = true,
     this.userId,
     this.activeUserId,
     this.marginLeftPercent = 0,
@@ -850,7 +886,9 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: _containerColor,
-              borderRadius: const BorderRadius.all(Radius.circular(5)),
+              borderRadius: widget.roundedCorners
+                  ? const BorderRadius.all(Radius.circular(5))
+                  : null,
               border: !widget.noBorder
                   ? Border.all(
                       color: SchejColors.white,
@@ -938,6 +976,7 @@ class _AvailabilityBlockWidgetState extends State<AvailabilityBlockWidget> {
       showTitle: false,
       showBusy: false,
       noBorder: true,
+      roundedCorners: false,
     );
   }
 }
