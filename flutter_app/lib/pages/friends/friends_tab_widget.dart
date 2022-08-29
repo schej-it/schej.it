@@ -5,6 +5,7 @@ import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/constants/constants.dart';
 import 'package:flutter_app/constants/fonts.dart';
 import 'package:flutter_app/models/api.dart';
+import 'package:flutter_app/models/status.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/router/app_router.gr.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   // Controllers
   final TextEditingController _searchTextController = TextEditingController();
   List<User> _friendsSearchResults = [];
+  List<Status> _friendsStatuses = [];
 
   @override
   void dispose() {
@@ -48,6 +50,8 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   }
 
   void _updateSearchResults() {
+    // Find and update status for each friend.
+
     setState(() {
       _friendsSearchResults = context
           .read<ApiService>()
@@ -94,7 +98,11 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
     return Column(
       children: [
         _buildSearchTextField(),
-        Expanded(child: _buildFriendCards()),
+        Expanded(
+          child: Consumer<ApiService>(
+            builder: (context, api, child) => _buildFriendCards(api),
+          ),
+        ),
       ],
     );
   }
@@ -116,7 +124,7 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
     return textField;
   }
 
-  Widget _buildFriendCards() {
+  Widget _buildFriendCards(ApiService api) {
     return ListView.builder(
       itemCount: _friendsSearchResults.length + 1,
       itemBuilder: (context, index) {
