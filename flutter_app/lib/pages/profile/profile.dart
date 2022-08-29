@@ -235,7 +235,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _launchUrl() async {
     final Uri url = Uri.parse('https://forms.gle/9AgRy4PQfWfVuBnw8');
-    if (!await launchUrl(url)) {
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw 'Could not launch $url';
     }
   }

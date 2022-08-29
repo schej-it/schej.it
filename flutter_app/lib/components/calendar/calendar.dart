@@ -13,9 +13,15 @@ import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 // TODO: fix bug where if you pinch to zoom, the time scroll controller gets
 // out of sync with the individual day scroll controllers
+
+enum CalendarMode {
+  schej,
+  compare,
+}
 
 // The Calendar widget contains a widget to view the user's daily events
 class Calendar extends StatefulWidget {
@@ -27,12 +33,14 @@ class Calendar extends StatefulWidget {
   final bool showAvatars;
   final bool showAvailability;
   final String? activeUserId;
+  final CalendarMode mode;
 
   const Calendar({
     Key? key,
     required this.userIds,
     required this.selectedDay,
     required this.onDaySelected,
+    required this.mode,
     this.daysVisible = 3,
     this.showEventTitles = true,
     this.showAvatars = false,
@@ -340,10 +348,6 @@ class CalendarState extends State<Calendar> {
   // Builds a column containing the given day and a scrollable list with
   // dividers representing the hour increments
   Widget _buildDay(DateTime date) {
-    String dayText = DateFormat.E().format(date);
-    int dateNum = date.day;
-    bool isCurDate = date == getLocalDayFromUtcDay(_curDate);
-
     Map<String, List<CalendarEvent>> events = _calendarEvents.map(
         (id, calendarEvents) =>
             MapEntry(id, calendarEvents.getEventsForDay(date)));
@@ -353,28 +357,7 @@ class CalendarState extends State<Calendar> {
       children: [
         SizedBox(
           height: _daySectionHeight,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(dayText,
-                  style: isCurDate
-                      ? SchejFonts.body.copyWith(color: SchejColors.darkGreen)
-                      : SchejFonts.body),
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: isCurDate
-                    ? const BoxDecoration(
-                        color: SchejColors.darkGreen,
-                        shape: BoxShape.circle,
-                      )
-                    : null,
-                child: Text(dateNum.toString(),
-                    style: isCurDate
-                        ? SchejFonts.header.copyWith(color: SchejColors.white)
-                        : SchejFonts.header),
-              ),
-            ],
-          ),
+          child: _buildDayText(date),
         ),
         const Divider(
           height: 1.15,
@@ -444,7 +427,17 @@ class CalendarState extends State<Calendar> {
       width: _timeColWidth,
       child: Column(
         children: [
-          SizedBox(height: _daySectionHeight),
+          SizedBox(
+            height: _daySectionHeight,
+            child: widget.mode == CalendarMode.compare
+                ? Center(
+                    child: Text(
+                      DateFormat.MMM().format(widget.selectedDay),
+                      style: SchejFonts.body,
+                    ),
+                  )
+                : null,
+          ),
           const Divider(
             height: 1.15,
             thickness: 1.15,
@@ -463,6 +456,64 @@ class CalendarState extends State<Calendar> {
           ),
         ],
       ),
+    );
+  }
+
+  // Builds the day text displayed over a day
+  Widget _buildDayText(DateTime date) {
+    String dayText = DateFormat.E().format(date);
+    int dateNum = date.day;
+    int dateCompare = date.compareTo(getLocalDayFromUtcDay(_curDate));
+
+    List<Widget> children = <Widget>[];
+    if (dateCompare < 0) {
+      // Date is before curDate
+      children = [
+        Text(
+          dayText,
+          style: SchejFonts.body.copyWith(color: SchejColors.gray),
+        ),
+        Container(
+          padding: const EdgeInsets.all(7),
+          child: Text(
+            dateNum.toString(),
+            style: SchejFonts.header.copyWith(color: SchejColors.gray),
+          ),
+        ),
+      ];
+    } else if (dateCompare == 0) {
+      // Date is curDate
+      children = [
+        Text(
+          dayText,
+          style: SchejFonts.body.copyWith(color: SchejColors.darkGreen),
+        ),
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: const BoxDecoration(
+            color: SchejColors.darkGreen,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            dateNum.toString(),
+            style: SchejFonts.header.copyWith(color: SchejColors.white),
+          ),
+        )
+      ];
+    } else {
+      // Date is after curDate
+      children = [
+        Text(dayText, style: SchejFonts.body),
+        Container(
+          padding: const EdgeInsets.all(7),
+          child: Text(dateNum.toString(), style: SchejFonts.header),
+        )
+      ];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: children,
     );
   }
 
@@ -658,8 +709,41 @@ class _CalendarDayState extends State<CalendarDay> {
       }
     }
 
+    if (isSameDay(DateTime.now().toLocal(), widget.date)) {
+      children.add(_buildTimeIndicator());
+    }
+
     return Stack(
       children: children,
+    );
+  }
+
+  Widget _buildTimeIndicator() {
+    final curDate = DateTime.now().toLocal();
+    final curHour = curDate.hour + curDate.minute / 60;
+    return CompositedTransformFollower(
+      link: _layerLink,
+      showWhenUnlinked: false,
+      offset: Offset(0, curHour * widget.rowHeight),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.only(left: 1),
+            decoration: const BoxDecoration(
+              color: SchejColors.red,
+              shape: BoxShape.circle,
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 2,
+              color: SchejColors.red,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -742,6 +826,7 @@ class CalendarEventWidget extends StatefulWidget {
   final bool showBusy;
   final bool showAvatar;
   final bool noBorder;
+  final bool roundedCorners;
   final String? userId;
   final String? activeUserId;
   final double marginLeftPercent;
@@ -757,6 +842,7 @@ class CalendarEventWidget extends StatefulWidget {
     this.showBusy = true,
     this.showAvatar = false,
     this.noBorder = false,
+    this.roundedCorners = true,
     this.userId,
     this.activeUserId,
     this.marginLeftPercent = 0,
@@ -850,7 +936,9 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: _containerColor,
-              borderRadius: const BorderRadius.all(Radius.circular(5)),
+              borderRadius: widget.roundedCorners
+                  ? const BorderRadius.all(Radius.circular(5))
+                  : null,
               border: !widget.noBorder
                   ? Border.all(
                       color: SchejColors.white,
@@ -938,6 +1026,7 @@ class _AvailabilityBlockWidgetState extends State<AvailabilityBlockWidget> {
       showTitle: false,
       showBusy: false,
       noBorder: true,
+      roundedCorners: false,
     );
   }
 }

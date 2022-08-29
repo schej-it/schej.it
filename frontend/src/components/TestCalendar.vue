@@ -50,7 +50,7 @@ export default {
     startDate: getDateWithTimeInt(new Date(), 9),
     endDate: getDateWithTimeInt(getDateDayOffset(new Date(), 2), 24),
     startTime: 9,
-    endTime: 24,
+    endTime: 0,
     calendarEvents: [],
     loading: false,
   }),
