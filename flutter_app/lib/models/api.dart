@@ -27,11 +27,12 @@ class ApiService extends PropertyChangeNotifier {
       return 'https://schej.it/api';
     }
 
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3002';
-    } else {
-      return 'http://localhost:3002';
-    }
+    return 'http://localhost:3002';
+    // if (Platform.isAndroid) {
+    //   return 'http://10.0.2.2:3002';
+    // } else {
+    //   return 'http://localhost:3002';
+    // }
   }
 
   // Initialize everything
