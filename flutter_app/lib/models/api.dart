@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_app/models/calendar_event.dart';
 import 'package:flutter_app/models/friend_request.dart';
+import 'package:flutter_app/models/status.dart';
 import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -104,6 +105,9 @@ class ApiService extends PropertyChangeNotifier {
   final List<FriendRequest> _friendRequests = <FriendRequest>[];
   List<FriendRequest> get friendRequests => _friendRequests;
 
+  final List<Status> _friendStatuses = <Status>[];
+  List<Status> get friendStatuses => _friendStatuses;
+
   // Gets a user's friends and sets [_friends] to it.
   Future<void> refreshFriendsList() async {
     _friends.clear();
@@ -113,6 +117,17 @@ class ApiService extends PropertyChangeNotifier {
       _friends[f.id] = f;
     }
     notifyListeners(ApiServiceProperties.friends);
+  }
+
+  // Gets a user's friend requests and sets [_friendRequests] to it.
+  Future<void> refreshFriendRequestsList() async {
+    _friendRequests.clear();
+    final result = await get('/friends/requests');
+    for (var request in result) {
+      final r = FriendRequest.fromJson(request);
+      _friendRequests.add(r);
+    }
+    notifyListeners(ApiServiceProperties.friendRequests);
   }
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
@@ -213,6 +228,12 @@ class ApiService extends PropertyChangeNotifier {
   Future<void> rejectFriendRequest(String id) async {
     await post('/friends/requests/$id/reject', {});
     refreshFriends();
+  }
+
+  // Get status of friend with [id].
+  Future<Status> getFriendStatus(String id) async {
+    final result = await get('friends/$id/status');
+    return Status.fromJson(result);
   }
 
   ///////////////////////////////////////////
