@@ -74,7 +74,7 @@ class _FriendsPageState extends State<FriendsPage>
 
   Widget _buildFab() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 12),
       child: OpenContainer(
         closedColor: SchejColors.darkGreen,
         closedShape: const CircleBorder(),

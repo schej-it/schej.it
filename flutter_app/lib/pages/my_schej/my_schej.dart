@@ -47,12 +47,12 @@ class _MySchejPageState extends State<MySchejPage> {
     return Scaffold(
       appBar: _buildAppBar(),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.only(bottom: 12),
         child: FloatingActionButton(
           heroTag: 'schejFab',
           onPressed: takeScreenshot,
           backgroundColor: SchejColors.darkGreen,
-          child: const Icon(MdiIcons.share),
+          child: const Icon(MdiIcons.share, size: 28),
         ),
       ),
       body: Container(

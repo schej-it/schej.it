@@ -130,17 +130,6 @@ class ApiService extends PropertyChangeNotifier {
     notifyListeners(ApiServiceProperties.friendRequests);
   }
 
-  // Gets a user's friend requests and sets [_friendRequests] to it.
-  Future<void> refreshFriendRequestsList() async {
-    _friendRequests.clear();
-    final result = await get('/friends/requests');
-    for (var request in result) {
-      final r = FriendRequest.fromJson(request);
-      _friendRequests.add(r);
-    }
-    notifyListeners(ApiServiceProperties.friendRequests);
-  }
-
   // Refreshes every friend related variable.
   Future<void> refreshFriends() async {
     refreshFriendsList();
