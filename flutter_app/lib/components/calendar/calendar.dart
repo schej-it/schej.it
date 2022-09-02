@@ -57,7 +57,7 @@ class CalendarState extends State<Calendar> {
   // Constants
   //
   final double _timeColWidth = 60;
-  final double _daySectionHeight = 62;
+  final double _daySectionHeight = 60;
   final double _minTimeRowHeight = 25;
   final double _maxTimeRowHeight = 90;
 
@@ -471,13 +471,13 @@ class CalendarState extends State<Calendar> {
       children = [
         Text(
           dayText,
-          style: SchejFonts.body.copyWith(color: SchejColors.gray),
+          style: SchejFonts.body.copyWith(color: SchejColors.darkGray),
         ),
-        Container(
-          padding: const EdgeInsets.all(7),
+        Padding(
+          padding: const EdgeInsets.all(4),
           child: Text(
             dateNum.toString(),
-            style: SchejFonts.header.copyWith(color: SchejColors.gray),
+            style: SchejFonts.header.copyWith(color: SchejColors.darkGray),
           ),
         ),
       ];
@@ -489,7 +489,7 @@ class CalendarState extends State<Calendar> {
           style: SchejFonts.body.copyWith(color: SchejColors.darkGreen),
         ),
         Container(
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(4),
           decoration: const BoxDecoration(
             color: SchejColors.darkGreen,
             shape: BoxShape.circle,
@@ -504,12 +504,14 @@ class CalendarState extends State<Calendar> {
       // Date is after curDate
       children = [
         Text(dayText, style: SchejFonts.body),
-        Container(
-          padding: const EdgeInsets.all(7),
+        Padding(
+          padding: const EdgeInsets.all(4),
           child: Text(dateNum.toString(), style: SchejFonts.header),
         )
       ];
     }
+
+    children.insert(0, SizedBox(height: 5));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,

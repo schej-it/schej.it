@@ -46,11 +46,14 @@ class _MySchejPageState extends State<MySchejPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'schejFab',
-        onPressed: takeScreenshot,
-        backgroundColor: SchejColors.darkGreen,
-        child: const Icon(MdiIcons.share),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: FloatingActionButton(
+          heroTag: 'schejFab',
+          onPressed: takeScreenshot,
+          backgroundColor: SchejColors.darkGreen,
+          child: const Icon(MdiIcons.share, size: 28),
+        ),
       ),
       body: Container(
         color: SchejColors.white,
@@ -100,7 +103,7 @@ class _MySchejPageState extends State<MySchejPage> {
       title: Row(
         children: [
           Text(
-            DateFormat.MMMM().format(_selectedDay),
+            DateFormat.yMMMM().format(_selectedDay),
             style: SchejFonts.header,
           ),
           IconButton(
@@ -120,14 +123,17 @@ class _MySchejPageState extends State<MySchejPage> {
             _daysVisible = value;
           }),
         ),
-        IconButton(
-          icon: _eventTitlesVisible
-              ? const Icon(MdiIcons.eye)
-              : const Icon(MdiIcons.eyeOff),
-          splashRadius: 15,
-          onPressed: () => setState(() {
-            _eventTitlesVisible = !_eventTitlesVisible;
-          }),
+        Padding(
+          padding: const EdgeInsets.only(right: 15),
+          child: IconButton(
+            icon: _eventTitlesVisible
+                ? const Icon(MdiIcons.eye)
+                : const Icon(MdiIcons.eyeOff),
+            splashRadius: 15,
+            onPressed: () => setState(() {
+              _eventTitlesVisible = !_eventTitlesVisible;
+            }),
+          ),
         ),
       ],
       underline: false,

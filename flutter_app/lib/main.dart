@@ -84,6 +84,7 @@ class _AppState extends State<App> {
     }
 
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       routerDelegate: _appRouter.delegate(),
       routeInformationParser: _appRouter.defaultRouteParser(),
       theme: ThemeData(
@@ -138,6 +139,9 @@ class _AppState extends State<App> {
             // }
             return SchejColors.darkGreen;
           }),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(3)),
+          ),
         ),
       ),
       color: SchejColors.darkGreen,

@@ -73,22 +73,25 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Widget _buildFab() {
-    return OpenContainer(
-      closedColor: SchejColors.darkGreen,
-      closedShape: const CircleBorder(),
-      closedBuilder: (context, openContainer) {
-        return FloatingActionButton(
-          heroTag: 'friendsFab',
-          backgroundColor: SchejColors.darkGreen,
-          onPressed: () {
-            openContainer();
-          },
-          child: const Icon(MdiIcons.accountPlus),
-        );
-      },
-      openBuilder: (context, closeContainer) {
-        return AddFriendDialog(onClose: closeContainer);
-      },
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: OpenContainer(
+        closedColor: SchejColors.darkGreen,
+        closedShape: const CircleBorder(),
+        closedBuilder: (context, openContainer) {
+          return FloatingActionButton(
+            heroTag: 'friendsFab',
+            backgroundColor: SchejColors.darkGreen,
+            onPressed: () {
+              openContainer();
+            },
+            child: const Icon(MdiIcons.accountPlus),
+          );
+        },
+        openBuilder: (context, closeContainer) {
+          return AddFriendDialog(onClose: closeContainer);
+        },
+      ),
     );
   }
 

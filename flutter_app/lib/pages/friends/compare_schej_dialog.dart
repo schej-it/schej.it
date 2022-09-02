@@ -67,7 +67,7 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
         isRoot: true,
         underline: false,
         centerTitle: true,
-        titleString: 'Add people',
+        titleString: 'Add more friends',
         actions: [
           IconButton(onPressed: widget.onClose, icon: const Icon(Icons.close)),
         ],
@@ -93,12 +93,15 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
 
   Widget _buildCheckbox() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.only(top: 2, bottom: 15),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          const Text('Include myself', style: SchejFonts.subtitle),
+          Text(
+            'Include myself',
+            style: SchejFonts.subtitle.copyWith(color: SchejColors.darkGray),
+          ),
           Consumer<CompareSchejController>(
             builder: (context, controller, child) => Checkbox(
               visualDensity: const VisualDensity(
