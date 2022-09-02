@@ -17,6 +17,7 @@ enum ApiServiceProperties {
   authUser,
   friends,
   friendRequests,
+  friendsStatus,
 }
 
 // Api is used to keep track of all the data retrieved from the API as well as
@@ -104,8 +105,8 @@ class ApiService extends PropertyChangeNotifier {
   final List<FriendRequest> _friendRequests = <FriendRequest>[];
   List<FriendRequest> get friendRequests => _friendRequests;
 
-  final List<Status> _friendStatuses = <Status>[];
-  List<Status> get friendStatuses => _friendStatuses;
+  final Map<String, Status> _friendsStatus = <String, Status>{};
+  Map<String, Status> get friendsStatus => _friendsStatus;
 
   // Gets a user's friends and sets [_friends] to it.
   Future<void> refreshFriendsList() async {
@@ -130,20 +131,20 @@ class ApiService extends PropertyChangeNotifier {
   }
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
-  Future<void> refreshFriendRequestsList() async {
-    _friendRequests.clear();
-    final result = await get('/friends/requests');
-    for (var request in result) {
-      final r = FriendRequest.fromJson(request);
-      _friendRequests.add(r);
+  Future<void> refreshFriendsStatus() async {
+    _friendsStatus.clear();
+    for (var friend in friendsList) {
+      final result = await getFriendStatus(friend.id);
+      _friendsStatus[friend.id] = result;
     }
-    notifyListeners(ApiServiceProperties.friendRequests);
+    notifyListeners(ApiServiceProperties.friendsStatus);
   }
 
   // Refreshes every friend related variable.
   Future<void> refreshFriends() async {
     refreshFriendsList();
     refreshFriendRequestsList();
+    refreshFriendsStatus();
   }
 
   // Returns the incoming friend requests.
