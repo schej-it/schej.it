@@ -117,6 +117,7 @@ class ApiService extends PropertyChangeNotifier {
       final f = User.fromJson(friend);
       _friends[f.id] = f;
     }
+    refreshFriendsStatus();
     notifyListeners(ApiServiceProperties.friends);
   }
 
@@ -133,7 +134,7 @@ class ApiService extends PropertyChangeNotifier {
 
   // Gets a user's friend requests and sets [_friendRequests] to it.
   Future<void> refreshFriendsStatus() async {
-    _friendsStatus.clear();
+    // NOTE: no _friendsStatus.clear() because no statuses are displayed during retrieval.
     for (var friend in friendsList) {
       final result = await getFriendStatus(friend.id);
       _friendsStatus[friend.id] = result;
@@ -145,7 +146,6 @@ class ApiService extends PropertyChangeNotifier {
   Future<void> refreshFriends() async {
     refreshFriendsList();
     refreshFriendRequestsList();
-    refreshFriendsStatus();
   }
 
   // Returns the incoming friend requests.
@@ -233,7 +233,7 @@ class ApiService extends PropertyChangeNotifier {
 
   // Get status of friend with [id].
   Future<Status> getFriendStatus(String id) async {
-    final result = await get('friends/$id/status');
+    final result = await get('/friends/$id/status');
     return Status.fromJson(result);
   }
 

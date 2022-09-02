@@ -16,7 +16,7 @@ class FriendCard extends StatelessWidget {
   final String picture;
   final FriendStatus status;
   // curEventName is the name of the current event the friend is attending
-  final String curEventName;
+  final String? curEventName;
   final Function(RelativeRect position) showOverflowMenu;
   final GestureTapCallback? onTap;
 
@@ -28,7 +28,7 @@ class FriendCard extends StatelessWidget {
     required this.picture,
     required this.status,
     required this.showOverflowMenu,
-    this.curEventName = '',
+    required this.curEventName,
     this.onTap,
   }) : super(key: key);
 

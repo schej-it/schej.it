@@ -41,6 +41,7 @@ class _FriendsPageState extends State<FriendsPage>
         setState(() {
           _tabIndex = _tabController.index;
         });
+        api.refreshFriends();
       }
     });
   }

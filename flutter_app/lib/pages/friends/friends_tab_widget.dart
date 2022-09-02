@@ -26,7 +26,6 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   // Controllers
   final TextEditingController _searchTextController = TextEditingController();
   List<User> _friendsSearchResults = [];
-  List<Status> _friendsStatuses = [];
 
   @override
   void dispose() {
@@ -38,24 +37,24 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
   void initState() {
     super.initState();
 
-    // Start listening to changes.
-    _searchTextController.addListener(_updateSearchResults);
-
     // Initialize the friend search results.
     final api = context.read<ApiService>();
-    _updateSearchResults();
+    _updateSearchResults(api);
+
+    // Start listening to changes.
+    _searchTextController.addListener(() => _updateSearchResults(api));
 
     // Add listener to the friends property in ApiService.
-    api.addListener(_updateSearchResults, [ApiServiceProperties.friends]);
+    api.addListener(
+        () => _updateSearchResults(api), [ApiServiceProperties.friends]);
   }
 
-  void _updateSearchResults() {
-    // Find and update status for each friend.
+  void _updateSearchResults(ApiService api) {
+    if (!mounted) return;
 
+    // Find and update status for each friend.
     setState(() {
-      _friendsSearchResults = context
-          .read<ApiService>()
-          .getFriendsByQuery(_searchTextController.text);
+      _friendsSearchResults = api.getFriendsByQuery(_searchTextController.text);
     });
   }
 
@@ -134,13 +133,17 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
         }
 
         final friend = _friendsSearchResults[index];
+        final status = api.friendsStatus[friend.id];
+
         return Padding(
           padding: SchejConstants.pagePadding
               .copyWith(top: index == 0 ? 10 : 0, bottom: 10),
           child: FriendCard(
               name: friend.fullName,
               picture: friend.picture,
-              status: FriendStatus.free /*friend['status'] as FriendStatus*/,
+              status:
+                  stringToFriendStatus(status != null ? status.status : 'free'),
+              curEventName: status?.eventName,
               showOverflowMenu: (RelativeRect position) {
                 _showMenu(friend.id, position);
               },
@@ -150,5 +153,10 @@ class _FriendsTabWidgetState extends State<FriendsTabWidget> {
         );
       },
     );
+  }
+
+  FriendStatus stringToFriendStatus(String status) {
+    return FriendStatus.values
+        .firstWhere((e) => e.toString() == 'FriendStatus.' + status);
   }
 }
