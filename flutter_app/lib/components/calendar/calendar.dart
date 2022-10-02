@@ -57,7 +57,7 @@ class CalendarState extends State<Calendar> {
   // Constants
   //
   final double _timeColWidth = 60;
-  final double _daySectionHeight = 60;
+  final double _daySectionHeight = 67;
   final double _minTimeRowHeight = 25;
   final double _maxTimeRowHeight = 90;
 
@@ -72,7 +72,7 @@ class CalendarState extends State<Calendar> {
   //
   // Other variables
   //
-  final DateTime _curDate = getDateWithTime(DateTime.now(), 0);
+  get _curDate => getDateWithTime(DateTime.now(), 0);
   final List<String> _timeStrings = <String>[];
   late final Map<String, CalendarEvents> _calendarEvents =
       <String, CalendarEvents>{};
@@ -370,6 +370,7 @@ class CalendarState extends State<Calendar> {
             controllers: _controllers,
             date: date,
             events: events,
+            daysVisible: widget.daysVisible,
             showEventTitles: widget.showEventTitles,
             showAvatars: widget.showAvatars,
             showAvailability: widget.showAvailability,
@@ -474,7 +475,7 @@ class CalendarState extends State<Calendar> {
           style: SchejFonts.body.copyWith(color: SchejColors.darkGray),
         ),
         Padding(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(8),
           child: Text(
             dateNum.toString(),
             style: SchejFonts.header.copyWith(color: SchejColors.darkGray),
@@ -489,7 +490,7 @@ class CalendarState extends State<Calendar> {
           style: SchejFonts.body.copyWith(color: SchejColors.darkGreen),
         ),
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(8),
           decoration: const BoxDecoration(
             color: SchejColors.darkGreen,
             shape: BoxShape.circle,
@@ -505,13 +506,13 @@ class CalendarState extends State<Calendar> {
       children = [
         Text(dayText, style: SchejFonts.body),
         Padding(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(8),
           child: Text(dateNum.toString(), style: SchejFonts.header),
         )
       ];
     }
 
-    children.insert(0, SizedBox(height: 5));
+    children.insert(0, const SizedBox(height: 5));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -592,6 +593,7 @@ class CalendarDay extends StatefulWidget {
   final LinkedScrollControllerGroup controllers;
   final DateTime date;
   final Map<String, List<CalendarEvent>> events;
+  final int daysVisible;
   final int numRows;
   final double rowHeight;
   final bool showEventTitles;
@@ -604,6 +606,7 @@ class CalendarDay extends StatefulWidget {
     required this.controllers,
     required this.date,
     required this.events,
+    required this.daysVisible,
     required this.numRows,
     required this.rowHeight,
     this.showEventTitles = true,
@@ -677,6 +680,7 @@ class _CalendarDayState extends State<CalendarDay> {
                   event: event,
                   hourHeight: widget.rowHeight,
                   layerLink: _layerLink,
+                  daysVisible: widget.daysVisible,
                   showTitle: widget.showEventTitles,
                   showAvatar: widget.showAvatars,
                   userId: widget.activeUserId,
@@ -700,6 +704,7 @@ class _CalendarDayState extends State<CalendarDay> {
                     event: event,
                     hourHeight: widget.rowHeight,
                     layerLink: _layerLink,
+                    daysVisible: widget.daysVisible,
                     showTitle: widget.showEventTitles,
                     showAvatar: widget.showAvatars,
                     userId: userId,
@@ -823,6 +828,7 @@ class CalendarEventWidget extends StatefulWidget {
   final CalendarEvent event;
   final double hourHeight;
   final LayerLink layerLink;
+  final int daysVisible;
 
   final bool showTitle;
   final bool showBusy;
@@ -839,6 +845,7 @@ class CalendarEventWidget extends StatefulWidget {
     required this.event,
     required this.hourHeight,
     required this.layerLink,
+    required this.daysVisible,
     this.showTitle = true,
     // Whether to show "BUSY" when title not shown
     this.showBusy = true,
@@ -871,11 +878,11 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
       if (widget.showTitle &&
           (widget.activeUserId == null ||
               widget.userId == widget.activeUserId)) {
-        _containerColor = SchejColors.lightBlue;
+        _containerColor = SchejColors.blue;
         _textColor = SchejColors.white;
       } else {
-        _containerColor = SchejColors.fadedLightBlue;
-        _textColor = SchejColors.lightBlue;
+        _containerColor = SchejColors.fadedBlue;
+        _textColor = SchejColors.blue;
       }
     }
   }
@@ -925,6 +932,9 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
       height = 0;
     }
 
+    final textStyle =
+        widget.daysVisible > 3 ? SchejFonts.small : SchejFonts.body;
+
     return Positioned(
       top: 0,
       left: 0,
@@ -933,7 +943,7 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
       child: Stack(
         children: [
           Container(
-            padding: const EdgeInsets.only(top: 7, right: 7, left: 7),
+            padding: const EdgeInsets.only(top: 5, right: 5, left: 5),
             height: height,
             width: double.infinity,
             decoration: BoxDecoration(
@@ -951,11 +961,11 @@ class _CalendarEventWidgetState extends State<CalendarEventWidget> {
             child: widget.showTitle
                 ? Text(
                     widget.event.title,
-                    style: SchejFonts.body.copyWith(color: _textColor),
+                    style: textStyle.copyWith(color: _textColor),
                   )
                 : Text(
                     widget.showBusy ? 'BUSY' : '',
-                    style: SchejFonts.body.copyWith(color: _textColor),
+                    style: textStyle.copyWith(color: _textColor),
                   ),
           ),
           if (widget.showAvatar) _buildAvatar(),
@@ -1025,6 +1035,7 @@ class _AvailabilityBlockWidgetState extends State<AvailabilityBlockWidget> {
       backgroundColor: backgroundColor,
       hourHeight: widget.hourHeight,
       layerLink: widget.layerLink,
+      daysVisible: 1,
       showTitle: false,
       showBusy: false,
       noBorder: true,

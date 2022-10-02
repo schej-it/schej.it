@@ -27,10 +27,13 @@ class _MySchejPageState extends State<MySchejPage> {
   bool _monthSelector = false;
   int _daysVisible = 3;
   bool _eventTitlesVisible = true;
+  bool _isTakingScreenshot = false;
   DateTime _selectedDay = getDateWithTime(DateTime.now(), 0);
   final GlobalKey<CalendarState> _calendar = GlobalKey();
 
   void takeScreenshot() async {
+    setState(() => _isTakingScreenshot = true);
+
     if (_calendar.currentState == null) return;
 
     final image = await _calendar.currentState!.getScreenshot();
@@ -40,6 +43,8 @@ class _MySchejPageState extends State<MySchejPage> {
     final imagePath = await File('${directory.path}/screenshot.png').create();
     await imagePath.writeAsBytes(image);
     await Share.shareFiles([imagePath.path]);
+
+    setState(() => _isTakingScreenshot = false);
   }
 
   @override
@@ -50,7 +55,7 @@ class _MySchejPageState extends State<MySchejPage> {
         padding: const EdgeInsets.only(bottom: 12),
         child: FloatingActionButton(
           heroTag: 'schejFab',
-          onPressed: takeScreenshot,
+          onPressed: _isTakingScreenshot ? null : takeScreenshot,
           backgroundColor: SchejColors.darkGreen,
           child: const Icon(MdiIcons.share, size: 28),
         ),

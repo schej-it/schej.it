@@ -52,6 +52,7 @@ class _SignInPageState extends State<SignInPage> {
                       Buttons.Google,
                       onPressed: _signIn,
                       text: 'Continue with Google',
+                      padding: const EdgeInsets.all(5),
                       shape: RoundedRectangleBorder(
                         borderRadius: SchejConstants.borderRadius,
                       ),

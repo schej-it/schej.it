@@ -9,17 +9,19 @@ import 'package:provider/provider.dart';
 // Widget containing chips of all the people added to the current schej comparison
 // as well as a text field at the right to search for more people
 class CompareSchejTextField extends StatefulWidget {
+  final CompareSchejController controller;
   final FocusNode? focusNode;
   final TextEditingController? textEditingController;
   final ScrollController? scrollController;
-  final CompareSchejController controller;
+  final ValueChanged<String>? onSubmitted;
 
   const CompareSchejTextField({
     Key? key,
+    required this.controller,
     this.focusNode,
     this.textEditingController,
     this.scrollController,
-    required this.controller,
+    this.onSubmitted,
   }) : super(key: key);
 
   @override
@@ -138,10 +140,11 @@ class _CompareSchejTextFieldState extends State<CompareSchejTextField> {
       child: TextField(
         focusNode: widget.focusNode,
         controller: widget.textEditingController,
+        onSubmitted: widget.onSubmitted,
         autocorrect: false,
         decoration: const InputDecoration(
           isDense: true,
-          hintText: 'Type a name...',
+          hintText: 'Add a friend...',
           contentPadding: EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 5,

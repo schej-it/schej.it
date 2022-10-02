@@ -82,6 +82,7 @@ class _CompareSchejDialogState extends State<CompareSchejDialog> {
               textEditingController: _textEditingController,
               controller: widget.controller,
               scrollController: widget.scrollController,
+              onSubmitted: (_) => widget.onClose(),
             ),
             _buildCheckbox(),
             Expanded(child: _buildResults()),

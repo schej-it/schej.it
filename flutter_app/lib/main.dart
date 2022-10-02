@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app/constants/colors.dart';
 import 'package:flutter_app/models/api.dart';
 import 'package:flutter_app/models/auth_service.dart';
@@ -15,6 +16,10 @@ import 'constants/constants.dart';
 import 'constants/fonts.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.white,
+    statusBarColor: Colors.white,
+  ));
   runApp(const App());
 }
 
