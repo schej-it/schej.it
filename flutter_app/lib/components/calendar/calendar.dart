@@ -662,32 +662,32 @@ class _CalendarDayState extends State<CalendarDay> {
     final children = <Widget>[];
 
     if (widget.showAvailability) {
-      final availabilities =
-          Availabilities.getUsersAvailabilityForDay(widget.date, widget.events);
-      children.addAll(availabilities
+      List<AvailabilityBlock> availability;
+      int numUsers = 0;
+
+      if (widget.activeUserId != null) {
+        // Show only active user's availability
+        numUsers = 1;
+        availability = Availabilities.parseDayAvailabilityFromCalendarEvents(
+          widget.date,
+          widget.activeUserId!,
+          CalendarEvents(events: widget.events[widget.activeUserId!]!),
+        );
+      } else {
+        // Show all users availabilities
+        numUsers = widget.events.keys.length;
+        availability = Availabilities.getUsersAvailabilityForDay(
+            widget.date, widget.events);
+      }
+
+      children.addAll(availability
           .map((a) => AvailabilityBlockWidget(
                 availabilityBlock: a,
-                maxNumUsersAvailable: widget.events.keys.length,
+                maxNumUsersAvailable: numUsers,
                 hourHeight: widget.rowHeight,
                 layerLink: _layerLink,
               ))
           .toList());
-
-      // Only show current user's schedule if there's an active user
-      if (widget.activeUserId != null) {
-        children.addAll(widget.events[widget.activeUserId]!
-            .map((event) => CalendarEventWidget(
-                  event: event,
-                  hourHeight: widget.rowHeight,
-                  layerLink: _layerLink,
-                  daysVisible: widget.daysVisible,
-                  showTitle: widget.showEventTitles,
-                  showAvatar: widget.showAvatars,
-                  userId: widget.activeUserId,
-                  activeUserId: widget.activeUserId,
-                ))
-            .toList());
-      }
     } else {
       List<String> userIds = List.from(widget.events.keys);
       if (widget.activeUserId != null) {
