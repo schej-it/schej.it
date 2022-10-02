@@ -16,10 +16,10 @@ import 'constants/constants.dart';
 import 'constants/fonts.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.white,
-    statusBarColor: Colors.white,
-  ));
+  // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+  //   systemNavigationBarColor: Colors.white,
+  //   statusBarColor: Colors.white,
+  // ));
   runApp(const App());
 }
 
@@ -149,7 +149,7 @@ class _AppState extends State<App> {
           ),
         ),
       ),
-      color: SchejColors.darkGreen,
+      color: SchejColors.white,
     );
   }
 
