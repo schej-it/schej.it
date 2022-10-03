@@ -70,6 +70,8 @@ func signIn(c *gin.Context) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+	defer resp.Body.Close()
+
 	res := struct {
 		AccessToken      string `json:"access_token"`
 		IdToken          string `json:"id_token"`
@@ -81,10 +83,6 @@ func signIn(c *gin.Context) {
 		ErrorDescription string `json:"error_description"`
 	}{}
 
-	// defer resp.Body.Close()
-	// body, err := io.ReadAll(resp.Body)
-	// fmt.Printf("body: %v\n", string(body))
-	// return
 	json.NewDecoder(resp.Body).Decode(&res)
 	if len(res.Error) > 0 {
 		data, _ := json.MarshalIndent(res, "", "  ")

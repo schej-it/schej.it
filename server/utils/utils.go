@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -79,6 +82,7 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+	defer resp.Body.Close()
 
 	// Define stucts to parse json response
 	type Response struct {
@@ -123,6 +127,7 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+	defer resp.Body.Close()
 
 	// Define some structs to parse the json response
 	type TimeInfo struct {
@@ -152,15 +157,18 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	// Format response to return
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, item := range res.Items {
-		// Only include events that are not all day events
-		if !item.Start.DateTime.IsZero() {
-			// Restructure event
-			calendarEvents = append(calendarEvents, models.CalendarEvent{
-				Summary:   item.Summary,
-				StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
-				EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
-			})
+		// Don't include events that are all day events
+		// Don't include events that are greater than 24 hours
+		if item.Start.DateTime.IsZero() || item.End.DateTime.Sub(item.Start.DateTime).Hours() >= 24 {
+			continue
 		}
+
+		// Restructure event
+		calendarEvents = append(calendarEvents, models.CalendarEvent{
+			Summary:   item.Summary,
+			StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
+			EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
+		})
 	}
 
 	return calendarEvents, nil
@@ -198,4 +206,11 @@ func GetClientIdFromTokenOrigin(tokenOrigin models.TokenOriginType) string {
 	default:
 		return os.Getenv("CLIENT_ID")
 	}
+}
+
+// Prints the http response as a string
+func PrintHttpResponse(resp *http.Response) {
+	body, _ := ioutil.ReadAll(resp.Body)
+	logger.StdOut.Println(string(body))
+	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 }

@@ -124,6 +124,8 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 		if err != nil {
 			logger.StdErr.Panicln(err)
 		}
+		defer resp.Body.Close()
+
 		res := struct {
 			AccessToken string `json:"access_token"`
 			ExpiresIn   int    `json:"expires_in"`
@@ -131,9 +133,6 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 			TokenType   string `json:"token_type"`
 			Error       bson.M `json:"error"`
 		}{}
-		// defer resp.Body.Close()
-		// body, _ := io.ReadAll(resp.Body)
-		// logger.StdOut.Println(string(body))
 		json.NewDecoder(resp.Body).Decode(&res)
 
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
