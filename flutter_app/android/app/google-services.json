@@ -1,1 +1,57 @@
-{"installed":{"client_id":"523323684219-rltj890jhj1ncb0dk1532vq4k8t3a6bp.apps.googleusercontent.com","project_id":"schej-it","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs" }}
+{
+  "project_info": {
+    "project_number": "523323684219",
+    "project_id": "schej-it",
+    "storage_bucket": "schej-it.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523323684219:android:969e89ef0eea3603d4b9de",
+        "android_client_info": {
+          "package_name": "it.schej.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "523323684219-rltj890jhj1ncb0dk1532vq4k8t3a6bp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "it.schej.app",
+            "certificate_hash": "f1f9a314983e4fe6fa6de023817b2ff8407a04ea"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH1Xb5zGjvyrCpc0RUKrOouJXac3Isp2M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "523323684219-vntbcabt43u6ago35a8s9mkjlhrserdg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "it.schej.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1",
+  "installed": {
+    "client_id": "523323684219-rltj890jhj1ncb0dk1532vq4k8t3a6bp.apps.googleusercontent.com",
+    "project_id": "schej-it",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
+  }
+}
