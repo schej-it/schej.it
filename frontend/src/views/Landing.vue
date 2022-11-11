@@ -52,79 +52,16 @@
     
     <div class="tw-pt-20 tw-pb-56">
 
-      <div class="tw-flex tw-flex-col tw-items-center sm:tw-flex-row-reverse sm:tw-justify-center">
-        <div class="tw-flex tw-flex tw-w-80">
-          <v-img
-            alt="Schej.it Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="https://download.logo.wine/logo/Google_Calendar/Google_Calendar-Logo.wine.png"
-            transition="scroll-y-reverse-transition"
-            width="600"
-          />
-        </div>
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-10 tw-px-4 sm:tw-px-0">
-          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center sm:tw-text-left tw-text-xl tw-mb-2">Schedule meetings with ease</h1>
-          <p class="tw-text-dark-gray">
-            Mark your availability alongside all your Google Calendar events.
-            It’s like when2meet but with Google Calendar integration.
+      <div class="tw-flex tw-flex-col tw-items-center">
+
+        <div class="tw-flex tw-flex-col tw-mt-10 tw-px-4 sm:tw-px-0">
+          <p class="sm:tw-text-3xl tw-text-center tw-text-2xl tw-mb-2 tw-leading-10">
+            ✍️ Mark your <span class="tw-underline tw-decoration-green tw-decoration-4">availability</span> alongside all your 📅 Google Calendar events.
+            <br>
+            <!-- It’s like <span class="tw-underline">when2meet</span> but with Google Calendar integration. -->
           </p>
         </div>
       </div>
-
-      <div class="tw-flex tw-flex-col tw-items-center sm:tw-flex-row sm:tw-justify-center tw-mt-20">
-        <div class="tw-flex tw-flex tw-w-80 tw-justify-center">
-          <v-img
-            alt="Schej.it Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="https://cdn-icons-png.flaticon.com/512/3721/3721924.png"
-            transition="scroll-y-reverse-transition"
-            width="180"
-          />
-        </div>
-
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4 sm:tw-px-0">
-          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center sm:tw-text-left tw-text-xl tw-mb-2">Send your availability</h1>
-          <p class="tw-text-dark-gray">
-            Send your friends a screenshot of the times you are available. No
-            more hassle of manually typing out time ranges of when you're free.
-          </p>
-        </div>
-      </div>
-
-      <div class="tw-flex tw-flex-col tw-items-center sm:tw-flex-row-reverse sm:tw-justify-center tw-mt-20">
-        <div class="tw-flex tw-flex tw-w-80 tw-justify-center">
-          <v-img
-            alt="Schej.it Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="https://icon-library.com/images/friends-icon-transparent/friends-icon-transparent-1.jpg"
-            transition="scroll-y-reverse-transition"
-            width="200"
-          />
-        </div>
-        <div class="tw-flex tw-flex-col tw-w-80 tw-mt-7 tw-px-4 sm:tw-px-0">
-          <h1 class="tw-font-bold sm:tw-text-2xl tw-text-center sm:tw-text-left tw-text-xl tw-mb-2">Peep your friends’ schedules</h1>
-          <p class="tw-text-dark-gray">
-            Add your friends to see what they’ve been up to. Control who can see
-            what.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div
-      class="-tw-translate-y-[41%] -tw-mb-52 tw-grid tw-place-content-center"
-    >
-      <img
-        class="tw-select-none"
-        style="user-drag: none;"
-        alt="Schej.it Logo"
-        contain
-        src="@/assets/logo_square_512_512.png"
-        width="200"
-      >
     </div>
 
     <div class="tw-bg-green tw-h-80 tw-flex tw-flex-col">
