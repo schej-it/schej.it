@@ -106,11 +106,11 @@ export default {
         icon: 'mdi-home',
         route: { name: 'home' },
       },
-      {
+      /*{
         text: 'My schedule',
         icon: 'mdi-calendar',
         route: { name: 'schedule' },
-      },
+      },*/
       /*{
         text: 'Friends',
         icon: 'mdi-account-multiple',
