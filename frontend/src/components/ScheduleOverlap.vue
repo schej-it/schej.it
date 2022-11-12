@@ -476,7 +476,7 @@ export default {
       }
       const { left, top } = e.currentTarget.getBoundingClientRect()
       const x = pageX - left
-      const y = pageY - top
+      const y = pageY - top - window.scrollY
       return { x, y }
     },
     getDateFromXY(x, y) {
