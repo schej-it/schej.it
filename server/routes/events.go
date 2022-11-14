@@ -26,7 +26,7 @@ func InitEvents(router *gin.Engine) {
 
 	eventRouter.POST("", middleware.AuthRequired(), createEvent)
 	eventRouter.GET("/:eventId", getEvent)
-	eventRouter.POST("/:eventId/response", middleware.AuthRequired(), updateEventResponse)
+	eventRouter.POST("/:eventId/response", updateEventResponse)
 }
 
 // @Summary Creates a new event
@@ -85,7 +85,14 @@ func getEvent(c *gin.Context) {
 
 	// Populate user fields
 	for userId, response := range event.Responses {
-		response.User = db.GetUserById(userId).GetProfile()
+		user := db.GetUserById(userId)
+		if user == nil {
+			response.User = &models.UserProfile{
+				FirstName: response.Name,
+			}
+		} else {
+			response.User = user.GetProfile()
+		}
 		event.Responses[userId] = response
 	}
 
@@ -97,12 +104,14 @@ func getEvent(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param availability body []string true "Array of dates representing user's availability"
+// @Param payload body object{availability=[]string,guest=bool,name=string} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
 		Availability []string `json:"availability" binding:"required"`
+		Guest        *bool    `json:"guest" binding:"required"`
+		Name         string   `json:"name"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -110,12 +119,32 @@ func updateEventResponse(c *gin.Context) {
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
 
-	response := models.Response{
-		UserId:       utils.GetUserId(session),
-		Availability: payload.Availability,
+	var response models.Response
+	var userIdString string
+	// Populate response differently if guest vs signed in user
+	if *payload.Guest {
+		userIdString = payload.Name
+
+		response = models.Response{
+			Name:         payload.Name,
+			Availability: payload.Availability,
+		}
+	} else {
+		userIdInterface := session.Get("userId")
+		if userIdInterface == nil {
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
+			c.Abort()
+			return
+		}
+		userIdString = userIdInterface.(string)
+
+		response = models.Response{
+			UserId:       utils.StringToObjectID(userIdString),
+			Availability: payload.Availability,
+		}
 	}
 
-	userIdString := session.Get("userId").(string)
+	// Update responses in mongodb
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
 		utils.StringToObjectID(eventId),

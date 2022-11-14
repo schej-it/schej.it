@@ -48,6 +48,8 @@ definitions:
         items:
           type: string
         type: array
+      name:
+        type: string
       user:
         $ref: '#/definitions/models.UserProfile'
         type: object
@@ -235,14 +237,23 @@ paths:
         name: eventId
         required: true
         type: string
-      - description: Array of dates representing user's availability
+      - description: Object containing info about the event response to update
         in: body
-        name: availability
+        name: payload
         required: true
         schema:
-          items:
-            type: string
-          type: array
+          allOf:
+          - type: object
+          - properties:
+              availability:
+                items:
+                  type: string
+                type: array
+              guest:
+                type: boolean
+              name:
+                type: string
+            type: object
       produces:
       - application/json
       responses:
