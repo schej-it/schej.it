@@ -6,8 +6,11 @@
       v-if="showHeader"
       class="tw-h-14 tw-bg-white tw-fixed tw-w-screen tw-z-40"
       dark
+      :class="scrollY > 0 && 'tw-drop-shadow'"
     >
-      <div class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto">
+      <div 
+        class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto"
+      >
         <v-img
           @click="goHome"
           alt="Schej.it Logo"
@@ -20,7 +23,11 @@
 
         <v-spacer />
 
-        <AuthUserMenu></AuthUserMenu>
+        <AuthUserMenu v-if="authUser" />
+        <v-btn 
+          v-else
+          text
+        >Sign in</v-btn>
       </div>
     </div>
 
@@ -59,11 +66,12 @@ export default {
   components: {
     AutoSnackbar,
     AuthUserMenu
-},
+  },
 
   data: () => ({
     mounted: false,
     loaded: false,
+    scrollY: 0,
   }),
 
   computed: {
@@ -87,15 +95,8 @@ export default {
     goHome() {
       this.$router.push({ name: 'home' })
     },
-    fixHeight() {
-      // // Fix height on mobile
-      // document.querySelector('.v-application--wrap').style.height = window.innerHeight + 'px'
-
-      // let items = 0 // Counts the number of fixed height items (header and navbar)
-      // if (this.showHeader) items++
-      // if (this.showBottomNavbar) items++
-
-      // document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
+    handleScroll(e) {
+      this.scrollY = window.scrollY
     },
     redirectUser(authenticated) {
       let authRoutes = ['home']
@@ -124,13 +125,19 @@ export default {
         this.setAuthUser(null)
       })
 
+    // Event listeners
+    window.addEventListener('scroll', this.handleScroll)
+
     this.loaded = true    
   },
 
   mounted() {
     this.mounted = true
-    this.fixHeight()
-    window.addEventListener('resize', this.fixHeight)
+    this.scrollY = window.scrollY
+  },
+
+  destroyed() {
+    window.removeEventListener('scroll', this.handleScroll)
   },
 
   watch: {
@@ -144,15 +151,9 @@ export default {
         }*/
       }
     },
-    '$vuetify.breakpoint.name': {
-      handler() {
-        this.fixHeight()
-      },
-    },
     $route: {
       immediate: true,
       handler() {
-        if (this.mounted) this.fixHeight()
         get('/auth/status').then(data => {
           this.redirectUser(true)
         }).catch(err => {

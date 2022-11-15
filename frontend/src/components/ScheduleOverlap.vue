@@ -86,7 +86,7 @@
         </div>
       </div>
     
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-block sm:tw-w-32">
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-32">
         <div class="tw-font-medium tw-mb-2">Availability:</div>
         <div class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block">
           <div 
@@ -102,33 +102,6 @@
         </div>
       </div>
     </div>
-
-    <!-- <v-bottom-sheet
-      v-if="isPhone && !calendarOnly"
-      v-model="availabilityBottomSheet"
-      hide-overlay
-      persistent
-    >
-      <v-sheet class="tw-h-32 tw-pt-2">
-        <div class="tw-flex tw-items-center tw-px-2">
-          <div class="tw-font-medium">Availability:</div>
-          <v-spacer />
-          <v-btn icon small @click="availabilityBottomSheet = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </div>
-        <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-auto tw-max-h-20 tw-pl-4 tw-text-sm">
-          <div 
-            v-for="user in respondents" 
-            :key="user._id"
-            :class="!curTimeslotAvailability[user._id] ? 'tw-line-through tw-text-gray' : ''"
-            class="tw-max-w-full tw-truncate"
-          >
-            {{ user.firstName + ' ' + user.lastName }}
-          </div>
-        </div>
-      </v-sheet>
-    </v-bottom-sheet> -->
   </div>
 </template>
 
@@ -164,7 +137,6 @@ export default {
       editing: false, // Whether editing the current user's availability
       unsavedChanges: false, // Whether there are unsaved availability changes
 
-      availabilityBottomSheet: false, // Whether to show the bottom sheet with people's availability
       curTimeslotAvailability: {}, // An object containing the people that are available and unavailable for the given timeslot, maps their user id to either true or false  
       curTimeslot: { dayIndex: -1, timeIndex: -1 },
       curUser: '', // The id of the current user to show the availability of
@@ -354,7 +326,6 @@ export default {
           this.curTimeslotAvailability[respondent._id] = false
         }
       }
-      this.availabilityBottomSheet = true
     },
     async submitAvailability() {
       await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
@@ -368,7 +339,6 @@ export default {
       
       // Border style
       if (
-        this.availabilityBottomSheet && 
         this.curTimeslot.dayIndex === d && 
         this.curTimeslot.timeIndex === t  
       ) {
@@ -432,7 +402,6 @@ export default {
         await this.submitAvailability()
         this.showInfo('Changes saved!')
       }
-      this.availabilityBottomSheet = false
       this.showCalendarEvents = !this.showCalendarEvents
     },
     timeslotVon(d, t) {

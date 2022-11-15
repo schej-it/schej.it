@@ -2,7 +2,6 @@
   <div v-if="event">
     <v-dialog
       v-model="choiceDialog"
-      persistent
       width="400"
       content-class="tw-m-0"
     >
@@ -61,9 +60,22 @@
         v-bind="event"
         :loadingCalendarEvents="loading"
         :calendarEvents="calendarEvents"
-        :initialShowCalendarEvents="initialShowCalendarEvents"
+        :initialShowCalendarEvents="false"
         @refreshEvent="refreshEvent"
       />
+    </div>
+    <!-- Placeholder for bottom bar -->
+    <div class="tw-h-16"></div>
+
+    <div class="tw-flex tw-items-center tw-fixed tw-bottom-0 tw-bg-green tw-w-full tw-px-4 tw-h-16">
+      <v-spacer />
+      <v-btn
+        outlined
+        class="tw-text-green tw-bg-white"
+        @click="choiceDialog = true"
+      >
+        Add availability
+      </v-btn>
     </div>
   </div>
 </template>
@@ -87,7 +99,7 @@ export default {
   },
 
   data: () => ({
-    choiceDialog: true,
+    choiceDialog: false,
 
     loading: true,
     calendarEvents: [],
@@ -99,9 +111,6 @@ export default {
     ...mapState([ 'authUser', 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
-    },
-    initialShowCalendarEvents() {
-      return !this.userHasResponded
     },
     isCalendarShown() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
@@ -159,7 +168,7 @@ export default {
     }
 
     // Show dialog if user hasn't responded yet
-    this.choiceDialog = !this.userHasResponded
+    // this.choiceDialog = !this.userHasResponded
     
     // Get user's calendar
     getCalendarEvents(this.event).then(events => {
