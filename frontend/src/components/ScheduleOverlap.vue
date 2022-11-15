@@ -88,7 +88,7 @@
     
       <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-block sm:tw-w-32">
         <div class="tw-font-medium tw-mb-2">Availability:</div>
-        <div class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2">
+        <div class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block">
           <div 
             v-for="user in respondents" 
             :key="user._id"
