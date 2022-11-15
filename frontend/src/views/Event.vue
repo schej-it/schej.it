@@ -64,7 +64,7 @@
           class="tw-text-green tw-bg-white"
           @click="addAvailability"
         >
-          Add availability
+          {{ userHasResponded ? 'Edit availability' : 'Add availability' }}
         </v-btn>
       </template>
       <template v-else>

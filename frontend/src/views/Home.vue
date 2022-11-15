@@ -19,7 +19,7 @@
         <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-2 tw-my-3">
           <EventItem  
             class="tw-cursor-pointer"
-            v-for="event, i in eventType.events.reverse()" 
+            v-for="event, i in eventType.events" 
             :key="i"
             :event="event" 
             @click="goToEvent(event._id)"
@@ -67,11 +67,11 @@ export default {
         this.events = [
           {
             header: 'My events',
-            events: data.events,
+            events: data.events.reverse(),
           },
           {
             header: 'Events I\'ve joined',
-            events: data.joinedEvents,
+            events: data.joinedEvents.reverse(),
           },
         ] 
       }).catch(err => {
