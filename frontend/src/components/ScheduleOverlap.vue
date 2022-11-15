@@ -11,7 +11,7 @@
           <div class="tw-text-lg tw-capitalize">{{ day.dayText }}</div>
         </div>
       </div>
-      <div v-if="!calendarOnly" class="sm:tw-w-32" />
+      <div v-if="!calendarOnly" class="sm:tw-w-48" />
     </div>
 
     <div class="sm:tw-flex">
@@ -86,7 +86,7 @@
         </div>
       </div>
 
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-32">
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
           <span class="tw-mr-1">Responders</span>
           <div class="tw-bg-black tw-text-white tw-font-bold tw-w-5 tw-h-5 tw-flex tw-justify-center tw-items-center tw-rounded-full tw-text-xs"
@@ -94,36 +94,42 @@
           >
         </div>
         <div
-          class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
+          class="/*tw-pl-4*/ tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
         >
           <div
             v-for="user in respondents"
             :key="user._id"
-            :class="
-              !curTimeslotAvailability[user._id]
-                ? 'tw-line-through tw-text-gray'
-                : 'hover:tw-font-bold'
-            "
-            class="tw-py-1"
+            class="tw-py-1 tw-flex tw-items-center"
             @mouseover="curUser = user._id"
             @mouseleave="curUser = ''"
           >
-            {{ user.firstName + " " + user.lastName + " " }}
-            <v-tooltip right transition="slide-x-transition">
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  :class="!isGuest(user) ? 'tw-text-blue' : 'tw-text-dark-gray'"
-                  class="-tw-mt-0.5"
-                  small
-                  v-bind="attrs"
-                  v-on="on"
-                  >{{
-                    !isGuest(user) ? "mdi-check-decagram" : "mdi-account"
-                  }}</v-icon
-                >
-              </template>
-              <span>{{ !isGuest(user) ? "Verified account" : "Guest" }}</span>
-            </v-tooltip>
+            <div 
+              class="tw-mr-2 tw-break-all"
+              :class="
+                !curTimeslotAvailability[user._id]
+                  ? 'tw-line-through tw-text-gray'
+                  : 'hover:tw-font-bold'
+              "
+            >
+              {{ user.firstName + " " + user.lastName }}
+            </div>
+            <div>
+              <v-tooltip right transition="slide-x-transition">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon
+                    :class="!isGuest(user) ? 'tw-text-blue' : 'tw-text-dark-gray'"
+                    class="-tw-mt-0.5"
+                    small
+                    v-bind="attrs"
+                    v-on="on"
+                    >{{
+                      !isGuest(user) ? "mdi-check-decagram" : "mdi-account"
+                    }}</v-icon
+                  >
+                </template>
+                <span>{{ !isGuest(user) ? "Verified account" : "Guest" }}</span>
+              </v-tooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -137,10 +143,8 @@ import {
   getDateDayOffset,
   dateCompare,
   compareDateDay,
-  dateToTimeInt,
   getDateWithTimeInt,
   post,
-  onLongPress,
   isBetween,
   clamp,
   isPhone,
