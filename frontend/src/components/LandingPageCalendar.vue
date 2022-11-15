@@ -9,8 +9,8 @@
       :responses="responses"
 
       :calendarEvents="calendarEvents"
+      :initialShowCalendarEvents="true"
 
-      showResponsesWithCalendarEvents
       calendarOnly
     />
   </v-card>

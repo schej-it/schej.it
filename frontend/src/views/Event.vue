@@ -48,7 +48,6 @@
         v-bind="event"
         :loadingCalendarEvents="loading"
         :calendarEvents="calendarEvents"
-        :initialShowCalendarEvents="false"
         @refreshEvent="refreshEvent"
       />
     </div>
@@ -56,7 +55,7 @@
     <div class="tw-h-16"></div>
 
     <div class="tw-flex tw-items-center tw-fixed tw-bottom-0 tw-bg-green tw-w-full tw-px-4 tw-h-16">
-      <template v-if="!isCalendarShown">
+      <template v-if="!isEditing">
         <v-spacer />
         <v-btn
           outlined
@@ -118,9 +117,6 @@ export default {
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
     },
-    isCalendarShown() {
-      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
-    },
     isEditing() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
     },
@@ -141,7 +137,7 @@ export default {
       if (!this.scheduleOverlapComponent) return
 
       // TODO: discard changes
-      this.scheduleOverlapComponent.showCalendarEvents = false
+      this.scheduleOverlapComponent.stopEditing()
     },
     copyLink() {
       navigator.clipboard.writeText(`${window.location.origin}/e/${this.eventId}`)
@@ -159,7 +155,7 @@ export default {
     setAvailabilityManually() {
       if (!this.scheduleOverlapComponent) return
 
-      this.scheduleOverlapComponent.showCalendarEvents = true
+      this.scheduleOverlapComponent.startEditing()
       this.choiceDialog = false
     },
     saveChanges() {

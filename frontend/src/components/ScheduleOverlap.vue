@@ -60,7 +60,7 @@
                 </div>
                 
                 <!-- Calendar events -->
-                <template v-if="showCalendarEvents">
+                <template v-if="editing || showCalendarEvents">
                   <div
                     v-for="event, e in calendarEventsByDay[d]" 
                     :key="`${d}-${e}`"
@@ -122,17 +122,16 @@ export default {
 
     loadingCalendarEvents: { type: Boolean, default: false },
     calendarEvents: { type: Array, required: true },
-    initialShowCalendarEvents: { type: Boolean, default: true },
+    initialShowCalendarEvents: { type: Boolean, default: false },
 
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
-    showResponsesWithCalendarEvents: { type: Boolean, default: false },
   },
 
   data() {
     return {
       max: 0, // The max number of respondents for a given timeslot
-      showCalendarEvents: this.initialShowCalendarEvents, // Whether we are showing the current user's availability or aggregate availability
+      showCalendarEvents: this.initialShowCalendarEvents, // Whether we are showing the current user's calendar events
       availability: new Set(), // Current availability of the current user, an array of dates
       editing: false, // Whether editing the current user's availability
       unsavedChanges: false, // Whether there are unsaved availability changes
@@ -327,11 +326,16 @@ export default {
         }
       }
     },
+    startEditing() {
+      this.editing = true
+    },
+    stopEditing() {
+      this.editing = false
+    },
     async submitAvailability() {
       await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
       this.$emit('refreshEvent')
       this.unsavedChanges = false
-      this.editing = false
     },
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
@@ -352,7 +356,7 @@ export default {
       }
 
       // Fill style
-      if (this.showCalendarEvents && !this.showResponsesWithCalendarEvents) {
+      if (this.editing) {
         // Show only current user availability
 
         const inDragRange = this.inDragRange(d, t)
@@ -397,15 +401,8 @@ export default {
 
       return c
     },
-    async toggleShowCalendarEvents() {
-      if (this.showCalendarEvents && this.unsavedChanges) {
-        await this.submitAvailability()
-        this.showInfo('Changes saved!')
-      }
-      this.showCalendarEvents = !this.showCalendarEvents
-    },
     timeslotVon(d, t) {
-      if (!this.showCalendarEvents) {
+      if (!this.editing) {
         return {
           click: () => this.showAvailability(d, t),
           mouseover: () => this.showAvailability(d, t),
@@ -477,9 +474,6 @@ export default {
       this.dragging = false
       this.dragStart = null
       this.dragCur = null
-
-      // Set editing to false
-      this.editing = false
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
@@ -504,9 +498,6 @@ export default {
       this.dragCur = { dayIndex, timeIndex }
     },
     startDrag(e) {
-      // Set editing to true if we are in editing mode
-      if (this.showCalendarEvents) this.editing = true
-
       if (!this.editing) return
 
       this.dragging = true
