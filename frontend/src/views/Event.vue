@@ -152,31 +152,36 @@ export default {
       }
     },
     cancelEditing() {
+      /* Cancels editing and resets availability to previous */
       if (!this.scheduleOverlapComponent) return
 
       this.scheduleOverlapComponent.resetCurUserAvailability()
       this.scheduleOverlapComponent.stopEditing()
     },
     copyLink() {
+      /* Copies event link to clipboard */
       navigator.clipboard.writeText(`${window.location.origin}/e/${this.eventId}`)
       this.showInfo('Link copied to clipboard!')
     },
     async refreshEvent() {
-      // Get event details
+      /* Refresh event details */
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
+      /* Prompts user to sign in when "set availability automatically" button clicked */
       signInGoogle({ type: 'join', eventId: this.eventId }, true)
       this.choiceDialog = false
     },
     setAvailabilityManually() {
+      /* Starts editing after "set availability manually" button clicked */
       if (!this.scheduleOverlapComponent) return
 
       this.scheduleOverlapComponent.startEditing()
       this.choiceDialog = false
     },
     async saveChanges() {
+      /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
       if (!this.scheduleOverlapComponent) return
       
       if (!this.authUser) {
@@ -190,6 +195,7 @@ export default {
       this.scheduleOverlapComponent.stopEditing()
     },
     async saveChangesAsGuest(name) {
+      /* After guest dialog is submitted, submit availability with the given name */
       if (!this.scheduleOverlapComponent) return
       
       if (name.length > 0) {
