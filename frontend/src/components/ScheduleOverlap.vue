@@ -16,7 +16,7 @@
       <div v-if="!calendarOnly" class="sm:tw-w-32" />
     </div>
 
-    <div class="sm:tw-flex sm:tw-gap-4">
+    <div class="sm:tw-flex">
       <div class="sm:tw-flex-1">
         <!-- Times and grid -->
         <div class="tw-flex">
@@ -82,35 +82,13 @@
                 </template>
               </div>
             </div>
-
-            <template v-if="!calendarOnly">
-              <div class="tw-flex tw-flex-col tw-items-center">
-                <v-btn 
-                  class="tw-my-2 tw-min-w-full sm:tw-min-w-[unset] sm:tw-w-52"
-                  @click="toggleShowCalendarEvents"
-                >
-                  <template v-if="!showCalendarEvents">
-                    Edit <v-icon small class="tw-ml-1">mdi-pencil</v-icon>
-                  </template>
-                  <template v-else>
-                    View suggested times 
-                  </template>
-                </v-btn>
-                <v-btn
-                  class="tw-mb-2 tw-min-w-full sm:tw-min-w-[unset] sm:tw-w-52"
-                  @click="copyLink"
-                >
-                  Copy link <v-icon small class="tw-ml-1">mdi-content-copy</v-icon>
-                </v-btn>
-              </div>
-            </template>
           </div>
         </div>
       </div>
     
-      <div v-if="!calendarOnly" class="tw-hidden sm:tw-block sm:tw-w-32">
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-block sm:tw-w-32">
         <div class="tw-font-medium tw-mb-2">Availability:</div>
-        <div class="tw-pl-4 tw-text-sm">
+        <div class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2">
           <div 
             v-for="user in respondents" 
             :key="user._id"
@@ -125,7 +103,7 @@
       </div>
     </div>
 
-    <v-bottom-sheet
+    <!-- <v-bottom-sheet
       v-if="isPhone && !calendarOnly"
       v-model="availabilityBottomSheet"
       hide-overlay
@@ -150,7 +128,7 @@
           </div>
         </div>
       </v-sheet>
-    </v-bottom-sheet>
+    </v-bottom-sheet> -->
   </div>
 </template>
 
@@ -265,7 +243,22 @@ export default {
       return isPhone(this.$vuetify)
     },
     respondents() {
-      return Object.values(this.responses).map(r => r.user)
+      return Object.values(this.parsedResponses).map(r => r.user)
+    },
+    parsedResponses() {
+      /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
+      const parsed = {}
+      for (const k of Object.keys(this.responses)) {
+        const newUser = {
+          ...this.responses[k].user, 
+          _id: k,
+        }
+        parsed[k] = {
+          ...this.responses[k],
+          user: newUser,
+        }
+      }
+      return parsed
     },
     responsesFormatted() {
       /* Formats the responses in a map where date/time is mapped to the people that are available then */
@@ -275,7 +268,7 @@ export default {
           const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           
-          for (const response of Object.values(this.responses)) {
+          for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(d => dateCompare(d, date) === 0)
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
@@ -311,16 +304,12 @@ export default {
       return times
     },
     userHasResponded() {
-      return this.authUser && this.authUser._id in this.responses
+      return this.authUser && this.authUser._id in this.parsedResponses
     }
   },
 
   methods: {
     ...mapActions([ 'showInfo' ]),
-    copyLink() {
-      navigator.clipboard.writeText(`${window.location.origin}/j/${this.eventId}`)
-      this.showInfo('Link copied to clipboard!')
-    },
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
       const d = getDateWithTimeInt(date, time)

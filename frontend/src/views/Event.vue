@@ -22,17 +22,27 @@
       </v-card>
     </v-dialog>
 
-    <div class="tw-relative tw-bg-green tw-text-white tw-flex tw-justify-center">
-      <div class="tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2 tw-z-10">
-        <div 
-          class="tw-font-bold tw-text-3xl"
-        >{{ event.name }}</div>
-        <div
-          class="tw-font-light tw-text-lg"
-        >{{ dateString }}</div>
+    <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
+
+      <div class="tw-text-black tw-mx-8 tw-flex tw-items-center">
+        <div>
+          <div class="tw-text-3xl">{{ event.name }}</div>
+          <div class="tw-font-normal">{{ dateString }}</div>
+        </div>
+        <v-spacer/>
+        <div>
+          <v-btn
+            :icon="isPhone"
+            :outlined="!isPhone"
+            class="tw-text-green"
+            @click="copyLink"
+          >
+            <span v-if="!isPhone" class="tw-text-green tw-mr-2">Copy link</span>
+            <v-icon class="tw-text-green">mdi-content-copy</v-icon>
+          </v-btn>
+        </div>
       </div>
-    </div>
-    <div class="tw-max-w-6xl tw-mx-auto">
+
       <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-14 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
         <div class="tw-text-white tw-text-sm tw-z-10">
           <span v-if="isPhone">
@@ -112,8 +122,9 @@ export default {
 
   methods: {
     ...mapActions([ 'showError', 'showInfo' ]),
-    test() {
-      console.log(document.querySelector('.v-main').scrollTop)
+    copyLink() {
+      navigator.clipboard.writeText(`${window.location.origin}/e/${this.eventId}`)
+      this.showInfo('Link copied to clipboard!')
     },
     async refreshEvent() {
       // Get event details

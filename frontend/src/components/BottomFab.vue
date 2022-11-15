@@ -3,8 +3,7 @@
     <v-btn 
       fab
       fixed
-      class="tw-bg-blue tw-mx-auto tw-left-0 tw-right-0 tw-text-white"
-      :class="isPhone ? 'tw-bottom-16' : 'tw-bottom-2'"
+      class="tw-bg-green tw-mx-auto tw-left-0 tw-right-0 tw-bottom-2 tw-text-white"
       @click="e => $emit('click', e)"
       v-bind="$attrs"
     >
@@ -14,17 +13,9 @@
 </template>
 
 <script>
-import { isPhone } from '@/utils'
-
 export default {
   name: 'BottomFab',
 
   emits: ['click'],
-
-  computed: {
-    isPhone() {
-      return isPhone(this.$vuetify)
-    }
-  },
 }
 </script>

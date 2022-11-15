@@ -87,6 +87,7 @@ func getEvent(c *gin.Context) {
 	for userId, response := range event.Responses {
 		user := db.GetUserById(userId)
 		if user == nil {
+			userId = response.Name
 			response.User = &models.UserProfile{
 				FirstName: response.Name,
 			}

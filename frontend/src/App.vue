@@ -4,12 +4,12 @@
     <AutoSnackbar color="info" :text="info" />
     <div
       v-if="showHeader"
-      class="tw-h-14 tw-bg-green tw-fixed tw-w-screen tw-z-40"
+      class="tw-h-14 tw-bg-white tw-fixed tw-w-screen tw-z-40"
       dark
     >
       <div class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto">
         <v-img
-          @click="navigate(0)"
+          @click="goHome"
           alt="Schej.it Logo"
           class="shrink tw-cursor-pointer"
           contain
@@ -18,30 +18,9 @@
           width="120"
         />
 
-        <template v-if="!centerHeaderLogo">
+        <v-spacer />
 
-          <v-spacer />
-
-          <div
-            class="tw-absolute tw-h-full tw-hidden sm:tw-flex"
-          >
-            <div 
-              v-for="{ text, icon, route }, i in tabs"
-              :key="text"
-              class="tw-w-28 tw-flex tw-flex-col tw-justify-center tw-items-center tw-flex-1 tw-h-full tw-select-none tw-cursor-pointer tw-brightness-95 hover:tw-brightness-150"
-              :class="$route.name === route.name ? `tw-border-b-4 tw-border-white tw-border-solid tw-brightness-150` : ''"
-              @click="navigate(i)"
-            >
-              <v-icon class="tw-text-white">{{ icon }}</v-icon>
-              <div class="tw-text-white tw-text-sm">{{ text }}</div>
-            </div>
-          </div>
-
-          <v-spacer />
-
-          <AuthUserMenu></AuthUserMenu>
-
-        </template>
+        <AuthUserMenu></AuthUserMenu>
       </div>
     </div>
 
@@ -53,21 +32,6 @@
       </div>
     </v-main>
 
-    <div
-      v-if="showBottomNavbar"
-      class="tw-h-14 tw-bg-green tw-flex tw-fixed tw-w-screen tw-bottom-0 tw-z-40"
-    >
-      <div 
-        v-for="{ text, icon, route }, i in tabs"
-        :key="text"
-        class="tw-flex tw-flex-col tw-justify-center tw-items-center tw-flex-1 tw-h-full tw-select-none tw-cursor-pointer tw-brightness-95 hover:tw-brightness-150"
-        :class="$route.name === route.name ? `tw-border-b-4 tw-border-white tw-border-solid tw-brightness-150` : ''"
-        @click="navigate(i)"
-      >
-        <v-icon class="tw-text-white">{{ icon }}</v-icon>
-        <div class="tw-text-white tw-text-sm">{{ text }}</div>
-      </div>
-    </div>
   </v-app>
 </template>
 
@@ -100,24 +64,6 @@ export default {
   data: () => ({
     mounted: false,
     loaded: false,
-    tabs: [
-      {
-        text: 'Home',
-        icon: 'mdi-home',
-        route: { name: 'home' },
-      },
-      /*{
-        text: 'My schedule',
-        icon: 'mdi-calendar',
-        route: { name: 'schedule' },
-      },*/
-      /*{
-        text: 'Friends',
-        icon: 'mdi-account-multiple',
-        route: { name: 'friends' },
-      },*/
-    ],
-    tab: 0,
   }),
 
   computed: {
@@ -129,33 +75,17 @@ export default {
         this.$route.name !== 'privacy-policy'
       )
     },
-    showBottomNavbar() {
-      return (
-        isPhone(this.$vuetify) &&
-        this.$route.name !== 'landing' &&
-        this.$route.name !== 'join' &&
-        this.$route.name !== 'auth' && 
-        this.$route.name !== 'privacy-policy'
-      )
-    },
     routerViewClass() {
       let c = ''
       if (this.showHeader) c += 'tw-pt-14 '
-      if (this.showBottomNavbar) c += 'tw-pb-14 '
       return c
-    },
-    centerHeaderLogo() {
-      return (
-        this.$route.name === 'join'
-      )
     },
   },
 
   methods: {
     ...mapMutations([ 'setAuthUser' ]),
-    navigate(i) {
-      this.tab = i
-      this.$router.push(this.tabs[i].route).catch(e => {})
+    goHome() {
+      this.$router.push({ name: 'home' })
     },
     fixHeight() {
       // // Fix height on mobile
@@ -168,8 +98,8 @@ export default {
       // document.querySelector('.v-main').style.maxHeight = `calc(${window.innerHeight}px - ${items} * 3.5rem)`
     },
     redirectUser(authenticated) {
-      let authRoutes = ['home', 'schedule', 'friends', 'event']
-      let noAuthRoutes = ['landing', 'sign-in']
+      let authRoutes = ['home']
+      let noAuthRoutes = ['landing']
       
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
