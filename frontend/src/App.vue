@@ -13,7 +13,7 @@
       >
         <v-img
           @click="goHome"
-          alt="Schej.it Logo"
+          alt="Schej Logo"
           class="shrink tw-cursor-pointer"
           contain
           src="@/assets/logo_dark.svg"

@@ -1,4 +1,4 @@
-# schej.it
+# schej
 
 ## Project setup
 ```
