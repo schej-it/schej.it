@@ -478,8 +478,8 @@ export default {
       this.dragStart = null
       this.dragCur = null
 
-      // Set editing to false if we are on desktop
-      if (!isPhone(this.$vuetify)) this.editing = false
+      // Set editing to false
+      this.editing = false
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
@@ -504,8 +504,8 @@ export default {
       this.dragCur = { dayIndex, timeIndex }
     },
     startDrag(e) {
-      // Set editing to true if we are on desktop and in editing mode
-      if (this.showCalendarEvents && !isPhone(this.$vuetify)) this.editing = true
+      // Set editing to true if we are in editing mode
+      if (this.showCalendarEvents) this.editing = true
 
       if (!this.editing) return
 
@@ -560,22 +560,6 @@ export default {
       const timesEl = document.getElementById('times')
 
       if (isPhone(this.$vuetify)) {
-        timesEl.addEventListener('contextmenu', e => {
-          e.preventDefault();
-        });
-
-        timesEl.addEventListener('long-press', e => {
-          if (!this.showCalendarEvents || this.editing) return
-          
-          try {
-            navigator.vibrate(10)
-          } catch (err) {
-            console.log(`Didn't vibrate because it's unsupported!`)
-          }
-
-          this.editing = true
-        })
-
         timesEl.addEventListener('touchstart', this.startDrag)
         timesEl.addEventListener('touchmove', this.moveDrag)
 

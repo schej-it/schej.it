@@ -9,14 +9,14 @@
         <div class="tw-text-md tw-font-semibold tw-pb-4">How would you like to mark <br v-if="isPhone"> your availability?</div>
         <div class="">
           <v-btn 
-            @click="setAvailabilityAutomatically(); choiceDialog = false"
+            @click="setAvailabilityAutomatically"
             class="tw-bg-blue tw-mb-2" 
             dark 
             block
           >
             <div class="tw-text-sm -tw-mx-4">Automatically with Google Calendar</div>
           </v-btn>
-          <v-btn @click="choiceDialog = false" block>Manually</v-btn>
+          <v-btn @click="setAvailabilityManually" block>Manually</v-btn>
         </div>
       </v-card>
     </v-dialog>
@@ -42,18 +42,6 @@
         </div>
       </div>
 
-      <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-14 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
-        <div class="tw-text-white tw-text-sm tw-z-10">
-          <span v-if="isPhone">
-            <span v-if="isEditing">Drag to edit availability</span>
-            <span v-else>Tap and hold calendar to enable editing</span>
-          </span>
-          <span v-else>Drag to edit availability</span>
-        </div>
-        <v-spacer />
-        <v-btn v-if="isEditing || !isPhone" @click="setAvailabilityAutomatically" small text class="tw-text-white">Clear</v-btn>
-        <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
-      </div>
       <ScheduleOverlap
         ref="scheduleOverlap"
         :eventId="eventId" 
@@ -68,14 +56,32 @@
     <div class="tw-h-16"></div>
 
     <div class="tw-flex tw-items-center tw-fixed tw-bottom-0 tw-bg-green tw-w-full tw-px-4 tw-h-16">
-      <v-spacer />
-      <v-btn
-        outlined
-        class="tw-text-green tw-bg-white"
-        @click="choiceDialog = true"
-      >
-        Add availability
-      </v-btn>
+      <template v-if="!isCalendarShown">
+        <v-spacer />
+        <v-btn
+          outlined
+          class="tw-text-green tw-bg-white"
+          @click="choiceDialog = true"
+        >
+          Add availability
+        </v-btn>
+      </template>
+      <template v-else>
+        <v-btn
+          text
+          class="tw-text-white"
+          @click="cancelEditing"
+        >
+          Cancel
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          class="tw-text-green tw-bg-white"
+          @click="saveChanges"
+        >
+          Save
+        </v-btn>
+      </template>
     </div>
   </div>
 </template>
@@ -131,6 +137,12 @@ export default {
 
   methods: {
     ...mapActions([ 'showError', 'showInfo' ]),
+    cancelEditing() {
+      if (!this.scheduleOverlapComponent) return
+
+      // TODO: discard changes
+      this.scheduleOverlapComponent.showCalendarEvents = false
+    },
     copyLink() {
       navigator.clipboard.writeText(`${window.location.origin}/e/${this.eventId}`)
       this.showInfo('Link copied to clipboard!')
@@ -141,7 +153,14 @@ export default {
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
-      if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
+      // if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
+      this.choiceDialog = false
+    },
+    setAvailabilityManually() {
+      if (!this.scheduleOverlapComponent) return
+
+      this.scheduleOverlapComponent.showCalendarEvents = true
+      this.choiceDialog = false
     },
     saveChanges() {
       if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.submitAvailability()
