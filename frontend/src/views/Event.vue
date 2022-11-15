@@ -21,6 +21,8 @@
       </v-card>
     </v-dialog>
 
+    <GuestDialog v-model="guestDialog" @submit="saveChangesAsGuest" />
+
     <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
 
       <div class="tw-text-black tw-mx-8 tw-flex tw-items-center">
@@ -60,7 +62,7 @@
         <v-btn
           outlined
           class="tw-text-green tw-bg-white"
-          @click="choiceDialog = true"
+          @click="addAvailability"
         >
           Add availability
         </v-btn>
@@ -90,6 +92,7 @@ import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getD
 import { mapActions, mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
+import GuestDialog from '@/components/GuestDialog.vue'
 import { errors } from '@/constants'
 
 export default {
@@ -100,11 +103,13 @@ export default {
   },
 
   components: {
+    GuestDialog,
     ScheduleOverlap,
   },
 
   data: () => ({
     choiceDialog: false,
+    guestDialog: false,
 
     loading: true,
     calendarEvents: [],
@@ -133,10 +138,23 @@ export default {
 
   methods: {
     ...mapActions([ 'showError', 'showInfo' ]),
+    addAvailability() {
+      /* Show choice dialog if not signed in, otherwise, immediately start editing availability */
+      if (!this.scheduleOverlapComponent) return
+
+      if (this.authUser) {
+        this.scheduleOverlapComponent.startEditing()
+        if (!this.userHasResponded) {
+          this.scheduleOverlapComponent.setAvailability()
+        }
+      } else {
+        this.choiceDialog = true
+      }
+    },
     cancelEditing() {
       if (!this.scheduleOverlapComponent) return
 
-      // TODO: discard changes
+      this.scheduleOverlapComponent.resetCurUserAvailability()
       this.scheduleOverlapComponent.stopEditing()
     },
     copyLink() {
@@ -149,7 +167,7 @@ export default {
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
-      // if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
+      // TODO: prompt user to sign in
       this.choiceDialog = false
     },
     setAvailabilityManually() {
@@ -158,12 +176,29 @@ export default {
       this.scheduleOverlapComponent.startEditing()
       this.choiceDialog = false
     },
-    saveChanges() {
-      if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.submitAvailability()
+    async saveChanges() {
+      if (!this.scheduleOverlapComponent) return
+      
+      if (!this.authUser) {
+        this.guestDialog = true
+        return 
+      } 
 
-      if (!this.isPhone) {
+      await this.scheduleOverlapComponent.submitAvailability()
+
+      this.showInfo('Changes saved!')
+      this.scheduleOverlapComponent.stopEditing()
+    },
+    async saveChangesAsGuest(name) {
+      if (!this.scheduleOverlapComponent) return
+      
+      if (name.length > 0) {
+        await this.scheduleOverlapComponent.submitAvailability(name)
+
         this.showInfo('Changes saved!')
-        this.scheduleOverlapComponent.showCalendarEvents = false
+        this.scheduleOverlapComponent.resetCurUserAvailability()
+        this.scheduleOverlapComponent.stopEditing()
+        this.guestDialog = false
       }
     },
   },

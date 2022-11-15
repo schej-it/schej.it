@@ -286,6 +286,15 @@ export default {
       const d = getDateWithTimeInt(date, time)
       return this.responsesFormatted.get(d.getTime())
     },
+    resetCurUserAvailability() {
+      /* resets cur user availability to the response stored on the server */
+      this.availability = new Set()
+
+      if (this.userHasResponded) {
+        this.responses[this.authUser._id].availability.forEach(item => this.availability.add(new Date(item).getTime()))
+        this.$nextTick(() => this.unsavedChanges = false)
+      }
+    },
     async setAvailability() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
@@ -308,8 +317,7 @@ export default {
           }
         }
       }
-      await this.submitAvailability()
-      this.showInfo('All done! Your availability has been set automatically')
+      this.showInfo('Your availability has been set automatically using your Google Calendar!')
     },
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
@@ -332,8 +340,15 @@ export default {
     stopEditing() {
       this.editing = false
     },
-    async submitAvailability() {
-      await post(`/events/${this.eventId}/response`, { availability: this.availabilityArray })
+    async submitAvailability(name = '') {
+      const payload = { availability: this.availabilityArray }
+      if (this.authUser) {
+        payload.guest = false
+      } else {
+        payload.guest = true
+        payload.name = name
+      }
+      await post(`/events/${this.eventId}/response`, payload)
       this.$emit('refreshEvent')
       this.unsavedChanges = false
     },
@@ -535,11 +550,7 @@ export default {
   },
 
   created() {
-    if (this.userHasResponded) {
-      this.availability = new Set()
-      this.responses[this.authUser._id].availability.forEach(item => this.availability.add(new Date(item).getTime()))
-      this.$nextTick(() => this.unsavedChanges = false)
-    }
+    this.resetCurUserAvailability()
   },
 
   mounted() {
