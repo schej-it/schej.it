@@ -167,7 +167,7 @@ export default {
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
-      // TODO: prompt user to sign in
+      signInGoogle({ type: 'join', eventId: this.eventId }, true)
       this.choiceDialog = false
     },
     setAvailabilityManually() {
