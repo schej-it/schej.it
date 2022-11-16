@@ -11,7 +11,7 @@
           <div class="tw-text-lg tw-capitalize">{{ day.dayText }}</div>
         </div>
       </div>
-      <div v-if="!calendarOnly" class="sm:tw-w-32" />
+      <div v-if="!calendarOnly" class="sm:tw-w-48" />
     </div>
 
     <div class="sm:tw-flex">
@@ -86,7 +86,7 @@
         </div>
       </div>
 
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-32">
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
           <span class="tw-mr-1">Responses</span>
           <div
@@ -96,7 +96,7 @@
           </div>
         </div>
         <div
-          class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
+          class="/*tw-pl-4*/ tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
         >
           <div
             v-for="user in respondents"
@@ -145,10 +145,8 @@ import {
   getDateDayOffset,
   dateCompare,
   compareDateDay,
-  dateToTimeInt,
   getDateWithTimeInt,
   post,
-  onLongPress,
   isBetween,
   clamp,
   isPhone,
