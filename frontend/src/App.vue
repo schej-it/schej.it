@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <v-main class="tw-mt-5">
+    <v-main>
       <div class="tw-h-screen tw-flex tw-flex-col">
         <div class="tw-flex-1 tw-relative tw-overscroll-auto" :class="routerViewClass">
           <router-view v-if="loaded" />

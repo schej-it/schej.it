@@ -21,14 +21,16 @@
 
     <div class="tw-bg-green tw-h-screen">
       <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-max-w-6xl tw-m-auto">
+        <div class="tw-bg-white tw-px-4 tw-py-1 tw-rounded-full">
         <v-img
           alt="schej Logo"
           class="shrink tw-cursor-pointer"
           contain
-          src="@/assets/logo_dark.svg"
+          src="@/assets/schej_logo_with_text.svg"
           transition="scale-transition"
           width="120"
         />
+      </div>
 
         <v-btn dark text @click="signIn">Sign in</v-btn>
       </div>
