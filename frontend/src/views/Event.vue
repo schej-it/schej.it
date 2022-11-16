@@ -2,7 +2,6 @@
   <div v-if="event">
     <v-dialog
       v-model="choiceDialog"
-      persistent
       width="400"
       content-class="tw-m-0"
     >
@@ -10,50 +9,81 @@
         <div class="tw-text-md tw-font-semibold tw-pb-4">How would you like to mark <br v-if="isPhone"> your availability?</div>
         <div class="">
           <v-btn 
-            @click="setAvailabilityAutomatically(); choiceDialog = false"
+            @click="setAvailabilityAutomatically"
             class="tw-bg-blue tw-mb-2" 
             dark 
             block
           >
             <div class="tw-text-sm -tw-mx-4">Automatically with Google Calendar</div>
           </v-btn>
-          <v-btn @click="choiceDialog = false" block>Manually</v-btn>
+          <v-btn @click="setAvailabilityManually" block>Manually</v-btn>
         </div>
       </v-card>
     </v-dialog>
 
-    <div class="tw-relative tw-bg-green tw-text-white tw-flex tw-justify-center">
-      <div class="tw-flex tw-flex-col tw-items-center tw-space-y-1 tw-py-2 tw-z-10">
-        <div 
-          class="tw-font-bold tw-text-3xl"
-        >{{ event.name }}</div>
-        <div
-          class="tw-font-light tw-text-lg"
-        >{{ dateString }}</div>
-      </div>
-    </div>
-    <div class="tw-max-w-6xl tw-mx-auto">
-      <div v-if="isCalendarShown" class="tw-relative tw-h-8 tw-sticky tw-top-14 tw-bg-light-blue tw-w-full tw-z-10 tw-flex tw-items-center tw-justify-center tw-py-1 tw-px-2 tw-drop-shadow">
-        <div class="tw-text-white tw-text-sm tw-z-10">
-          <span v-if="isPhone">
-            <span v-if="isEditing">Drag to edit availability</span>
-            <span v-else>Tap and hold calendar to enable editing</span>
-          </span>
-          <span v-else>Drag to edit availability</span>
+    <GuestDialog v-model="guestDialog" @submit="saveChangesAsGuest" :respondents="Object.keys(event.responses)"/>
+
+    <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
+
+      <div class="tw-text-black tw-mx-8 tw-flex tw-items-center">
+        <div>
+          <div class="tw-text-3xl">{{ event.name }}</div>
+          <div class="tw-font-normal">{{ dateString }}</div>
         </div>
-        <v-spacer />
-        <v-btn v-if="isEditing || !isPhone" @click="setAvailabilityAutomatically" small text class="tw-text-white">Clear</v-btn>
-        <v-btn v-if="areUnsavedChanges" @click="saveChanges" small class="tw-bg-blue" dark>Save</v-btn>
+        <v-spacer/>
+        <div>
+          <v-btn
+            :icon="isPhone"
+            :outlined="!isPhone"
+            class="tw-text-green"
+            @click="copyLink"
+          >
+            <span v-if="!isPhone" class="tw-text-green tw-mr-2">Copy link</span>
+            <v-icon class="tw-text-green">mdi-content-copy</v-icon>
+          </v-btn>
+        </div>
       </div>
+
       <ScheduleOverlap
         ref="scheduleOverlap"
         :eventId="eventId" 
         v-bind="event"
         :loadingCalendarEvents="loading"
         :calendarEvents="calendarEvents"
-        :initialShowCalendarEvents="initialShowCalendarEvents"
         @refreshEvent="refreshEvent"
       />
+    </div>
+    <!-- Placeholder for bottom bar -->
+    <div class="tw-h-16"></div>
+
+    <div class="tw-flex tw-items-center tw-fixed tw-bottom-0 tw-bg-green tw-w-full tw-px-4 tw-h-16">
+      <template v-if="!isEditing">
+        <v-spacer />
+        <v-btn
+          outlined
+          class="tw-text-green tw-bg-white"
+          :disabled="loading && !userHasResponded"
+          @click="addAvailability"
+        >
+          {{ userHasResponded ? 'Edit availability' : 'Add availability' }}
+        </v-btn>
+      </template>
+      <template v-else>
+        <v-btn
+          text
+          class="tw-text-white"
+          @click="cancelEditing"
+        >
+          Cancel
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          class="tw-text-green tw-bg-white"
+          @click="saveChanges"
+        >
+          Save
+        </v-btn>
+      </template>
     </div>
   </div>
 </template>
@@ -63,6 +93,7 @@ import { getDateRangeString, get, signInGoogle, dateCompare, dateToTimeInt, getD
 import { mapActions, mapState } from 'vuex'
 
 import ScheduleOverlap from '@/components/ScheduleOverlap'
+import GuestDialog from '@/components/GuestDialog.vue'
 import { errors } from '@/constants'
 
 export default {
@@ -73,11 +104,13 @@ export default {
   },
 
   components: {
+    GuestDialog,
     ScheduleOverlap,
   },
 
   data: () => ({
-    choiceDialog: true,
+    choiceDialog: false,
+    guestDialog: false,
 
     loading: true,
     calendarEvents: [],
@@ -89,12 +122,6 @@ export default {
     ...mapState([ 'authUser', 'events' ]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
-    },
-    initialShowCalendarEvents() {
-      return !this.userHasResponded
-    },
-    isCalendarShown() {
-      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.showCalendarEvents
     },
     isEditing() {
       return this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
@@ -112,23 +139,73 @@ export default {
 
   methods: {
     ...mapActions([ 'showError', 'showInfo' ]),
-    test() {
-      console.log(document.querySelector('.v-main').scrollTop)
+    addAvailability() {
+      /* Show choice dialog if not signed in, otherwise, immediately start editing availability */
+      if (!this.scheduleOverlapComponent) return
+
+      if (this.authUser) {
+        this.scheduleOverlapComponent.startEditing()
+        if (!this.userHasResponded) {
+          this.scheduleOverlapComponent.setAvailability()
+        }
+      } else {
+        this.choiceDialog = true
+      }
+    },
+    cancelEditing() {
+      /* Cancels editing and resets availability to previous */
+      if (!this.scheduleOverlapComponent) return
+
+      this.scheduleOverlapComponent.resetCurUserAvailability()
+      this.scheduleOverlapComponent.stopEditing()
+    },
+    copyLink() {
+      /* Copies event link to clipboard */
+      navigator.clipboard.writeText(`${window.location.origin}/e/${this.eventId}`)
+      this.showInfo('Link copied to clipboard!')
     },
     async refreshEvent() {
-      // Get event details
+      /* Refresh event details */
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
-      if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.setAvailability()
+      /* Prompts user to sign in when "set availability automatically" button clicked */
+      signInGoogle({ type: 'join', eventId: this.eventId }, true)
+      this.choiceDialog = false
     },
-    saveChanges() {
-      if (this.scheduleOverlapComponent) this.scheduleOverlapComponent.submitAvailability()
+    setAvailabilityManually() {
+      /* Starts editing after "set availability manually" button clicked */
+      if (!this.scheduleOverlapComponent) return
 
-      if (!this.isPhone) {
+      this.scheduleOverlapComponent.startEditing()
+      this.choiceDialog = false
+    },
+    async saveChanges() {
+      /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
+      if (!this.scheduleOverlapComponent) return
+      
+      if (!this.authUser) {
+        this.guestDialog = true
+        return 
+      } 
+
+      await this.scheduleOverlapComponent.submitAvailability()
+
+      this.showInfo('Changes saved!')
+      this.scheduleOverlapComponent.stopEditing()
+    },
+    async saveChangesAsGuest(name) {
+      /* After guest dialog is submitted, submit availability with the given name */
+      if (!this.scheduleOverlapComponent) return
+      
+      if (name.length > 0) {
+        await this.scheduleOverlapComponent.submitAvailability(name)
+
         this.showInfo('Changes saved!')
-        this.scheduleOverlapComponent.showCalendarEvents = false
+        this.scheduleOverlapComponent.resetCurUserAvailability()
+        this.scheduleOverlapComponent.stopEditing()
+        this.guestDialog = false
       }
     },
   },
@@ -148,13 +225,14 @@ export default {
     }
 
     // Show dialog if user hasn't responded yet
-    this.choiceDialog = !this.userHasResponded
+    // this.choiceDialog = !this.userHasResponded
     
     // Get user's calendar
     getCalendarEvents(this.event).then(events => {
       this.calendarEvents = events
       this.loading = false
     }).catch(err => {
+      this.loading = false
       console.error(err)
       if (err.error.code === 401 || err.error.code === 403) {
         signInGoogle({ type: 'join', eventId: this.eventId }, true)

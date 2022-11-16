@@ -8,7 +8,7 @@
 
     <div class="tw-p-4">
       <div v-for="eventType, t in events" :key="t">
-        <div class="tw-text-2xl tw-font-bold">{{ eventType.header }}</div>
+        <div class="tw-text-2xl tw-font-bold tw-text-dark-green">{{ eventType.header }}</div>
         
         <div 
           v-if="eventType.events.length === 0"
@@ -19,7 +19,7 @@
         <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-2 tw-my-3">
           <EventItem  
             class="tw-cursor-pointer"
-            v-for="event, i in eventType.events.reverse()" 
+            v-for="event, i in eventType.events" 
             :key="i"
             :event="event" 
             @click="goToEvent(event._id)"
@@ -66,12 +66,12 @@ export default {
       .then(data => {
         this.events = [
           {
-            header: 'My events',
-            events: data.events,
+            header: 'Events I created',
+            events: data.events.reverse(),
           },
           {
-            header: 'Events I\'ve joined',
-            events: data.joinedEvents,
+            header: 'Events I joined',
+            events: data.joinedEvents.reverse(),
           },
         ] 
       }).catch(err => {

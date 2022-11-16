@@ -1,2 +1,2 @@
-# schej.it
+# schej
 Scheduling made simple

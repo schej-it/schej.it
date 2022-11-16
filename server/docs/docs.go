@@ -273,15 +273,33 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "description": "Array of dates representing user's availability",
-                        "name": "availability",
+                        "description": "Object containing info about the event response to update",
+                        "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "availability": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "guest": {
+                                            "type": "boolean"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 ],
@@ -813,6 +831,9 @@ var doc = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "name": {
+                    "type": "string"
                 },
                 "user": {
                     "type": "object",

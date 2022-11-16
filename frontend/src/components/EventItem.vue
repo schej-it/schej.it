@@ -2,18 +2,18 @@
   <v-container
     @click="$emit('click')"
     v-ripple
-    class="hover:tw-brightness-95 tw-bg-light-gray tw-rounded-md tw-flex tw-text-black tw-justify-between tw-align-middle tw-py-2"
+    class="hover:tw-drop-shadow-lg tw-drop-shadow-md tw-shadow-inner tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-py-3"
   >
-    <div>
+    <div class="tw-ml-1">
       <div>{{ this.event.name }}</div>
       <div class="tw-text-sm tw-font-light">{{ dateString }}</div>
     </div>
     <div>
-      <v-chip class="ma-2" color="gray lighten-2" text-color="gray darken-2">
-        <v-icon left> mdi-account-multiple </v-icon>
+      <v-chip small class="tw-text-very-dark-gray tw-m-2 tw-bg-off-white">
+        <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
-      <v-icon>mdi-chevron-right</v-icon>
+      <v-icon large>mdi-chevron-right</v-icon>
     </div>
   </v-container>
 </template>
