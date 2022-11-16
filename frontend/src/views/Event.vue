@@ -62,6 +62,7 @@
         <v-btn
           outlined
           class="tw-text-green tw-bg-white"
+          :disabled="loading"
           @click="addAvailability"
         >
           {{ userHasResponded ? 'Edit availability' : 'Add availability' }}
@@ -231,6 +232,7 @@ export default {
       this.calendarEvents = events
       this.loading = false
     }).catch(err => {
+      this.loading = false
       console.error(err)
       if (err.error.code === 401 || err.error.code === 403) {
         signInGoogle({ type: 'join', eventId: this.eventId }, true)
