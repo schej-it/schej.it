@@ -4,9 +4,9 @@
     <AutoSnackbar color="info" :text="info" />
     <div
       v-if="showHeader"
-      class="tw-h-14 tw-bg-white tw-fixed tw-w-screen tw-z-40"
+      class="tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
       dark
-      :class="scrollY > 0 && 'tw-drop-shadow'"
+      :class="'tw-drop-shadow'"
     >
       <div 
         class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto"
@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <v-main>
+    <v-main class="tw-mt-5">
       <div class="tw-h-screen tw-flex tw-flex-col">
         <div class="tw-flex-1 tw-relative tw-overscroll-auto" :class="routerViewClass">
           <router-view v-if="loaded" />

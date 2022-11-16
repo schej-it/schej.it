@@ -8,7 +8,7 @@
 
     <div class="tw-p-4">
       <div v-for="eventType, t in events" :key="t">
-        <div class="tw-text-2xl tw-font-bold">{{ eventType.header }}</div>
+        <div class="tw-text-2xl tw-font-bold tw-text-dark-green">{{ eventType.header }}</div>
         
         <div 
           v-if="eventType.events.length === 0"

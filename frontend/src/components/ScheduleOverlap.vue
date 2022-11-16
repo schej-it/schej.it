@@ -106,7 +106,7 @@
             @mouseleave="curUser = ''"
           >
             <div
-              class="tw-mr-1 tw-break-all"
+              class="tw-mr-1 tw-break-all tw-transition-all"
               :class="
                 !curTimeslotAvailability[user._id]
                   ? 'tw-line-through tw-text-gray'
@@ -115,7 +115,6 @@
             >
               {{ user.firstName + " " + user.lastName }}
             </div>
-            <!-- <v-avatar><img :src="user.picture" /></v-avatar> -->
             <UserAvatarContent
               v-if="!isGuest(user)"
               :user="user"
