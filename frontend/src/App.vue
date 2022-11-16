@@ -16,7 +16,7 @@
           alt="Schej Logo"
           class="shrink tw-cursor-pointer"
           contain
-          src="@/assets/logo_green.png"
+          src="@/assets/schej_logo_with_text.svg"
           transition="scale-transition"
           width="120"
         />
@@ -43,9 +43,15 @@
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans&display=swap');
+
 html {
   overflow-y: auto !important; 
   overscroll-behavior: none;
+}
+
+* {
+  font-family: 'DM Sans', sans-serif;
 }
 
 .v-btn {

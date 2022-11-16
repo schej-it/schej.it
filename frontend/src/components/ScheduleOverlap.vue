@@ -88,7 +88,7 @@
 
       <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
-          <span class="tw-mr-1">Responses</span>
+          <span class="tw-mr-1 tw-text-lg">Responses</span>
           <div
             class="tw-bg-black tw-text-white tw-font-bold tw-w-5 tw-h-5 tw-flex tw-justify-center tw-items-center tw-rounded-full tw-text-xs"
           >
@@ -101,34 +101,29 @@
           <div
             v-for="user in respondents"
             :key="user._id"
-            class="tw-py-1"
+            class="tw-py-1 tw-flex tw-items-center"
             @mouseover="curUser = user._id"
             @mouseleave="curUser = ''"
           >
-            <span
+            <div
+              class="tw-mr-1 tw-break-all"
               :class="
                 !curTimeslotAvailability[user._id]
                   ? 'tw-line-through tw-text-gray'
                   : 'hover:tw-font-bold'
               "
-              >{{ user.firstName + " " + user.lastName + " " }}</span
             >
-            <v-tooltip right transition="slide-x-transition">
+              {{ user.firstName + " " + user.lastName }}
+            </div>
+            <!-- <v-avatar><img :src="user.picture" /></v-avatar> -->
+            <UserAvatarContent
+              v-if="!isGuest(user)"
+              :user="user"
+              class="tw-w-4 tw-h-4 -tw-ml-3"
+            ></UserAvatarContent>
+            <v-tooltip v-else right transition="slide-x-transition">
               <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  :class="
-                    !isGuest(user) && curTimeslotAvailability[user._id]
-                      ? 'tw-text-blue'
-                      : 'tw-text-gray'
-                  "
-                  class="-tw-mt-0.5"
-                  small
-                  v-bind="attrs"
-                  v-on="on"
-                  >{{
-                    !isGuest(user) ? "mdi-check-decagram" : "mdi-account"
-                  }}</v-icon
-                >
+                <v-icon small v-bind="attrs" v-on="on">mdi-account</v-icon>
               </template>
               <span>{{ !isGuest(user) ? "Verified account" : "Guest" }}</span>
             </v-tooltip>
@@ -152,10 +147,10 @@ import {
   isPhone,
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
+import UserAvatarContent from "./UserAvatarContent.vue";
 
 export default {
   name: "ScheduleOverlap",
-
   props: {
     eventId: { type: String, default: "" },
     startDate: { type: Date, required: true },
@@ -163,27 +158,22 @@ export default {
     startTime: { type: Number, required: true },
     endTime: { type: Number, required: true },
     responses: { type: Object, default: () => ({}) },
-
     loadingCalendarEvents: { type: Boolean, default: false },
     calendarEvents: { type: Array, required: true },
     initialShowCalendarEvents: { type: Boolean, default: false },
-
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
   },
-
   data() {
     return {
-      max: 0, // The max number of respondents for a given timeslot
-      showCalendarEvents: this.initialShowCalendarEvents, // Whether we are showing the current user's calendar events
-      availability: new Set(), // Current availability of the current user, an array of dates
-      editing: false, // Whether editing the current user's availability
-      unsavedChanges: false, // Whether there are unsaved availability changes
-
-      curTimeslotAvailability: {}, // An object containing the people that are available and unavailable for the given timeslot, maps their user id to either true or false
+      max: 0,
+      showCalendarEvents: this.initialShowCalendarEvents,
+      availability: new Set(),
+      editing: false,
+      unsavedChanges: false,
+      curTimeslotAvailability: {},
       curTimeslot: { dayIndex: -1, timeIndex: -1 },
-      curUser: "", // The id of the current user to show the availability of
-
+      curUser: "",
       /* Variables for drag stuff */
       DRAG_TYPES: {
         ADD: "add",
@@ -199,7 +189,6 @@ export default {
       dragCur: null,
     };
   },
-
   computed: {
     ...mapState(["authUser"]),
     availabilityArray() {
@@ -208,7 +197,6 @@ export default {
     },
     calendarEventsByDay() {
       /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
-
       // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
       const arr = [];
       for (let i = 0; i < this.days.length; ++i) {
@@ -229,14 +217,13 @@ export default {
           (calendarEvent.endDate.getTime() -
             calendarEvent.startDate.getTime()) /
           (1000 * 60 * 60);
-
         for (const d in this.days) {
           const day = this.days[d];
           if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
             arr[d].push({
               ...calendarEvent,
               style: {
-                top: `calc(${hoursOffset} * 2 * 1.25rem)`, // 1.25 rem = tw-h-5
+                top: `calc(${hoursOffset} * 2 * 1.25rem)`,
                 height: `calc(${hoursLength} * 2 * 1.25rem)`,
               },
             });
@@ -273,7 +260,6 @@ export default {
         });
         curDate = getDateDayOffset(curDate, 1);
       }
-
       return days;
     },
     isPhone() {
@@ -304,7 +290,6 @@ export default {
         for (const time of this.times) {
           const date = getDateWithTimeInt(day.dateObject, time.timeInt);
           formatted.set(date.getTime(), new Set());
-
           for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(
               (d) => dateCompare(d, date) === 0
@@ -314,7 +299,6 @@ export default {
               formatted.get(date.getTime()).add(response.user._id);
             }
           }
-
           // Update max
           if (formatted.get(date.getTime()).size > this.max) {
             this.max = formatted.get(date.getTime()).size;
@@ -326,7 +310,6 @@ export default {
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = [];
-
       let t = this.startTime;
       while (t != this.endTime) {
         times.push({
@@ -339,14 +322,12 @@ export default {
         t++;
         if (t > 23) t = 0;
       }
-
       return times;
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses;
     },
   },
-
   methods: {
     ...mapActions(["showInfo"]),
     getRespondentsForDateTime(date, time) {
@@ -357,7 +338,6 @@ export default {
     resetCurUserAvailability() {
       /* resets cur user availability to the response stored on the server */
       this.availability = new Set();
-
       if (this.userHasResponded) {
         this.responses[this.authUser._id].availability.forEach((item) =>
           this.availability.add(new Date(item).getTime())
@@ -438,7 +418,6 @@ export default {
     timeslotClass(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
       let c = "";
-
       // Border style
       if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 ";
@@ -449,11 +428,9 @@ export default {
         if (t === 0) c += "tw-border-t tw-border-t-gray ";
         if (t === this.times.length - 1) c += "tw-border-b-gray ";
       }
-
       // Fill style
       if (this.editing) {
         // Show only current user availability
-
         const inDragRange = this.inDragRange(d, t);
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
@@ -499,7 +476,6 @@ export default {
           }
         }
       }
-
       return c;
     },
     timeslotVon(d, t) {
@@ -518,7 +494,6 @@ export default {
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 };
     },
-
     /* Drag Stuff */
     normalizeXY(e) {
       /* Normalize the touch event to be relative to element */
@@ -542,7 +517,6 @@ export default {
       let timeIndex = Math.floor(y / height);
       dayIndex = clamp(dayIndex, 0, this.days.length - 1);
       timeIndex = clamp(timeIndex, 0, this.times.length - 1);
-
       return {
         dayIndex,
         timeIndex,
@@ -554,9 +528,7 @@ export default {
     },
     endDrag() {
       if (!this.editing) return;
-
       if (!this.dragStart || !this.dragCur) return;
-
       // Update availability set based on drag region
       let dayInc =
         (this.dragCur.dayIndex - this.dragStart.dayIndex) /
@@ -584,7 +556,6 @@ export default {
         d += dayInc;
       }
       this.availability = new Set(this.availability);
-
       // Set dragging defaults
       this.dragging = false;
       this.dragStart = null;
@@ -619,7 +590,6 @@ export default {
     },
     moveDrag(e) {
       if (!this.editing) return;
-
       e.preventDefault();
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
@@ -628,14 +598,12 @@ export default {
     },
     startDrag(e) {
       if (!this.editing) return;
-
       this.dragging = true;
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
       );
       this.dragStart = { dayIndex, timeIndex };
       this.dragCur = { dayIndex, timeIndex };
-
       // Set drag type
       if (this.availability.has(date.getTime())) {
         this.dragType = this.DRAG_TYPES.REMOVE;
@@ -647,7 +615,6 @@ export default {
       return user._id == user.firstName;
     },
   },
-
   watch: {
     availability() {
       this.unsavedChanges = true;
@@ -667,23 +634,18 @@ export default {
       },
     },
   },
-
   created() {
     this.resetCurUserAvailability();
   },
-
   mounted() {
     // Get timeslot size
     this.setTimeslotSize();
     window.addEventListener("resize", this.setTimeslotSize);
-
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times");
-
       if (isPhone(this.$vuetify)) {
         timesEl.addEventListener("touchstart", this.startDrag);
         timesEl.addEventListener("touchmove", this.moveDrag);
-
         timesEl.addEventListener("touchend", this.endDrag);
         timesEl.addEventListener("touchcancel", this.endDrag);
       } else {
@@ -693,5 +655,6 @@ export default {
       }
     }
   },
+  components: { UserAvatarContent },
 };
 </script>

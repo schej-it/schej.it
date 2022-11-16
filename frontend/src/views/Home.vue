@@ -66,11 +66,11 @@ export default {
       .then(data => {
         this.events = [
           {
-            header: 'My events',
+            header: 'Events I created',
             events: data.events.reverse(),
           },
           {
-            header: 'Events I\'ve joined',
+            header: 'Events I joined',
             events: data.joinedEvents.reverse(),
           },
         ] 
