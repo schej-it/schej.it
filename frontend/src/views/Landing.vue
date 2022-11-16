@@ -20,7 +20,7 @@
     </v-dialog>
 
     <div class="tw-bg-green tw-h-screen">
-      <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-max-w-6xl tw-m-auto">
+      <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-items-center tw-max-w-6xl tw-m-auto">
         <div class="tw-bg-white tw-px-4 tw-py-1 tw-rounded-full">
         <v-img
           alt="schej Logo"
@@ -28,7 +28,7 @@
           contain
           src="@/assets/schej_logo_with_text.svg"
           transition="scale-transition"
-          width="120"
+          :width="logoWidth"
         />
       </div>
 
@@ -52,26 +52,21 @@
       <LandingPageCalendar />
     </div>
     
-    <div class="tw-pt-20 tw-pb-56">
-
-      <div class="tw-flex tw-flex-col tw-items-center">
-
-        <div class="tw-flex tw-flex-col tw-mt-10 tw-px-4 sm:tw-px-0">
-          <p class="sm:tw-text-3xl tw-text-center tw-text-2xl tw-mb-2 tw-leading-10">
-            ✍️ Mark your <span class="tw-underline tw-decoration-green tw-decoration-4">availability</span> alongside all your 📅 Google Calendar events.
-            <br>
-            <!-- It’s like <span class="tw-underline">when2meet</span> but with Google Calendar integration. -->
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="tw-bg-green tw-h-80 tw-flex tw-flex-col">
-      <div class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-14">
+    <div class="tw-py-20 sm:tw-pb-36">
+      <div class="tw-flex tw-flex-col tw-items-center tw-mt-10 tw-px-4">
+        <p class="sm:tw-text-3xl tw-text-center tw-text-2xl tw-mb-6 tw-leading-10">
+          ✍️ Mark your <span class="tw-underline tw-decoration-green tw-decoration-4">availability</span> alongside all your 📅 Google Calendar events.
+          <br>
+          <!-- It’s like <span class="tw-underline">when2meet</span> but with Google Calendar integration. -->
+        </p>
         <v-btn rounded class="tw-bg-blue" dark @click="getStarted" :large="$vuetify.breakpoint.smAndUp" :x-large="$vuetify.breakpoint.mdAndUp"
           >Get started</v-btn
         >
       </div>
+    </div>
+
+
+    <div class="tw-bg-green tw-flex tw-flex-col">
       <div class="tw-text-center tw-text-white tw-m-2">	
         <router-link class="tw-text-white tw-font-medium" :to="{ path: 'privacy-policy' }">Privacy Policy</router-link>
       </div>
@@ -104,6 +99,9 @@ export default {
   computed: {
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    logoWidth() {
+      return this.isPhone ? 80 : 120
     },
   },
 
