@@ -21,7 +21,7 @@
       </v-card>
     </v-dialog>
 
-    <GuestDialog v-model="guestDialog" @submit="saveChangesAsGuest" />
+    <GuestDialog v-model="guestDialog" @submit="saveChangesAsGuest" :respondents="Object.keys(event.responses)"/>
 
     <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
 

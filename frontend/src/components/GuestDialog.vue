@@ -15,20 +15,21 @@
         ><v-icon>mdi-close</v-icon></v-btn>
       </v-card-title>
       <v-card-text>
-        <v-text-field 
-          v-model="name"
-          autofocus
-          class="tw-text-white tw-mb-4"
-          placeholder="Enter your name..."
-          hide-details
-        />
+        <v-text-field
+            v-model="name"
+            :error="alreadyTaken"
+            class="-tw-mt-1"
+            placeholder="Enter your name..."
+            :hint="alreadyTaken ? 'Name already taken' : ''"
+            persistent-hint
+          ></v-text-field>
         <div class="tw-flex">
           <v-spacer />
           <v-btn
             @click="submit"
             class="tw-bg-green"
-            :disabled="!formComplete"
-            :dark="formComplete"
+            :disabled="!formComplete || alreadyTaken"
+            :dark="formComplete && !alreadyTaken"
           >
             Continue
           </v-btn>
@@ -48,6 +49,7 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
+    respondents: { type: Array, required: true },
   },
 
   data() {
@@ -63,11 +65,14 @@ export default {
     formComplete() {
       return this.name.length > 0
     },
+    alreadyTaken() {
+      return this.respondents.includes(this.name)
+    }
   },
 
   methods: {
     submit() {
-      this.$emit('submit', this.name)
+      if (!this.alreadyTaken) this.$emit('submit', this.name)
     },
   },
 

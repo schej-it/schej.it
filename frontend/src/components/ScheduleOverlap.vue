@@ -88,10 +88,12 @@
 
       <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-32">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
-          <span class="tw-mr-1">Responders</span>
-          <div class="tw-bg-black tw-text-white tw-font-bold tw-w-5 tw-h-5 tw-flex tw-justify-center tw-items-center tw-rounded-full tw-text-xs"
-            >{{respondents.length}}</div
+          <span class="tw-mr-1">Responses</span>
+          <div
+            class="tw-bg-black tw-text-white tw-font-bold tw-w-5 tw-h-5 tw-flex tw-justify-center tw-items-center tw-rounded-full tw-text-xs"
           >
+            {{ respondents.length }}
+          </div>
         </div>
         <div
           class="tw-pl-4 tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
@@ -99,20 +101,26 @@
           <div
             v-for="user in respondents"
             :key="user._id"
-            :class="
-              !curTimeslotAvailability[user._id]
-                ? 'tw-line-through tw-text-gray'
-                : 'hover:tw-font-bold'
-            "
             class="tw-py-1"
             @mouseover="curUser = user._id"
             @mouseleave="curUser = ''"
           >
-            {{ user.firstName + " " + user.lastName + " " }}
+            <span
+              :class="
+                !curTimeslotAvailability[user._id]
+                  ? 'tw-line-through tw-text-gray'
+                  : 'hover:tw-font-bold'
+              "
+              >{{ user.firstName + " " + user.lastName + " " }}</span
+            >
             <v-tooltip right transition="slide-x-transition">
               <template v-slot:activator="{ on, attrs }">
                 <v-icon
-                  :class="!isGuest(user) ? 'tw-text-blue' : 'tw-text-dark-gray'"
+                  :class="
+                    !isGuest(user) && curTimeslotAvailability[user._id]
+                      ? 'tw-text-blue'
+                      : 'tw-text-gray'
+                  "
                   class="-tw-mt-0.5"
                   small
                   v-bind="attrs"
