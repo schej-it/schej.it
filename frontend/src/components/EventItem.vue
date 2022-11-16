@@ -8,7 +8,7 @@
       <div>{{ this.event.name }}</div>
       <div class="tw-text-sm tw-font-light">{{ dateString }}</div>
     </div>
-    <div>
+    <div class="tw-min-w-max">
       <v-chip small class="tw-text-very-dark-gray tw-m-2 tw-bg-off-white">
         <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
