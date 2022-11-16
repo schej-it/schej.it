@@ -1,5 +1,5 @@
 <template>
-  <div v-if="event">
+  <div v-if="event" class="tw-mt-8">
     <v-dialog
       v-model="choiceDialog"
       width="400"

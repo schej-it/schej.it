@@ -18,7 +18,7 @@
 
 <script>
 import ScheduleOverlap from '@/components/ScheduleOverlap'
-import { getDateDayOffset, getDateWithTimeInt } from '@/utils'
+import { getDateDayOffset, getDateWithTimeInt, isPhone } from '@/utils'
 
 export default {
   name: 'LandingPageCalendar',
@@ -31,40 +31,53 @@ export default {
     startDate: getDateWithTimeInt(getDateDayOffset(new Date(), -1), 9),
     endDate: getDateWithTimeInt(getDateDayOffset(new Date(), 1), 22),
     startTime: 9,
-    endTime: 22,
-
-    calendarEvents: [],
 
     responses: {},
   }),
+
+  computed: {
+    endTime() {
+      return isPhone(this.$vuetify) ? 17 : 22
+    },
+    calendarEvents() {
+      const day1 = this.startDate
+      const day2 = new Date()
+      const day3 = this.endDate
+      const events = [
+        {
+          startDate: getDateWithTimeInt(day1, 9),
+          endDate: getDateWithTimeInt(day1, 11),
+          summary: 'Coffee with Jen',
+        },
+        {
+          startDate: getDateWithTimeInt(day2, 11),
+          endDate: getDateWithTimeInt(day2, 16),
+          summary: 'Karaoke with friends',
+        },
+        {
+          startDate: getDateWithTimeInt(day3, 13),
+          endDate: getDateWithTimeInt(day3, 17),
+          summary: 'Study session',
+        },
+      ]
+
+      if (!isPhone(this.$vuetify)) { 
+        events.push({
+          startDate: getDateWithTimeInt(day3, 20.5),
+          endDate: getDateWithTimeInt(day3, 22),
+          summary: 'Hackathon meeting',
+        })
+      }
+
+      return events
+    },
+  },
 
   created() {
     const day1 = this.startDate
     const day2 = new Date()
     const day3 = this.endDate
 
-    this.calendarEvents = [
-      {
-        startDate: getDateWithTimeInt(day1, 9),
-        endDate: getDateWithTimeInt(day1, 11),
-        summary: 'Coffee with Jen',
-      },
-      {
-        startDate: getDateWithTimeInt(day2, 11),
-        endDate: getDateWithTimeInt(day2, 16),
-        summary: 'Karaoke with friends',
-      },
-      {
-        startDate: getDateWithTimeInt(day3, 13),
-        endDate: getDateWithTimeInt(day3, 17),
-        summary: 'Study session',
-      },
-      {
-        startDate: getDateWithTimeInt(day3, 20.5),
-        endDate: getDateWithTimeInt(day3, 22),
-        summary: 'Hackathon meeting',
-      },
-    ]
 
     this.responses = {
       "62828fec1bc681fa020632f2": {
