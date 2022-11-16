@@ -119,7 +119,7 @@
               <span>{{ "Guest" }}</span>
             </v-tooltip>
             <div
-              class="tw-mr-1 tw-break-all"
+              class="tw-mr-1 tw-break-all tw-transition-all"
               :class="
                 !curTimeslotAvailability[user._id] && 'tw-line-through tw-text-gray'
               "

@@ -19,6 +19,7 @@
       <v-card-text class="tw-space-y-4 tw-flex tw-flex-col tw-flex-1">
         <v-text-field 
           ref="name-field"
+          color="green"
           v-model="name"
           autofocus
           :disabled="loading"
@@ -55,7 +56,7 @@
         <div>
           <div class="tw-text-lg tw-text-black tw-text-center tw-font-medium tw-mt-6 tw-mb-2">What dates would you like to meet?</div>
           <div class="tw-flex tw-flex-col tw-justify-center tw-items-center">
-            <vc-date-picker v-model="dateRange" :min-date='new Date()' is-range class="tw-min-w-full sm:tw-min-w-0 " />
+            <vc-date-picker v-model="dateRange" color="green" :min-date='new Date()' is-range class="tw-min-w-full sm:tw-min-w-0 " />
           </div>
         </div>
 
@@ -64,7 +65,7 @@
         <v-btn 
           :loading="loading"
           :dark="formComplete" 
-          class="tw-bg-blue"
+          class="tw-bg-green"
           :disabled="!formComplete"
           @click="submit"
         >Create</v-btn>

@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12">
+  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12 tw-mt-5">
 
     <!-- Dialog -->
     <NewEventDialog 
@@ -7,8 +7,8 @@
     />
 
     <div class="tw-p-4">
-      <div v-for="eventType, t in events" :key="t">
-        <div class="tw-text-2xl tw-font-bold">{{ eventType.header }}</div>
+      <div v-for="eventType, t in events" :key="t" class="tw-mb-5">
+        <div class="tw-text-2xl tw-font-bold tw-text-dark-green">{{ eventType.header }}</div>
         
         <div 
           v-if="eventType.events.length === 0"
