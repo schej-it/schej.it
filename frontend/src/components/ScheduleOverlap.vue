@@ -53,7 +53,8 @@
                 <div v-for="(time, t) in times" :key="t" class="tw-w-full">
                   <div
                     class="timeslot tw-h-5 tw-border-light-gray tw-border-r"
-                    :class="timeslotClass(day, time, d, t)"
+                    :class="timeslotClassStyle(day, time, d, t).class"
+                    :style="timeslotClassStyle(day, time, d, t).style"
                     v-on="timeslotVon(d, t)"
                   ></div>
                 </div>
@@ -414,9 +415,10 @@ export default {
       this.$emit("refreshEvent");
       this.unsavedChanges = false;
     },
-    timeslotClass(day, time, d, t) {
+    timeslotClassStyle(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
-      let c = "";
+      let c = ""
+      const s = {}
       // Border style
       if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 ";
@@ -461,21 +463,15 @@ export default {
           ).size;
           if (numRespondents > 0) {
             const frac = numRespondents / this.max;
-            const colors = [
-              //'tw-bg-avail-green-50',
-              "tw-bg-avail-green-100",
-              "tw-bg-avail-green-200",
-              "tw-bg-avail-green-300",
-              "tw-bg-avail-green-400",
-              "tw-bg-avail-green-500",
-              //'tw-bg-light-blue',
-              //'tw-bg-avail-green-600',
-            ];
-            c += colors[parseInt(frac * colors.length - 1)] + " ";
+            const green = '#12B981'
+            let alpha = (frac * (255-30)).toString(16).toUpperCase().substring(0,2)
+            if (frac == 1) alpha = 'FF'
+
+            s.backgroundColor = green+alpha
           }
         }
       }
-      return c;
+      return {class: c, style: s};
     },
     timeslotVon(d, t) {
       if (!this.editing) {
