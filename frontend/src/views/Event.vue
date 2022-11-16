@@ -62,7 +62,7 @@
         <v-btn
           outlined
           class="tw-text-green tw-bg-white"
-          :disabled="loading"
+          :disabled="loading && !userHasResponded"
           @click="addAvailability"
         >
           {{ userHasResponded ? 'Edit availability' : 'Add availability' }}

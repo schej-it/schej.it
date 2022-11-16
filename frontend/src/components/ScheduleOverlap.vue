@@ -6,9 +6,11 @@
       <div v-for="(day, i) in days" :key="i" class="tw-flex-1">
         <div class="tw-text-center">
           <div class="tw-uppercase tw-font-light tw-text-xs">
+            {{ day.dayText }}
+          </div>
+          <div class="tw-text-lg tw-capitalize">
             {{ day.dateString }}
           </div>
-          <div class="tw-text-lg tw-capitalize">{{ day.dayText }}</div>
         </div>
       </div>
       <div v-if="!calendarOnly" class="sm:tw-w-48" />
@@ -252,7 +254,7 @@ export default {
       while (curDate.getTime() <= this.endDate.getTime()) {
         days.push({
           dayText: daysOfWeek[curDate.getDay()],
-          dateString: months[curDate.getMonth()] + " " + curDate.getDate(),
+          dateString: curDate.getDate(),
           dateObject: curDate,
         });
         curDate = getDateDayOffset(curDate, 1);
