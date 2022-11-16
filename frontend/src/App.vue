@@ -16,7 +16,7 @@
           alt="Schej Logo"
           class="shrink tw-cursor-pointer"
           contain
-          src="@/assets/logo_dark.svg"
+          src="@/assets/logo_green.png"
           transition="scale-transition"
           width="120"
         />
