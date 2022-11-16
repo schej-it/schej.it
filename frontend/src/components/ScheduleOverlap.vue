@@ -101,32 +101,29 @@
           <div
             v-for="user in respondents"
             :key="user._id"
-            class="tw-py-1 tw-flex tw-items-center"
+            class="tw-py-1 tw-flex tw-items-center hover:tw-font-bold"
             @mouseover="curUser = user._id"
             @mouseleave="curUser = ''"
           >
+            <UserAvatarContent
+              v-if="!isGuest(user)"
+              :user="user"
+              class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
+            ></UserAvatarContent>
+            <v-tooltip v-else left transition="slide-x-transition">
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon class="tw-ml-1 tw-mr-3" small v-bind="attrs" v-on="on">mdi-account</v-icon>
+              </template>
+              <span>{{ "Guest" }}</span>
+            </v-tooltip>
             <div
               class="tw-mr-1 tw-break-all"
               :class="
-                !curTimeslotAvailability[user._id]
-                  ? 'tw-line-through tw-text-gray'
-                  : 'hover:tw-font-bold'
+                !curTimeslotAvailability[user._id] && 'tw-line-through tw-text-gray'
               "
             >
               {{ user.firstName + " " + user.lastName }}
             </div>
-            <!-- <v-avatar><img :src="user.picture" /></v-avatar> -->
-            <UserAvatarContent
-              v-if="!isGuest(user)"
-              :user="user"
-              class="tw-w-4 tw-h-4 -tw-ml-3"
-            ></UserAvatarContent>
-            <v-tooltip v-else right transition="slide-x-transition">
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon small v-bind="attrs" v-on="on">mdi-account</v-icon>
-              </template>
-              <span>{{ !isGuest(user) ? "Verified account" : "Guest" }}</span>
-            </v-tooltip>
           </div>
         </div>
       </div>
