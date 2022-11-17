@@ -142,7 +142,7 @@ export default {
     this.scrollY = window.scrollY
   },
 
-  destroyed() {
+  beforeDestroy() {
     window.removeEventListener('scroll', this.handleScroll)
   },
 

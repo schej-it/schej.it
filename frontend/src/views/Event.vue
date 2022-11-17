@@ -60,6 +60,15 @@
       <template v-if="!isEditing">
         <v-spacer />
         <v-btn
+          v-if="!authUser && selectedGuestRespondent"
+          outlined
+          class="tw-text-green tw-bg-white"
+          @click="editGuestAvailability"
+        >
+          {{ `Edit ${selectedGuestRespondent}'s availability` }}
+        </v-btn>
+        <v-btn
+          v-else
           outlined
           class="tw-text-green tw-bg-white"
           :disabled="loading && !userHasResponded"
@@ -115,7 +124,9 @@ export default {
     loading: true,
     calendarEvents: [],
     event: null,
-    scheduleOverlapComponent: null
+    scheduleOverlapComponent: null,
+
+    curGuestId: '', // Id of the current guest being edited
   }),
 
   computed: {
@@ -135,6 +146,9 @@ export default {
     userHasResponded() {
       return this.authUser && this.authUser._id in this.event.responses
     },
+    selectedGuestRespondent() {
+      return this.scheduleOverlapComponent && this.scheduleOverlapComponent.selectedGuestRespondent
+    },
   },
 
   methods: {
@@ -146,7 +160,7 @@ export default {
       if (this.authUser) {
         this.scheduleOverlapComponent.startEditing()
         if (!this.userHasResponded) {
-          this.scheduleOverlapComponent.setAvailability()
+          this.scheduleOverlapComponent.setAvailabilityAutomatically()
         }
       } else {
         this.choiceDialog = true
@@ -158,6 +172,7 @@ export default {
 
       this.scheduleOverlapComponent.resetCurUserAvailability()
       this.scheduleOverlapComponent.stopEditing()
+      this.curGuestId = ''
     },
     copyLink() {
       /* Copies event link to clipboard */
@@ -181,12 +196,25 @@ export default {
       this.scheduleOverlapComponent.startEditing()
       this.choiceDialog = false
     },
+    editGuestAvailability() {
+      /* Edits the selected guest's availability */
+      if (!this.scheduleOverlapComponent) return
+
+      this.curGuestId = this.selectedGuestRespondent
+      this.scheduleOverlapComponent.setAvailability(this.selectedGuestRespondent)
+      this.scheduleOverlapComponent.startEditing()
+    },
     async saveChanges() {
       /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
       if (!this.scheduleOverlapComponent) return
       
       if (!this.authUser) {
-        this.guestDialog = true
+        if (this.curGuestId) {
+          this.saveChangesAsGuest(this.curGuestId)
+          this.curGuestId = ''
+        } else {
+          this.guestDialog = true
+        }
         return 
       } 
 

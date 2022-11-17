@@ -22,6 +22,7 @@
             placeholder="Enter your name..."
             :hint="alreadyTaken ? 'Name already taken' : ''"
             persistent-hint
+            autofocus
           ></v-text-field>
         <div class="tw-flex">
           <v-spacer />
