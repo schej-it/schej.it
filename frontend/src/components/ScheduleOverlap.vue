@@ -104,9 +104,11 @@
           <div
             v-for="user in respondents"
             :key="user._id"
-            class="tw-py-1 tw-flex tw-items-center hover:tw-font-bold"
-            @mouseover="curUser = user._id"
-            @mouseleave="curUser = ''"
+            class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
+            :class="respondentClass(user._id)"
+            @mouseover="(e) => mouseOverRespondent(e, user._id)"
+            @mouseleave="mouseLeaveRespondent"
+            @click="(e) => clickRespondent(e, user._id)"
           >
             <UserAvatarContent
               v-if="!isGuest(user)"
@@ -173,7 +175,8 @@ export default {
       unsavedChanges: false,
       curTimeslotAvailability: {},
       curTimeslot: { dayIndex: -1, timeIndex: -1 },
-      curUser: "",
+      curRespondent: '', // Id of the active respondent (set on hover)
+      curRespondentSelected: false,
       /* Variables for drag stuff */
       DRAG_TYPES: {
         ADD: "add",
@@ -268,6 +271,12 @@ export default {
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user);
     },
+    selectedGuestRespondent() {
+      if (!this.curRespondentSelected || !this.curRespondent) return
+
+      const user = this.parsedResponses[this.curRespondent].user
+      return this.curRespondentSelected && this.isGuest(user) ? this.curRespondent : ''
+    },
     parsedResponses() {
       /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
       const parsed = {};
@@ -330,22 +339,84 @@ export default {
   },
   methods: {
     ...mapActions(["showInfo"]),
+
+    /*
+      Respondent
+    */
+    mouseOverRespondent(e, id) {
+      if (!this.curRespondentSelected)
+        this.curRespondent = id
+    },
+    mouseLeaveRespondent(e) {
+      if (!this.curRespondentSelected)
+        this.curRespondent = ''
+    },
+    clickRespondent(e, id) {
+      this.curRespondentSelected = true
+      this.curRespondent = id
+      e.stopPropagation()
+    },
+    deselectRespondent(e) {
+      this.curRespondentSelected = false
+      this.curRespondent = ''
+    },
+    respondentClass(id) {
+      const c = []
+      if (this.curRespondent == id) {
+        c.push('tw-font-bold')
+      }
+      return c
+    },
+
+    isGuest(user) {
+      return user._id == user.firstName;
+    },
+
+    /*
+      Aggregate user availability
+    */
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
       const d = getDateWithTimeInt(date, time);
       return this.responsesFormatted.get(d.getTime());
     },
+    showAvailability(d, t) {
+      if (this.curRespondent) {
+        this.resetCurTimeslot()
+        return 
+      }
+
+      this.curTimeslot = { dayIndex: d, timeIndex: t };
+      const available = this.getRespondentsForDateTime(
+        this.days[d].dateObject,
+        this.times[t].timeInt
+      );
+      for (const respondent of this.respondents) {
+        if (available.has(respondent._id)) {
+          this.curTimeslotAvailability[respondent._id] = true;
+        } else {
+          this.curTimeslotAvailability[respondent._id] = false;
+        }
+      }
+    },
+
+    /*
+      Current user availability
+    */
     resetCurUserAvailability() {
       /* resets cur user availability to the response stored on the server */
       this.availability = new Set();
       if (this.userHasResponded) {
-        this.responses[this.authUser._id].availability.forEach((item) =>
-          this.availability.add(new Date(item).getTime())
-        );
-        this.$nextTick(() => (this.unsavedChanges = false));
+        this.setAvailability(this.authUser._id)
       }
     },
-    async setAvailability() {
+    setAvailability(userId) {
+      this.responses[userId].availability.forEach((item) =>
+        this.availability.add(new Date(item).getTime())
+      );
+      this.$nextTick(() => (this.unsavedChanges = false));
+    },
+    setAvailabilityAutomatically() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set();
@@ -377,32 +448,6 @@ export default {
         "Your availability has been set automatically using your Google Calendar!"
       );
     },
-    setTimeslotSize() {
-      /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
-      ({ width: this.timeslot.width, height: this.timeslot.height } = document
-        .querySelector(".timeslot")
-        .getBoundingClientRect());
-    },
-    showAvailability(d, t) {
-      this.curTimeslot = { dayIndex: d, timeIndex: t };
-      const available = this.getRespondentsForDateTime(
-        this.days[d].dateObject,
-        this.times[t].timeInt
-      );
-      for (const respondent of this.respondents) {
-        if (available.has(respondent._id)) {
-          this.curTimeslotAvailability[respondent._id] = true;
-        } else {
-          this.curTimeslotAvailability[respondent._id] = false;
-        }
-      }
-    },
-    startEditing() {
-      this.editing = true;
-    },
-    stopEditing() {
-      this.editing = false;
-    },
     async submitAvailability(name = "") {
       const payload = { availability: this.availabilityArray };
       if (this.authUser) {
@@ -415,13 +460,24 @@ export default {
       this.$emit("refreshEvent");
       this.unsavedChanges = false;
     },
+
+
+    /*
+      Timeslot
+    */
+    setTimeslotSize() {
+      /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
+      ({ width: this.timeslot.width, height: this.timeslot.height } = document
+        .querySelector(".timeslot")
+        .getBoundingClientRect());
+    },
     timeslotClassStyle(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
       let c = ""
       const s = {}
       // Border style
-      if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
-        c += "tw-border tw-border-dashed tw-border-black tw-z-10 ";
+      if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) { 
+        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "; 
       } else {
         if (!("text" in time)) c += "tw-border-b ";
         if (d === 0) c += "tw-border-l tw-border-l-gray ";
@@ -447,12 +503,13 @@ export default {
           }
         }
       } else {
-        if (this.curUser) {
+        if (this.curRespondent) {
+          const respondent = this.curRespondent
           const respondents = this.getRespondentsForDateTime(
             day.dateObject,
             time.timeInt
           );
-          if (respondents.has(this.curUser)) {
+          if (respondents.has(respondent)) {
             c += "tw-bg-avail-green-300 ";
           }
         } else {
@@ -489,7 +546,20 @@ export default {
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 };
     },
-    /* Drag Stuff */
+
+    /* 
+      Editing
+    */
+    startEditing() {
+      this.editing = true;
+    },
+    stopEditing() {
+      this.editing = false;
+    },
+
+    /* 
+      Drag Stuff 
+    */
     normalizeXY(e) {
       /* Normalize the touch event to be relative to element */
       let pageX, pageY;
@@ -594,6 +664,7 @@ export default {
     startDrag(e) {
       if (!this.editing) return;
       this.dragging = true;
+  
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
       );
@@ -605,9 +676,6 @@ export default {
       } else {
         this.dragType = this.DRAG_TYPES.ADD;
       }
-    },
-    isGuest(user) {
-      return user._id == user.firstName;
     },
   },
   watch: {
@@ -631,6 +699,8 @@ export default {
   },
   created() {
     this.resetCurUserAvailability();
+
+    addEventListener('click', this.deselectRespondent)
   },
   mounted() {
     // Get timeslot size
@@ -649,6 +719,9 @@ export default {
         timesEl.addEventListener("mouseup", this.endDrag);
       }
     }
+  },
+  beforeDestroy() {
+    removeEventListener('click', this.deselectRespondent)
   },
   components: { UserAvatarContent },
 };
