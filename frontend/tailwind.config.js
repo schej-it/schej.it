@@ -24,6 +24,8 @@ module.exports = {
       'very-dark-gray': '#4F4F4F',
       'light-gray': '#f3f4f6',
       'avail-green': colors.emerald, // The green used for marking availability
+      'red': '#B13C3C',
+      'bright-red': '#DB1616',
     }
   },
   plugins: [
