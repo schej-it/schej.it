@@ -66,6 +66,7 @@
                     :key="`${d}-${e}`"
                     class="tw-absolute tw-w-full tw-p-px tw-select-none"
                     :style="event.style"
+                    style="pointer-events: none;"
                   >
                     <div class="tw-hidden tw-bg-blue/25 tw-bg-dark-gray/25" />
                     <div
@@ -532,13 +533,10 @@ export default {
       return {class: c, style: s};
     },
     timeslotVon(d, t) {
-      if (!this.editing)
-        return {
-          click: () => this.showAvailability(d, t),
-          mouseover: () => this.showAvailability(d, t),
-        }
-      else 
-        return {}
+      return {
+        click: () => this.showAvailability(d, t),
+        mouseover: () => this.showAvailability(d, t),
+      }
     },
     resetCurTimeslot() {
       this.curTimeslotAvailability = {};
