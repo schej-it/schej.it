@@ -382,8 +382,15 @@ export default {
       return this.responsesFormatted.get(d.getTime());
     },
     showAvailability(d, t) {
+      if (this.editing && this.isPhone) {
+        // Don't show currently selected timeslot when on phone and editing
+        return
+      }
+
       this.curTimeslot = { dayIndex: d, timeIndex: t };
+
       if (this.editing || this.curRespondent) {
+        // Don't show availability when editing or when respondent is selected
         return
       }
 
@@ -544,6 +551,9 @@ export default {
         this.curTimeslotAvailability[respondent._id] = true;
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 };
+
+      // End drag if mouse left time grid
+      this.endDrag()
     },
 
     /* 
