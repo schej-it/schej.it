@@ -381,12 +381,11 @@ export default {
       return this.responsesFormatted.get(d.getTime());
     },
     showAvailability(d, t) {
-      if (this.curRespondent) {
-        this.resetCurTimeslot()
-        return 
+      this.curTimeslot = { dayIndex: d, timeIndex: t };
+      if (this.editing || this.curRespondent) {
+        return
       }
 
-      this.curTimeslot = { dayIndex: d, timeIndex: t };
       const available = this.getRespondentsForDateTime(
         this.days[d].dateObject,
         this.times[t].timeInt
@@ -504,6 +503,7 @@ export default {
         }
       } else {
         if (this.curRespondent) {
+          // Show the currently selected respondent's availability
           const respondent = this.curRespondent
           const respondents = this.getRespondentsForDateTime(
             day.dateObject,
@@ -519,6 +519,7 @@ export default {
             time.timeInt
           ).size;
           if (numRespondents > 0) {
+            // Determine color of timeslot based on number of people available
             const frac = numRespondents / this.max;
             const green = '#12B981'
             let alpha = (frac * (255-30)).toString(16).toUpperCase().substring(0,2)
@@ -531,13 +532,13 @@ export default {
       return {class: c, style: s};
     },
     timeslotVon(d, t) {
-      if (!this.editing) {
+      if (!this.editing)
         return {
           click: () => this.showAvailability(d, t),
           mouseover: () => this.showAvailability(d, t),
-        };
-      }
-      return {};
+        }
+      else 
+        return {}
     },
     resetCurTimeslot() {
       this.curTimeslotAvailability = {};

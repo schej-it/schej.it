@@ -174,6 +174,7 @@ export default {
 
   props: {
     eventId: { type: String, required: true },
+    fromSignIn: { type: Boolean, default: false },
   },
 
   components: {
@@ -189,6 +190,7 @@ export default {
     calendarEvents: [],
     event: null,
     scheduleOverlapComponent: null,
+    scheduleOverlapComponentLoaded: false,
 
     curGuestId: "", // Id of the current guest being edited
   }),
@@ -312,9 +314,21 @@ export default {
         this.guestDialog = false;
       }
     },
+
+    onBeforeUnload(e) {
+      if (this.isEditing) {
+        e.preventDefault()
+        e.returnValue = ''
+        return
+      }
+
+      delete e['returnValue']
+    },
   },
 
   async created() {
+    window.addEventListener('beforeunload', this.onBeforeUnload)
+
     // Get event details
     try {
       this.event = await get(`/events/${this.eventId}`);
@@ -328,14 +342,18 @@ export default {
       }
     }
 
-    // Show dialog if user hasn't responded yet
-    // this.choiceDialog = !this.userHasResponded
-
     // Get user's calendar
     getCalendarEvents(this.event)
       .then((events) => {
         this.calendarEvents = events;
         this.loading = false;
+
+        // Set user availability automatically if we're in editing mode and they haven't responded
+        if (this.authUser && this.isEditing && !this.userHasResponded && this.scheduleOverlapComponent) {
+          this.$nextTick(() => {
+            this.scheduleOverlapComponent.setAvailabilityAutomatically();
+          })
+         }
       })
       .catch((err) => {
         this.loading = false;
@@ -352,6 +370,16 @@ export default {
         this.$nextTick(() => {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap;
         });
+      }
+    },
+    scheduleOverlapComponent() {
+      if (!this.scheduleOverlapComponentLoaded) {
+        this.scheduleOverlapComponentLoaded
+
+        // Put into editing mode if just signed in
+        if (this.fromSignIn) {
+          this.scheduleOverlapComponent.startEditing()
+        }
       }
     },
   },
