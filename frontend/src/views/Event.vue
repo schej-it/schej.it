@@ -2,7 +2,7 @@
   <div v-if="event" class="tw-mt-8">
     <v-dialog v-model="choiceDialog" width="400" content-class="tw-m-0">
       <v-card class="tw-text-center sm:tw-p-6 tw-p-4">
-        <div class="tw-text-md tw-font-semibold tw-pb-4">
+        <div class="tw-text-md tw-pb-4">
           How would you like to mark <br v-if="isPhone" />
           your availability?
         </div>
@@ -19,6 +19,26 @@
           </v-btn>
           <v-btn @click="setAvailabilityManually" block>Manually</v-btn>
         </div>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="webviewDialog" width="400" content-class="tw-m-0">
+      <v-card>
+        <v-card-title>Google sign in not supported</v-card-title>
+        <v-card-text>
+          The browser you are currently using does not support Google sign in!
+          Consider opening schej in another browser, such as Safari or Chrome.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            text
+            class="tw-text-green"
+            @click="webviewDialog = false"
+          >
+            Ok
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -168,6 +188,8 @@ import { mapActions, mapState } from "vuex";
 import ScheduleOverlap from "@/components/ScheduleOverlap";
 import GuestDialog from "@/components/GuestDialog.vue";
 import { errors } from "@/constants";
+import { UAParser } from 'ua-parser-js'
+import isWebview from 'is-ua-webview'
 
 export default {
   name: "Event",
@@ -184,6 +206,7 @@ export default {
 
   data: () => ({
     choiceDialog: false,
+    webviewDialog: false,
     guestDialog: false,
 
     loading: true,
@@ -262,7 +285,13 @@ export default {
     },
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
-      signInGoogle({ type: "join", eventId: this.eventId }, true);
+      if (isWebview(navigator.userAgent)) {
+        // Show dialog prompting user to user a real browser
+        this.webviewDialog = true
+      } else {
+        // Or sign in if user is already using a real browser
+        signInGoogle({ type: "join", eventId: this.eventId }, true);
+      }
       this.choiceDialog = false;
     },
     setAvailabilityManually() {
