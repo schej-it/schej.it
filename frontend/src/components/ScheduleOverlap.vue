@@ -68,10 +68,8 @@
                     :style="event.style"
                     style="pointer-events: none;"
                   >
-                    <div class="tw-hidden tw-bg-blue/25 tw-bg-dark-gray/25" />
                     <div
-                      :class="`tw-bg-${noEventNames ? 'dark-gray' : 'blue'}/25`"
-                      class="tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                      class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                     >
                       <div
                         :class="`tw-text-${
