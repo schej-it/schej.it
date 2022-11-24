@@ -38,7 +38,7 @@
             <div class="tw-font-normal">{{ dateString }}</div>
           </div>
           <v-spacer />
-          <div class="tw-flex tw-flex-col tw-items-end tw-gap-2">
+          <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
             <div>
               <v-btn
                 :icon="isPhone"
@@ -56,7 +56,7 @@
               <template v-if="!isEditing">
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"
-                  small
+                  min-width="10.25rem"
                   class="tw-text-white tw-bg-green"
                   @click="editGuestAvailability"
                 >
@@ -64,7 +64,7 @@
                 </v-btn>
                 <v-btn
                   v-else
-                  small
+                  width="10.25rem"
                   class="tw-text-white tw-bg-green"
                   :disabled="loading && !userHasResponded"
                   @click="addAvailability"
@@ -76,17 +76,15 @@
               </template>
               <template v-else>
                 <v-btn
-                  class="tw-text-red tw-mr-1"
+                  class="tw-text-red tw-mr-1 tw-w-20"
                   @click="cancelEditing"
-                  small
                   outlined
                 >
                   Cancel
                 </v-btn>
                 <v-btn
-                  class="tw-text-white tw-bg-green"
+                  class="tw-text-white tw-bg-green tw-w-20"
                   @click="saveChanges"
-                  small
                 >
                   Save
                 </v-btn></template
