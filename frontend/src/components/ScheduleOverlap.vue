@@ -66,11 +66,10 @@
                     :key="`${d}-${e}`"
                     class="tw-absolute tw-w-full tw-p-px tw-select-none"
                     :style="event.style"
+                    style="pointer-events: none;"
                   >
-                    <div class="tw-hidden tw-bg-blue/25 tw-bg-dark-gray/25" />
                     <div
-                      :class="`tw-bg-${noEventNames ? 'dark-gray' : 'blue'}/25`"
-                      class="tw-border-light-gray /*tw-border-solid*/ tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                      class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                     >
                       <div
                         :class="`tw-text-${
@@ -381,12 +380,18 @@ export default {
       return this.responsesFormatted.get(d.getTime());
     },
     showAvailability(d, t) {
-      if (this.curRespondent) {
-        this.resetCurTimeslot()
-        return 
+      if (this.editing && this.isPhone) {
+        // Don't show currently selected timeslot when on phone and editing
+        return
       }
 
       this.curTimeslot = { dayIndex: d, timeIndex: t };
+
+      if (this.editing || this.curRespondent) {
+        // Don't show availability when editing or when respondent is selected
+        return
+      }
+
       const available = this.getRespondentsForDateTime(
         this.days[d].dateObject,
         this.times[t].timeInt
@@ -504,6 +509,7 @@ export default {
         }
       } else {
         if (this.curRespondent) {
+          // Show the currently selected respondent's availability
           const respondent = this.curRespondent
           const respondents = this.getRespondentsForDateTime(
             day.dateObject,
@@ -519,6 +525,7 @@ export default {
             time.timeInt
           ).size;
           if (numRespondents > 0) {
+            // Determine color of timeslot based on number of people available
             const frac = numRespondents / this.max;
             const green = '#12B981'
             let alpha = (frac * (255-30)).toString(16).toUpperCase().substring(0,2)
@@ -531,13 +538,10 @@ export default {
       return {class: c, style: s};
     },
     timeslotVon(d, t) {
-      if (!this.editing) {
-        return {
-          click: () => this.showAvailability(d, t),
-          mouseover: () => this.showAvailability(d, t),
-        };
+      return {
+        click: () => this.showAvailability(d, t),
+        mouseover: () => this.showAvailability(d, t),
       }
-      return {};
     },
     resetCurTimeslot() {
       this.curTimeslotAvailability = {};
@@ -545,6 +549,9 @@ export default {
         this.curTimeslotAvailability[respondent._id] = true;
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 };
+
+      // End drag if mouse left time grid
+      this.endDrag()
     },
 
     /* 

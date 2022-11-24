@@ -2,7 +2,7 @@
   <div v-if="event" class="tw-mt-8">
     <v-dialog v-model="choiceDialog" width="400" content-class="tw-m-0">
       <v-card class="tw-text-center sm:tw-p-6 tw-p-4">
-        <div class="tw-text-md tw-font-semibold tw-pb-4">
+        <div class="tw-text-md tw-pb-4">
           How would you like to mark <br v-if="isPhone" />
           your availability?
         </div>
@@ -19,6 +19,26 @@
           </v-btn>
           <v-btn @click="setAvailabilityManually" block>Manually</v-btn>
         </div>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="webviewDialog" width="400" content-class="tw-m-0">
+      <v-card>
+        <v-card-title>Google sign in not supported</v-card-title>
+        <v-card-text>
+          The browser you are currently using does not support Google sign in!
+          Consider opening schej in another browser, such as Safari or Chrome.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            text
+            class="tw-text-green"
+            @click="webviewDialog = false"
+          >
+            Ok
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -166,12 +186,15 @@ import { mapActions, mapState } from "vuex";
 import ScheduleOverlap from "@/components/ScheduleOverlap";
 import GuestDialog from "@/components/GuestDialog.vue";
 import { errors } from "@/constants";
+import { UAParser } from 'ua-parser-js'
+import isWebview from 'is-ua-webview'
 
 export default {
   name: "Event",
 
   props: {
     eventId: { type: String, required: true },
+    fromSignIn: { type: Boolean, default: false },
   },
 
   components: {
@@ -181,12 +204,14 @@ export default {
 
   data: () => ({
     choiceDialog: false,
+    webviewDialog: false,
     guestDialog: false,
 
     loading: true,
     calendarEvents: [],
     event: null,
     scheduleOverlapComponent: null,
+    scheduleOverlapComponentLoaded: false,
 
     curGuestId: "", // Id of the current guest being edited
   }),
@@ -258,7 +283,13 @@ export default {
     },
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
-      signInGoogle({ type: "join", eventId: this.eventId }, true);
+      if (isWebview(navigator.userAgent)) {
+        // Show dialog prompting user to user a real browser
+        this.webviewDialog = true
+      } else {
+        // Or sign in if user is already using a real browser
+        signInGoogle({ type: "join", eventId: this.eventId }, true);
+      }
       this.choiceDialog = false;
     },
     setAvailabilityManually() {
@@ -310,9 +341,21 @@ export default {
         this.guestDialog = false;
       }
     },
+
+    onBeforeUnload(e) {
+      if (this.isEditing) {
+        e.preventDefault()
+        e.returnValue = ''
+        return
+      }
+
+      delete e['returnValue']
+    },
   },
 
   async created() {
+    window.addEventListener('beforeunload', this.onBeforeUnload)
+
     // Get event details
     try {
       this.event = await get(`/events/${this.eventId}`);
@@ -326,14 +369,18 @@ export default {
       }
     }
 
-    // Show dialog if user hasn't responded yet
-    // this.choiceDialog = !this.userHasResponded
-
     // Get user's calendar
     getCalendarEvents(this.event)
       .then((events) => {
         this.calendarEvents = events;
         this.loading = false;
+
+        // Set user availability automatically if we're in editing mode and they haven't responded
+        if (this.authUser && this.isEditing && !this.userHasResponded && this.scheduleOverlapComponent) {
+          this.$nextTick(() => {
+            this.scheduleOverlapComponent.setAvailabilityAutomatically();
+          })
+         }
       })
       .catch((err) => {
         this.loading = false;
@@ -350,6 +397,16 @@ export default {
         this.$nextTick(() => {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap;
         });
+      }
+    },
+    scheduleOverlapComponent() {
+      if (!this.scheduleOverlapComponentLoaded) {
+        this.scheduleOverlapComponentLoaded
+
+        // Put into editing mode if just signed in
+        if (this.fromSignIn) {
+          this.scheduleOverlapComponent.startEditing()
+        }
       }
     },
   },

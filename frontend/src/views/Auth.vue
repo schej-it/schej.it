@@ -30,7 +30,7 @@ export default {
       if (state) {
         switch (state.type) {
           case 'join':
-            this.$router.replace({ name: 'event', params: { eventId: state.eventId } })
+            this.$router.replace({ name: 'event', params: { eventId: state.eventId, fromSignIn: true } })
             break
         }
       } else {
