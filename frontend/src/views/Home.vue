@@ -16,7 +16,7 @@
         >
           No events yet!
         </div>
-        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-3 tw-gap-2 tw-my-3">
+        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 tw-my-3">
           <EventItem  
             class="tw-cursor-pointer"
             v-for="event, i in eventType.events" 
