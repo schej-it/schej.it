@@ -64,7 +64,7 @@ export default {
       this.$router.replace({ name: 'event', params: { eventId: this.eventId } })
     },
     signIn() {
-      signInGoogle({ type: 'join', eventId: this.eventId })
+      signInGoogle({ type: 'event-add-availability', eventId: this.eventId })
     },
   },
 

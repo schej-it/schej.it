@@ -288,7 +288,7 @@ export default {
         this.webviewDialog = true
       } else {
         // Or sign in if user is already using a real browser
-        signInGoogle({ type: "join", eventId: this.eventId }, true);
+        signInGoogle({ type: "event-add-availability", eventId: this.eventId });
       }
       this.choiceDialog = false;
     },
@@ -386,7 +386,7 @@ export default {
         this.loading = false;
         console.error(err);
         if (err.error.code === 401 || err.error.code === 403) {
-          signInGoogle({ type: "join", eventId: this.eventId }, true);
+          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, true);
         }
       });
   },

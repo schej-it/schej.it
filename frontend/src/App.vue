@@ -27,6 +27,7 @@
         <v-btn 
           v-else
           text
+          @click="signIn"
         >Sign in</v-btn>
       </div>
     </div>
@@ -62,7 +63,7 @@ html {
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { get, isPhone } from './utils';
+import { get, isPhone, signInGoogle } from './utils';
 import AutoSnackbar from '@/components/AutoSnackbar'
 import AuthUserMenu from './components/AuthUserMenu.vue';
 
@@ -118,6 +119,11 @@ export default {
           this.$router.replace({ name: 'home' })
           console.log('redirecting to HOME')
         }
+      }
+    },
+    signIn() {
+      if (this.$route.name === 'event') {
+        signInGoogle({ type: 'event-sign-in', eventId: this.$route.params.eventId });
       }
     },
   },

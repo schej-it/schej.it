@@ -29,8 +29,11 @@ export default {
       // Redirect to the correct place based on "state", otherwise, just redirect to home
       if (state) {
         switch (state.type) {
-          case 'join':
+          case 'event-add-availability':
             this.$router.replace({ name: 'event', params: { eventId: state.eventId, fromSignIn: true } })
+            break
+          case 'event-sign-in':
+            this.$router.replace({ name: 'event', params: { eventId: state.eventId } })
             break
         }
       } else {
