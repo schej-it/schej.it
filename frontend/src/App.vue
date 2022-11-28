@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <AutoSnackbar color="error" :text="error" />
-    <AutoSnackbar color="info" :text="info" />
+    <AutoSnackbar color="tw-bg-blue" :text="info" />
     <div
       v-if="showHeader"
       class="tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
