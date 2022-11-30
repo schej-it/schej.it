@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import { getDateWithTime, getDateWithTimeInt, isPhone, post } from '@/utils'
+import { getDateDayOffset, getDateWithTimeInt, isPhone, post } from '@/utils'
 export default {
   name: 'NewEventDialog',
 
@@ -126,8 +126,16 @@ export default {
       this.dateRange = {}
     },
     submit() {
+      // Calculate start date and end date
       const startDate = getDateWithTimeInt(this.dateRange.start, this.startTime)
-      const endDate = getDateWithTimeInt(this.dateRange.end, this.endTime)
+      let dateRangeEnd = this.dateRange.end
+      // Increase date range end by one day if end time is 12am
+      if (this.endTime == 0) {
+        dateRangeEnd = getDateDayOffset(this.dateRange.end, 1)
+      }
+      const endDate = getDateWithTimeInt(dateRangeEnd, this.endTime)
+
+      // Create new event on backend
       this.loading = true
       post('/events', {
         name: this.name,
