@@ -45,7 +45,6 @@ export default {
       async signOut() {
           await post('/auth/sign-out')
           this.setAuthUser(null)
-          this.$router.replace({ name: 'landing' })
       }
   },
 }

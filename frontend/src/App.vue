@@ -16,7 +16,7 @@
           alt="Schej Logo"
           class="shrink tw-cursor-pointer"
           contain
-          src="@/assets/schej_logo_with_text.svg"
+          src="@/assets/schej_logo_with_text.png"
           transition="scale-transition"
           width="120"
         />
@@ -112,12 +112,12 @@ export default {
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
           this.$router.replace({ name: 'landing' })
-          console.log('redirecting to SIGN IN')
+          // console.log('redirecting to SIGN IN')
         }
       } else {
         if (noAuthRoutes.includes(this.$route.name)) {
           this.$router.replace({ name: 'home' })
-          console.log('redirecting to HOME')
+          // console.log('redirecting to HOME')
         }
       }
     },
@@ -156,11 +156,11 @@ export default {
     authUser: {
       immediate: true,
       handler() {
-        /*if (this.authUser) {
-          this.redirectAuthUser(true)
+        if (this.authUser) {
+          this.redirectUser(true)
         } else {
-          this.redirectAuthUser(false)
-        }*/
+          this.redirectUser(false)
+        }
       }
     },
     $route: {

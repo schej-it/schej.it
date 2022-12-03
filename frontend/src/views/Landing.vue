@@ -26,7 +26,7 @@
           alt="schej Logo"
           class="shrink tw-cursor-pointer"
           contain
-          src="@/assets/schej_logo_with_text.svg"
+          src="@/assets/schej_logo_with_text.png"
           transition="scale-transition"
           :width="logoWidth"
         />

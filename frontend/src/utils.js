@@ -14,6 +14,12 @@ export const getDateString = (date) => {
 export const getDateRangeString = (date1, date2) => {
   date1 = new Date(date1)
   date2 = new Date(date2)
+
+  // Correct date2 if time is 12am (because ending at 12am doesn't begin the next day)
+  if (date2.getHours() == 0) {
+    date2 = getDateDayOffset(date2, -1)
+  }
+
   return getDateString(date1) + ' - ' + getDateString(date2)
 }
 
