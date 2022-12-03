@@ -16,6 +16,9 @@
       <v-list-item>
         <v-list-item-title><strong>{{ `${authUser.firstName} ${authUser.lastName}` }}</strong></v-list-item-title>
       </v-list-item>
+      <v-list-item @click="giveFeedback">
+        <v-list-item-title>Give feedback</v-list-item-title>
+      </v-list-item>
       <v-divider></v-divider>
       <v-list-item @click="signOut">
         <v-list-item-title class="red--text">Sign Out</v-list-item-title>
@@ -42,6 +45,9 @@ export default {
 
   methods: {
       ...mapMutations([ 'setAuthUser' ]),
+      giveFeedback() {
+        window.open('https://forms.gle/9AgRy4PQfWfVuBnw8', '_blank');
+      },
       async signOut() {
           await post('/auth/sign-out')
           this.setAuthUser(null)

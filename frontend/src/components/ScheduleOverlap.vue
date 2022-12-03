@@ -114,12 +114,8 @@
               :user="user"
               class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
             ></UserAvatarContent>
-            <v-tooltip v-else left transition="slide-x-transition">
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon class="tw-ml-1 tw-mr-3" small v-bind="attrs" v-on="on">mdi-account</v-icon>
-              </template>
-              <span>{{ "Guest" }}</span>
-            </v-tooltip>
+            <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+
             <div
               class="tw-mr-1 tw-break-all tw-transition-all"
               :class="
