@@ -49,8 +49,9 @@ export default {
         window.open('https://forms.gle/9AgRy4PQfWfVuBnw8', '_blank');
       },
       async signOut() {
-          await post('/auth/sign-out')
-          this.setAuthUser(null)
+        await post('/auth/sign-out')
+        this.setAuthUser(null)
+        location.reload()
       }
   },
 }

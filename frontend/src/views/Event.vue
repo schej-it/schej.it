@@ -170,15 +170,8 @@ import {
   getDateRangeString,
   get,
   signInGoogle,
-  dateCompare,
-  dateToTimeInt,
-  getDateDayOffset,
-  clampDateToTimeInt,
-  post,
-  ERRORS,
   isPhone,
   processEvent,
-  getDateWithTimeInt,
   getCalendarEvents,
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
@@ -186,7 +179,6 @@ import { mapActions, mapState } from "vuex";
 import ScheduleOverlap from "@/components/ScheduleOverlap";
 import GuestDialog from "@/components/GuestDialog.vue";
 import { errors } from "@/constants";
-import { UAParser } from 'ua-parser-js'
 import isWebview from 'is-ua-webview'
 
 export default {
