@@ -283,12 +283,14 @@ export const signInGoogle = (state = null, consent = false) => {
     stateString = `&state=${state}`
   }
 
-  let consentString = ''
+  let promptString = ''
   if (consent) {
-    consentString = '&prompt=consent'
+    promptString = '&prompt=consent'
+  } else {
+    promptString = '&prompt=select_account'
   }
 
-  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${consentString}${stateString}`
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${promptString}${stateString}`
 }
 
 var timeoutId
