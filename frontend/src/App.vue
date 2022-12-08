@@ -53,6 +53,7 @@ html {
 
 * {
   font-family: 'DM Sans', sans-serif;
+  touch-action: manipulation !important;
 }
 
 .v-btn {
