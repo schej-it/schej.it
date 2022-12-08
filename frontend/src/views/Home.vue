@@ -6,7 +6,7 @@
       v-model="dialog"
     />
 
-    <div class="tw-p-4">
+    <div class="tw-p-4 tw-max-w-3xl tw-m-auto">
       <div v-for="eventType, t in events" :key="t" class="tw-mb-6">
         <div 
           class="tw-text-2xl tw-font-bold tw-text-dark-green"
@@ -19,7 +19,7 @@
         >
           No events yet!
         </div>
-        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-4 tw-my-3">
+        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-y-3 sm:tw-gap-x-5 tw-my-3">
           <EventItem  
             class="tw-cursor-pointer"
             v-for="event, i in eventType.events" 
