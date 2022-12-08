@@ -7,8 +7,11 @@
     />
 
     <div class="tw-p-4">
-      <div v-for="eventType, t in events" :key="t" class="tw-mb-5">
-        <div class="tw-text-2xl tw-font-bold tw-text-dark-green">{{ eventType.header }}</div>
+      <div v-for="eventType, t in events" :key="t" class="tw-mb-6">
+        <div 
+          class="tw-text-2xl tw-font-bold tw-text-dark-green"
+          :class="(t != 0) && 'tw-mt-10'" 
+          >{{ eventType.header }}</div>
         
         <div 
           v-if="eventType.events.length === 0"
@@ -16,7 +19,7 @@
         >
           No events yet!
         </div>
-        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 tw-my-3">
+        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-4 tw-my-3">
           <EventItem  
             class="tw-cursor-pointer"
             v-for="event, i in eventType.events" 

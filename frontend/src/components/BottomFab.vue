@@ -3,7 +3,7 @@
     <v-btn 
       fab
       fixed
-      class="tw-bg-green tw-mx-auto tw-left-0 tw-right-0 tw-bottom-2 tw-text-white"
+      class="tw-bg-green tw-mx-auto tw-left-0 tw-right-0 tw-bottom-4 tw-text-white"
       @click="e => $emit('click', e)"
       v-bind="$attrs"
     >
