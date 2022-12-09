@@ -1,5 +1,8 @@
 <template>
-  <v-card class="tw-mx-4 md:tw-w-[42rem] ">
+  <v-card 
+    class="tw-mx-4 md:tw-w-[42rem] tw-rounded-lg"
+    style="box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.1);"
+  >
     <ScheduleOverlap
       :startDate="startDate"
       :endDate="endDate"
@@ -104,14 +107,6 @@ export default {
           
           getDateWithTimeInt(day2, 9),
           getDateWithTimeInt(day2, 9.5),
-          getDateWithTimeInt(day2, 12),
-          getDateWithTimeInt(day2, 12.5),
-          getDateWithTimeInt(day2, 13),
-          getDateWithTimeInt(day2, 13.5),
-          getDateWithTimeInt(day2, 14),
-          getDateWithTimeInt(day2, 14.5),
-          getDateWithTimeInt(day2, 15),
-          getDateWithTimeInt(day2, 15.5),
           getDateWithTimeInt(day2, 16),
           getDateWithTimeInt(day2, 16.5),
           getDateWithTimeInt(day2, 17),
@@ -124,14 +119,6 @@ export default {
           getDateWithTimeInt(day2, 21.5),
           
           getDateWithTimeInt(day3, 12.5),
-          getDateWithTimeInt(day3, 13),
-          getDateWithTimeInt(day3, 13.5),
-          getDateWithTimeInt(day3, 14),
-          getDateWithTimeInt(day3, 14.5),
-          getDateWithTimeInt(day3, 15),
-          getDateWithTimeInt(day3, 15.5),
-          getDateWithTimeInt(day3, 16),
-          getDateWithTimeInt(day3, 16.5),
           getDateWithTimeInt(day3, 17),
           getDateWithTimeInt(day3, 19.5),
         ]
@@ -209,8 +196,6 @@ export default {
           getDateWithTimeInt(day2, 9.5),
           getDateWithTimeInt(day2, 10),
           getDateWithTimeInt(day2, 10.5),
-          getDateWithTimeInt(day2, 11),
-          getDateWithTimeInt(day2, 11.5),
           getDateWithTimeInt(day2, 19),
           getDateWithTimeInt(day2, 19.5),
           getDateWithTimeInt(day2, 20),
