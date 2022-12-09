@@ -19,55 +19,58 @@
       </v-card>
     </v-dialog>
 
-    <div class="tw-mb-12">
-      <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-items-center tw-max-w-6xl tw-m-auto">
-          <v-img
-            alt="schej Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="@/assets/schej_logo_with_text.png"
-            transition="scale-transition"
-            :width="logoWidth"
-          />
+    <div class="tw-h-screen tw-flex tw-flex-col">
 
-        <v-btn text @click="signIn">Sign in</v-btn>
-      </div>
-      <div class="tw-flex tw-flex-col tw-items-center">
-        <div
-          class="tw-mt-16 tw-mb-4 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
-        >
-          Finding a time to meet,<br> made simple.
+      <!-- Header -->
+      <div class="tw-mb-12">
+        <div class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-items-center tw-max-w-6xl tw-m-auto">
+            <v-img
+              alt="schej Logo"
+              class="shrink tw-cursor-pointer"
+              contain
+              src="@/assets/schej_logo_with_text.png"
+              transition="scale-transition"
+              :width="logoWidth"
+            />
+
+          <v-btn text @click="signIn">Sign in</v-btn>
         </div>
-        <div
-          class="tw-mb-4 lg:tw-mb-10 sm:tw-text-xl lg:tw-text-2xl tw-text-center"
-        >
-          It's like when2meet with <br v-if="isPhone"> Google Calendar integration
+        <div class="tw-flex tw-flex-col tw-items-center">
+          <div
+            class="tw-mt-16 tw-mb-4 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
+          >
+            Finding a time to meet,<br> made simple.
+          </div>
+          <div
+            class="tw-mb-4 lg:tw-mb-10 sm:tw-text-xl lg:tw-text-2xl tw-text-center"
+          >
+            It's like when2meet with <br v-if="isPhone"> Google Calendar integration
+          </div>
+          <v-btn class="tw-bg-green tw-rounded-lg" dark @click="getStarted" :large="$vuetify.breakpoint.smAndUp" :x-large="$vuetify.breakpoint.mdAndUp"
+            >Let's schej it</v-btn
+          >
         </div>
-        <v-btn class="tw-bg-green tw-rounded-lg" dark @click="getStarted" :large="$vuetify.breakpoint.smAndUp" :x-large="$vuetify.breakpoint.mdAndUp"
-          >Let's schej it</v-btn
+      </div>
+
+      <!-- Calendar -->
+      <div class="tw-flex-1 md:tw-flex md:tw-justify-center tw-relative tw-pb-12">
+        <div 
+          class="tw-absolute tw-bg-green tw-w-full"
+          style="top: 10rem; height: calc(100% - 10rem);"
         >
+        </div>
+        <div>
+          <LandingPageCalendar />
+        </div>
       </div>
-    </div>
 
-    <div class="md:tw-grid md:tw-place-content-center tw-relative tw-pb-12">
-      <div 
-        class="tw-absolute tw-bg-green tw-w-full"
-        style="top: 10rem; height: calc(100% - 10rem);"
-      >
+      <!-- Privacy Policy -->
+      <div class="tw-bg-green tw-flex tw-flex-col">
+        <div class="tw-text-center tw-text-white tw-m-2">	
+          <router-link class="tw-text-white tw-font-medium" :to="{ path: 'privacy-policy' }">Privacy Policy</router-link>
+        </div>
       </div>
-      <LandingPageCalendar />
-    </div>
 
-    <!-- <div
-      class="-tw-translate-y-1/2 -tw-mb-72 md:tw-grid md:tw-place-content-center"
-    >
-      <LandingPageCalendar />
-    </div> -->
-
-    <div class="tw-bg-green tw-flex tw-flex-col">
-      <div class="tw-text-center tw-text-white tw-m-2">	
-        <router-link class="tw-text-white tw-font-medium" :to="{ path: 'privacy-policy' }">Privacy Policy</router-link>
-      </div>
     </div>
   </div>
 </template>
