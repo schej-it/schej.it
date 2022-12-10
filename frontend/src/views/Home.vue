@@ -7,25 +7,8 @@
     />
 
     <div class="tw-p-4">
-      <div v-for="eventType, t in events" :key="t" class="tw-mb-5">
-        <div class="tw-text-2xl tw-font-bold tw-text-dark-green">{{ eventType.header }}</div>
-        
-        <div 
-          v-if="eventType.events.length === 0"
-          class="tw-my-3"
-        >
-          No events yet!
-        </div>
-        <div v-else class="tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 tw-my-3">
-          <EventItem  
-            class="tw-cursor-pointer"
-            v-for="event, i in eventType.events" 
-            :key="i"
-            :event="event" 
-            @click="goToEvent(event._id)"
-          />
-        </div>
-      </div>
+      <EventType v-for="eventType, t in events" :key="t" :eventType="eventType" class="tw-mb-5"></EventType>
+      
     </div>
 
     <!-- FAB -->
@@ -37,7 +20,7 @@
 
 <script>
 import NewEventDialog from '@/components/NewEventDialog'
-import EventItem from '@/components/EventItem'
+import EventType from '@/components/EventType'
 import BottomFab from '@/components/BottomFab.vue'
 import { get } from '@/utils'
 
@@ -46,7 +29,7 @@ export default {
 
   components: {
     NewEventDialog,
-    EventItem,
+    EventType,
     BottomFab,
   },
 
@@ -56,9 +39,7 @@ export default {
   }),
 
   methods: {
-    goToEvent(eventId) {
-      this.$router.push({ name: 'event', params: { eventId } })
-    }
+    
   },
 
   created() {

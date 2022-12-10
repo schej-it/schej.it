@@ -69,7 +69,8 @@
                 <span v-if="!isPhone" class="tw-text-green tw-mr-2"
                   >Copy link</span
                 >
-                <v-icon class="tw-text-green">mdi-content-copy</v-icon>
+                <v-icon class="tw-text-green" v-if="!isPhone">mdi-content-copy</v-icon>
+                <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
             <div v-if="!isPhone">
