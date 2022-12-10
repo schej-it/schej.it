@@ -5,10 +5,8 @@
     <NewEventDialog 
       v-model="dialog"
     />
-
     <div class="tw-p-4">
       <EventType v-for="eventType, t in events" :key="t" :eventType="eventType" class="tw-mb-5"></EventType>
-      
     </div>
 
     <!-- FAB -->

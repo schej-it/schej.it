@@ -14,6 +14,12 @@ export const getDateString = (date) => {
 export const getDateRangeString = (date1, date2) => {
   date1 = new Date(date1)
   date2 = new Date(date2)
+
+  // Correct date2 if time is 12am (because ending at 12am doesn't begin the next day)
+  if (date2.getHours() == 0) {
+    date2 = getDateDayOffset(date2, -1)
+  }
+
   return getDateString(date1) + ' - ' + getDateString(date2)
 }
 
@@ -277,12 +283,14 @@ export const signInGoogle = (state = null, consent = false) => {
     stateString = `&state=${state}`
   }
 
-  let consentString = ''
+  let promptString = ''
   if (consent) {
-    consentString = '&prompt=consent'
+    promptString = '&prompt=consent'
+  } else {
+    promptString = '&prompt=select_account'
   }
 
-  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${consentString}${stateString}`
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${promptString}${stateString}`
 }
 
 var timeoutId

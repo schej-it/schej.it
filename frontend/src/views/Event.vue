@@ -54,8 +54,8 @@
 
         <div class="tw-text-black tw-flex tw-items-center">
           <div>
-            <div class="tw-text-3xl">{{ event.name }}</div>
-            <div class="tw-font-normal">{{ dateString }}</div>
+            <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
+            <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }}</div>
           </div>
           <v-spacer />
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
@@ -171,15 +171,8 @@ import {
   getDateRangeString,
   get,
   signInGoogle,
-  dateCompare,
-  dateToTimeInt,
-  getDateDayOffset,
-  clampDateToTimeInt,
-  post,
-  ERRORS,
   isPhone,
   processEvent,
-  getDateWithTimeInt,
   getCalendarEvents,
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
@@ -187,7 +180,6 @@ import { mapActions, mapState } from "vuex";
 import ScheduleOverlap from "@/components/ScheduleOverlap";
 import GuestDialog from "@/components/GuestDialog.vue";
 import { errors } from "@/constants";
-import { UAParser } from 'ua-parser-js'
 import isWebview from 'is-ua-webview'
 
 export default {

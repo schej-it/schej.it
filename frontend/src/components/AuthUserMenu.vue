@@ -6,15 +6,18 @@
     :close-on-content-click="false"
   >
     <template v-slot:activator="{ on }">
-      <v-btn icon x-large v-on="on">
-        <v-avatar size="48">
-          <UserAvatarContent :user="authUser" />
+      <v-btn icon :width="size" :height="size" v-on="on">
+        <v-avatar :size="size">
+          <UserAvatarContent :user="authUser" :size="size" />
         </v-avatar>
       </v-btn>
     </template>
-    <v-list class="py-0">
+    <v-list class="py-0" :dense="isPhone">
       <v-list-item>
         <v-list-item-title><strong>{{ `${authUser.firstName} ${authUser.lastName}` }}</strong></v-list-item-title>
+      </v-list-item>
+      <v-list-item @click="giveFeedback">
+        <v-list-item-title>Give feedback</v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item @click="signOut">
@@ -27,7 +30,7 @@
 <script>
 import UserAvatarContent from '@/components/UserAvatarContent'
 import { mapState, mapMutations } from 'vuex'
-import { get, post } from '@/utils'
+import { post, isPhone } from '@/utils'
 
 export default {
   name: 'AuthUserMenu',
@@ -38,14 +41,23 @@ export default {
 
   computed: {
     ...mapState([ 'authUser' ]),
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
+    size() {
+      return this.isPhone ? 36 : 48
+    },
   },
 
   methods: {
       ...mapMutations([ 'setAuthUser' ]),
+      giveFeedback() {
+        window.open('https://forms.gle/9AgRy4PQfWfVuBnw8', '_blank');
+      },
       async signOut() {
-          await post('/auth/sign-out')
-          this.setAuthUser(null)
-          this.$router.replace({ name: 'landing' })
+        await post('/auth/sign-out')
+        this.setAuthUser(null)
+        location.reload()
       }
   },
 }

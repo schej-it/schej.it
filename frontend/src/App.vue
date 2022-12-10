@@ -4,7 +4,7 @@
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <div
       v-if="showHeader"
-      class="tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
+      class="tw-h-14 sm:tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
       dark
       :class="'tw-drop-shadow'"
     >
@@ -16,9 +16,9 @@
           alt="Schej Logo"
           class="shrink tw-cursor-pointer"
           contain
-          src="@/assets/schej_logo_with_text.svg"
+          src="@/assets/schej_logo_with_text.png"
           transition="scale-transition"
-          width="120"
+          width="90"
         />
 
         <v-spacer />
@@ -53,6 +53,7 @@ html {
 
 * {
   font-family: 'DM Sans', sans-serif;
+  /* touch-action: manipulation !important; */
 }
 
 .v-btn {
@@ -83,6 +84,9 @@ export default {
 
   computed: {
     ...mapState([ 'authUser', 'error', 'info' ]),
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
     showHeader() {
       return (
         this.$route.name !== 'landing' &&
@@ -92,7 +96,13 @@ export default {
     },
     routerViewClass() {
       let c = ''
-      if (this.showHeader) c += 'tw-pt-14 '
+      if (this.showHeader) {
+        if (this.isPhone) {
+          c += 'tw-pt-12 '
+        } else {
+          c += 'tw-pt-14 '
+        }
+      }
       return c
     },
   },
@@ -100,7 +110,11 @@ export default {
   methods: {
     ...mapMutations([ 'setAuthUser' ]),
     goHome() {
-      this.$router.push({ name: 'home' })
+      if (this.$route.name !== 'home') {
+        this.$router.push({ name: 'home' })
+      } else {
+        location.reload()
+      }
     },
     handleScroll(e) {
       this.scrollY = window.scrollY
@@ -112,12 +126,12 @@ export default {
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
           this.$router.replace({ name: 'landing' })
-          console.log('redirecting to SIGN IN')
+          // console.log('redirecting to SIGN IN')
         }
       } else {
         if (noAuthRoutes.includes(this.$route.name)) {
           this.$router.replace({ name: 'home' })
-          console.log('redirecting to HOME')
+          // console.log('redirecting to HOME')
         }
       }
     },
@@ -156,11 +170,11 @@ export default {
     authUser: {
       immediate: true,
       handler() {
-        /*if (this.authUser) {
-          this.redirectAuthUser(true)
+        if (this.authUser) {
+          this.redirectUser(true)
         } else {
-          this.redirectAuthUser(false)
-        }*/
+          this.redirectUser(false)
+        }
       }
     },
     $route: {
