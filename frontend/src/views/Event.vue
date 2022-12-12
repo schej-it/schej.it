@@ -297,7 +297,7 @@ export default {
       if (!this.scheduleOverlapComponent) return;
 
       this.curGuestId = this.selectedGuestRespondent;
-      this.scheduleOverlapComponent.setAvailability(
+      this.scheduleOverlapComponent.populateUserAvailability(
         this.selectedGuestRespondent
       );
       this.scheduleOverlapComponent.startEditing();
