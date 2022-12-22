@@ -179,6 +179,7 @@ export default {
       availability: new Set(),
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false,
+      maxAnimTime: 1200,
       editing: false,
       unsavedChanges: false,
       curTimeslotAvailability: {},
@@ -468,6 +469,11 @@ export default {
       this.availabilityAnimEnabled = true
       this.availabilityAnimTimeouts = []
 
+      let msPerBlock = 25
+      if (availability.size * msPerBlock > this.maxAnimTime) {
+        msPerBlock = this.maxAnimTime / availability.size
+      }
+
       let i = 0
       for (const a of availability) {
         const index = i
@@ -483,7 +489,7 @@ export default {
               );
             }, 500)
           }
-        }, i*25)
+        }, i*msPerBlock)
 
         this.availabilityAnimTimeouts.push(timeout)
         i++
