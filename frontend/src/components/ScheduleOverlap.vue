@@ -60,28 +60,33 @@
                 </div>
 
                 <!-- Calendar events -->
-                <template v-if="editing || showCalendarEvents">
-                  <div
+                <div v-if="editing || showCalendarEvents">
+                  <v-fade-transition 
                     v-for="(event, e) in calendarEventsByDay[d]"
                     :key="`${d}-${e}`"
-                    class="tw-absolute tw-w-full tw-p-px tw-select-none"
-                    :style="event.style"
-                    style="pointer-events: none;"
+                    appear
                   >
                     <div
-                      class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                      class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                      :style="event.style"
+                      style="pointer-events: none;"
                     >
                       <div
-                        :class="`tw-text-${
-                          noEventNames ? 'dark-gray' : 'blue'
-                        }`"
-                        class="tw-font-medium"
+                        class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                       >
-                        {{ noEventNames ? "BUSY" : event.summary }}
+                        <div
+                          :class="`tw-text-${
+                            noEventNames ? 'dark-gray' : 'blue'
+                          }`"
+                          class="tw-font-medium"
+                        >
+                          {{ noEventNames ? "BUSY" : event.summary }}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </template>
+                  </v-fade-transition>
+                </div>
+
               </div>
             </div>
           </div>
@@ -131,6 +136,12 @@
   </div>
 </template>
 
+<style scoped>
+  .animate-bg-color {
+    transition: background-color 0.25s ease-in-out;
+  }
+</style>
+
 <script>
 import {
   timeIntToTimeText,
@@ -166,6 +177,9 @@ export default {
       max: 0,
       showCalendarEvents: this.initialShowCalendarEvents,
       availability: new Set(),
+      availabilityAnimTimeouts: [], // Timeouts for availability animation
+      availabilityAnimEnabled: false,
+      maxAnimTime: 1200,
       editing: false,
       unsavedChanges: false,
       curTimeslotAvailability: {},
@@ -408,11 +422,12 @@ export default {
       /* resets cur user availability to the response stored on the server */
       this.availability = new Set();
       if (this.userHasResponded) {
-        this.setAvailability(this.authUser._id)
+        this.populateUserAvailability(this.authUser._id)
       }
     },
-    setAvailability(userId) {
-      this.responses[userId].availability.forEach((item) =>
+    populateUserAvailability(id) {
+      /* Populates the availability set for the auth user from the responses object stored on the server */
+      this.responses[id].availability.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       );
       this.$nextTick(() => (this.unsavedChanges = false));
@@ -420,16 +435,16 @@ export default {
     setAvailabilityAutomatically() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
-      this.availability = new Set();
+      const tmpAvailability = new Set()
       for (const d in this.days) {
-        const day = this.days[d];
+        const day = this.days[d]
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
           const startDate = getDateWithTimeInt(day.dateObject, time.timeInt);
           const endDate = getDateWithTimeInt(
             day.dateObject,
             time.timeInt + 0.5
-          );
+          )
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             return (
               (dateCompare(e.startDate, startDate) < 0 &&
@@ -438,16 +453,53 @@ export default {
                 dateCompare(e.endDate, endDate) > 0) ||
               (dateCompare(e.startDate, startDate) == 0 &&
                 dateCompare(e.endDate, endDate) == 0)
-            );
-          });
+            )
+          })
           if (index === -1) {
-            this.availability.add(startDate.getTime());
+            tmpAvailability.add(startDate.getTime())
           }
         }
+
       }
-      this.showInfo(
-        "Your availability has been set automatically using your Google Calendar!"
-      );
+      this.animateAvailability(tmpAvailability)
+    },
+    animateAvailability(availability) {
+      /* Animate the filling out of availability using setTimeout */
+
+      this.availabilityAnimEnabled = true
+      this.availabilityAnimTimeouts = []
+
+      let msPerBlock = 25
+      if (availability.size * msPerBlock > this.maxAnimTime) {
+        msPerBlock = this.maxAnimTime / availability.size
+      }
+
+      let i = 0
+      for (const a of availability) {
+        const index = i
+        const timeout = setTimeout(() => {
+          this.availability.add(a)
+          this.availability = new Set(this.availability)
+
+          if (index == availability.size - 1) {
+            setTimeout(() => {
+              this.availabilityAnimEnabled = false
+              this.showInfo(
+                "Your availability has been set automatically using your Google Calendar!"
+              );
+            }, 500)
+          }
+        }, i*msPerBlock)
+
+        this.availabilityAnimTimeouts.push(timeout)
+        i++
+      }
+    },
+    stopAvailabilityAnim() {
+      for (const timeout of this.availabilityAnimTimeouts) {
+        clearTimeout(timeout)
+      }
+      this.availabilityAnimEnabled = false
     },
     async submitAvailability(name = "") {
       const payload = { availability: this.availabilityArray };
@@ -476,6 +528,11 @@ export default {
       /* Returns a class string for the given timeslot div */
       let c = ""
       const s = {}
+      // Animation
+      if (this.availabilityAnimEnabled) {
+        c += 'animate-bg-color '
+      }
+
       // Border style
       if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) { 
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "; 
@@ -558,6 +615,7 @@ export default {
     },
     stopEditing() {
       this.editing = false;
+      this.stopAvailabilityAnim()
     },
 
     /* 
