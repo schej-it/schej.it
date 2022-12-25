@@ -55,7 +55,8 @@
         <div class="tw-text-black tw-flex tw-items-center">
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
-            <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }} | Timezone: {{ timezone }}</div>
+            <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }}</div>
+            <div class="tw-text-xs tw-text-dark-gray">Timezone: {{ timezone }}</div>
             
           </div>
           <v-spacer />
