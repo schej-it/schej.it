@@ -55,7 +55,8 @@
         <div class="tw-text-black tw-flex tw-items-center">
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
-            <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }}</div>
+            <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }} | Timezone: {{ timezone }}</div>
+            
           </div>
           <v-spacer />
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
@@ -174,6 +175,7 @@ import {
   isPhone,
   processEvent,
   getCalendarEvents,
+  getCurrentTimezone
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
 
@@ -199,7 +201,6 @@ export default {
     choiceDialog: false,
     webviewDialog: false,
     guestDialog: false,
-
     loading: true,
     calendarEvents: [],
     event: null,
@@ -237,6 +238,9 @@ export default {
         this.scheduleOverlapComponent.selectedGuestRespondent
       );
     },
+    timezone() {
+      return getCurrentTimezone()
+    }
   },
 
   methods: {
