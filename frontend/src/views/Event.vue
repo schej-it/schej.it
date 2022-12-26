@@ -56,7 +56,6 @@
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
             <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }}</div>
-            <div class="tw-text-xs tw-text-dark-gray">Timezone: {{ timezone }}</div>
             
           </div>
           <v-spacer />
@@ -115,6 +114,8 @@
             </div>
           </div>
         </div>
+
+        <div class="tw-text-xs tw-text-dark-gray tw-mt-1">Timezone: {{ timezone }}</div>
       </div>
 
       <!-- Calendar -->
