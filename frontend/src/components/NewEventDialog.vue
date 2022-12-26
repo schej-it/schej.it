@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    @input="e => $emit('input', e)"
+    @input="(e) => $emit('input', e)"
     :fullscreen="isPhone"
     :hide-overlay="isPhone"
     content-class="tw-max-w-xl"
@@ -11,13 +11,12 @@
       <v-card-title class="tw-flex">
         <div>New Event</div>
         <v-spacer />
-        <v-btn 
-          icon 
-          @click="$emit('input', false)"
-        ><v-icon>mdi-close</v-icon></v-btn>
+        <v-btn icon @click="$emit('input', false)"
+          ><v-icon>mdi-close</v-icon></v-btn
+        >
       </v-card-title>
       <v-card-text class="tw-space-y-4 tw-flex tw-flex-col tw-flex-1">
-        <v-text-field 
+        <v-text-field
           ref="name-field"
           color="green"
           v-model="name"
@@ -52,100 +51,148 @@
             ></v-select>
           </div>
         </div>
-        
+
         <div>
-          <div class="tw-text-lg tw-text-black tw-text-center tw-font-medium tw-mt-6 tw-mb-2">What dates would you like to meet?</div>
-          <div class="tw-flex tw-flex-col tw-justify-center tw-items-center">
-            <vc-date-picker v-model="dateRange" color="green" :min-date='new Date()' is-range class="tw-min-w-full sm:tw-min-w-0 " />
+          <div
+            class="tw-text-lg tw-text-black tw-text-center tw-font-medium tw-mt-6 tw-mb-2"
+          >
+            What dates would you like to meet?
           </div>
+          <div class="tw-flex tw-flex-col tw-justify-center tw-items-center">
+            <vc-date-picker
+              :value="selectedDays"
+              :attributes="attributes"
+              @dayclick="onDayClick"
+              color="green"
+              :min-date="new Date()"
+              class="tw-min-w-full sm:tw-min-w-0"
+              :key="rerender"
+            />
+          </div>
+          
         </div>
 
         <v-spacer />
 
-        <v-btn 
+        <v-btn
           :loading="loading"
-          :dark="formComplete" 
+          :dark="formComplete"
           class="tw-bg-green"
           :disabled="!formComplete"
           @click="submit"
-        >Create</v-btn>
+          >Create</v-btn
+        >
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { getDateDayOffset, getDateWithTimeInt, isPhone, post } from '@/utils'
+import { getDateDayOffset, getDateWithTimeInt, isPhone, post } from "@/utils";
 export default {
-  name: 'NewEventDialog',
+  name: "NewEventDialog",
 
-  emits: ['input'],
+  emits: ["input"],
 
   props: {
     value: { type: Boolean, required: true },
   },
 
   data: () => ({
-    name: '',
+    name: "",
     startTime: 9,
     endTime: 17,
     dateRange: {},
     loading: false,
+    selectedDays: [],
+    rerender: 0,
   }),
 
   computed: {
     isPhone() {
-      return isPhone(this.$vuetify)
+      return isPhone(this.$vuetify);
     },
     formComplete() {
-      return this.name.length > 0 && this.dateRange && 'start' in this.dateRange && 'end' in this.dateRange
+      return (
+        this.name.length > 0 &&
+        this.dateRange &&
+        "start" in this.dateRange &&
+        "end" in this.dateRange
+      );
     },
     times() {
-      const times = []
+      const times = [];
 
       for (let h = 1; h < 12; ++h) {
-        times.push({ text: `${h} am`, value: h })
+        times.push({ text: `${h} am`, value: h });
       }
       for (let h = 0; h < 12; ++h) {
-        times.push({ text: `${h == 0 ? 12 : h} pm`, value: h+12 })
+        times.push({ text: `${h == 0 ? 12 : h} pm`, value: h + 12 });
       }
-      times.push({ text: '12 am', value: 0 })
+      times.push({ text: "12 am", value: 0 });
 
-      return times
+      return times;
+    },
+    dates() {
+      return this.selectedDays.map((day) => day.date);
+    },
+    attributes() {
+      // Dates to highlight in calendar
+      return this.dates.map((date) => ({
+        highlight: true,
+        dates: date,
+      }));
     },
   },
 
   methods: {
+    onDayClick(day) {
+      // Find the index of the selected day
+      const idx = this.selectedDays.findIndex((d) => d.id === day.id);
+      if (idx >= 0) { // If contained, remove
+        this.selectedDays.splice(idx, 1);
+      } else { // Otherwise, add it
+        this.selectedDays.push({
+          id: day.id,
+          date: day.date,
+        });
+      }
+      // Needed, otherwise will not rerender the calendar correctly
+      this.rerender++
+    },
     blurNameField() {
-      this.$refs['name-field'].blur()
+      this.$refs["name-field"].blur();
     },
     reset() {
-      this.name = ''
-      this.startTime = 9
-      this.endTime = 17
-      this.dateRange = {}
+      this.name = "";
+      this.startTime = 9;
+      this.endTime = 17;
+      this.dateRange = {};
     },
     submit() {
       // Calculate start date and end date
-      const startDate = getDateWithTimeInt(this.dateRange.start, this.startTime)
-      let dateRangeEnd = this.dateRange.end
+      const startDate = getDateWithTimeInt(
+        this.dateRange.start,
+        this.startTime
+      );
+      let dateRangeEnd = this.dateRange.end;
       // Increase date range end by one day if end time is 12am
       if (this.endTime == 0) {
-        dateRangeEnd = getDateDayOffset(this.dateRange.end, 1)
+        dateRangeEnd = getDateDayOffset(this.dateRange.end, 1);
       }
-      const endDate = getDateWithTimeInt(dateRangeEnd, this.endTime)
+      const endDate = getDateWithTimeInt(dateRangeEnd, this.endTime);
 
       // Create new event on backend
-      this.loading = true
-      post('/events', {
+      this.loading = true;
+      post("/events", {
         name: this.name,
         startDate,
         endDate,
       }).then(({ eventId }) => {
-        this.$router.push({ name: 'event', params: { eventId } })
-        this.loading = false
-      })
+        this.$router.push({ name: "event", params: { eventId } });
+        this.loading = false;
+      });
     },
   },
-}
+};
 </script>
