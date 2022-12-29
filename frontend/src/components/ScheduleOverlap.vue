@@ -161,10 +161,11 @@ export default {
   name: "ScheduleOverlap",
   props: {
     eventId: { type: String, default: "" },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
+    startDate: { type: Date, required: false },
+    endDate: { type: Date, required: false },
     startTime: { type: Number, required: true },
     endTime: { type: Number, required: true },
+    dates: { type: Array, required: false },
     responses: { type: Object, default: () => ({}) },
     loadingCalendarEvents: { type: Boolean, default: false },
     calendarEvents: { type: Array, required: true },
@@ -249,28 +250,29 @@ export default {
       /* Return the days that are encompassed by startDate and endDate */
       const days = [];
       const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-      const months = [
-        "jan",
-        "feb",
-        "mar",
-        "apr",
-        "may",
-        "jun",
-        "jul",
-        "aug",
-        "sep",
-        "oct",
-        "nov",
-        "dec",
-      ];
-      let curDate = this.startDate;
-      while (curDate.getTime() <= this.endDate.getTime()) {
-        days.push({
-          dayText: daysOfWeek[curDate.getDay()],
-          dateString: curDate.getDate(),
-          dateObject: curDate,
-        });
-        curDate = getDateDayOffset(curDate, 1);
+
+      if (this.startDate) {
+        // Legacy date representation method
+        let curDate = this.startDate;
+        while (curDate.getTime() <= this.endDate.getTime()) {
+          days.push({
+            dayText: daysOfWeek[curDate.getDay()],
+            dateString: curDate.getDate(),
+            dateObject: curDate,
+          });
+          curDate = getDateDayOffset(curDate, 1);
+        }
+      } else {
+        // New date representation method
+        for (const date of this.dates) {
+          const paddedStartTime = String(this.startTime).padStart(2, '0');
+          const curDate = new Date(`${date}T${paddedStartTime}:00:00Z`);
+          days.push({
+            dayText: daysOfWeek[curDate.getDay()],
+            dateString: curDate.getDate(),
+            dateObject: curDate,
+          });
+        }
       }
       return days;
     },

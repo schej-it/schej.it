@@ -378,10 +378,12 @@ export const dataURItoBlob = (dataURI) => {
 
 export const processEvent = (event) => {
   /* Reformats the given event object to the format we want */
-  event.startDate = new Date(event.startDate)
-  event.endDate = new Date(event.endDate)
-  event.startTime = event.startDate.getHours()
-  event.endTime = event.endDate.getHours()
+  if (event.startDate) {
+    event.startDate = new Date(event.startDate)
+    event.endDate = new Date(event.endDate)
+    event.startTime = event.startDate.getHours()
+    event.endTime = event.endDate.getHours()
+  } 
 }
 
 export const getCurrentTimezone = () => {

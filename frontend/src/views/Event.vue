@@ -351,8 +351,7 @@ export default {
 
     // Get event details
     try {
-      this.event = await get(`/events/${this.eventId}`);
-      processEvent(this.event);
+      await this.refreshEvent();
     } catch (err) {
       switch (err.error) {
         case errors.EventNotFound:
