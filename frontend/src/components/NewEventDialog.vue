@@ -59,14 +59,14 @@
             What dates would you like to meet?
           </div>
           <div class="tw-flex tw-flex-col tw-justify-center tw-items-center">
-            <vc-date-picker
-              :value="selectedDays"
-              :attributes="attributes"
-              @dayclick="onDayClick"
+            <v-date-picker
+              v-model="selectedDays"
+              no-title
+              multiple
               color="green"
-              :min-date="new Date()"
-              class="tw-min-w-full sm:tw-min-w-0"
-              :key="rerender"
+              elevation="2"
+              :show-current="false"
+              class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
             />
           </div>
           
@@ -102,10 +102,8 @@ export default {
     name: "",
     startTime: 9,
     endTime: 17,
-    dateRange: {},
     loading: false,
     selectedDays: [],
-    rerender: 0,
   }),
 
   computed: {
@@ -115,9 +113,7 @@ export default {
     formComplete() {
       return (
         this.name.length > 0 &&
-        this.dateRange &&
-        "start" in this.dateRange &&
-        "end" in this.dateRange
+        this.selectedDays.length > 0
       );
     },
     times() {
@@ -133,33 +129,9 @@ export default {
 
       return times;
     },
-    dates() {
-      return this.selectedDays.map((day) => day.date);
-    },
-    attributes() {
-      // Dates to highlight in calendar
-      return this.dates.map((date) => ({
-        highlight: true,
-        dates: date,
-      }));
-    },
   },
 
   methods: {
-    onDayClick(day) {
-      // Find the index of the selected day
-      const idx = this.selectedDays.findIndex((d) => d.id === day.id);
-      if (idx >= 0) { // If contained, remove
-        this.selectedDays.splice(idx, 1);
-      } else { // Otherwise, add it
-        this.selectedDays.push({
-          id: day.id,
-          date: day.date,
-        });
-      }
-      // Needed, otherwise will not rerender the calendar correctly
-      this.rerender++
-    },
     blurNameField() {
       this.$refs["name-field"].blur();
     },
@@ -167,7 +139,7 @@ export default {
       this.name = "";
       this.startTime = 9;
       this.endTime = 17;
-      this.dateRange = {};
+      this.selectedDays = []
     },
     submit() {
       // Calculate start date and end date
