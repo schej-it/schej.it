@@ -11,8 +11,8 @@ type Event struct {
 	EndDate   primitive.DateTime `json:"endDate" bson:"endDate,omitempty"`
 
 	// StartTime and EndTime are UTC hours, dates are an array of utc dates
-	StartTime int      `json:"startTime" bson:"startTime,omitempty"`
-	EndTime   int      `json:"endTime" bson:"endTime,omitempty"`
+	StartTime float32  `json:"startTime" bson:"startTime,omitempty"`
+	EndTime   float32  `json:"endTime" bson:"endTime,omitempty"`
 	Dates     []string `json:"dates" bson:"dates,omitempty"`
 
 	// Availability responses

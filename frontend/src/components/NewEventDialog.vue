@@ -113,7 +113,8 @@ export default {
     formComplete() {
       return (
         this.name.length > 0 &&
-        this.selectedDays.length > 0
+        this.selectedDays.length > 0 &&
+        this.startTime < this.endTime
       );
     },
     times() {
@@ -139,27 +140,31 @@ export default {
       this.name = "";
       this.startTime = 9;
       this.endTime = 17;
-      this.selectedDays = []
+      this.selectedDays = [];
     },
     submit() {
-      // Calculate start date and end date
-      const startDate = getDateWithTimeInt(
-        this.dateRange.start,
-        this.startTime
-      );
-      let dateRangeEnd = this.dateRange.end;
-      // Increase date range end by one day if end time is 12am
-      if (this.endTime == 0) {
-        dateRangeEnd = getDateDayOffset(this.dateRange.end, 1);
+      // Calculate UTC dates array and UTC start/end times
+      const utcDates = [];
+      const paddedStartTime = String(this.startTime).padStart(2, '0');
+      const timezoneOffset = new Date().getTimezoneOffset();
+      let utcStartTime = (this.startTime + timezoneOffset/60) % 24;
+      if (utcStartTime < 0) utcStartTime += 24;
+      let utcEndTime = (this.endTime + timezoneOffset/60) % 24;
+      if (utcEndTime < 0) utcStartTime += 24;
+      
+      for (const date of this.selectedDays) {
+        const utcDate = new Date(`${date}T${paddedStartTime}:00:00`);
+        const dateString = utcDate.toISOString().substring(0, 10);
+        utcDates.push(dateString);
       }
-      const endDate = getDateWithTimeInt(dateRangeEnd, this.endTime);
 
       // Create new event on backend
       this.loading = true;
       post("/events", {
         name: this.name,
-        startDate,
-        endDate,
+        startTime: utcStartTime,
+        endTime: utcEndTime,
+        dates: utcDates,
       }).then(({ eventId }) => {
         this.$router.push({ name: "event", params: { eventId } });
         this.loading = false;
