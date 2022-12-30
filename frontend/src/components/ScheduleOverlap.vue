@@ -93,7 +93,7 @@
         </div>
       </div>
 
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-ml-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
           <span class="tw-mr-1 tw-text-lg">Responses</span>
           <div
@@ -153,6 +153,7 @@ import {
   isBetween,
   clamp,
   isPhone,
+  utcTimeToLocalTime,
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
 import UserAvatarContent from "./UserAvatarContent.vue";
@@ -215,6 +216,17 @@ export default {
       for (let i = 0; i < this.days.length; ++i) {
         arr[i] = [];
       }
+
+      let startTime
+      if (this.startDate) {
+        // Legacy date representation
+        startTime = this.startTime
+      } else {
+        // New date representation
+        // Do not need to specify this.timezoneOffset because we want to use the local timezoneoffset for event display
+        startTime = utcTimeToLocalTime(this.startTime)
+      }
+
       for (const calendarEvent of this.calendarEvents) {
         // The number of hours since start time
         // TODO: this doesn't account for if the startTime and the startTime of the event are on different days
@@ -222,14 +234,19 @@ export default {
           (calendarEvent.startDate.getTime() -
             getDateWithTimeInt(
               calendarEvent.startDate,
-              this.startTime
+              startTime
             ).getTime()) /
           (1000 * 60 * 60);
+
         // The length of the event in hours
         const hoursLength =
           (calendarEvent.endDate.getTime() -
             calendarEvent.startDate.getTime()) /
           (1000 * 60 * 60);
+
+        // Don't display event if the event is 0 hours long
+        if (hoursLength == 0) continue
+
         for (const d in this.days) {
           const day = this.days[d];
           if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
@@ -347,23 +364,21 @@ export default {
         endTime = this.endTime;
       } else {
         // New date representation method
-        startTime = this.startTime - this.timezoneOffset/60;
-        startTime %= 24;
-        if (startTime < 0) startTime += 24;
-
-        endTime = this.endTime - this.timezoneOffset/60;
-        endTime %= 24;
-        if (endTime < 0) endTime += 24;
+        startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset);
+        endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset);
       }
 
       let t = startTime;
       while (t != endTime) {
+        // Convert timeInt back to local time if using new date representation
+        let timeInt = this.startDate ? t : utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
+
         times.push({
-          timeInt: t,
+          timeInt: timeInt,
           text: timeIntToTimeText(t),
         });
         times.push({
-          timeInt: t + 0.5,
+          timeInt: timeInt + 0.5,
         });
         t++;
         if (t > 23) t = 0;

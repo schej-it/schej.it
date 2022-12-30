@@ -143,6 +143,14 @@ export const areDatesInTimeRanges = (date1, date2, timeRanges) => {
   return false
 }
 
+export const utcTimeToLocalTime = (timeInt, timezoneOffset = new Date().getTimezoneOffset()) => {
+  let localTimeInt = timeInt - timezoneOffset / 60
+  localTimeInt %= 24
+  if (localTimeInt < 0) localTimeInt += 24
+
+  return localTimeInt
+}
+
 export const getCalendarEvents = (event) => {
   /* 
     Returns an array of the user's calendar events for the given event, filtering for events
@@ -151,29 +159,65 @@ export const getCalendarEvents = (event) => {
   */
 
   const timeRanges = []
-  let curDate = event.startDate
-  while (curDate.getTime() < event.endDate.getTime()) {
-    const nextDate = getDateDayOffset(curDate, 1)
+  let timeMin
+  let timeMax
+  let startTime
+  let endTime
+  if (event.startDate) {
+    // Legacy date representation
+    timeMin = event.startDate.toISOString()
+    timeMax = getDateDayOffset(event.endDate, 1).toISOString()
 
-    let end
-    if (event.startTime <= event.endTime) {
-      end = getDateWithTimeInt(curDate, event.endTime).getTime()
-    } else {
-      end = getDateWithTimeInt(nextDate, event.endTime).getTime()
+    startTime = event.startTime
+    endTime = event.endTime
+
+    let curDate = event.startDate
+    while (curDate.getTime() < event.endDate.getTime()) {
+      const nextDate = getDateDayOffset(curDate, 1)
+
+      let end
+      if (event.startTime <= event.endTime) {
+        end = getDateWithTimeInt(curDate, event.endTime).getTime()
+      } else {
+        end = getDateWithTimeInt(nextDate, event.endTime).getTime()
+      }
+      timeRanges.push({
+        start: curDate.getTime(),
+        end,
+      })
+
+      curDate = nextDate
     }
-    timeRanges.push({
-      start: curDate.getTime(),
-      end,
-    })
+  } else {
+    // New date representation
+    timeMin = new Date(event.dates[0]).toISOString()
+    timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 1).toISOString()
 
-    curDate = nextDate
+    startTime = utcTimeToLocalTime(event.startTime)
+    endTime = utcTimeToLocalTime(event.endTime)
+
+    for (const date of event.dates) {
+      const paddedStartTime = String(event.startTime).padStart(2, '0');
+      const curDate = new Date(`${date}T${paddedStartTime}:00:00Z`);
+      const nextDate = getDateDayOffset(curDate, 1)
+
+      let end
+      if (startTime <= endTime) {
+        end = getDateWithTimeInt(curDate, endTime).getTime()
+      } else {
+        end = getDateWithTimeInt(nextDate, endTime).getTime()
+      }
+      timeRanges.push({
+        start: curDate.getTime(),
+        end,
+      })
+
+      curDate = nextDate
+    }
   }
 
   return get(
-    `/user/calendar?timeMin=${event.startDate.toISOString()}&timeMax=${getDateDayOffset(
-      event.endDate,
-      1
-    ).toISOString()}`
+    `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
   ).then((data) => {
     return data
       .map((calendarEvent) => {
@@ -182,21 +226,21 @@ export const getCalendarEvents = (event) => {
         calendarEvent.startDate = new Date(calendarEvent.startDate)
         calendarEvent.endDate = new Date(calendarEvent.endDate)
         const { startDate, endDate } = calendarEvent
-        if (isTimeIntBetweenDates(event.startTime, startDate, endDate)) {
+        if (isTimeIntBetweenDates(startTime, startDate, endDate)) {
           return {
             ...calendarEvent,
             startDate:
-              startDate.getHours() <= event.startTime
-                ? getDateWithTimeInt(startDate, event.startTime)
-                : getDateWithTimeInt(endDate, event.startTime),
+              startDate.getHours() <= startTime
+                ? getDateWithTimeInt(startDate, startTime)
+                : getDateWithTimeInt(endDate, startTime),
           }
-        } else if (isTimeIntBetweenDates(event.endTime, startDate, endDate)) {
+        } else if (isTimeIntBetweenDates(endTime, startDate, endDate)) {
           return {
             ...calendarEvent,
             endDate:
-              endDate.getHours() >= event.endTime
-                ? getDateWithTimeInt(endDate, event.endTime)
-                : getDateWithTimeInt(startDate, event.endTime),
+              endDate.getHours() >= endTime
+                ? getDateWithTimeInt(endDate, endTime)
+                : getDateWithTimeInt(startDate, endTime),
           }
         } else {
           return calendarEvent
