@@ -66,6 +66,7 @@
               color="green"
               elevation="2"
               :show-current="false"
+              :min="minCalenderDate"
               class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
             />
           </div>
@@ -130,6 +131,14 @@ export default {
 
       return times;
     },
+    minCalenderDate() {
+      let today = new Date();
+      let dd = String(today.getDate()).padStart(2, '0');
+      let mm = String(today.getMonth() + 1).padStart(2, '0');
+      let yyyy = today.getFullYear();
+      
+      return yyyy + '-' + mm + '-' + dd;
+    }
   },
 
   methods: {
