@@ -168,12 +168,12 @@
 
 <script>
 import {
-  getDateRangeString,
   get,
   signInGoogle,
   isPhone,
   processEvent,
   getCalendarEvents,
+  getDateRangeStringForEvent,
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
 
@@ -212,7 +212,7 @@ export default {
   computed: {
     ...mapState(["authUser", "events"]),
     dateString() {
-      return getDateRangeString(this.event.startDate, this.event.endDate);
+      return getDateRangeStringForEvent(this.event)
     },
     isEditing() {
       return (

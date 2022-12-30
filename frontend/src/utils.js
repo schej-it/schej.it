@@ -23,6 +23,21 @@ export const getDateRangeString = (date1, date2) => {
   return getDateString(date1) + ' - ' + getDateString(date2)
 }
 
+export const getDateRangeStringForEvent = (event) => {
+  let startDate
+  let endDate
+  if (event.startDate) {
+    // Legacy date representation
+    startDate = new Date(event.startDate)
+    endDate = new Date(event.endDate)
+  } else {
+    // New date representation
+    startDate = getDateWithTimeInt(new Date(event.dates[0]), event.startTime, true)
+    endDate = getDateWithTimeInt(new Date(event.dates[event.dates.length - 1]), event.endTime, true)
+  }
+  return getDateRangeString(startDate, endDate);
+}
+
 export const getDateWithTime = (date, timeString) => {
   /* Returns a new date object with the given date (e.g. 5/2/2022) and the specified time (e.g. 11:30) */
   date = new Date(date)
@@ -37,19 +52,29 @@ export const getDateWithTime = (date, timeString) => {
   )
 }
 
-export const getDateWithTimeInt = (date, timeInt) => {
+export const getDateWithTimeInt = (date, timeInt, utc=false) => {
   /* Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeInt (e.g. 11.5) */
   date = new Date(date)
 
   const hours = parseInt(timeInt)
   const minutes = (timeInt - hours) * 60
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    hours,
-    minutes
-  )
+  if (!utc) {
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      hours,
+      minutes
+    )
+  } else {
+    return new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      hours,
+      minutes
+    ))
+  }
 }
 
 export const splitTime = (timeString) => {

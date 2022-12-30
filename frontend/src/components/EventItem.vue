@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { getDateRangeString } from '@/utils'
+import { getDateRangeStringForEvent, } from '@/utils'
 
 export default {
   name: 'EventItem',
@@ -32,7 +32,7 @@ export default {
 
   computed: {
     dateString() {
-      return getDateRangeString(new Date(this.event.startDate), new Date(this.event.endDate))
+      return getDateRangeStringForEvent(this.event)
     },
   },
 

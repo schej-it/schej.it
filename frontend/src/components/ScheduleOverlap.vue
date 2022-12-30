@@ -275,7 +275,7 @@ export default {
         while (curDate.getTime() <= this.endDate.getTime()) {
           days.push({
             dayText: daysOfWeek[curDate.getDay()],
-            dateString: curDate.getDate(),
+            dateString: `${months[curDate.getMonth()]} ${curDate.getDate()}`,
             dateObject: curDate,
           });
           curDate = getDateDayOffset(curDate, 1);
