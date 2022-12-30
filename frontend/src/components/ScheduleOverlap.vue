@@ -5,11 +5,11 @@
       <div class="tw-w-12" />
       <div v-for="(day, i) in days" :key="i" class="tw-flex-1">
         <div class="tw-text-center">
-          <div class="tw-uppercase tw-font-light tw-text-xs">
-            {{ day.dayText }}
+          <div class="tw-capitalize tw-font-light tw-text-xs">
+            {{ day.dateString }}
           </div>
           <div class="tw-text-lg tw-capitalize">
-            {{ day.dateString }}
+            {{ day.dayText }}
           </div>
         </div>
       </div>
@@ -250,6 +250,7 @@ export default {
       /* Return the days that are encompassed by startDate and endDate */
       const days = [];
       const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
       if (this.startDate) {
         // Legacy date representation method
@@ -266,11 +267,18 @@ export default {
         // New date representation method
         for (const date of this.dates) {
           const paddedStartTime = String(this.startTime).padStart(2, '0');
-          const curDate = new Date(`${date}T${paddedStartTime}:00:00Z`);
+
+          // dateObject stores the original date object without timezone manipulation
+          const dateObject = new Date(`${date}T${paddedStartTime}:00:00Z`);
+
+          // Offset curDate by the correct timezone offset
+          const curDate = new Date(dateObject);
+          curDate.setHours(curDate.getHours() - this.timezoneOffset/60);
+          
           days.push({
-            dayText: daysOfWeek[curDate.getDay()],
-            dateString: curDate.getDate(),
-            dateObject: curDate,
+            dayText: daysOfWeek[curDate.getUTCDay()],
+            dateString: `${months[curDate.getUTCMonth()]} ${curDate.getUTCDate()}`,
+            dateObject: dateObject,
           });
         }
       }
@@ -330,8 +338,26 @@ export default {
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = [];
-      let t = this.startTime;
-      while (t != this.endTime) {
+      let startTime;
+      let endTime;
+
+      if (this.startDate) {
+        // Legacy date representation method
+        startTime = this.startTime;
+        endTime = this.endTime;
+      } else {
+        // New date representation method
+        startTime = this.startTime - this.timezoneOffset/60;
+        startTime %= 24;
+        if (startTime < 0) startTime += 24;
+
+        endTime = this.endTime - this.timezoneOffset/60;
+        endTime %= 24;
+        if (endTime < 0) endTime += 24;
+      }
+
+      let t = startTime;
+      while (t != endTime) {
         times.push({
           timeInt: t,
           text: timeIntToTimeText(t),
@@ -343,6 +369,9 @@ export default {
         if (t > 23) t = 0;
       }
       return times;
+    },
+    timezoneOffset() {
+      return new Date().getTimezoneOffset()
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses;
