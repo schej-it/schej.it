@@ -28,7 +28,7 @@
     "@vue/cli-plugin-pwa": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
+    "@vue/cli-service": "~5.0.8",
     "autoprefixer": "^10.4.7",
     "postcss": "^8.4.13",
     "sass": "~1.32.0",
