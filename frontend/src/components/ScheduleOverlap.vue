@@ -93,7 +93,8 @@
         </div>
       </div>
 
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-ml-4 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
+      <!-- respondents -->
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
           <span class="tw-mr-1 tw-text-lg">Responses</span>
           <div
