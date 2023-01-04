@@ -1,34 +1,35 @@
 <template>
   <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
-    <!-- Day header -->
-    <div class="tw-flex">
-      <div class="tw-w-12" />
-      <div v-for="(day, i) in days" :key="i" class="tw-flex-1">
-        <div class="tw-text-center">
-          <div class="tw-capitalize tw-font-light tw-text-xs">
-            {{ day.dateString }}
-          </div>
-          <div class="tw-text-lg tw-capitalize">
-            {{ day.dayText }}
-          </div>
+    <div class="tw-flex tw-flex-wrap">
+      <!-- Times -->
+      <div class="tw-w-12 tw-mt-12">
+        <div
+          v-for="(time, i) in times"
+          :key="i"
+          class="tw-h-5 tw-text-xs tw-pt-1 tw-pr-2 tw-text-right tw-uppercase tw-font-light"
+        >
+          {{ time.text }}
         </div>
       </div>
-      <div v-if="!calendarOnly" class="sm:tw-w-48" />
-    </div>
 
-    <div class="sm:tw-flex">
-      <div class="sm:tw-flex-1">
-        <!-- Times and grid -->
-        <div class="tw-flex">
-          <div class="tw-w-12">
-            <div
-              v-for="(time, i) in times"
-              :key="i"
-              class="tw-h-5 tw-text-xs tw-pt-1 tw-pr-2 tw-text-right tw-uppercase tw-font-light"
-            >
-              {{ time.text }}
+      <div class="tw-flex-1 tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden">
+
+        <!-- Days -->
+        <div class="tw-flex tw-h-12">
+          <div v-for="(day, i) in days" :key="i" class="tw-flex-1" style="min-width: 50px;">
+            <div class="tw-text-center">
+              <div class="tw-capitalize tw-font-light tw-text-xs">
+                {{ day.dateString }}
+              </div>
+              <div class="tw-text-lg tw-capitalize">
+                {{ day.dayText }}
+              </div>
             </div>
           </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="tw-flex">
           <div class="tw-flex-1">
             <div
               id="times"
@@ -48,6 +49,7 @@
                 v-for="(day, d) in days"
                 :key="d"
                 class="tw-flex-1 tw-relative"
+                style="min-width: 50px;"
               >
                 <!-- Timeslots -->
                 <div v-for="(time, t) in times" :key="t" class="tw-w-full">
@@ -91,10 +93,13 @@
             </div>
           </div>
         </div>
+
       </div>
 
-      <!-- respondents -->
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-w-48">
+      <div class="break" v-if="isPhone"></div>
+
+      <!-- Respondents -->
+      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48">
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
           <span class="tw-mr-1 tw-text-lg">Responses</span>
           <div
@@ -133,13 +138,20 @@
           </div>
         </div>
       </div>
+
     </div>
+
   </div>
 </template>
 
 <style scoped>
   .animate-bg-color {
     transition: background-color 0.25s ease-in-out;
+  }
+
+  .break {
+    flex-basis: 100%;
+    height: 0;
   }
 </style>
 
