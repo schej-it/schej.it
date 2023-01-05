@@ -12,7 +12,7 @@
         </div>
       </div>
 
-      <div class="tw-flex-1 tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden">
+      <div class="tw-flex-1 tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative">
 
         <!-- Days -->
         <div class="tw-flex tw-h-12">
@@ -94,6 +94,10 @@
           </div>
         </div>
 
+        <!-- <div class="tw-absolute tw-right-0 tw-w-4 tw-h-full">
+          <ZigZag right class="tw-w-full tw-h-full"/>
+        </div> -->
+
       </div>
 
       <div class="break" v-if="isPhone"></div>
@@ -141,6 +145,7 @@
 
     </div>
 
+    <ZigZag class="tw-h-48 tw-w-4" right />
   </div>
 </template>
 
@@ -170,6 +175,7 @@ import {
 } from "@/utils";
 import { mapActions, mapState } from "vuex";
 import UserAvatarContent from "./UserAvatarContent.vue";
+import ZigZag from "./ZigZag.vue";
 
 export default {
   name: "ScheduleOverlap",
@@ -843,6 +849,6 @@ export default {
   beforeDestroy() {
     removeEventListener('click', this.deselectRespondent)
   },
-  components: { UserAvatarContent },
+  components: { UserAvatarContent, ZigZag },
 };
 </script>
