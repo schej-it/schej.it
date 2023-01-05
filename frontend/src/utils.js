@@ -33,7 +33,7 @@ export const getDateRangeStringForEvent = (event) => {
   } else {
     // New date representation
     startDate = getDateWithTimeInt(new Date(event.dates[0]), event.startTime, true)
-    endDate = getDateWithTimeInt(new Date(event.dates[event.dates.length - 1]), event.endTime, true)
+    endDate = getDateWithTimeInt(new Date(event.dates[event.dates.length - 1]), event.startTime, true)
   }
   return getDateRangeString(startDate, endDate);
 }
