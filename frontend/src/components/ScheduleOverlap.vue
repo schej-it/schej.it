@@ -313,11 +313,16 @@ export default {
       }
 
       for (const calendarEvent of this.calendarEvents) {
+        // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
+        let calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
+        if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
+          // Go back a day if calendarEventDayStart is past the calendarEvent start time
+          calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
+        }
+
         // The number of hours since start time
-        // TODO: this doesn't account for if the startTime and the startTime of the event are on different days
         const hoursOffset =
-          (calendarEvent.startDate.getTime() -
-            getDateWithTimeInt(calendarEvent.startDate, startTime).getTime()) /
+          (calendarEvent.startDate.getTime() - calendarEventDayStart.getTime()) /
           (1000 * 60 * 60)
 
         // The length of the event in hours
@@ -331,7 +336,7 @@ export default {
 
         for (const d in this.days) {
           const day = this.days[d]
-          if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
+          if (compareDateDay(day.dateObject, calendarEventDayStart) == 0) {
             arr[d].push({
               ...calendarEvent,
               style: {

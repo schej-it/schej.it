@@ -252,7 +252,6 @@ export const getCalendarEvents = (event) => {
     return data
       .map((calendarEvent) => {
         // If calendarEvent has a time int between the start and end dates, clamp it based on whether it's the starttime or endtime
-
         calendarEvent.startDate = new Date(calendarEvent.startDate)
         calendarEvent.endDate = new Date(calendarEvent.endDate)
         const { startDate, endDate } = calendarEvent
@@ -276,9 +275,11 @@ export const getCalendarEvents = (event) => {
           return calendarEvent
         }
       })
-      .filter(({ startDate, endDate }) => {
+      .filter((calendarEvent) => {
         // Filter calendarEvent based on whether it's completely in between start time and end time
-        return areDatesInTimeRanges(startDate, endDate, timeRanges)
+        const {startDate, endDate} = calendarEvent
+        const inTimeRange = areDatesInTimeRanges(startDate, endDate, timeRanges)
+        return inTimeRange
       })
   })
 }
