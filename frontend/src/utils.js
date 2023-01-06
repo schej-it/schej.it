@@ -91,10 +91,15 @@ export const getDateDayOffset = (date, offset) => {
 
 export const timeIntToTimeText = (timeInt) => {
   /* Converts a timeInt (e.g. 13) to a timeText (e.g. "1 pm") */
-  if (timeInt == 0) return '12 am'
-  else if (timeInt <= 11) return `${timeInt} am`
+  const hours = Math.floor(timeInt)
+  const minutesDecimal = timeInt - hours
+  const minutesString = minutesDecimal > 0 ? `:${Math.floor(minutesDecimal*60)}` : ''
+  
+
+  if (timeInt >= 0 && timeInt < 1) return `12${minutesString} am`
+  else if (timeInt <= 11) return `${hours}${minutesString} am`
   else if (timeInt == 12) return '12 pm'
-  return `${timeInt - 12} pm`
+  return `${hours - 12}${minutesString} pm`
 }
 
 export const dateToTimeInt = (date) => {

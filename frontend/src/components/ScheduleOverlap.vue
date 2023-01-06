@@ -101,28 +101,6 @@
           
         </div>
 
-        <!-- <div class="tw-absolute tw-w-4 tw-h-full tw-right-0">
-          <ZigZag right class="tw-w-full tw-h-full"/>
-        </div> -->
-
-        <!-- Select timezone -->
-
-        <div
-            class="tw-flex tw-justify-center tw-mt-4 tw-text-xs"
-            v-if="selectTimezone"
-          >
-            Shown in
-            <div :class="timezoneSelectStyles">
-              <v-select
-                v-model="curTimezone"
-                class="tw-scale-[0.7]"
-                :items="Object.keys(timezoneMap)"
-                dense
-                color="#219653"
-                item-color="green"
-              ></v-select>
-            </div>
-          </div>
       </div>
 
       <div class="break" v-if="isPhone"></div>
@@ -173,7 +151,32 @@
       </div>
     </div>
 
-    <ZigZag class="tw-h-48 tw-w-4" right />
+    <div class="tw-flex">
+      <div class="sm:tw-w-12"></div>
+
+      <!-- Select timezone -->
+      <div
+        class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm"
+        v-if="selectTimezone"
+      >
+        <div class="tw-mt-px tw-mr-2">
+          Shown in
+        </div>
+        <v-select
+          id="timezone-select"
+          v-model="curTimezone"
+          class="tw-text-sm -tw-mt-px tw-flex-none tw-min-w-min tw-max-w-xl"
+          :items="Object.keys(timezoneMap)"
+          dense
+          color="#219653"
+          item-color="green"
+          hide-details
+        ></v-select>
+      </div>
+
+      <div class="sm:tw-w-48"></div>
+    </div>
+
   </div>
 </template>
 
@@ -207,6 +210,13 @@
 
 ::-webkit-scrollbar-track {
   background-color: rgb(240, 240, 240);
+}
+</style>
+
+<style>
+/* Make timezone select element the same width as content */
+#timezone-select { 
+  width: 5px;
 }
 </style>
 
@@ -472,7 +482,7 @@ export default {
           timeInt: timeInt + 0.5,
         })
         t++
-        if (t > 23) t = 0
+        t %= 24
       }
       return times
     },
@@ -491,10 +501,6 @@ export default {
         map[localTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
       }
       return map
-    },
-    timezoneSelectStyles() {
-      const expand = this.curTimezone.length > 3
-      return `tw-w-[${expand ? 5.5 : 4.0}rem] -tw-mt-[0.75rem] -tw-ml-${expand ? 2 : 1}`;
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
