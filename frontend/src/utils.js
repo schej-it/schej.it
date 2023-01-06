@@ -160,19 +160,6 @@ export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
   }
 }
 
-export const areDatesInTimeRanges = (date1, date2, timeRanges) => {
-  /* Returns whether both date1 and date2 are fully contained within time1 and time2 */
-
-  const time1 = date1.getTime()
-  const time2 = date2.getTime()
-  for (const range of timeRanges) {
-    if (range.start <= time1 && time2 <= range.end) {
-      return true
-    }
-  }
-  return false
-}
-
 export const utcTimeToLocalTime = (timeInt, timezoneOffset = new Date().getTimezoneOffset()) => {
   let localTimeInt = timeInt - timezoneOffset / 60
   localTimeInt %= 24
@@ -188,7 +175,6 @@ export const getCalendarEvents = (event) => {
     ranges
   */
 
-  const timeRanges = []
   let timeMin
   let timeMax
   let startTime
@@ -200,24 +186,6 @@ export const getCalendarEvents = (event) => {
 
     startTime = event.startTime
     endTime = event.endTime
-
-    let curDate = event.startDate
-    while (curDate.getTime() < event.endDate.getTime()) {
-      const nextDate = getDateDayOffset(curDate, 1)
-
-      let end
-      if (event.startTime <= event.endTime) {
-        end = getDateWithTimeInt(curDate, event.endTime).getTime()
-      } else {
-        end = getDateWithTimeInt(nextDate, event.endTime).getTime()
-      }
-      timeRanges.push({
-        start: curDate.getTime(),
-        end,
-      })
-
-      curDate = nextDate
-    }
   } else {
     // New date representation
     timeMin = new Date(event.dates[0]).toISOString()
@@ -225,25 +193,6 @@ export const getCalendarEvents = (event) => {
 
     startTime = utcTimeToLocalTime(event.startTime)
     endTime = utcTimeToLocalTime(event.endTime)
-
-    for (const date of event.dates) {
-      const paddedStartTime = String(event.startTime).padStart(2, '0');
-      const curDate = new Date(`${date}T${paddedStartTime}:00:00Z`);
-      const nextDate = getDateDayOffset(curDate, 1)
-
-      let end
-      if (startTime <= endTime) {
-        end = getDateWithTimeInt(curDate, endTime).getTime()
-      } else {
-        end = getDateWithTimeInt(nextDate, endTime).getTime()
-      }
-      timeRanges.push({
-        start: curDate.getTime(),
-        end,
-      })
-
-      curDate = nextDate
-    }
   }
 
   return get(
@@ -277,9 +226,24 @@ export const getCalendarEvents = (event) => {
       })
       .filter((calendarEvent) => {
         // Filter calendarEvent based on whether it's completely in between start time and end time
-        const {startDate, endDate} = calendarEvent
-        const inTimeRange = areDatesInTimeRanges(startDate, endDate, timeRanges)
-        return inTimeRange
+
+        // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
+        const calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
+        if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
+          // Go back a day if calendarEventDayStart is past the calendarEvent start time
+          calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
+        }
+
+        // calendarEventDayEnd is a date representation of the event end time for the day the calendar event takes place
+        const calendarEventDayEnd = new Date(calendarEventDayStart)
+        if (endTime > startTime) {
+          calendarEventDayEnd.setHours(calendarEventDayEnd.getHours() + (endTime - startTime));
+        } else {
+          calendarEventDayEnd.setHours(calendarEventDayEnd.getHours() + (endTime + 24-startTime));
+        }
+
+        const isBetween = calendarEvent.startDate >= calendarEventDayStart && calendarEvent.endDate <= calendarEventDayEnd
+        return isBetween
       })
   })
 }

@@ -314,7 +314,7 @@ export default {
 
       for (const calendarEvent of this.calendarEvents) {
         // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
-        let calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
+        const calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
         if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
           // Go back a day if calendarEventDayStart is past the calendarEvent start time
           calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
