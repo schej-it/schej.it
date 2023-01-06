@@ -31,11 +31,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            text
-            class="tw-text-green"
-            @click="webviewDialog = false"
-          >
+          <v-btn text class="tw-text-green" @click="webviewDialog = false">
             Ok
           </v-btn>
         </v-card-actions>
@@ -55,7 +51,9 @@
         <div class="tw-text-black tw-flex tw-items-center">
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
-            <div class="tw-text-sm sm:tw-text-base tw-font-normal">{{ dateString }}</div>
+            <div class="tw-text-sm sm:tw-text-base tw-font-normal">
+              {{ dateString }}
+            </div>
           </div>
           <v-spacer />
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
@@ -69,7 +67,9 @@
                 <span v-if="!isPhone" class="tw-text-green tw-mr-2"
                   >Copy link</span
                 >
-                <v-icon class="tw-text-green" v-if="!isPhone">mdi-content-copy</v-icon>
+                <v-icon class="tw-text-green" v-if="!isPhone"
+                  >mdi-content-copy</v-icon
+                >
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
@@ -124,6 +124,7 @@
         :loadingCalendarEvents="loading"
         :calendarEvents="calendarEvents"
         @refreshEvent="refreshEvent"
+        :selectTimezone="true"
       />
     </div>
     <div class="tw-h-16"></div>
@@ -174,13 +175,13 @@ import {
   processEvent,
   getCalendarEvents,
   getDateRangeStringForEvent,
-} from "@/utils";
-import { mapActions, mapState } from "vuex";
+} from "@/utils"
+import { mapActions, mapState } from "vuex"
 
-import ScheduleOverlap from "@/components/ScheduleOverlap";
-import GuestDialog from "@/components/GuestDialog.vue";
-import { errors } from "@/constants";
-import isWebview from 'is-ua-webview'
+import ScheduleOverlap from "@/components/ScheduleOverlap"
+import GuestDialog from "@/components/GuestDialog.vue"
+import { errors } from "@/constants"
+import isWebview from "is-ua-webview"
 
 export default {
   name: "Event",
@@ -217,25 +218,25 @@ export default {
     isEditing() {
       return (
         this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
-      );
+      )
     },
     isPhone() {
-      return isPhone(this.$vuetify);
+      return isPhone(this.$vuetify)
     },
     areUnsavedChanges() {
       return (
         this.scheduleOverlapComponent &&
         this.scheduleOverlapComponent.unsavedChanges
-      );
+      )
     },
     userHasResponded() {
-      return this.authUser && this.authUser._id in this.event.responses;
+      return this.authUser && this.authUser._id in this.event.responses
     },
     selectedGuestRespondent() {
       return (
         this.scheduleOverlapComponent &&
         this.scheduleOverlapComponent.selectedGuestRespondent
-      );
+      )
     },
   },
 
@@ -243,36 +244,36 @@ export default {
     ...mapActions(["showError", "showInfo"]),
     addAvailability() {
       /* Show choice dialog if not signed in, otherwise, immediately start editing availability */
-      if (!this.scheduleOverlapComponent) return;
+      if (!this.scheduleOverlapComponent) return
 
       if (this.authUser) {
-        this.scheduleOverlapComponent.startEditing();
+        this.scheduleOverlapComponent.startEditing()
         if (!this.userHasResponded) {
-          this.scheduleOverlapComponent.setAvailabilityAutomatically();
+          this.scheduleOverlapComponent.setAvailabilityAutomatically()
         }
       } else {
-        this.choiceDialog = true;
+        this.choiceDialog = true
       }
     },
     cancelEditing() {
       /* Cancels editing and resets availability to previous */
-      if (!this.scheduleOverlapComponent) return;
+      if (!this.scheduleOverlapComponent) return
 
-      this.scheduleOverlapComponent.resetCurUserAvailability();
-      this.scheduleOverlapComponent.stopEditing();
-      this.curGuestId = "";
+      this.scheduleOverlapComponent.resetCurUserAvailability()
+      this.scheduleOverlapComponent.stopEditing()
+      this.curGuestId = ""
     },
     copyLink() {
       /* Copies event link to clipboard */
       navigator.clipboard.writeText(
         `${window.location.origin}/e/${this.eventId}`
-      );
-      this.showInfo("Link copied to clipboard!");
+      )
+      this.showInfo("Link copied to clipboard!")
     },
     async refreshEvent() {
       /* Refresh event details */
-      this.event = await get(`/events/${this.eventId}`);
-      processEvent(this.event);
+      this.event = await get(`/events/${this.eventId}`)
+      processEvent(this.event)
     },
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
@@ -281,114 +282,122 @@ export default {
         this.webviewDialog = true
       } else {
         // Or sign in if user is already using a real browser
-        signInGoogle({ type: "event-add-availability", eventId: this.eventId });
+        signInGoogle({ type: "event-add-availability", eventId: this.eventId })
       }
-      this.choiceDialog = false;
+      this.choiceDialog = false
     },
     setAvailabilityManually() {
       /* Starts editing after "set availability manually" button clicked */
-      if (!this.scheduleOverlapComponent) return;
+      if (!this.scheduleOverlapComponent) return
 
-      this.scheduleOverlapComponent.startEditing();
-      this.choiceDialog = false;
+      this.scheduleOverlapComponent.startEditing()
+      this.choiceDialog = false
     },
     editGuestAvailability() {
       /* Edits the selected guest's availability */
-      if (!this.scheduleOverlapComponent) return;
+      if (!this.scheduleOverlapComponent) return
 
-      this.curGuestId = this.selectedGuestRespondent;
+      this.curGuestId = this.selectedGuestRespondent
       this.scheduleOverlapComponent.populateUserAvailability(
         this.selectedGuestRespondent
-      );
-      this.scheduleOverlapComponent.startEditing();
+      )
+      this.scheduleOverlapComponent.startEditing()
     },
     async saveChanges() {
       /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
-      if (!this.scheduleOverlapComponent) return;
+      if (!this.scheduleOverlapComponent) return
 
       if (!this.authUser) {
         if (this.curGuestId) {
-          this.saveChangesAsGuest(this.curGuestId);
-          this.curGuestId = "";
+          this.saveChangesAsGuest(this.curGuestId)
+          this.curGuestId = ""
         } else {
-          this.guestDialog = true;
+          this.guestDialog = true
         }
-        return;
+        return
       }
 
-      await this.scheduleOverlapComponent.submitAvailability();
+      await this.scheduleOverlapComponent.submitAvailability()
 
-      this.showInfo("Changes saved!");
-      this.scheduleOverlapComponent.stopEditing();
+      this.showInfo("Changes saved!")
+      this.scheduleOverlapComponent.stopEditing()
     },
     async saveChangesAsGuest(name) {
       /* After guest dialog is submitted, submit availability with the given name */
-      if (!this.scheduleOverlapComponent) return;
+      if (!this.scheduleOverlapComponent) return
 
       if (name.length > 0) {
-        await this.scheduleOverlapComponent.submitAvailability(name);
+        await this.scheduleOverlapComponent.submitAvailability(name)
 
-        this.showInfo("Changes saved!");
-        this.scheduleOverlapComponent.resetCurUserAvailability();
-        this.scheduleOverlapComponent.stopEditing();
-        this.guestDialog = false;
+        this.showInfo("Changes saved!")
+        this.scheduleOverlapComponent.resetCurUserAvailability()
+        this.scheduleOverlapComponent.stopEditing()
+        this.guestDialog = false
       }
     },
 
     onBeforeUnload(e) {
       if (this.isEditing) {
         e.preventDefault()
-        e.returnValue = ''
+        e.returnValue = ""
         return
       }
 
-      delete e['returnValue']
+      delete e["returnValue"]
     },
   },
 
   async created() {
-    window.addEventListener('beforeunload', this.onBeforeUnload)
+    window.addEventListener("beforeunload", this.onBeforeUnload)
 
     // Get event details
     try {
-      await this.refreshEvent();
+      await this.refreshEvent()
     } catch (err) {
       switch (err.error) {
         case errors.EventNotFound:
-          this.showError("The specified event does not exist!");
-          this.$router.replace({ name: "home" });
-          return;
+          this.showError("The specified event does not exist!")
+          this.$router.replace({ name: "home" })
+          return
       }
     }
 
     // Get user's calendar
     getCalendarEvents(this.event)
       .then((events) => {
-        this.calendarEvents = events;
-        this.loading = false;
+        this.calendarEvents = events
+        this.loading = false
 
         // Set user availability automatically if we're in editing mode and they haven't responded
-        if (this.authUser && this.isEditing && !this.userHasResponded && this.scheduleOverlapComponent) {
+        if (
+          this.authUser &&
+          this.isEditing &&
+          !this.userHasResponded &&
+          this.scheduleOverlapComponent
+        ) {
           this.$nextTick(() => {
-            this.scheduleOverlapComponent.setAvailabilityAutomatically();
+            this.scheduleOverlapComponent.setAvailabilityAutomatically()
           })
-         }
+        }
       })
       .catch((err) => {
-        this.loading = false;
-        console.error(err);
+        this.loading = false
+        console.error(err)
         if (err.error.code === 401 || err.error.code === 403) {
-          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, true);
+          signInGoogle(
+            { type: "event-add-availability", eventId: this.eventId },
+            true
+          )
         }
-      });
+      })
   },
 
   watch: {
     event() {
       if (this.event) {
         this.$nextTick(() => {
-          this.scheduleOverlapComponent = this.$refs.scheduleOverlap;
-        });
+          this.scheduleOverlapComponent = this.$refs.scheduleOverlap
+        })
       }
     },
     scheduleOverlapComponent() {
@@ -402,5 +411,5 @@ export default {
       }
     },
   },
-};
+}
 </script>
