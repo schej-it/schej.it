@@ -94,7 +94,7 @@
           </div>
         </div>
 
-        <!-- <div class="tw-absolute tw-right-0 tw-w-4 tw-h-full">
+        <!-- <div class="tw-absolute tw-w-4 tw-h-full tw-right-0">
           <ZigZag right class="tw-w-full tw-h-full"/>
         </div> -->
 
@@ -157,6 +157,28 @@
   .break {
     flex-basis: 100%;
     height: 0;
+  }
+
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+  }
+
+  ::-webkit-scrollbar:vertical {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar:horizontal {
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(190, 190, 190);
+    border-radius: 10px;
+    border: 2px solid rgb(240, 240, 240);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: rgb(240, 240, 240);
   }
 </style>
 
