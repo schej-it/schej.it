@@ -12,11 +12,17 @@
         </div>
       </div>
 
-      <div class="tw-flex-1 tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative">
-
+      <div
+        class="tw-flex-1 tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative"
+      >
         <!-- Days -->
         <div class="tw-flex tw-h-12">
-          <div v-for="(day, i) in days" :key="i" class="tw-flex-1" style="min-width: 50px;">
+          <div
+            v-for="(day, i) in days"
+            :key="i"
+            class="tw-flex-1"
+            style="min-width: 50px"
+          >
             <div class="tw-text-center">
               <div class="tw-capitalize tw-font-light tw-text-xs">
                 {{ day.dateString }}
@@ -29,7 +35,7 @@
         </div>
 
         <!-- Calendar -->
-        <div class="tw-flex">
+        <div class="tw-flex tw-flex-col">
           <div class="tw-flex-1">
             <div
               id="times"
@@ -49,7 +55,7 @@
                 v-for="(day, d) in days"
                 :key="d"
                 class="tw-flex-1 tw-relative"
-                style="min-width: 50px;"
+                style="min-width: 50px"
               >
                 <!-- Timeslots -->
                 <div v-for="(time, t) in times" :key="t" class="tw-w-full">
@@ -63,7 +69,7 @@
 
                 <!-- Calendar events -->
                 <div v-if="editing || showCalendarEvents">
-                  <v-fade-transition 
+                  <v-fade-transition
                     v-for="(event, e) in calendarEventsByDay[d]"
                     :key="`${d}-${e}`"
                     appear
@@ -71,7 +77,7 @@
                     <div
                       class="tw-absolute tw-w-full tw-p-px tw-select-none"
                       :style="event.style"
-                      style="pointer-events: none;"
+                      style="pointer-events: none"
                     >
                       <div
                         class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
@@ -88,8 +94,26 @@
                     </div>
                   </v-fade-transition>
                 </div>
-
               </div>
+            </div>
+          </div>
+
+          <!-- Select timezone -->
+
+          <div
+            class="tw-flex tw-justify-center tw-mt-4 tw-text-xs"
+            v-if="selectTimezone"
+          >
+            Shown in
+            <div class="tw-w-16 -tw-mt-[0.75rem] -tw-ml-1">
+              <v-select
+                v-model="curTimezone"
+                class="tw-scale-[0.7]"
+                :items="Object.keys(timezoneMap)"
+                dense
+                color="#219653"
+                item-color="green"
+              ></v-select>
             </div>
           </div>
         </div>
@@ -97,13 +121,15 @@
         <!-- <div class="tw-absolute tw-w-4 tw-h-full tw-right-0">
           <ZigZag right class="tw-w-full tw-h-full"/>
         </div> -->
-
       </div>
 
       <div class="break" v-if="isPhone"></div>
 
       <!-- Respondents -->
-      <div v-if="!calendarOnly" class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48">
+      <div
+        v-if="!calendarOnly"
+        class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48"
+      >
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
           <span class="tw-mr-1 tw-text-lg">Responses</span>
           <div
@@ -134,7 +160,8 @@
             <div
               class="tw-mr-1 tw-break-all tw-transition-all"
               :class="
-                !curTimeslotAvailability[user._id] && 'tw-line-through tw-text-gray'
+                !curTimeslotAvailability[user._id] &&
+                'tw-line-through tw-text-gray'
               "
             >
               {{ user.firstName + " " + user.lastName }}
@@ -142,7 +169,6 @@
           </div>
         </div>
       </div>
-
     </div>
 
     <ZigZag class="tw-h-48 tw-w-4" right />
@@ -150,36 +176,36 @@
 </template>
 
 <style scoped>
-  .animate-bg-color {
-    transition: background-color 0.25s ease-in-out;
-  }
+.animate-bg-color {
+  transition: background-color 0.25s ease-in-out;
+}
 
-  .break {
-    flex-basis: 100%;
-    height: 0;
-  }
+.break {
+  flex-basis: 100%;
+  height: 0;
+}
 
-  ::-webkit-scrollbar {
-    -webkit-appearance: none;
-  }
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
 
-  ::-webkit-scrollbar:vertical {
-    width: 12px;
-  }
+::-webkit-scrollbar:vertical {
+  width: 12px;
+}
 
-  ::-webkit-scrollbar:horizontal {
-    height: 12px;
-  }
+::-webkit-scrollbar:horizontal {
+  height: 12px;
+}
 
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(190, 190, 190);
-    border-radius: 10px;
-    border: 2px solid rgb(240, 240, 240);
-  }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(190, 190, 190);
+  border-radius: 10px;
+  border: 2px solid rgb(240, 240, 240);
+}
 
-  ::-webkit-scrollbar-track {
-    background-color: rgb(240, 240, 240);
-  }
+::-webkit-scrollbar-track {
+  background-color: rgb(240, 240, 240);
+}
 </style>
 
 <script>
@@ -194,10 +220,12 @@ import {
   clamp,
   isPhone,
   utcTimeToLocalTime,
-} from "@/utils";
-import { mapActions, mapState } from "vuex";
-import UserAvatarContent from "./UserAvatarContent.vue";
-import ZigZag from "./ZigZag.vue";
+} from "@/utils"
+import { mapActions, mapState } from "vuex"
+import UserAvatarContent from "./UserAvatarContent.vue"
+import ZigZag from "./ZigZag.vue"
+import timezoneData from "@/data/timezones.json"
+import { eachMapping } from "@jridgewell/trace-mapping"
 
 export default {
   name: "ScheduleOverlap",
@@ -214,6 +242,7 @@ export default {
     initialShowCalendarEvents: { type: Boolean, default: false },
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
+    selectTimezone: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -227,7 +256,7 @@ export default {
       unsavedChanges: false,
       curTimeslotAvailability: {},
       curTimeslot: { dayIndex: -1, timeIndex: -1 },
-      curRespondent: '', // Id of the active respondent (set on hover)
+      curRespondent: "", // Id of the active respondent (set on hover)
       curRespondentSelected: false,
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -242,20 +271,25 @@ export default {
       dragType: "add",
       dragStart: null,
       dragCur: null,
-    };
+
+      /* Variables for timezone */
+      curTimezone: new Date()
+        .toLocaleTimeString("en-us", { timeZoneName: "short" })
+        .split(" ")[2],
+    }
   },
   computed: {
     ...mapState(["authUser"]),
     availabilityArray() {
       /* Returns the availibility as an array */
-      return [...this.availability].map((item) => new Date(item));
+      return [...this.availability].map((item) => new Date(item))
     },
     calendarEventsByDay() {
       /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
       // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
-      const arr = [];
+      const arr = []
       for (let i = 0; i < this.days.length; ++i) {
-        arr[i] = [];
+        arr[i] = []
       }
 
       let startTime
@@ -273,23 +307,20 @@ export default {
         // TODO: this doesn't account for if the startTime and the startTime of the event are on different days
         const hoursOffset =
           (calendarEvent.startDate.getTime() -
-            getDateWithTimeInt(
-              calendarEvent.startDate,
-              startTime
-            ).getTime()) /
-          (1000 * 60 * 60);
+            getDateWithTimeInt(calendarEvent.startDate, startTime).getTime()) /
+          (1000 * 60 * 60)
 
         // The length of the event in hours
         const hoursLength =
           (calendarEvent.endDate.getTime() -
             calendarEvent.startDate.getTime()) /
-          (1000 * 60 * 60);
+          (1000 * 60 * 60)
 
         // Don't display event if the event is 0 hours long
         if (hoursLength == 0) continue
 
         for (const d in this.days) {
-          const day = this.days[d];
+          const day = this.days[d]
           if (compareDateDay(day.dateObject, calendarEvent.startDate) == 0) {
             arr[d].push({
               ...calendarEvent,
@@ -297,140 +328,171 @@ export default {
                 top: `calc(${hoursOffset} * 2 * 1.25rem)`,
                 height: `calc(${hoursLength} * 2 * 1.25rem)`,
               },
-            });
-            break;
+            })
+            break
           }
         }
       }
-      return arr;
+      return arr
     },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
-      const days = [];
-      const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      const days = []
+      const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+      const months = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+      ]
 
       if (this.startDate) {
         // Legacy date representation method
-        let curDate = this.startDate;
+        let curDate = this.startDate
         while (curDate.getTime() <= this.endDate.getTime()) {
           days.push({
             dayText: daysOfWeek[curDate.getDay()],
             dateString: `${months[curDate.getMonth()]} ${curDate.getDate()}`,
             dateObject: curDate,
-          });
-          curDate = getDateDayOffset(curDate, 1);
+          })
+          curDate = getDateDayOffset(curDate, 1)
         }
       } else {
         // New date representation method
         for (const date of this.dates) {
-          const paddedStartTime = String(this.startTime).padStart(2, '0');
+          const paddedStartTime = String(this.startTime).padStart(2, "0")
 
           // dateObject stores the original date object without timezone manipulation
-          const dateObject = new Date(`${date}T${paddedStartTime}:00:00Z`);
+          const dateObject = new Date(`${date}T${paddedStartTime}:00:00Z`)
 
           // Offset curDate by the correct timezone offset
-          const curDate = new Date(dateObject);
-          curDate.setHours(curDate.getHours() - this.timezoneOffset/60);
-          
+          const curDate = new Date(dateObject)
+          curDate.setHours(curDate.getHours() - this.timezoneOffset / 60)
+
           days.push({
             dayText: daysOfWeek[curDate.getUTCDay()],
-            dateString: `${months[curDate.getUTCMonth()]} ${curDate.getUTCDate()}`,
+            dateString: `${
+              months[curDate.getUTCMonth()]
+            } ${curDate.getUTCDate()}`,
             dateObject: dateObject,
-          });
+          })
         }
       }
-      return days;
+      return days
     },
     isPhone() {
-      return isPhone(this.$vuetify);
+      return isPhone(this.$vuetify)
     },
     respondents() {
-      return Object.values(this.parsedResponses).map((r) => r.user);
+      return Object.values(this.parsedResponses).map((r) => r.user)
     },
     selectedGuestRespondent() {
       if (!this.curRespondentSelected || !this.curRespondent) return
 
       const user = this.parsedResponses[this.curRespondent].user
-      return this.curRespondentSelected && this.isGuest(user) ? this.curRespondent : ''
+      return this.curRespondentSelected && this.isGuest(user)
+        ? this.curRespondent
+        : ""
     },
     parsedResponses() {
       /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
-      const parsed = {};
+      const parsed = {}
       for (const k of Object.keys(this.responses)) {
         const newUser = {
           ...this.responses[k].user,
           _id: k,
-        };
+        }
         parsed[k] = {
           ...this.responses[k],
           user: newUser,
-        };
+        }
       }
-      return parsed;
+      return parsed
     },
     responsesFormatted() {
       /* Formats the responses in a map where date/time is mapped to the people that are available then */
-      const formatted = new Map();
+      const formatted = new Map()
       for (const day of this.days) {
         for (const time of this.times) {
-          const date = getDateWithTimeInt(day.dateObject, time.timeInt);
-          formatted.set(date.getTime(), new Set());
+          const date = getDateWithTimeInt(day.dateObject, time.timeInt)
+          formatted.set(date.getTime(), new Set())
           for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(
               (d) => dateCompare(d, date) === 0
-            );
+            )
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
-              formatted.get(date.getTime()).add(response.user._id);
+              formatted.get(date.getTime()).add(response.user._id)
             }
           }
           // Update max
           if (formatted.get(date.getTime()).size > this.max) {
-            this.max = formatted.get(date.getTime()).size;
+            this.max = formatted.get(date.getTime()).size
           }
         }
       }
-      return formatted;
+      return formatted
     },
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
-      const times = [];
-      let startTime;
-      let endTime;
+      const times = []
+      let startTime
+      let endTime
 
       if (this.startDate) {
         // Legacy date representation method
-        startTime = this.startTime;
-        endTime = this.endTime;
+        startTime = this.startTime
+        endTime = this.endTime
       } else {
         // New date representation method
-        startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset);
-        endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset);
+        startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset)
+        endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset)
       }
 
-      let t = startTime;
+      let t = startTime
       while (t != endTime) {
         // Convert timeInt back to local time if using new date representation
-        let timeInt = this.startDate ? t : utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
+        let timeInt = this.startDate
+          ? t
+          : utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
 
         times.push({
           timeInt: timeInt,
           text: timeIntToTimeText(t),
-        });
+        })
         times.push({
           timeInt: timeInt + 0.5,
-        });
-        t++;
-        if (t > 23) t = 0;
+        })
+        t++
+        if (t > 23) t = 0
       }
-      return times;
+      return times
     },
     timezoneOffset() {
-      return new Date().getTimezoneOffset()
+      return this.timezoneMap[this.curTimezone] * -1 // Multiplying by -1 because offset is flipped
+    },
+    timezoneMap() {
+      const map = timezoneData.reduce(function (map, obj) {
+        map[obj.name] = obj.offset
+        return map
+      }, {})
+
+      /* Adds current timezone to map if not in map */
+      if (!map.hasOwnProperty(this.curTimezone)) {
+        map[this.curTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
+      }
+      return map
     },
     userHasResponded() {
-      return this.authUser && this.authUser._id in this.parsedResponses;
+      return this.authUser && this.authUser._id in this.parsedResponses
     },
   },
   methods: {
@@ -440,12 +502,10 @@ export default {
       Respondent
     */
     mouseOverRespondent(e, id) {
-      if (!this.curRespondentSelected)
-        this.curRespondent = id
+      if (!this.curRespondentSelected) this.curRespondent = id
     },
     mouseLeaveRespondent(e) {
-      if (!this.curRespondentSelected)
-        this.curRespondent = ''
+      if (!this.curRespondentSelected) this.curRespondent = ""
     },
     clickRespondent(e, id) {
       this.curRespondentSelected = true
@@ -454,18 +514,18 @@ export default {
     },
     deselectRespondent(e) {
       this.curRespondentSelected = false
-      this.curRespondent = ''
+      this.curRespondent = ""
     },
     respondentClass(id) {
       const c = []
       if (this.curRespondent == id) {
-        c.push('tw-font-bold')
+        c.push("tw-font-bold")
       }
       return c
     },
 
     isGuest(user) {
-      return user._id == user.firstName;
+      return user._id == user.firstName
     },
 
     /*
@@ -473,8 +533,8 @@ export default {
     */
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
-      const d = getDateWithTimeInt(date, time);
-      return this.responsesFormatted.get(d.getTime());
+      const d = getDateWithTimeInt(date, time)
+      return this.responsesFormatted.get(d.getTime())
     },
     showAvailability(d, t) {
       if (this.editing && this.isPhone) {
@@ -482,7 +542,7 @@ export default {
         return
       }
 
-      this.curTimeslot = { dayIndex: d, timeIndex: t };
+      this.curTimeslot = { dayIndex: d, timeIndex: t }
 
       if (this.editing || this.curRespondent) {
         // Don't show availability when editing or when respondent is selected
@@ -492,12 +552,12 @@ export default {
       const available = this.getRespondentsForDateTime(
         this.days[d].dateObject,
         this.times[t].timeInt
-      );
+      )
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
-          this.curTimeslotAvailability[respondent._id] = true;
+          this.curTimeslotAvailability[respondent._id] = true
         } else {
-          this.curTimeslotAvailability[respondent._id] = false;
+          this.curTimeslotAvailability[respondent._id] = false
         }
       }
     },
@@ -507,7 +567,7 @@ export default {
     */
     resetCurUserAvailability() {
       /* resets cur user availability to the response stored on the server */
-      this.availability = new Set();
+      this.availability = new Set()
       if (this.userHasResponded) {
         this.populateUserAvailability(this.authUser._id)
       }
@@ -516,8 +576,8 @@ export default {
       /* Populates the availability set for the auth user from the responses object stored on the server */
       this.responses[id].availability.forEach((item) =>
         this.availability.add(new Date(item).getTime())
-      );
-      this.$nextTick(() => (this.unsavedChanges = false));
+      )
+      this.$nextTick(() => (this.unsavedChanges = false))
     },
     setAvailabilityAutomatically() {
       /* Constructs the availability array using calendarEvents array */
@@ -527,11 +587,8 @@ export default {
         const day = this.days[d]
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateWithTimeInt(day.dateObject, time.timeInt);
-          const endDate = getDateWithTimeInt(
-            day.dateObject,
-            time.timeInt + 0.5
-          )
+          const startDate = getDateWithTimeInt(day.dateObject, time.timeInt)
+          const endDate = getDateWithTimeInt(day.dateObject, time.timeInt + 0.5)
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             return (
               (dateCompare(e.startDate, startDate) < 0 &&
@@ -546,7 +603,6 @@ export default {
             tmpAvailability.add(startDate.getTime())
           }
         }
-
       }
       this.animateAvailability(tmpAvailability)
     },
@@ -573,10 +629,10 @@ export default {
               this.availabilityAnimEnabled = false
               this.showInfo(
                 "Your availability has been set automatically using your Google Calendar!"
-              );
+              )
             }, 500)
           }
-        }, i*msPerBlock)
+        }, i * msPerBlock)
 
         this.availabilityAnimTimeouts.push(timeout)
         i++
@@ -589,27 +645,26 @@ export default {
       this.availabilityAnimEnabled = false
     },
     async submitAvailability(name = "") {
-      const payload = { availability: this.availabilityArray };
+      const payload = { availability: this.availabilityArray }
       if (this.authUser) {
-        payload.guest = false;
+        payload.guest = false
       } else {
-        payload.guest = true;
-        payload.name = name;
+        payload.guest = true
+        payload.name = name
       }
-      await post(`/events/${this.eventId}/response`, payload);
-      this.$emit("refreshEvent");
-      this.unsavedChanges = false;
+      await post(`/events/${this.eventId}/response`, payload)
+      this.$emit("refreshEvent")
+      this.unsavedChanges = false
     },
-
 
     /*
       Timeslot
     */
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
-      ({ width: this.timeslot.width, height: this.timeslot.height } = document
+      ;({ width: this.timeslot.width, height: this.timeslot.height } = document
         .querySelector(".timeslot")
-        .getBoundingClientRect());
+        .getBoundingClientRect())
     },
     timeslotClassStyle(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
@@ -617,34 +672,34 @@ export default {
       const s = {}
       // Animation
       if (this.availabilityAnimEnabled) {
-        c += 'animate-bg-color '
+        c += "animate-bg-color "
       }
 
       // Border style
-      if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) { 
-        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "; 
+      if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
+        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
-        if (!("text" in time)) c += "tw-border-b ";
-        if (d === 0) c += "tw-border-l tw-border-l-gray ";
-        if (d === this.days.length - 1) c += "tw-border-r-gray ";
-        if (t === 0) c += "tw-border-t tw-border-t-gray ";
-        if (t === this.times.length - 1) c += "tw-border-b-gray ";
+        if (!("text" in time)) c += "tw-border-b "
+        if (d === 0) c += "tw-border-l tw-border-l-gray "
+        if (d === this.days.length - 1) c += "tw-border-r-gray "
+        if (t === 0) c += "tw-border-t tw-border-t-gray "
+        if (t === this.times.length - 1) c += "tw-border-b-gray "
       }
       // Fill style
       if (this.editing) {
         // Show only current user availability
-        const inDragRange = this.inDragRange(d, t);
+        const inDragRange = this.inDragRange(d, t)
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            c += "tw-bg-avail-green-300 ";
+            c += "tw-bg-avail-green-300 "
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
           // Otherwise just show the current availability
-          const date = getDateWithTimeInt(day.dateObject, time.timeInt);
+          const date = getDateWithTimeInt(day.dateObject, time.timeInt)
           if (this.availability.has(date.getTime())) {
-            c += "tw-bg-avail-green-300 ";
+            c += "tw-bg-avail-green-300 "
           }
         }
       } else {
@@ -654,28 +709,31 @@ export default {
           const respondents = this.getRespondentsForDateTime(
             day.dateObject,
             time.timeInt
-          );
+          )
           if (respondents.has(respondent)) {
-            c += "tw-bg-avail-green-300 ";
+            c += "tw-bg-avail-green-300 "
           }
         } else {
           // Show everyone's availability
           const numRespondents = this.getRespondentsForDateTime(
             day.dateObject,
             time.timeInt
-          ).size;
+          ).size
           if (numRespondents > 0) {
             // Determine color of timeslot based on number of people available
-            const frac = numRespondents / this.max;
-            const green = '#12B981'
-            let alpha = (frac * (255-30)).toString(16).toUpperCase().substring(0,2)
-            if (frac == 1) alpha = 'FF'
+            const frac = numRespondents / this.max
+            const green = "#12B981"
+            let alpha = (frac * (255 - 30))
+              .toString(16)
+              .toUpperCase()
+              .substring(0, 2)
+            if (frac == 1) alpha = "FF"
 
-            s.backgroundColor = green+alpha
+            s.backgroundColor = green + alpha
           }
         }
       }
-      return {class: c, style: s};
+      return { class: c, style: s }
     },
     timeslotVon(d, t) {
       return {
@@ -684,11 +742,11 @@ export default {
       }
     },
     resetCurTimeslot() {
-      this.curTimeslotAvailability = {};
+      this.curTimeslotAvailability = {}
       for (const respondent of this.respondents) {
-        this.curTimeslotAvailability[respondent._id] = true;
+        this.curTimeslotAvailability[respondent._id] = true
       }
-      this.curTimeslot = { dayIndex: -1, timeIndex: -1 };
+      this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
 
       // End drag if mouse left time grid
       this.endDrag()
@@ -698,10 +756,10 @@ export default {
       Editing
     */
     startEditing() {
-      this.editing = true;
+      this.editing = true
     },
     stopEditing() {
-      this.editing = false;
+      this.editing = false
       this.stopAvailabilityAnim()
     },
 
@@ -710,26 +768,26 @@ export default {
     */
     normalizeXY(e) {
       /* Normalize the touch event to be relative to element */
-      let pageX, pageY;
+      let pageX, pageY
       if ("touches" in e) {
         // is a touch event
-        ({ pageX, pageY } = e.touches[0]);
+        ;({ pageX, pageY } = e.touches[0])
       } else {
         // is a mouse event
-        ({ pageX, pageY } = e);
+        ;({ pageX, pageY } = e)
       }
-      const { left, top } = e.currentTarget.getBoundingClientRect();
-      const x = pageX - left;
-      const y = pageY - top - window.scrollY;
-      return { x, y };
+      const { left, top } = e.currentTarget.getBoundingClientRect()
+      const x = pageX - left
+      const y = pageY - top - window.scrollY
+      return { x, y }
     },
     getDateFromXY(x, y) {
       /* Returns a date for the timeslot we are currently hovering over given the x and y position */
-      const { width, height } = this.timeslot;
-      let dayIndex = Math.floor(x / width);
-      let timeIndex = Math.floor(y / height);
-      dayIndex = clamp(dayIndex, 0, this.days.length - 1);
-      timeIndex = clamp(timeIndex, 0, this.times.length - 1);
+      const { width, height } = this.timeslot
+      let dayIndex = Math.floor(x / width)
+      let timeIndex = Math.floor(y / height)
+      dayIndex = clamp(dayIndex, 0, this.days.length - 1)
+      timeIndex = clamp(timeIndex, 0, this.times.length - 1)
       return {
         dayIndex,
         timeIndex,
@@ -737,42 +795,42 @@ export default {
           this.days[dayIndex].dateObject,
           this.times[timeIndex].timeInt
         ),
-      };
+      }
     },
     endDrag() {
-      if (!this.editing) return;
-      if (!this.dragStart || !this.dragCur) return;
+      if (!this.editing) return
+      if (!this.dragStart || !this.dragCur) return
       // Update availability set based on drag region
       let dayInc =
         (this.dragCur.dayIndex - this.dragStart.dayIndex) /
-        Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex);
+        Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
       let timeInc =
         (this.dragCur.timeIndex - this.dragStart.timeIndex) /
-        Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex);
-      if (isNaN(dayInc)) dayInc = 1;
-      if (isNaN(timeInc)) timeInc = 1;
-      let d = this.dragStart.dayIndex;
+        Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
+      if (isNaN(dayInc)) dayInc = 1
+      if (isNaN(timeInc)) timeInc = 1
+      let d = this.dragStart.dayIndex
       while (d != this.dragCur.dayIndex + dayInc) {
-        let t = this.dragStart.timeIndex;
+        let t = this.dragStart.timeIndex
         while (t != this.dragCur.timeIndex + timeInc) {
           const date = getDateWithTimeInt(
             this.days[d].dateObject,
             this.times[t].timeInt
-          );
+          )
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            this.availability.add(date.getTime());
+            this.availability.add(date.getTime())
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
-            this.availability.delete(date.getTime());
+            this.availability.delete(date.getTime())
           }
-          t += timeInc;
+          t += timeInc
         }
-        d += dayInc;
+        d += dayInc
       }
-      this.availability = new Set(this.availability);
+      this.availability = new Set(this.availability)
       // Set dragging defaults
-      this.dragging = false;
-      this.dragStart = null;
-      this.dragCur = null;
+      this.dragging = false
+      this.dragStart = null
+      this.dragCur = null
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
@@ -798,37 +856,37 @@ export default {
               this.dragCur.timeIndex,
               this.dragStart.timeIndex
             ))
-        );
+        )
       }
     },
     moveDrag(e) {
-      if (!this.editing) return;
-      e.preventDefault();
+      if (!this.editing) return
+      e.preventDefault()
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
-      );
-      this.dragCur = { dayIndex, timeIndex };
+      )
+      this.dragCur = { dayIndex, timeIndex }
     },
     startDrag(e) {
-      if (!this.editing) return;
-      this.dragging = true;
-  
+      if (!this.editing) return
+      this.dragging = true
+
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
-      );
-      this.dragStart = { dayIndex, timeIndex };
-      this.dragCur = { dayIndex, timeIndex };
+      )
+      this.dragStart = { dayIndex, timeIndex }
+      this.dragCur = { dayIndex, timeIndex }
       // Set drag type
       if (this.availability.has(date.getTime())) {
-        this.dragType = this.DRAG_TYPES.REMOVE;
+        this.dragType = this.DRAG_TYPES.REMOVE
       } else {
-        this.dragType = this.DRAG_TYPES.ADD;
+        this.dragType = this.DRAG_TYPES.ADD
       }
     },
   },
   watch: {
     availability() {
-      this.unsavedChanges = true;
+      this.unsavedChanges = true
     },
     calendarEvents: {
       handler() {
@@ -838,39 +896,39 @@ export default {
     respondents: {
       immediate: true,
       handler() {
-        this.curTimeslotAvailability = {};
+        this.curTimeslotAvailability = {}
         for (const respondent of this.respondents) {
-          this.curTimeslotAvailability[respondent._id] = true;
+          this.curTimeslotAvailability[respondent._id] = true
         }
       },
     },
   },
   created() {
-    this.resetCurUserAvailability();
+    this.resetCurUserAvailability()
 
-    addEventListener('click', this.deselectRespondent)
+    addEventListener("click", this.deselectRespondent)
   },
   mounted() {
     // Get timeslot size
-    this.setTimeslotSize();
-    window.addEventListener("resize", this.setTimeslotSize);
+    this.setTimeslotSize()
+    window.addEventListener("resize", this.setTimeslotSize)
     if (!this.calendarOnly) {
-      const timesEl = document.getElementById("times");
+      const timesEl = document.getElementById("times")
       if (isPhone(this.$vuetify)) {
-        timesEl.addEventListener("touchstart", this.startDrag);
-        timesEl.addEventListener("touchmove", this.moveDrag);
-        timesEl.addEventListener("touchend", this.endDrag);
-        timesEl.addEventListener("touchcancel", this.endDrag);
+        timesEl.addEventListener("touchstart", this.startDrag)
+        timesEl.addEventListener("touchmove", this.moveDrag)
+        timesEl.addEventListener("touchend", this.endDrag)
+        timesEl.addEventListener("touchcancel", this.endDrag)
       } else {
-        timesEl.addEventListener("mousedown", this.startDrag);
-        timesEl.addEventListener("mousemove", this.moveDrag);
-        timesEl.addEventListener("mouseup", this.endDrag);
+        timesEl.addEventListener("mousedown", this.startDrag)
+        timesEl.addEventListener("mousemove", this.moveDrag)
+        timesEl.addEventListener("mouseup", this.endDrag)
       }
     }
   },
   beforeDestroy() {
-    removeEventListener('click', this.deselectRespondent)
+    removeEventListener("click", this.deselectRespondent)
   },
   components: { UserAvatarContent, ZigZag },
-};
+}
 </script>
