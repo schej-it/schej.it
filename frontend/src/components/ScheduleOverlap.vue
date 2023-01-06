@@ -203,6 +203,7 @@ import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "./UserAvatarContent.vue"
 import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
+import { eachMapping } from "@jridgewell/trace-mapping"
 
 export default {
   name: "ScheduleOverlap",
@@ -457,10 +458,16 @@ export default {
       return this.timezoneMap[this.curTimezone] * -1 // Multiplying by -1 because offset is flipped
     },
     timezoneMap() {
-      return timezoneData.reduce(function (map, obj) {
+      const map = timezoneData.reduce(function (map, obj) {
         map[obj.name] = obj.offset
         return map
       }, {})
+
+      /* Adds current timezone to map if not in map */
+      if (!map.hasOwnProperty(this.curTimezone)) {
+        map[this.curTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
+      }
+      return map
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
