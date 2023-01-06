@@ -98,14 +98,21 @@
             </div>
           </div>
 
-          <!-- Select timezone -->
+          
+        </div>
 
-          <div
+        <!-- <div class="tw-absolute tw-w-4 tw-h-full tw-right-0">
+          <ZigZag right class="tw-w-full tw-h-full"/>
+        </div> -->
+
+        <!-- Select timezone -->
+
+        <div
             class="tw-flex tw-justify-center tw-mt-4 tw-text-xs"
             v-if="selectTimezone"
           >
             Shown in
-            <div class="tw-w-16 -tw-mt-[0.75rem] -tw-ml-1">
+            <div :class="timezoneSelectStyles">
               <v-select
                 v-model="curTimezone"
                 class="tw-scale-[0.7]"
@@ -116,11 +123,6 @@
               ></v-select>
             </div>
           </div>
-        </div>
-
-        <!-- <div class="tw-absolute tw-w-4 tw-h-full tw-right-0">
-          <ZigZag right class="tw-w-full tw-h-full"/>
-        </div> -->
       </div>
 
       <div class="break" v-if="isPhone"></div>
@@ -273,9 +275,7 @@ export default {
       dragCur: null,
 
       /* Variables for timezone */
-      curTimezone: new Date()
-        .toLocaleTimeString("en-us", { timeZoneName: "short" })
-        .split(" ")[2],
+      curTimezone: this.getLocalTimezone(),
     }
   },
   computed: {
@@ -486,10 +486,15 @@ export default {
       }, {})
 
       /* Adds current timezone to map if not in map */
-      if (!map.hasOwnProperty(this.curTimezone)) {
-        map[this.curTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
+      const localTimezone = this.getLocalTimezone()
+      if (!map.hasOwnProperty(localTimezone)) {
+        map[localTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
       }
       return map
+    },
+    timezoneSelectStyles() {
+      const expand = this.curTimezone.length > 3
+      return `tw-w-[${expand ? 5.5 : 4.0}rem] -tw-mt-[0.75rem] -tw-ml-${expand ? 2 : 1}`;
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
@@ -883,6 +888,15 @@ export default {
         this.dragType = this.DRAG_TYPES.ADD
       }
     },
+    
+    /*
+      Timezone
+    */
+    getLocalTimezone() {
+      return new Date()
+        .toLocaleTimeString("en-us", { timeZoneName: "short" })
+        .split(" ")[2]
+    }
   },
   watch: {
     availability() {
