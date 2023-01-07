@@ -531,7 +531,7 @@ export default {
         startTime = this.startTime
       } else {
         // New date representation method
-        startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset)
+        startTime = utcTimeToLocalTime(this.startTime)
       }
 
       const date = getDateWithTimeInt(calendarDate, timeInt)
