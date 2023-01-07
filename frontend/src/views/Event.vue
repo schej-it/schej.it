@@ -200,7 +200,6 @@ export default {
     choiceDialog: false,
     webviewDialog: false,
     guestDialog: false,
-
     loading: true,
     calendarEvents: [],
     event: null,
