@@ -108,7 +108,7 @@ export default {
 
   methods: {
     signInGoogle() {
-      signInGoogle()
+      signInGoogle(null, true)
     },
     signIn() {
       this.dialog = true

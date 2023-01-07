@@ -208,6 +208,7 @@ export default {
     scheduleOverlapComponentLoaded: false,
 
     curGuestId: "", // Id of the current guest being edited
+    calendarPermissionGranted: false,
   }),
 
   computed: {
@@ -246,7 +247,7 @@ export default {
       /* Show choice dialog if not signed in, otherwise, immediately start editing availability */
       if (!this.scheduleOverlapComponent) return
 
-      if (this.authUser) {
+      if ((this.authUser && this.calendarPermissionGranted) || this.userHasResponded) {
         this.scheduleOverlapComponent.startEditing()
         if (!this.userHasResponded) {
           this.scheduleOverlapComponent.setAvailabilityAutomatically()
@@ -282,7 +283,13 @@ export default {
         this.webviewDialog = true
       } else {
         // Or sign in if user is already using a real browser
-        signInGoogle({ type: "event-add-availability", eventId: this.eventId })
+        if (this.authUser) {
+          // Request permission if calendar permissions not yet granted
+          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, false)
+        } else {
+          // Ask the user to select the account they want to sign in with if not logged in yet
+          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, true)
+        }
       }
       this.choiceDialog = false
     },
@@ -379,15 +386,14 @@ export default {
             this.scheduleOverlapComponent.setAvailabilityAutomatically()
           })
         }
+
+        this.calendarPermissionGranted = true
       })
       .catch((err) => {
         this.loading = false
         console.error(err)
         if (err.error.code === 401 || err.error.code === 403) {
-          signInGoogle(
-            { type: "event-add-availability", eventId: this.eventId },
-            true
-          )
+          this.calendarPermissionGranted = false
         }
       })
   },

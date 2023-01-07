@@ -1,10 +1,12 @@
+import store from "@/store"
+
 /** Redirects user to the correct google sign in page */
-export const signInGoogle = (state = null, consent = false) => {
+export const signInGoogle = (state = null, selectAccount = false) => {
   const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
   const redirectUri = `${window.location.origin}/auth`
-  const scope = encodeURIComponent(
-    'openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly'
-  )
+
+  let scope = 'openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly'
+  scope = encodeURIComponent(scope)
 
   let stateString = ''
   if (state !== null) {
@@ -13,11 +15,16 @@ export const signInGoogle = (state = null, consent = false) => {
   }
 
   let promptString = ''
-  if (consent) {
-    promptString = '&prompt=consent'
+  if (selectAccount) {
+    promptString = '&prompt=select_account+consent'
   } else {
-    promptString = '&prompt=select_account'
+    promptString = '&prompt=consent'
+    if (store.state.authUser) {
+      promptString += `&login_hint=${store.state.authUser.email}`
+    }
   }
 
-  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${promptString}${stateString}`
+
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline${promptString}${stateString}`
+  window.location.href = url
 }
