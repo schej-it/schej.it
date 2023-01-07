@@ -97,8 +97,8 @@ export const timeIntToTimeText = (timeInt) => {
   
 
   if (timeInt >= 0 && timeInt < 1) return `12${minutesString} am`
-  else if (timeInt <= 11) return `${hours}${minutesString} am`
-  else if (timeInt == 12) return '12 pm'
+  else if (timeInt < 12) return `${hours}${minutesString} am`
+  else if (timeInt >= 12 && timeInt < 13) return `12${minutesString} pm`
   return `${hours - 12}${minutesString} pm`
 }
 
