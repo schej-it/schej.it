@@ -166,6 +166,7 @@ export default {
         const dateString = utcDate.toISOString().substring(0, 10);
         utcDates.push(dateString);
       }
+      utcDates.sort()
 
       // Create new event on backend
       this.loading = true;
