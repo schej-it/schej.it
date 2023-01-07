@@ -237,7 +237,6 @@ import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "./UserAvatarContent.vue"
 import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
-import { eachMapping } from "@jridgewell/trace-mapping"
 
 export default {
   name: "ScheduleOverlap",
