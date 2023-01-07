@@ -383,10 +383,13 @@ export default {
       } else {
         // New date representation method
         for (const date of this.dates) {
-          const paddedStartTime = String(this.startTime).padStart(2, "0")
+          const hours = Math.floor(this.startTime)
+          const minutes = Math.floor((this.startTime - hours) * 60)
+          const paddedHours = String(hours).padStart(2, "0")
+          const paddedMinutes = String(minutes).padStart(2, "0")
 
           // dateObject stores the original date object without timezone manipulation
-          const dateObject = new Date(`${date}T${paddedStartTime}:00:00Z`)
+          const dateObject = new Date(`${date}T${paddedHours}:${paddedMinutes}:00Z`)
 
           // Offset curDate by the correct timezone offset
           const curDate = new Date(dateObject)
@@ -437,7 +440,7 @@ export default {
       const formatted = new Map()
       for (const day of this.days) {
         for (const time of this.times) {
-          const date = getDateWithTimeInt(day.dateObject, time.timeInt)
+          const date = this.getDateTime(day.dateObject, time.timeInt)
           formatted.set(date.getTime(), new Set())
           for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(
@@ -515,6 +518,33 @@ export default {
     ...mapActions(["showInfo"]),
 
     /*
+      Dates
+    */
+    getDateTime(calendarDate, timeInt) {
+      /* 
+        Returns a date object given the date and time, where calendarDate represents the start date of each individual day on the calendar
+        and timeInt represents the time row for that day
+      */
+      let startTime
+
+      if (this.startDate) {
+        // Legacy date representation method
+        startTime = this.startTime
+      } else {
+        // New date representation method
+        startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset)
+      }
+
+      const date = getDateWithTimeInt(calendarDate, timeInt)
+      if (timeInt < startTime) {
+        // Go to the next day if timeInt is less than start time
+        date.setDate(date.getDate() + 1)
+      }
+
+      return date
+    },
+
+    /*
       Respondent
     */
     mouseOverRespondent(e, id) {
@@ -549,7 +579,7 @@ export default {
     */
     getRespondentsForDateTime(date, time) {
       /* Returns an array of respondents for the given date/time */
-      const d = getDateWithTimeInt(date, time)
+      const d = this.getDateTime(date, time)
       return this.responsesFormatted.get(d.getTime())
     },
     showAvailability(d, t) {
@@ -603,8 +633,8 @@ export default {
         const day = this.days[d]
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateWithTimeInt(day.dateObject, time.timeInt)
-          const endDate = getDateWithTimeInt(day.dateObject, time.timeInt + 0.5)
+          const startDate = this.getDateTime(day.dateObject, time.timeInt)
+          const endDate = this.getDateTime(day.dateObject, time.timeInt + 0.5)
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             return (
               (dateCompare(e.startDate, startDate) < 0 &&
@@ -678,7 +708,7 @@ export default {
     */
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
-      ;({ width: this.timeslot.width, height: this.timeslot.height } = document
+      ({ width: this.timeslot.width, height: this.timeslot.height } = document
         .querySelector(".timeslot")
         .getBoundingClientRect())
     },
@@ -713,7 +743,7 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          const date = getDateWithTimeInt(day.dateObject, time.timeInt)
+          const date = this.getDateTime(day.dateObject, time.timeInt)
           if (this.availability.has(date.getTime())) {
             c += "tw-bg-avail-green-300 "
           }
@@ -807,7 +837,7 @@ export default {
       return {
         dayIndex,
         timeIndex,
-        date: getDateWithTimeInt(
+        date: this.getDateTime(
           this.days[dayIndex].dateObject,
           this.times[timeIndex].timeInt
         ),
@@ -829,7 +859,7 @@ export default {
       while (d != this.dragCur.dayIndex + dayInc) {
         let t = this.dragStart.timeIndex
         while (t != this.dragCur.timeIndex + timeInc) {
-          const date = getDateWithTimeInt(
+          const date = this.getDateTime(
             this.days[d].dateObject,
             this.times[t].timeInt
           )
