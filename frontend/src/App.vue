@@ -137,7 +137,7 @@ export default {
     },
     signIn() {
       if (this.$route.name === 'event') {
-        signInGoogle({ type: 'event-sign-in', eventId: this.$route.params.eventId });
+        signInGoogle({ type: 'event-sign-in', eventId: this.$route.params.eventId }, true);
       }
     },
   },

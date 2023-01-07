@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -38,9 +37,10 @@ func InitEvents(router *gin.Engine) {
 // @Router /events [post]
 func createEvent(c *gin.Context) {
 	payload := struct {
-		Name      string    `json:"name" binding:"required"`
-		StartDate time.Time `json:"startDate" binding:"required"`
-		EndDate   time.Time `json:"endDate" binding:"required"`
+		Name      string   `json:"name" binding:"required"`
+		StartTime float32  `json:"startTime" binding:"required"`
+		EndTime   float32  `json:"endTime" binding:"required"`
+		Dates     []string `json:"dates" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -50,8 +50,9 @@ func createEvent(c *gin.Context) {
 	event := models.Event{
 		OwnerId:   utils.GetUserId(session),
 		Name:      payload.Name,
-		StartDate: primitive.NewDateTimeFromTime(payload.StartDate),
-		EndDate:   primitive.NewDateTimeFromTime(payload.EndDate),
+		StartTime: payload.StartTime,
+		EndTime:   payload.EndTime,
+		Dates:     payload.Dates,
 		Responses: make(map[string]models.Response),
 	}
 
