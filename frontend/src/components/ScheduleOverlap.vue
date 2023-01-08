@@ -254,6 +254,7 @@ export default {
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
     selectTimezone: { type: Boolean, default: false },
+    interactable: { type: Boolean, default: true },
   },
   data() {
     return {
@@ -781,10 +782,13 @@ export default {
       return { class: c, style: s }
     },
     timeslotVon(d, t) {
-      return {
-        click: () => this.showAvailability(d, t),
-        mouseover: () => this.showAvailability(d, t),
+      if (this.interactable) {
+        return {
+          click: () => this.showAvailability(d, t),
+          mouseover: () => this.showAvailability(d, t),
+        }
       }
+      return {}
     },
     resetCurTimeslot() {
       this.curTimeslotAvailability = {}

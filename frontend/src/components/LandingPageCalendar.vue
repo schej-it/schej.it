@@ -15,6 +15,7 @@
       :initialShowCalendarEvents="true"
 
       calendarOnly
+      :interactable="false"
     />
   </v-card>
 </template>

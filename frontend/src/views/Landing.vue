@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import LandingPageCalendar from '@/components/LandingPageCalendar'
+import LandingPageCalendar from '@/components/LandingPageCalendar.vue'
 import { isPhone, signInGoogle } from '@/utils'
 import SignInGoogleBtn from '@/components/SignInGoogleBtn.vue'
 
