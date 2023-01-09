@@ -18,7 +18,6 @@
       <v-card-text class="tw-space-y-4 tw-flex tw-flex-col tw-flex-1">
         <v-text-field
           ref="name-field"
-          color="green"
           v-model="name"
           autofocus
           :disabled="loading"
@@ -63,7 +62,7 @@
               v-model="selectedDays"
               no-title
               multiple
-              color="green"
+              color="primary"
               elevation="2"
               :show-current="false"
               :min="minCalenderDate"
@@ -89,7 +88,8 @@
 </template>
 
 <script>
-import { getDateDayOffset, getDateWithTimeInt, isPhone, post } from "@/utils";
+import { isPhone, post } from "@/utils";
+
 export default {
   name: "NewEventDialog",
 

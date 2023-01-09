@@ -14,7 +14,7 @@
             @click="signInGoogle"
             dark
           />
-          <div class="tw-text-xs tw-text-center">By continuing, you agree to our <router-link :to="{ name: 'privacy-policy' }">privacy policy</router-link></div>
+          <div class="tw-text-xs tw-text-center">By continuing, you agree to our <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }">privacy policy</router-link></div>
         </v-card-text>
       </v-card>
     </v-dialog>
