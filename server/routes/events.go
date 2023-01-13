@@ -26,6 +26,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", middleware.AuthRequired(), createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
+	eventRouter.DELETE("/:eventId", deleteEvent)
 }
 
 // @Summary Creates a new event
@@ -161,4 +162,30 @@ func updateEventResponse(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Deletes an event based on its id
+// @Tags events
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Success 200
+// @Router /events/{eventId} [delete]
+func deleteEvent(c *gin.Context) {
+	eventId := c.Param("eventId")
+
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	_, err = db.EventsCollection.DeleteOne(context.Background(), bson.M{
+		"_id": objectId,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.Status(http.StatusOK)
 }

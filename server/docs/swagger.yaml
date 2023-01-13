@@ -12,8 +12,14 @@ definitions:
     properties:
       _id:
         type: string
+      dates:
+        items:
+          type: string
+        type: array
       endDate:
         type: string
+      endTime:
+        type: number
       name:
         type: string
       ownerId:
@@ -21,9 +27,14 @@ definitions:
       responses:
         additionalProperties:
           $ref: '#/definitions/models.Response'
+        description: Availability responses
         type: object
       startDate:
         type: string
+      startTime:
+        description: StartTime and EndTime are UTC hours, dates are an array of utc
+          dates
+        type: number
     type: object
   models.FriendRequest:
     properties:
@@ -210,6 +221,20 @@ paths:
       tags:
       - events
   /events/{eventId}:
+    delete:
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Deletes an event based on its id
+      tags:
+      - events
     get:
       parameters:
       - description: Event ID
