@@ -13,12 +13,16 @@
         <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
-      <v-menu>
+      <v-menu
+        ref="menu"
+        :close-on-content-click="false"
+        transition="slide-x-transition"
+        right
+        offset-x
+      >
         <template v-slot:activator="{ on, attrs }">
           <v-btn plain icon v-bind="attrs" v-on="on">
-            <v-fade-transition>
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-fade-transition>
+            <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
 
@@ -65,18 +69,25 @@ export default {
   }),
 
   computed: {
-    ...mapActions(["showError", "showInfo"]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
   },
 
   methods: {
+    ...mapActions(["showError", "showInfo", "getEvents"]),
     removeEvent() {
-      _delete(`/events/${this.event._id}`).then().catch((err) => {
-        this.showError('There was a problem removing that event! Please try again later.')
-      });
-    }
+      _delete(`/events/${this.event._id}`)
+        .then(() => {
+          this.getEvents()
+          this.$refs.menu.save() // NOTE: Not sure why but without this line, the menu persists to the next event.
+        })
+        .catch((err) => {
+          this.showError(
+            "There was a problem removing that event! Please try again later."
+          )
+        })
+    },
   },
 }
 </script>

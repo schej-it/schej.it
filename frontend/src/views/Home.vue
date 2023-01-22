@@ -20,7 +20,7 @@
 import NewEventDialog from '@/components/NewEventDialog'
 import EventType from '@/components/EventType'
 import BottomFab from '@/components/BottomFab.vue'
-import { get } from '@/utils'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'Home',
@@ -33,29 +33,30 @@ export default {
 
   data: () => ({
     dialog: false,
-    events: null,
   }),
 
-  methods: {
-    
-  },
-
-  created() {
-    get('/user/events')
-      .then(data => {
-        this.events = [
+  computed: {
+    ...mapState([ 'createdEvents', 'joinedEvents' ]),
+    events() {
+      return [
           {
             header: 'Events I created',
-            events: data.events.reverse(),
+            events: this.createdEvents.reverse(),
           },
           {
             header: 'Events I joined',
-            events: data.joinedEvents.reverse(),
+            events: this.joinedEvents.reverse(),
           },
         ] 
-      }).catch(err => {
-        console.error(err)
-      })
+    }
+  },
+
+  methods: {
+    ...mapActions( ['getEvents'] )
+  },
+
+  created() {
+    this.getEvents()
   },
 }
 </script>

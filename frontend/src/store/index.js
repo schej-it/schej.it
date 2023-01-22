@@ -1,18 +1,20 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import { getDateWithTime, getDateDayOffset } from '@/utils'
+import Vue from "vue"
+import Vuex from "vuex"
+import { get } from "@/utils"
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    error: '',
-    info: '',
+    error: "",
+    info: "",
 
     authUser: null,
+
+    createdEvents: [],
+    joinedEvents: [],
   },
-  getters: {
-  },
+  getters: {},
   mutations: {
     setError(state, error) {
       state.error = error
@@ -24,18 +26,36 @@ export default new Vuex.Store({
     setAuthUser(state, authUser) {
       state.authUser = authUser
     },
+
+    setCreatedEvents(state, createdEvents) {
+      state.createdEvents = createdEvents
+    },
+    setJoinedEvents(state, joinedEvents) {
+      state.joinedEvents = joinedEvents
+    },
   },
   actions: {
     // Error & info
     showError({ commit }, error) {
-      commit('setError', '')
-      setTimeout(() => commit('setError', error), 0)
+      commit("setError", "")
+      setTimeout(() => commit("setError", error), 0)
     },
     showInfo({ commit }, info) {
-      commit('setInfo', '')
-      setTimeout(() => commit('setInfo', info), 0)
+      commit("setInfo", "")
+      setTimeout(() => commit("setInfo", info), 0)
+    },
+
+    // Events
+    getEvents({ commit, dispatch }) {
+      return get("/user/events")
+        .then((data) => {
+          commit("setCreatedEvents", data.events)
+          commit("setJoinedEvents", data.joinedEvents)
+        })
+        .catch((err) => {
+          dispatch("showError", "There was a problem fetching events!")
+        })
     },
   },
-  modules: {
-  }
+  modules: {},
 })
