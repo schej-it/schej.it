@@ -13,29 +13,70 @@
         <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
-      <v-icon large>mdi-chevron-right</v-icon>
+      <v-menu>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn plain icon v-bind="attrs" v-on="on">
+            <v-fade-transition>
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-fade-transition>
+          </v-btn>
+        </template>
+
+        <v-list justify="center">
+          <v-dialog v-model="removeDialog" width="400" persistent>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn text small class="red--text" v-bind="attrs" v-on="on"
+                >Delete</v-btn
+              >
+            </template>
+            <v-card>
+              <v-card-title>Are you sure?</v-card-title>
+              <v-card-text
+                >Are you sure you want to delete this event?</v-card-text
+              >
+              <v-card-actions>
+                <v-spacer />
+                <v-btn text @click="removeDialog = false">Cancel</v-btn>
+                <v-btn text color="error" @click="removeEvent()"
+                  >I'm sure</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-list>
+      </v-menu>
     </div>
   </v-container>
 </template>
 
 <script>
-import { getDateRangeStringForEvent, } from '@/utils'
+import { getDateRangeStringForEvent, _delete } from "@/utils"
+import { mapActions } from "vuex"
 
 export default {
-  name: 'EventItem',
+  name: "EventItem",
 
   props: {
     event: { type: Object, required: true },
   },
 
-  data: () => ({}),
+  data: () => ({
+    removeDialog: false,
+  }),
 
   computed: {
+    ...mapActions(["showError", "showInfo"]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
   },
 
-  methods: {},
+  methods: {
+    removeEvent() {
+      _delete(`/events/${this.event._id}`).then().catch((err) => {
+        this.showError('There was a problem removing that event! Please try again later.')
+      });
+    }
+  },
 }
 </script>
