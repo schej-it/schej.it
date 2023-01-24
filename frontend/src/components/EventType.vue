@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import EventItem from "@/components/EventItem";
+import EventItem from "@/components/EventItem.vue";
 
 export default {
   name: "EventType",

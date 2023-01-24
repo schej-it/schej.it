@@ -14,6 +14,7 @@
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
       <v-menu
+        v-if="showOptions"
         ref="menu"
         :close-on-content-click="false"
         transition="slide-x-transition"
@@ -49,13 +50,14 @@
           </v-dialog>
         </v-list>
       </v-menu>
+      <v-icon v-else class="tw-mx-1 tw-opacity-75">mdi-chevron-right</v-icon>
     </div>
   </v-container>
 </template>
 
 <script>
 import { getDateRangeStringForEvent, _delete } from "@/utils"
-import { mapActions } from "vuex"
+import { mapActions, mapState } from "vuex"
 
 export default {
   name: "EventItem",
@@ -69,8 +71,12 @@ export default {
   }),
 
   computed: {
+    ...mapState([ 'authUser' ]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
+    },
+    showOptions() {
+      return this.event.ownerId === this.authUser._id
     },
   },
 

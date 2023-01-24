@@ -17,8 +17,8 @@
 </template>
 
 <script>
-import NewEventDialog from '@/components/NewEventDialog'
-import EventType from '@/components/EventType'
+import NewEventDialog from '@/components/NewEventDialog.vue'
+import EventType from '@/components/EventType.vue'
 import BottomFab from '@/components/BottomFab.vue'
 import { mapState, mapActions } from 'vuex'
 

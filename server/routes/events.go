@@ -26,7 +26,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", middleware.AuthRequired(), createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
-	eventRouter.DELETE("/:eventId", deleteEvent)
+	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 }
 
 // @Summary Creates a new event
@@ -180,8 +180,12 @@ func deleteEvent(c *gin.Context) {
 		return
 	}
 
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
 	_, err = db.EventsCollection.DeleteOne(context.Background(), bson.M{
-		"_id": objectId,
+		"_id":     objectId,
+		"ownerId": user.Id,
 	})
 	if err != nil {
 		logger.StdErr.Panicln(err)
