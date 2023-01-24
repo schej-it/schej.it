@@ -250,6 +250,27 @@ var doc = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Deletes an event based on its id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
             }
         },
         "/events/{eventId}/response": {
@@ -778,8 +799,17 @@ var doc = `{
                 "_id": {
                     "type": "string"
                 },
+                "dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "endDate": {
                     "type": "string"
+                },
+                "endTime": {
+                    "type": "number"
                 },
                 "name": {
                     "type": "string"
@@ -788,6 +818,7 @@ var doc = `{
                     "type": "string"
                 },
                 "responses": {
+                    "description": "Availability responses",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/models.Response"
@@ -795,6 +826,10 @@ var doc = `{
                 },
                 "startDate": {
                     "type": "string"
+                },
+                "startTime": {
+                    "description": "StartTime and EndTime are UTC hours, dates are an array of utc dates",
+                    "type": "number"
                 }
             }
         },

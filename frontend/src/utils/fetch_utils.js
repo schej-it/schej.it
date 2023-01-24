@@ -45,7 +45,11 @@ export const fetchMethod = (method, route, body = {}) => {
 
       // Parse data if it is json, otherwise throw an error
       try {
-        return JSON.parse(text)
+        if (text.length === 0) {
+          return text;
+        } else {
+          return JSON.parse(text)
+        }
       } catch (err) {
         throw { error: errors.JsonError }
       }
