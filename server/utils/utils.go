@@ -15,6 +15,7 @@ import (
 	"github.com/brianvoe/sjwt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/errs"
 	"schej.it/server/logger"
@@ -213,4 +214,27 @@ func PrintHttpResponse(resp *http.Response) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	logger.StdOut.Println(string(body))
 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
+}
+
+func AddUserToMailchimp(email string, firstName string, lastName string) {
+	// Adds the given user to the default mailchimp audience
+	apiKey := os.Getenv("MAILCHIMP_API_KEY")
+
+	body, _ := json.Marshal(bson.M{
+		"email_address": email, "status": "subscribed", "merge_fields": bson.M{
+			"FNAME": firstName,
+			"LNAME": lastName,
+		},
+		"tags": bson.A{"user"},
+	})
+	bodyBuffer := bytes.NewBuffer(body)
+
+	req, _ := http.NewRequest("POST", "https://us21.api.mailchimp.com/3.0/lists/b5c79106b4/members", bodyBuffer)
+	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", apiKey))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.StdErr.Println(err)
+	}
+	defer resp.Body.Close()
 }

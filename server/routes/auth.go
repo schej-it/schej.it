@@ -170,6 +170,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		userId = res.InsertedID.(primitive.ObjectID)
 
 		discord_bot.SendMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
+		utils.AddUserToMailchimp(email, firstName, lastName)
 	} else {
 		// User does exist, get user id
 		var user models.User
