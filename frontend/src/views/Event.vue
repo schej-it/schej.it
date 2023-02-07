@@ -178,7 +178,7 @@ import {
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
-import ScheduleOverlap from "@/components/ScheduleOverlap"
+import ScheduleOverlap from "@/components/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
 import { errors } from "@/constants"
 import isWebview from "is-ua-webview"

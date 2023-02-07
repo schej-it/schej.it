@@ -111,8 +111,12 @@
         class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48"
       >
         <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
-          <span class="tw-mr-1 tw-text-lg">Responses</span>
+          <div class="tw-mr-1 tw-text-lg">Responses</div>
+          <div v-if="isCurTimeslotSelected" class="">
+            {{ `(${numUsersAvailable}/${respondents.length})` }}
+          </div>
           <div
+            v-else
             class="tw-bg-black tw-text-white tw-font-bold tw-w-5 tw-h-5 tw-flex tw-justify-center tw-items-center tw-rounded-full tw-text-xs"
           >
             {{ respondents.length }}
@@ -512,6 +516,17 @@ export default {
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
+    },
+    numUsersAvailable() {
+      this.curTimeslot
+      let numUsers = 0
+      for (const key in this.curTimeslotAvailability) {
+        if (this.curTimeslotAvailability[key]) numUsers++
+      }
+      return numUsers
+    },
+    isCurTimeslotSelected() {
+      return this.curTimeslot.dayIndex !== -1 && this.curTimeslot.timeIndex !== -1
     },
   },
   methods: {
