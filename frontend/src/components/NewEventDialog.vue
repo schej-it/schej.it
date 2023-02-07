@@ -115,7 +115,7 @@ export default {
       return (
         this.name.length > 0 &&
         this.selectedDays.length > 0 &&
-        this.startTime < this.endTime
+        (this.startTime < this.endTime || (this.endTime === 0 && this.startTime != 0))
       );
     },
     times() {
