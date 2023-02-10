@@ -14,7 +14,7 @@
     >
       <EventItem
         class="tw-cursor-pointer"
-        v-for="(event, i) in eventType.events.slice(
+        v-for="(event, i) in sortedEvents.slice(
           0,
           DEFAULT_NUM_EVENTS_TO_SHOW
         )"
@@ -32,7 +32,7 @@
           class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-4"
         >
           <EventItem
-            v-for="(event, i) in eventType.events.slice(
+            v-for="(event, i) in sortedEvents.slice(
               DEFAULT_NUM_EVENTS_TO_SHOW,
               eventType.events.length
             )"
@@ -72,6 +72,11 @@ export default {
       return this.showAll
         ? this.eventType.events.length
         : this.DEFAULT_NUM_EVENTS_TO_SHOW;
+    },
+    sortedEvents() {
+      const sorted = [...this.eventType.events]
+      sorted.sort((a, b) => new Date(b.dates[0]) - new Date(a.dates[0]))
+      return sorted
     },
   },
 

@@ -41,11 +41,11 @@ export default {
       return [
           {
             header: 'Events I created',
-            events: this.createdEvents.reverse(),
+            events: this.createdEvents,
           },
           {
             header: 'Events I joined',
-            events: this.joinedEvents.reverse(),
+            events: this.joinedEvents,
           },
         ] 
     }
