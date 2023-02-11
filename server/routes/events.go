@@ -54,7 +54,7 @@ func createEvent(c *gin.Context) {
 		StartTime: payload.StartTime,
 		EndTime:   payload.EndTime,
 		Dates:     payload.Dates,
-		Responses: make(map[string]models.Response),
+		Responses: make(map[string]*models.Response),
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
