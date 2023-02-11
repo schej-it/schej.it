@@ -198,12 +198,12 @@
   -webkit-appearance: none;
 }
 
-::-webkit-scrollbar:vertical {
+/* ::-webkit-scrollbar:vertical {
   width: 28px;
-}
+} */
 
 ::-webkit-scrollbar:horizontal {
-  height: 28px;
+  height: 18px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -211,7 +211,7 @@
   /* border-radius: 0px 0px 5px 5px; */
   /* border-radius: 10px; */
   border-top: 10px solid white;
-  border-bottom: 10px solid white;
+  /* border-bottom: 10px solid white; */
 }
 
 ::-webkit-scrollbar-track {
