@@ -47,14 +47,18 @@ export default new Vuex.Store({
 
     // Events
     getEvents({ commit, dispatch }) {
-      return get("/user/events")
-        .then((data) => {
-          commit("setCreatedEvents", data.events)
-          commit("setJoinedEvents", data.joinedEvents)
-        })
-        .catch((err) => {
-          dispatch("showError", "There was a problem fetching events!")
-        })
+      if (this.state.authUser) {
+        return get("/user/events")
+          .then((data) => {
+            commit("setCreatedEvents", data.events)
+            commit("setJoinedEvents", data.joinedEvents)
+          })
+          .catch((err) => {
+            dispatch("showError", "There was a problem fetching events!")
+          })
+      } else {
+        return null
+      }
     },
   },
   modules: {},
