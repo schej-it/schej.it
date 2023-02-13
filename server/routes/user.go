@@ -73,6 +73,12 @@ func getEvents(c *gin.Context) {
 	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
 
 	for _, event := range events {
+		// Get rid of responses so we don't send too much data when fetching all events
+		for userId := range event.Responses {
+			event.Responses[userId] = nil
+		}
+
+		// Filter into events user created and responded to
 		if event.OwnerId == userId {
 			response["events"] = append(response["events"], event)
 		} else {

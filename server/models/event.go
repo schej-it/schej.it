@@ -16,7 +16,7 @@ type Event struct {
 	Dates     []string `json:"dates" bson:"dates,omitempty"`
 
 	// Availability responses
-	Responses map[string]Response `json:"responses" bson:"responses"`
+	Responses map[string]*Response `json:"responses" bson:"responses"`
 }
 
 // A response object containing an array of times that the given user is available
