@@ -284,10 +284,10 @@ export default {
         // Or sign in if user is already using a real browser
         if (this.authUser) {
           // Request permission if calendar permissions not yet granted
-          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, false)
+          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, false, true)
         } else {
           // Ask the user to select the account they want to sign in with if not logged in yet
-          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, true)
+          signInGoogle({ type: "event-add-availability", eventId: this.eventId }, true, true)
         }
       }
       this.choiceDialog = false

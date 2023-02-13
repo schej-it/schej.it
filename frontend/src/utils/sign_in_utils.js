@@ -1,11 +1,14 @@
 import store from "@/store"
 
 /** Redirects user to the correct google sign in page */
-export const signInGoogle = (state = null, selectAccount = false) => {
+export const signInGoogle = (state = null, selectAccount = false, requestCalendarPermission = false) => {
   const clientId = '523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com'
   const redirectUri = `${window.location.origin}/auth`
 
-  let scope = 'openid email profile https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly'
+  let scope = 'openid email profile '
+  if (requestCalendarPermission) {
+    scope += 'https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly'
+  }
   scope = encodeURIComponent(scope)
 
   let stateString = ''
