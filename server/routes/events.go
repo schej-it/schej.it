@@ -66,7 +66,7 @@ func createEvent(c *gin.Context) {
 
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event name**: \"%s\"\n**Creator**: %s %s (%s)", event.Name, user.FirstName, user.LastName, user.Email))
+	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)", insertedId, user.FirstName, user.LastName, user.Email))
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
 
