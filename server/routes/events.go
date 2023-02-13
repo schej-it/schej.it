@@ -39,8 +39,8 @@ func InitEvents(router *gin.Engine) {
 func createEvent(c *gin.Context) {
 	payload := struct {
 		Name      string   `json:"name" binding:"required"`
-		StartTime float32  `json:"startTime" binding:"required"`
-		EndTime   float32  `json:"endTime" binding:"required"`
+		StartTime *float32 `json:"startTime" binding:"required"`
+		EndTime   *float32 `json:"endTime" binding:"required"`
 		Dates     []string `json:"dates" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
