@@ -956,9 +956,12 @@ export default {
       Timezone
     */
     getLocalTimezone() {
-      return new Date()
+      const split = new Date()
         .toLocaleTimeString("en-us", { timeZoneName: "short" })
-        .split(" ")[2]
+        .split(" ")
+      const localTimezone = split[split.length - 1]
+      
+      return localTimezone
     }
   },
   watch: {
