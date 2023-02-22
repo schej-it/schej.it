@@ -188,14 +188,14 @@ export const getCalendarEvents = (event) => {
   if (event.startDate) {
     // Legacy date representation
     timeMin = event.startDate.toISOString()
-    timeMax = getDateDayOffset(event.endDate, 1).toISOString()
+    timeMax = getDateDayOffset(event.endDate, 2).toISOString()
 
     startTime = event.startTime
     endTime = event.endTime
   } else {
     // New date representation
     timeMin = new Date(event.dates[0]).toISOString()
-    timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 1).toISOString()
+    timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 2).toISOString()
 
     startTime = utcTimeToLocalTime(event.startTime)
     endTime = utcTimeToLocalTime(event.endTime)
