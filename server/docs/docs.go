@@ -25,6 +25,49 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/analytics/scanned-poster": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Notifies us when poster QR code has been scanned",
+                "parameters": [
+                    {
+                        "description": "Object containing the location that poster was scanned from and the url that was scanned",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "location": {
+                                            "$ref": "#/definitions/models.Location"
+                                        },
+                                        "url": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "Signs user in and sets the access token session variable",
@@ -855,6 +898,32 @@ var doc = `{
                 "toUser": {
                     "type": "object",
                     "$ref": "#/definitions/models.UserProfile"
+                }
+            }
+        },
+        "models.Location": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "country_code": {
+                    "type": "string"
+                },
+                "country_name": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "postal": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
                 }
             }
         },

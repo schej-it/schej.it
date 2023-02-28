@@ -53,6 +53,23 @@ definitions:
         $ref: '#/definitions/models.UserProfile'
         type: object
     type: object
+  models.Location:
+    properties:
+      city:
+        type: string
+      country_code:
+        type: string
+      country_name:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      postal:
+        type: string
+      state:
+        type: string
+    type: object
   models.Response:
     properties:
       availability:
@@ -99,6 +116,32 @@ info:
   title: Schej.it API
   version: "1.0"
 paths:
+  /analytics/scanned-poster:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the location that poster was scanned from and
+          the url that was scanned
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              location:
+                $ref: '#/definitions/models.Location'
+              url:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Notifies us when poster QR code has been scanned
+      tags:
+      - analytics
   /auth/sign-in:
     post:
       consumes:

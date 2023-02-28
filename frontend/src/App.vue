@@ -64,7 +64,7 @@ html {
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { get, isPhone, signInGoogle } from './utils';
+import { get, getLocation, isPhone, post, signInGoogle } from './utils';
 import AutoSnackbar from '@/components/AutoSnackbar'
 import AuthUserMenu from './components/AuthUserMenu.vue';
 
@@ -179,12 +179,29 @@ export default {
     },
     $route: {
       immediate: true,
-      handler() {
+      async handler() {
+        const originalHref = window.location.href
+
         get('/auth/status').then(data => {
           this.redirectUser(true)
         }).catch(err => {
           this.redirectUser(false)
         })
+
+        // Check for poster query parameter
+        if (this.$route.query.p) {
+          let location = null
+          try {
+            location = await getLocation()
+          } catch (e) {
+            // User probably has adblocker
+          }
+
+          post('/analytics/scanned-poster', {
+            url: originalHref,
+            location,
+          })
+        }
       }
     },
   },

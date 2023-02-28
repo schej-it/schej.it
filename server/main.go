@@ -106,6 +106,7 @@ func main() {
 	routes.InitEvents(router)
 	routes.InitFriends(router)
 	routes.InitUsers(router)
+	routes.InitAnalytics(router)
 
 	// Init swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
