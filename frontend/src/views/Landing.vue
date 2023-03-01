@@ -72,11 +72,12 @@
         </div>
       </div>
 
-      <!-- What is Schej? -->
-      <div class="tw-grid sm:tw-grid-cols-1 md:tw-grid-cols-2 tw-bg-white tw-p-8 sm:tw-p-28">
-        <div class="tw-flex tw-flex-col tw-pr-10 lg:tw-pt-5">
+      <!-- What is schej? -->
+      <div class="tw-grid sm:tw-grid-cols-1 md:tw-grid-cols-2 tw-bg-white tw-pt-28 tw-p-8 sm:tw-px-28 lg:tw-px-[20%]">
+        <!-- Text -->
+        <div class="tw-flex tw-flex-col tw-pr-10 lg:tw-pt-3">
           <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">What is schej?</div>
-          <div class="tw-mt-8 tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-text-xl lg:tw-text-2xl">
+          <div class="tw-mt-10 tw-grid tw-grid-cols-1 tw-gap-6 sm:tw-text-xl lg:tw-text-2xl">
             <div>
               schej is a group scheduling platform that helps you find a time to
               meet.
@@ -91,7 +92,9 @@
             </div>
           </div>
         </div>
-        <div class="tw-h-96 tw-mt-5 md:tw-mt-0">
+
+        <!-- Video -->
+        <div class="tw-h-96 tw-mt-5 md:tw-mt-5">
           <iframe
             class="tw-w-full tw-h-full"
             src="https://www.youtube.com/embed/Wzth9Ov7bkI?fs=0&color=white&rel=0&controls=0"
@@ -102,6 +105,21 @@
           ></iframe>
         </div>
       </div>
+
+      <!-- FAQ -->
+      <div class="tw-bg-white tw-p-8 tw-pt-32 tw-pb-32 sm:tw-px-28 lg:tw-px-[20%]">
+        <!-- Text -->
+        <div class="tw-pr-10 lg:tw-pt-3 tw-text-center">
+          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">Frequently Asked Questions</div>
+          <div class="tw-mt-16 tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl">
+            <FAQ question="Why should I log in with my Google account" answer="Although it isn't required, it's highly recommended since it allows you to view all your events while filling out your availbaility. A huge help!"></FAQ>
+            <FAQ question="Hii" answer="Heyyy"></FAQ>
+            <FAQ question="Hii" answer="Heyyy"></FAQ>
+            <FAQ question="Hii" answer="Heyyy"></FAQ>
+          </div>
+        </div>
+      </div>
+
 
       <!-- Privacy Policy -->
       <div class="tw-bg-green tw-flex tw-flex-col">
@@ -121,6 +139,7 @@
 import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
 import { isPhone, signInGoogle } from "@/utils"
 import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
+import FAQ from "@/components/FAQ.vue"
 
 export default {
   name: "Landing",
@@ -128,6 +147,7 @@ export default {
   components: {
     LandingPageCalendar,
     SignInGoogleBtn,
+    FAQ,
   },
 
   data: () => ({
