@@ -26,6 +26,14 @@ module.exports = {
       'avail-green': colors.emerald, // The green used for marking availability
       'red': '#B13C3C',
       'bright-red': '#DB1616',
+    },
+    screens: {
+      'sm': '640px',
+      'md': '768px',
+      'mdlg': '896px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
     }
   },
   plugins: [

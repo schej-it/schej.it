@@ -73,11 +73,18 @@
       </div>
 
       <!-- What is schej? -->
-      <div class="tw-grid sm:tw-grid-cols-1 md:tw-grid-cols-2 tw-bg-white tw-pt-28 tw-p-8 sm:tw-px-28 lg:tw-px-[20%]">
+      <div
+        id="how-it-works"
+        class="tw-grid sm:tw-grid-cols-1 md:tw-grid-cols-2 tw-bg-white tw-pt-28 tw-p-8 sm:tw-px-28 xl:tw-px-[20%]"
+      >
         <!-- Text -->
         <div class="tw-flex tw-flex-col tw-pr-10 lg:tw-pt-3">
-          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">What is schej?</div>
-          <div class="tw-mt-10 tw-grid tw-grid-cols-1 tw-gap-6 sm:tw-text-xl lg:tw-text-2xl">
+          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">
+            What is schej?
+          </div>
+          <div
+            class="tw-mt-10 tw-grid tw-grid-cols-1 tw-gap-6 sm:tw-text-xl lg:tw-text-2xl"
+          >
             <div>
               schej is a group scheduling platform that helps you find a time to
               meet.
@@ -88,7 +95,8 @@
               available.
             </div>
             <div>
-              It's <span class="tw-font-bold">completely free</span> to use, and it looks great on mobile.
+              It's <span class="tw-font-bold">completely free</span> to use, and
+              it looks great on mobile.
             </div>
           </div>
         </div>
@@ -107,28 +115,47 @@
       </div>
 
       <!-- FAQ -->
-      <div class="tw-bg-white tw-p-8 tw-pt-32 tw-pb-32 sm:tw-px-28 lg:tw-px-[20%]">
+      <div
+        class="tw-bg-white tw-p-8 tw-pt-32 tw-pb-32 sm:tw-px-16 xl:tw-px-[20%]"
+      >
         <!-- Text -->
         <div class="tw-pr-10 lg:tw-pt-3 tw-text-center">
-          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">Frequently Asked Questions</div>
-          <div class="tw-mt-16 tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl">
-            <FAQ question="Why should I log in with my Google account" answer="Although it isn't required, it's highly recommended since it allows you to view all your events while filling out your availbaility. A huge help!"></FAQ>
-            <FAQ question="Hii" answer="Heyyy"></FAQ>
-            <FAQ question="Hii" answer="Heyyy"></FAQ>
-            <FAQ question="Hii" answer="Heyyy"></FAQ>
+          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">
+            Frequently Asked Questions
+          </div>
+          <div
+            class="tw-mt-16 tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
+          >
+            <FAQ
+              question="Why should I log in with my Google account"
+              answer="Although it isn't required, it's highly recommended since it allows you to view all your events while filling out your availbaility. A huge help!"
+            ></FAQ>
+            <FAQ
+              question="Will other people be able to see my calendar events?"
+              answer="Nope! All other users will be able to see is the availability that you edit and enter into the event."
+            ></FAQ>
+            <FAQ
+              question="Can I still add my availability without logging in?"
+              answer="Yes! You can enter as a guest. To edit your guest availibility, just click on your name again."
+            ></FAQ>
+            <FAQ
+              question="How is schej different from lettucemeet or when2meet?"
+              :points="['Much better UI (web and mobile)', 'Seemless and working calendar integration', 'No ads :)']"
+            ></FAQ>
           </div>
         </div>
       </div>
 
-
       <!-- Privacy Policy -->
       <div class="tw-bg-green tw-flex tw-flex-col">
-        <div class="tw-text-center tw-text-white tw-m-2">
-          <router-link
-            class="tw-text-white tw-font-medium"
-            :to="{ path: 'privacy-policy' }"
+        <div
+          class="tw-flex tw-flex-row tw-justify-around tw-m-2 tw-h-28 tw-px-[15%] tw-pt-10 tw-font-medium "
+        >
+          <a class="tw-text-white" href="#how-it-works" >How it works</a>
+          <router-link class="tw-text-white" :to="{ path: 'privacy-policy' }"
             >Privacy Policy</router-link
           >
+          <a class="tw-text-white" @click="signIn">Sign in</a>
         </div>
       </div>
     </div>
