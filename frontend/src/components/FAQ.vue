@@ -40,7 +40,7 @@ export default {
   },
 
   data: () => ({
-    toggled: true,
+    toggled: false,
   }),
 
   computed: {},

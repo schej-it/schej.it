@@ -126,22 +126,11 @@
           <div
             class="tw-mt-16 tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
           >
-            <FAQ
-              question="Why should I log in with my Google account"
-              answer="Although it isn't required, it's highly recommended since it allows you to view all your events while filling out your availbaility. A huge help!"
-            ></FAQ>
-            <FAQ
-              question="Will other people be able to see my calendar events?"
-              answer="Nope! All other users will be able to see is the availability that you edit and enter into the event."
-            ></FAQ>
-            <FAQ
-              question="Can I still add my availability without logging in?"
-              answer="Yes! You can enter as a guest. To edit your guest availibility, just click on your name again."
-            ></FAQ>
-            <FAQ
-              question="How is schej different from lettucemeet or when2meet?"
-              :points="['Much better UI (web and mobile)', 'Seemless and working calendar integration', 'No ads :)']"
-            ></FAQ>
+            <FAQ 
+              v-for="faq in faqs"
+              :key="faq.question"
+              v-bind="faq"
+            />
           </div>
         </div>
       </div>
@@ -184,6 +173,24 @@ export default {
       SIGN_IN: 0,
       SIGN_UP: 1,
     },
+    faqs: [
+      {
+        question: 'Do I need to sign in with Google in order to use schej?',
+        answer: 'Signing in with Google is required to create events, but anybody can add their availability once an event is created, whether or not they are signed in with Google!',
+      },
+      {
+        question: 'Will other people be able to see my calendar events?',
+        answer: 'Nope! All other users will be able to see is the availability that you edit and enter into the event.',
+      },
+      {
+        question: 'How is schej different from lettucemeet or when2meet?',
+        points: ['Much better UI (web and mobile)', 'Seemless and working calendar integration', 'No ads :)'],
+      },
+      {
+        question: 'How do I edit my availability?',
+        answer: 'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
+      },
+    ],
   }),
 
   computed: {
