@@ -115,21 +115,23 @@
       </div>
 
       <!-- FAQ -->
-      <div
-        class="tw-mx-4 sm:tw-px-16 xl:tw-px-[20%] tw-mb-12 md:tw-mb-24"
-      >
-        <div class="lg:tw-pt-3 tw-text-center">
-          <Header>
-            Frequently Asked Questions
-          </Header>
-          <div
-            class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
-          >
-            <FAQ 
-              v-for="faq in faqs"
-              :key="faq.question"
-              v-bind="faq"
-            />
+      <div class="tw-flex tw-justify-center">
+        <div
+          class="tw-flex-1 tw-mx-4 sm:tw-mx-16 tw-mb-12 tw-max-w-3xl"
+        >
+          <div class="lg:tw-pt-3 tw-text-center">
+            <Header>
+              Frequently Asked Questions
+            </Header>
+            <div
+              class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
+            >
+              <FAQ 
+                v-for="faq in faqs"
+                :key="faq.question"
+                v-bind="faq"
+              />
+            </div>
           </div>
         </div>
       </div>
