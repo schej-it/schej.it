@@ -61,7 +61,7 @@
 
       <!-- Calendar -->
       <div
-        class="tw-flex-1 md:tw-flex md:tw-justify-center tw-relative tw-pb-12"
+        class="tw-flex-1 md:tw-flex md:tw-justify-center tw-relative tw-pb-12 tw-mb-12 md:tw-mb-24"
       >
         <div
           class="tw-absolute tw-bg-green tw-w-full"
@@ -75,15 +75,15 @@
       <!-- What is schej? -->
       <div
         id="how-it-works"
-        class="tw-grid sm:tw-grid-cols-1 md:tw-grid-cols-2 tw-bg-white tw-pt-28 tw-p-8 sm:tw-px-28 xl:tw-px-[20%]"
+        class="lg:tw-flex lg:tw-items-center tw-mx-4 md:tw-mx-8 xl:tw-mx-auto tw-max-w-7xl tw-mb-12 md:tw-mb-24"
       >
         <!-- Text -->
-        <div class="tw-flex tw-flex-col tw-pr-10 lg:tw-pt-3">
-          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">
+        <div class="tw-flex-1 tw-flex tw-flex-col tw-pr-10 lg:tw-pt-3">
+          <Header>
             What is schej?
-          </div>
+          </Header>
           <div
-            class="tw-mt-10 tw-grid tw-grid-cols-1 tw-gap-6 sm:tw-text-xl lg:tw-text-2xl"
+            class="tw-grid tw-grid-cols-1 tw-gap-6 sm:tw-text-lg lg:tw-text-xl"
           >
             <div>
               schej is a group scheduling platform that helps you find a time to
@@ -102,7 +102,7 @@
         </div>
 
         <!-- Video -->
-        <div class="tw-h-96 tw-mt-5 md:tw-mt-5">
+        <div class="tw-flex-1 tw-h-96 tw-mt-5">
           <iframe
             class="tw-w-full tw-h-full"
             src="https://www.youtube.com/embed/Wzth9Ov7bkI?fs=0&color=white&rel=0&controls=0"
@@ -116,15 +116,14 @@
 
       <!-- FAQ -->
       <div
-        class="tw-bg-white tw-p-8 tw-pt-32 tw-pb-32 sm:tw-px-16 xl:tw-px-[20%]"
+        class="tw-mx-4 sm:tw-px-16 xl:tw-px-[20%] tw-mb-12 md:tw-mb-24"
       >
-        <!-- Text -->
-        <div class="tw-pr-10 lg:tw-pt-3 tw-text-center">
-          <div class="tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium">
+        <div class="lg:tw-pt-3 tw-text-center">
+          <Header>
             Frequently Asked Questions
-          </div>
+          </Header>
           <div
-            class="tw-mt-16 tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
+            class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
           >
             <FAQ 
               v-for="faq in faqs"
@@ -138,7 +137,7 @@
       <!-- Privacy Policy -->
       <div class="tw-bg-green tw-flex tw-flex-col">
         <div
-          class="tw-flex tw-flex-row tw-justify-around tw-m-2 tw-h-28 tw-px-[15%] tw-pt-10 tw-font-medium "
+          class="tw-flex tw-flex-row tw-justify-around tw-m-2 tw-py-4 tw-font-medium"
         >
           <a class="tw-text-white" href="#how-it-works" >How it works</a>
           <router-link class="tw-text-white" :to="{ path: 'privacy-policy' }"
@@ -156,6 +155,7 @@ import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
 import { isPhone, signInGoogle } from "@/utils"
 import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import FAQ from "@/components/FAQ.vue"
+import Header from "@/components/Header.vue"
 
 export default {
   name: "Landing",
@@ -164,6 +164,7 @@ export default {
     LandingPageCalendar,
     SignInGoogleBtn,
     FAQ,
+    Header,
   },
 
   data: () => ({
@@ -179,12 +180,16 @@ export default {
         answer: 'Signing in with Google is required to create events, but anybody can add their availability once an event is created, whether or not they are signed in with Google!',
       },
       {
-        question: 'Will other people be able to see my calendar events?',
-        answer: 'Nope! All other users will be able to see is the availability that you edit and enter into the event.',
-      },
-      {
         question: 'How is schej different from lettucemeet or when2meet?',
         points: ['Much better UI (web and mobile)', 'Seemless and working calendar integration', 'No ads :)'],
+      },
+      {
+        question: 'Is Google Calendar access required in order to use schej?',
+        answer: 'Nope! You can manually input your availability, but we highly recommend allowing Google Calendar access in order to view your calendar events while doing so.'
+      },
+      {
+        question: 'Will other people be able to see my calendar events?',
+        answer: 'Nope! All other users will be able to see is the availability that you enter for an event.',
       },
       {
         question: 'How do I edit my availability?',
