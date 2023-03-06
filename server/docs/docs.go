@@ -230,14 +230,20 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "endDate": {
-                                            "type": "string"
+                                        "dates": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "endTime": {
+                                            "type": "number"
                                         },
                                         "name": {
                                             "type": "string"
                                         },
-                                        "startDate": {
-                                            "type": "string"
+                                        "startTime": {
+                                            "type": "number"
                                         }
                                     }
                                 }
@@ -292,6 +298,60 @@ var doc = `{
                             "$ref": "#/definitions/models.Event"
                         }
                     }
+                }
+            },
+            "put": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Edits an event based on its id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Object containing info about the event to update",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "dates": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "endTime": {
+                                            "type": "number"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "startTime": {
+                                            "type": "number"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
                 }
             },
             "delete": {

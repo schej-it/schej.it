@@ -26,6 +26,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", middleware.AuthRequired(), createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
+	eventRouter.PUT("/:eventId", middleware.AuthRequired(), editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 }
 
@@ -33,7 +34,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,startDate=string,endDate=string} true "Object containing info about the event to create"
+// @Param payload body object{name=string,startTime=float32,endTime=float32,dates=[]string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -162,6 +163,58 @@ func updateEventResponse(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Edits an event based on its id
+// @Tags events
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{name=string,startTime=float32,endTime=float32,dates=[]string} true "Object containing info about the event to update"
+// @Success 200
+// @Router /events/{eventId} [put]
+func editEvent(c *gin.Context) {
+	payload := struct {
+		Name      string   `json:"name" binding:"required"`
+		StartTime *float32 `json:"startTime" binding:"required"`
+		EndTime   *float32 `json:"endTime" binding:"required"`
+		Dates     []string `json:"dates" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	eventId := c.Param("eventId")
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	_, err = db.EventsCollection.UpdateOne(
+		context.Background(),
+		bson.M{
+			"_id":     objectId,
+			"ownerId": user.Id,
+		},
+		bson.M{
+			"$set": bson.M{
+				"name":      payload.Name,
+				"startTime": payload.StartTime,
+				"endTime":   payload.EndTime,
+				"dates":     payload.Dates,
+			},
+		},
+	)
+
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.Status(http.StatusOK)
 }
 
 // @Summary Deletes an event based on its id
