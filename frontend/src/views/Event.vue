@@ -51,6 +51,7 @@
     <NewEventDialog 
       v-model="editEventDialog"
       :event="event"
+      edit-event
     />
 
     <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
