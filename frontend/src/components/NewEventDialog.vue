@@ -65,7 +65,6 @@
               color="primary"
               elevation="2"
               :show-current="false"
-              :min="minCalenderDate"
               class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
             />
           </div>
@@ -97,6 +96,7 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
+    event: { type: Object, },
   },
 
   data: () => ({
@@ -106,6 +106,16 @@ export default {
     loading: false,
     selectedDays: [],
   }),
+
+  created() {
+    if (this.event) {
+      this.name = this.event.name
+      this.startTime = this.event.startTime
+      this.endTime = this.event.endTime
+      // TODO: Check if need to convert to local dates
+      this.selectedDays = this.event.dates
+    }
+  },
 
   computed: {
     isPhone() {
