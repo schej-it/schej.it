@@ -15,6 +15,10 @@ export const patch = (route, body = {}) => {
   return fetchMethod('PATCH', route, body)
 }
 
+export const put = (route, body = {}) => {
+  return fetchMethod('PUT', route, body)
+}
+
 export const _delete = (route, body = {}) => {
   return fetchMethod('DELETE', route, body)
 }

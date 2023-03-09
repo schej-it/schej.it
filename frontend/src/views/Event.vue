@@ -1,5 +1,6 @@
 <template>
   <div v-if="event" class="tw-mt-8">
+    <!-- Mark availability option dialog -->
     <v-dialog v-model="choiceDialog" width="400" content-class="tw-m-0">
       <v-card class="tw-text-center sm:tw-p-6 tw-p-4">
         <div class="tw-text-md tw-pb-4">
@@ -22,6 +23,7 @@
       </v-card>
     </v-dialog>
 
+    <!-- Google sign in not supported dialog -->
     <v-dialog v-model="webviewDialog" width="400" content-class="tw-m-0">
       <v-card>
         <v-card-title>Google sign in not supported</v-card-title>
@@ -38,10 +40,18 @@
       </v-card>
     </v-dialog>
 
+    <!-- Guest Dialog -->
     <GuestDialog
       v-model="guestDialog"
       @submit="saveChangesAsGuest"
       :respondents="Object.keys(event.responses)"
+    />
+
+    <!-- Edit event dialog -->
+    <NewEventDialog 
+      v-model="editEventDialog"
+      :event="event"
+      edit-event
     />
 
     <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
@@ -51,8 +61,17 @@
         <div class="tw-text-black tw-flex tw-items-center">
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
-            <div class="tw-text-sm sm:tw-text-base tw-font-normal">
-              {{ dateString }}
+            <div class="tw-flex tw-items-baseline tw-gap-1">
+              <div class="tw-text-sm sm:tw-text-base tw-font-normal">
+                {{ dateString }}
+              </div>
+              <v-btn 
+                v-if="isOwner"
+                @click="editEvent"
+                text 
+                dense 
+                class="tw-text-green tw-min-w-0 tw-px-2 tw-text-sm sm:tw-text-base tw-underline"
+              >Edit</v-btn>
             </div>
           </div>
           <v-spacer />
@@ -178,6 +197,7 @@ import {
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
+import NewEventDialog from "@/components/NewEventDialog.vue"
 import ScheduleOverlap from "@/components/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
 import { errors } from "@/constants"
@@ -194,12 +214,14 @@ export default {
   components: {
     GuestDialog,
     ScheduleOverlap,
+    NewEventDialog,
   },
 
   data: () => ({
     choiceDialog: false,
     webviewDialog: false,
     guestDialog: false,
+    editEventDialog: false,
     loading: true,
     calendarEvents: [],
     event: null,
@@ -219,6 +241,9 @@ export default {
       return (
         this.scheduleOverlapComponent && this.scheduleOverlapComponent.editing
       )
+    },
+    isOwner() {
+      return this.authUser && this.authUser._id === this.event.ownerId
     },
     isPhone() {
       return isPhone(this.$vuetify)
@@ -269,6 +294,10 @@ export default {
         `${window.location.origin}/e/${this.eventId}`
       )
       this.showInfo("Link copied to clipboard!")
+    },
+    editEvent() {
+      /* Show edit event dialog */
+      this.editEventDialog = true
     },
     async refreshEvent() {
       /* Refresh event details */

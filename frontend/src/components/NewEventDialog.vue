@@ -65,8 +65,8 @@
               color="primary"
               elevation="2"
               :show-current="false"
-              :min="minCalenderDate"
               class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
+              :min="minCalendarDate"
             />
           </div>
           
@@ -80,7 +80,7 @@
           class="tw-bg-green"
           :disabled="!formComplete"
           @click="submit"
-          >Create</v-btn
+          >{{ editEvent ? 'Edit' : 'Create' }}</v-btn
         >
       </v-card-text>
     </v-card>
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { isPhone, post } from "@/utils";
+import { isPhone, post, put, utcTimeToLocalTime } from "@/utils";
 
 export default {
   name: "NewEventDialog",
@@ -97,6 +97,8 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
+    event: { type: Object, },
+    editEvent: { type: Boolean, default: false },
   },
 
   data: () => ({
@@ -106,6 +108,24 @@ export default {
     loading: false,
     selectedDays: [],
   }),
+
+  created() {
+    if (this.event) {
+      this.name = this.event.name
+      this.startTime = utcTimeToLocalTime(this.event.startTime)
+      this.endTime = utcTimeToLocalTime(this.event.endTime)
+      
+      // Format dates for the local timezone
+      const paddedStartTime = String(this.event.startTime).padStart(2, '0');
+      const selectedDays = []
+      for (const date of this.event.dates) {
+        const localDate = new Date(`${date}T${paddedStartTime}:00:00Z`);
+        const dateString = new Date(localDate.getTime() - new Date().getTimezoneOffset() * 1000 * 60).toISOString().substring(0, 10);
+        selectedDays.push(dateString);
+      }
+      this.selectedDays = selectedDays
+    }
+  },
 
   computed: {
     isPhone() {
@@ -131,7 +151,11 @@ export default {
 
       return times;
     },
-    minCalenderDate() {
+    minCalendarDate() {
+      if (this.editEvent) {
+        return ''
+      }
+
       let today = new Date();
       let dd = String(today.getDate()).padStart(2, '0');
       let mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -170,15 +194,28 @@ export default {
 
       // Create new event on backend
       this.loading = true;
-      post("/events", {
-        name: this.name,
-        startTime: utcStartTime,
-        endTime: utcEndTime,
-        dates: utcDates,
-      }).then(({ eventId }) => {
-        this.$router.push({ name: "event", params: { eventId } });
-        this.loading = false;
-      });
+      if (!this.editEvent) {
+        post("/events", {
+          name: this.name,
+          startTime: utcStartTime,
+          endTime: utcEndTime,
+          dates: utcDates,
+        }).then(({ eventId }) => {
+          this.$router.push({ name: "event", params: { eventId } });
+          this.loading = false;
+        });
+      } else {
+        if (this.event) {
+          put(`/events/${this.event._id}`, {
+            name: this.name,
+            startTime: utcStartTime,
+            endTime: utcEndTime,
+            dates: utcDates,
+          }).then(() => {
+            window.location.reload()
+          });
+        }
+      }
     },
   },
 };

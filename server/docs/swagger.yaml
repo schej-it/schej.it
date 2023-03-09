@@ -241,12 +241,16 @@ paths:
           allOf:
           - type: object
           - properties:
-              endDate:
-                type: string
+              dates:
+                items:
+                  type: string
+                type: array
+              endTime:
+                type: number
               name:
                 type: string
-              startDate:
-                type: string
+              startTime:
+                type: number
             type: object
       produces:
       - application/json
@@ -293,6 +297,39 @@ paths:
           schema:
             $ref: '#/definitions/models.Event'
       summary: Gets an event based on its id
+      tags:
+      - events
+    put:
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing info about the event to update
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              dates:
+                items:
+                  type: string
+                type: array
+              endTime:
+                type: number
+              name:
+                type: string
+              startTime:
+                type: number
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Edits an event based on its id
       tags:
       - events
   /events/{eventId}/response:
