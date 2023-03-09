@@ -66,6 +66,7 @@
               elevation="2"
               :show-current="false"
               class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
+              :min="minCalendarDate"
             />
           </div>
           
@@ -150,7 +151,11 @@ export default {
 
       return times;
     },
-    minCalenderDate() {
+    minCalendarDate() {
+      if (this.editEvent) {
+        return ''
+      }
+
       let today = new Date();
       let dd = String(today.getDate()).padStart(2, '0');
       let mm = String(today.getMonth() + 1).padStart(2, '0');
