@@ -9,7 +9,7 @@
   >
     <v-card tile class="tw-flex tw-flex-col">
       <v-card-title class="tw-flex">
-        <div>New Event</div>
+        <div>{{ editEvent ? 'Edit Event' : 'New Event' }}</div>
         <v-spacer />
         <v-btn icon @click="$emit('input', false)"
           ><v-icon>mdi-close</v-icon></v-btn
