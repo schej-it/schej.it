@@ -68,10 +68,10 @@
               <v-btn 
                 v-if="isOwner"
                 @click="editEvent"
-                text 
+                icon
                 dense 
-                class="tw-text-green tw-min-w-0 tw-px-2 tw-text-sm sm:tw-text-base tw-underline"
-              >Edit</v-btn>
+                class="tw-text-green tw-min-w-0 tw-px-2 tw-text-sm sm:tw-text-base"
+              ><v-icon v-if="!isPhone" small>mdi-pencil</v-icon><span v-else class="tw-underline">Edit</span></v-btn>
             </div>
           </div>
           <v-spacer />
