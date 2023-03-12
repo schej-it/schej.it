@@ -306,58 +306,51 @@ export default {
     calendarEventsByDay() {
       /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
       // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
-      const arr = []
+
+      const calendarEventsByDay = []
+
+      // Create a temporary array of all calendar events
+      const tmpCalendarEvents = this.calendarEvents
+      tmpCalendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
+
+      // Iterate through all the days and add the calendar events for that day
       for (let i = 0; i < this.days.length; ++i) {
-        arr[i] = []
-      }
+        if (tmpCalendarEvents.length == 0) break
 
-      let startTime
-      if (this.startDate) {
-        // Legacy date representation
-        startTime = this.startTime
-      } else {
-        // New date representation
-        // Do not need to specify this.timezoneOffset because we want to use the local timezoneoffset for event display
-        startTime = utcTimeToLocalTime(this.startTime)
-      }
+        calendarEventsByDay[i] = []
+        const day = this.days[i]
+        const date = day.dateObject
 
-      for (const calendarEvent of this.calendarEvents) {
-        // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
-        const calendarEventDayStart = getDateWithTimeNum(calendarEvent.startDate, startTime)
-        if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
-          // Go back a day if calendarEventDayStart is past the calendarEvent start time
-          calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
-        }
+        // Add all calendar events for the current date
+        while (tmpCalendarEvents.length > 0 && compareDateDay(date, tmpCalendarEvents[0].startDate) == 0) {
+          const calendarEvent = tmpCalendarEvents[0]
+          tmpCalendarEvents.splice(0, 1)
 
-        // The number of hours since start time
-        const hoursOffset =
-          (calendarEvent.startDate.getTime() - calendarEventDayStart.getTime()) /
-          (1000 * 60 * 60)
+          // The number of hours since start time
+          const hoursOffset =
+            (calendarEvent.startDate.getTime() - date.getTime()) /
+            (1000 * 60 * 60)
 
-        // The length of the event in hours
-        const hoursLength =
-          (calendarEvent.endDate.getTime() -
-            calendarEvent.startDate.getTime()) /
-          (1000 * 60 * 60)
+          // The length of the event in hours
+          const hoursLength =
+            (calendarEvent.endDate.getTime() -
+              calendarEvent.startDate.getTime()) /
+            (1000 * 60 * 60)
 
-        // Don't display event if the event is 0 hours long
-        if (hoursLength == 0) continue
+          // Don't display event if the event is 0 hours long
+          if (hoursLength == 0) continue
 
-        for (const d in this.days) {
-          const day = this.days[d]
-          if (compareDateDay(day.dateObject, calendarEventDayStart) == 0) {
-            arr[d].push({
-              ...calendarEvent,
-              style: {
-                top: `calc(${hoursOffset} * 2 * 1.25rem)`,
-                height: `calc(${hoursLength} * 2 * 1.25rem)`,
-              },
-            })
-            break
-          }
+          calendarEventsByDay[i].push({
+            ...calendarEvent,
+            style: {
+              top: `calc(${hoursOffset} * 2 * 1.25rem)`,
+              height: `calc(${hoursLength} * 2 * 1.25rem)`,
+            },
+          })
         }
       }
-      return arr
+
+      return calendarEventsByDay
     },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
@@ -453,12 +446,8 @@ export default {
       let endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset)
 
       let t = startTime
-      console.log(t)
       while (t != endTime) {
-        // Convert timeNum back to local time if using new date representation
-        let timeNum = this.startDate
-          ? t
-          : utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
+        let timeNum = utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
 
         times.push({
           timeNum: timeNum,
