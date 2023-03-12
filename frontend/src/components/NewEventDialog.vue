@@ -200,7 +200,6 @@ export default {
       } else {
         // Edit event on backend
         if (this.event) {
-          console.log(utcDates)
           put(`/events/${this.event._id}`, {
             name: this.name,
             duration,

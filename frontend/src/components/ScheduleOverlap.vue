@@ -231,6 +231,7 @@
 <script>
 import {
   timeNumToTimeText,
+  timeNumToTimeString,
   getDateDayOffset,
   dateCompare,
   compareDateDay,
@@ -377,40 +378,17 @@ export default {
         "dec",
       ]
 
-      if (this.startDate) {
-        // Legacy date representation method
-        let curDate = this.startDate
-        while (curDate.getTime() <= this.endDate.getTime()) {
-          days.push({
-            dayText: daysOfWeek[curDate.getDay()],
-            dateString: `${months[curDate.getMonth()]} ${curDate.getDate()}`,
-            dateObject: curDate,
-          })
-          curDate = getDateDayOffset(curDate, 1)
-        }
-      } else {
-        // New date representation method
-        for (const date of this.dates) {
-          const hours = Math.floor(this.startTime)
-          const minutes = Math.floor((this.startTime - hours) * 60)
-          const paddedHours = String(hours).padStart(2, "0")
-          const paddedMinutes = String(minutes).padStart(2, "0")
+      // New date representation method
+      for (let date of this.dates) {
+        date = new Date(date)
 
-          // dateObject stores the original date object without timezone manipulation
-          const dateObject = new Date(`${date}T${paddedHours}:${paddedMinutes}:00Z`)
-
-          // Offset curDate by the correct timezone offset
-          const curDate = new Date(dateObject)
-          curDate.setHours(curDate.getHours() - this.timezoneOffset / 60)
-
-          days.push({
-            dayText: daysOfWeek[curDate.getUTCDay()],
-            dateString: `${
-              months[curDate.getUTCMonth()]
-            } ${curDate.getUTCDate()}`,
-            dateObject: dateObject,
-          })
-        }
+        days.push({
+          dayText: daysOfWeek[date.getDay()],
+          dateString: `${
+            months[date.getMonth()]
+          } ${date.getDate()}`,
+          dateObject: date,
+        })
       }
       return days
     },
@@ -470,20 +448,12 @@ export default {
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = []
-      let startTime
-      let endTime
 
-      if (this.startDate) {
-        // Legacy date representation method
-        startTime = this.startTime
-        endTime = this.endTime
-      } else {
-        // New date representation method
-        startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset)
-        endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset)
-      }
+      let startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset)
+      let endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset)
 
       let t = startTime
+      console.log(t)
       while (t != endTime) {
         // Convert timeNum back to local time if using new date representation
         let timeNum = this.startDate
@@ -956,7 +926,7 @@ export default {
       Timezone
     */
     getLocalTimezone() {
-      const split = new Date()
+      const split = new Date(this.dates[0])
         .toLocaleTimeString("en-us", { timeZoneName: "short" })
         .split(" ")
       const localTimezone = split[split.length - 1]

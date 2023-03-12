@@ -117,8 +117,11 @@ export const timeNumToTimeString = (timeNum) => {
 }
 
 /** Converts a date to a timeNum (e.g. 9.5) */
-export const dateToTimeNum = (date) => {
+export const dateToTimeNum = (date, utc=false) => {
   date = new Date(date)
+  if (utc) {
+    return date.getUTCHours() + date.getUTCMinutes() / 60
+  }
   return date.getHours() + date.getMinutes() / 60
 }
 
