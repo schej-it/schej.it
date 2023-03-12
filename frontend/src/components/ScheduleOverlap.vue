@@ -238,6 +238,7 @@ import {
   getDateWithTimeNum,
   post,
   isBetween,
+  isDateInRange,
   clamp,
   isPhone,
   utcTimeToLocalTime,
@@ -251,11 +252,10 @@ export default {
   name: "ScheduleOverlap",
   props: {
     eventId: { type: String, default: "" },
-    startDate: { type: Date, required: false },
-    endDate: { type: Date, required: false },
     startTime: { type: Number, required: true },
     endTime: { type: Number, required: true },
-    dates: { type: Array, required: false },
+    duration: { type: Number, required: true },
+    dates: { type: Array, required: true },
     responses: { type: Object, default: () => ({}) },
     loadingCalendarEvents: { type: Boolean, default: false },
     calendarEvents: { type: Array, required: true },
@@ -322,7 +322,7 @@ export default {
         const date = day.dateObject
 
         // Add all calendar events for the current date
-        while (tmpCalendarEvents.length > 0 && compareDateDay(date, tmpCalendarEvents[0].startDate) == 0) {
+        while (tmpCalendarEvents.length > 0 && isDateInRange(tmpCalendarEvents[0].startDate, date, this.duration)) {
           const calendarEvent = tmpCalendarEvents[0]
           tmpCalendarEvents.splice(0, 1)
 

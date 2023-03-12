@@ -176,6 +176,13 @@ export const isTimeNumBetweenDates = (timeNum, date1, date2) => {
   }
 }
 
+/** Returns whether date is in between startDate and startDate + duration (in hours) */
+export const isDateInRange = (date, startDate, duration) => {
+  const endDate = new Date(startDate)
+  endDate.setHours(endDate.getHours() + duration)
+  return startDate <= date && date <= endDate
+}
+
 /** Converts a utc time int to a local time int based on the timezoneOffset */
 export const utcTimeToLocalTime = (timeNum, timezoneOffset = new Date().getTimezoneOffset()) => {
   let localTimeNum = timeNum - timezoneOffset / 60

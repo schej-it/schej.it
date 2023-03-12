@@ -303,7 +303,6 @@ export default {
       /* Refresh event details */
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
-      console.log(this.event)
     },
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
