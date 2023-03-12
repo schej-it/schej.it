@@ -34,15 +34,14 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,startTime=float32,endTime=float32,dates=[]string} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=*float32,dates=[]primitive.DateTime} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
 	payload := struct {
-		Name      string   `json:"name" binding:"required"`
-		StartTime *float32 `json:"startTime" binding:"required"`
-		EndTime   *float32 `json:"endTime" binding:"required"`
-		Dates     []string `json:"dates" binding:"required"`
+		Name     string               `json:"name" binding:"required"`
+		Duration *float32             `json:"duration" binding:"required"`
+		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -52,8 +51,7 @@ func createEvent(c *gin.Context) {
 	event := models.Event{
 		OwnerId:   utils.GetUserId(session),
 		Name:      payload.Name,
-		StartTime: payload.StartTime,
-		EndTime:   payload.EndTime,
+		Duration:  payload.Duration,
 		Dates:     payload.Dates,
 		Responses: make(map[string]*models.Response),
 	}
@@ -169,15 +167,14 @@ func updateEventResponse(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,startTime=float32,endTime=float32,dates=[]string} true "Object containing info about the event to update"
+// @Param payload body object{name=string,duration=*float32,dates=[]primitive.DateTime} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
 	payload := struct {
-		Name      string   `json:"name" binding:"required"`
-		StartTime *float32 `json:"startTime" binding:"required"`
-		EndTime   *float32 `json:"endTime" binding:"required"`
-		Dates     []string `json:"dates" binding:"required"`
+		Name     string               `json:"name" binding:"required"`
+		Duration *float32             `json:"duration" binding:"required"`
+		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -202,10 +199,9 @@ func editEvent(c *gin.Context) {
 		},
 		bson.M{
 			"$set": bson.M{
-				"name":      payload.Name,
-				"startTime": payload.StartTime,
-				"endTime":   payload.EndTime,
-				"dates":     payload.Dates,
+				"name":     payload.Name,
+				"duration": payload.Duration,
+				"dates":    payload.Dates,
 			},
 		},
 	)

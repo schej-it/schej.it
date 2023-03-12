@@ -9,6 +9,19 @@ export const getDateString = (date) => {
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
+/** Returns an ISO formatted date string */
+export const getISODateString = (date, utc=false) => {
+  date = new Date(date)
+  if (utc) {
+    return date.toISOString().substring(0, 10)
+  }
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 /** Returns a string representing date range from date1 to date2, i.e. "5/14 - 5/27" */
 export const getDateRangeString = (date1, date2) => {
   date1 = new Date(date1)
@@ -32,8 +45,8 @@ export const getDateRangeStringForEvent = (event) => {
     endDate = new Date(event.endDate)
   } else {
     // New date representation
-    startDate = getDateWithTimeInt(new Date(event.dates[0]), event.startTime, true)
-    endDate = getDateWithTimeInt(new Date(event.dates[event.dates.length - 1]), event.startTime, true)
+    startDate = getDateWithTimeNum(new Date(event.dates[0]), event.startTime, true)
+    endDate = getDateWithTimeNum(new Date(event.dates[event.dates.length - 1]), event.startTime, true)
   }
   return getDateRangeString(startDate, endDate);
 }
@@ -52,12 +65,12 @@ export const getDateWithTime = (date, timeString) => {
   )
 }
 
-/** Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeInt (e.g. 11.5) */
-export const getDateWithTimeInt = (date, timeInt, utc=false) => {
+/** Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeNum (e.g. 11.5) */
+export const getDateWithTimeNum = (date, timeNum, utc=false) => {
   date = new Date(date)
 
-  const hours = parseInt(timeInt)
-  const minutes = (timeInt - hours) * 60
+  const hours = parseInt(timeNum)
+  const minutes = (timeNum - hours) * 60
   if (!utc) {
     return new Date(
       date.getFullYear(),
@@ -89,32 +102,42 @@ export const getDateDayOffset = (date, offset) => {
   return new Date(date.getTime() + offset * 24 * 60 * 60 * 1000)
 }
 
-/** Converts a timeInt (e.g. 13) to a timeText (e.g. "1 pm") */
-export const timeIntToTimeText = (timeInt) => {
-  const hours = Math.floor(timeInt)
-  const minutesDecimal = timeInt - hours
-  const minutesString = minutesDecimal > 0 ? `:${Math.floor(minutesDecimal*60)}` : ''
+/** Converts a timeNum (e.g. 13) to a timeText (e.g. "1 pm") */
+export const timeNumToTimeText = (timeNum) => {
+  const hours = Math.floor(timeNum)
+  const minutesDecimal = timeNum - hours
+  const minutesString = minutesDecimal > 0 ? `:${String(Math.floor(minutesDecimal*60)).padStart(2, '0')}` : ''
   
 
-  if (timeInt >= 0 && timeInt < 1) return `12${minutesString} am`
-  else if (timeInt < 12) return `${hours}${minutesString} am`
-  else if (timeInt >= 12 && timeInt < 13) return `12${minutesString} pm`
+  if (timeNum >= 0 && timeNum < 1) return `12${minutesString} am`
+  else if (timeNum < 12) return `${hours}${minutesString} am`
+  else if (timeNum >= 12 && timeNum < 13) return `12${minutesString} pm`
   return `${hours - 12}${minutesString} pm`
 }
 
-/** Converts a date to a timeInt (e.g. 9.5) */
-export const dateToTimeInt = (date) => {
+/** Converts a timeNum (e.g. 9.5) to a timeString (e.g. 09:30:00) */
+export const timeNumToTimeString = (timeNum) => {
+  const hours = Math.floor(timeNum)
+  const minutesDecimal = timeNum - hours
+  const paddedHours = String(hours).padStart(2, '0');
+  const paddedMinutes = String(Math.floor(minutesDecimal*60)).padStart(2, '0');
+
+  return `${paddedHours}:${paddedMinutes}:00`
+}
+
+/** Converts a date to a timeNum (e.g. 9.5) */
+export const dateToTimeNum = (date) => {
   date = new Date(date)
   return date.getHours() + date.getMinutes() / 60
 }
 
 /** Clamps the date to the given time, type can either be "upper" or "lower" */
-export const clampDateToTimeInt = (date, timeInt, type) => {
-  const diff = dateToTimeInt(date) - timeInt
+export const clampDateToTimeNum = (date, timeNum, type) => {
+  const diff = dateToTimeNum(date) - timeNum
   if (type === 'upper' && diff < 0) {
-    return getDateWithTimeInt(date, timeInt)
+    return getDateWithTimeNum(date, timeNum)
   } else if (type === 'lower' && diff > 0) {
-    return getDateWithTimeInt(date, timeInt)
+    return getDateWithTimeNum(date, timeNum)
   }
 
   // Return original date
@@ -142,30 +165,30 @@ export const compareDateDay = (a, b) => {
 }
 
 /**
-Returns whether the given timeInt is between date1 and date2 
-such that date1.getHour() <= timeInt <= date2.getHour(), accounting 
+Returns whether the given timeNum is between date1 and date2 
+such that date1.getHour() <= timeNum <= date2.getHour(), accounting 
 for the possibility that date1 and date2 might be on separate days
 */
-export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
+export const isTimeNumBetweenDates = (timeNum, date1, date2) => {
   const hour1 = date1.getHours()
   const hour2 = date2.getHours()
 
   if (hour1 <= hour2) {
-    return hour1 <= timeInt && timeInt <= hour2
+    return hour1 <= timeNum && timeNum <= hour2
   } else {
     return (
-      (hour1 <= timeInt && timeInt < 24) || (0 <= timeInt && timeInt <= hour2)
+      (hour1 <= timeNum && timeNum < 24) || (0 <= timeNum && timeNum <= hour2)
     )
   }
 }
 
 /** Converts a utc time int to a local time int based on the timezoneOffset */
-export const utcTimeToLocalTime = (timeInt, timezoneOffset = new Date().getTimezoneOffset()) => {
-  let localTimeInt = timeInt - timezoneOffset / 60
-  localTimeInt %= 24
-  if (localTimeInt < 0) localTimeInt += 24
+export const utcTimeToLocalTime = (timeNum, timezoneOffset = new Date().getTimezoneOffset()) => {
+  let localTimeNum = timeNum - timezoneOffset / 60
+  localTimeNum %= 24
+  if (localTimeNum < 0) localTimeNum += 24
 
-  return localTimeInt
+  return localTimeNum
 }
 
 /** Returns a string representing the current timezone */
@@ -210,21 +233,21 @@ export const getCalendarEvents = (event) => {
         calendarEvent.startDate = new Date(calendarEvent.startDate)
         calendarEvent.endDate = new Date(calendarEvent.endDate)
         const { startDate, endDate } = calendarEvent
-        if (isTimeIntBetweenDates(startTime, startDate, endDate)) {
+        if (isTimeNumBetweenDates(startTime, startDate, endDate)) {
           return {
             ...calendarEvent,
             startDate:
               startDate.getHours() <= startTime
-                ? getDateWithTimeInt(startDate, startTime)
-                : getDateWithTimeInt(endDate, startTime),
+                ? getDateWithTimeNum(startDate, startTime)
+                : getDateWithTimeNum(endDate, startTime),
           }
-        } else if (isTimeIntBetweenDates(endTime, startDate, endDate)) {
+        } else if (isTimeNumBetweenDates(endTime, startDate, endDate)) {
           return {
             ...calendarEvent,
             endDate:
               endDate.getHours() >= endTime
-                ? getDateWithTimeInt(endDate, endTime)
-                : getDateWithTimeInt(startDate, endTime),
+                ? getDateWithTimeNum(endDate, endTime)
+                : getDateWithTimeNum(startDate, endTime),
           }
         } else {
           return calendarEvent
@@ -234,7 +257,7 @@ export const getCalendarEvents = (event) => {
         // Filter calendarEvent based on whether it's completely in between start time and end time
 
         // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
-        const calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
+        const calendarEventDayStart = getDateWithTimeNum(calendarEvent.startDate, startTime)
         if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
           // Go back a day if calendarEventDayStart is past the calendarEvent start time
           calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);

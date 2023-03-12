@@ -230,11 +230,11 @@
 
 <script>
 import {
-  timeIntToTimeText,
+  timeNumToTimeText,
   getDateDayOffset,
   dateCompare,
   compareDateDay,
-  getDateWithTimeInt,
+  getDateWithTimeNum,
   post,
   isBetween,
   clamp,
@@ -322,7 +322,7 @@ export default {
 
       for (const calendarEvent of this.calendarEvents) {
         // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
-        const calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
+        const calendarEventDayStart = getDateWithTimeNum(calendarEvent.startDate, startTime)
         if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
           // Go back a day if calendarEventDayStart is past the calendarEvent start time
           calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
@@ -448,7 +448,7 @@ export default {
       const formatted = new Map()
       for (const day of this.days) {
         for (const time of this.times) {
-          const date = this.getDateTime(day.dateObject, time.timeInt)
+          const date = this.getDateTime(day.dateObject, time.timeNum)
           formatted.set(date.getTime(), new Set())
           for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(
@@ -485,17 +485,17 @@ export default {
 
       let t = startTime
       while (t != endTime) {
-        // Convert timeInt back to local time if using new date representation
-        let timeInt = this.startDate
+        // Convert timeNum back to local time if using new date representation
+        let timeNum = this.startDate
           ? t
           : utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
 
         times.push({
-          timeInt: timeInt,
-          text: timeIntToTimeText(t),
+          timeNum: timeNum,
+          text: timeNumToTimeText(t),
         })
         times.push({
-          timeInt: timeInt + 0.5,
+          timeNum: timeNum + 0.5,
         })
         t++
         t %= 24
@@ -539,10 +539,10 @@ export default {
     /*
       Dates
     */
-    getDateTime(calendarDate, timeInt) {
+    getDateTime(calendarDate, timeNum) {
       /* 
         Returns a date object given the date and time, where calendarDate represents the start date of each individual day on the calendar
-        and timeInt represents the time row for that day
+        and timeNum represents the time row for that day
       */
       let startTime
 
@@ -554,9 +554,9 @@ export default {
         startTime = utcTimeToLocalTime(this.startTime)
       }
 
-      const date = getDateWithTimeInt(calendarDate, timeInt)
-      if (timeInt < startTime) {
-        // Go to the next day if timeInt is less than start time
+      const date = getDateWithTimeNum(calendarDate, timeNum)
+      if (timeNum < startTime) {
+        // Go to the next day if timeNum is less than start time
         date.setDate(date.getDate() + 1)
       }
 
@@ -616,7 +616,7 @@ export default {
 
       const available = this.getRespondentsForDateTime(
         this.days[d].dateObject,
-        this.times[t].timeInt
+        this.times[t].timeNum
       )
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
@@ -652,8 +652,8 @@ export default {
         const day = this.days[d]
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = this.getDateTime(day.dateObject, time.timeInt)
-          const endDate = this.getDateTime(day.dateObject, time.timeInt + 0.5)
+          const startDate = this.getDateTime(day.dateObject, time.timeNum)
+          const endDate = this.getDateTime(day.dateObject, time.timeNum + 0.5)
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             return (
               (dateCompare(e.startDate, startDate) < 0 &&
@@ -762,7 +762,7 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          const date = this.getDateTime(day.dateObject, time.timeInt)
+          const date = this.getDateTime(day.dateObject, time.timeNum)
           if (this.availability.has(date.getTime())) {
             c += "tw-bg-avail-green-300 "
           }
@@ -773,7 +773,7 @@ export default {
           const respondent = this.curRespondent
           const respondents = this.getRespondentsForDateTime(
             day.dateObject,
-            time.timeInt
+            time.timeNum
           )
           if (respondents.has(respondent)) {
             c += "tw-bg-avail-green-300 "
@@ -782,7 +782,7 @@ export default {
           // Show everyone's availability
           const numRespondents = this.getRespondentsForDateTime(
             day.dateObject,
-            time.timeInt
+            time.timeNum
           ).size
           if (numRespondents > 0) {
             // Determine color of timeslot based on number of people available
@@ -861,7 +861,7 @@ export default {
         timeIndex,
         date: this.getDateTime(
           this.days[dayIndex].dateObject,
-          this.times[timeIndex].timeInt
+          this.times[timeIndex].timeNum
         ),
       }
     },
@@ -883,7 +883,7 @@ export default {
         while (t != this.dragCur.timeIndex + timeInc) {
           const date = this.getDateTime(
             this.days[d].dateObject,
-            this.times[t].timeInt
+            this.times[t].timeNum
           )
           if (this.dragType === this.DRAG_TYPES.ADD) {
             this.availability.add(date.getTime())

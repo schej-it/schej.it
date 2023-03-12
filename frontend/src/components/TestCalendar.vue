@@ -30,9 +30,9 @@ import {
   signInGoogle,
   get,
   getDateDayOffset,
-  getDateWithTimeInt,
-  dateToTimeInt,
-  clampDateToTimeInt,
+  getDateWithTimeNum,
+  dateToTimeNum,
+  clampDateToTimeNum,
   getCalendarEvents,
   isPhone,
 } from '@/utils'
@@ -47,8 +47,8 @@ export default {
   },
 
   data: () => ({
-    startDate: getDateWithTimeInt(new Date(), 9),
-    endDate: getDateWithTimeInt(getDateDayOffset(new Date(), 2), 24),
+    startDate: getDateWithTimeNum(new Date(), 9),
+    endDate: getDateWithTimeNum(getDateDayOffset(new Date(), 2), 24),
     startTime: 9,
     endTime: 0,
     calendarEvents: [],
@@ -57,11 +57,11 @@ export default {
 
   created() {
     if (this.isPhone) {
-      this.startDate = getDateWithTimeInt(new Date(), 9)
-      this.endDate = getDateWithTimeInt(getDateDayOffset(new Date(), 2), 24)
+      this.startDate = getDateWithTimeNum(new Date(), 9)
+      this.endDate = getDateWithTimeNum(getDateDayOffset(new Date(), 2), 24)
     } else {
-      this.startDate = getDateWithTimeInt(new Date(), 9)
-      this.endDate = getDateWithTimeInt(getDateDayOffset(new Date(), 6), 24)
+      this.startDate = getDateWithTimeNum(new Date(), 9)
+      this.endDate = getDateWithTimeNum(getDateDayOffset(new Date(), 6), 24)
     }
 
     this.retrieveCalendarEvents()
