@@ -141,7 +141,7 @@
         :eventId="eventId"
         v-bind="event"
         :loadingCalendarEvents="loading"
-        :calendarEvents="calendarEvents"
+        :calendarEventsByDay="calendarEventsByDay"
         @refreshEvent="refreshEvent"
         :selectTimezone="true"
       />
@@ -192,7 +192,7 @@ import {
   signInGoogle,
   isPhone,
   processEvent,
-  getCalendarEvents,
+  getCalendarEventsByDay,
   getDateRangeStringForEvent,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
@@ -223,7 +223,7 @@ export default {
     guestDialog: false,
     editEventDialog: false,
     loading: true,
-    calendarEvents: [],
+    calendarEventsByDay: [],
     event: null,
     scheduleOverlapComponent: null,
     scheduleOverlapComponentLoaded: false,
@@ -398,9 +398,9 @@ export default {
     }
 
     // Get user's calendar
-    getCalendarEvents(this.event)
+    getCalendarEventsByDay(this.event)
       .then((events) => {
-        this.calendarEvents = events
+        this.calendarEventsByDay = events
         this.loading = false
 
         // Set user availability automatically if we're in editing mode and they haven't responded

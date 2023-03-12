@@ -76,7 +76,10 @@
                   >
                     <div
                       class="tw-absolute tw-w-full tw-p-px tw-select-none"
-                      :style="event.style"
+                      :style="{
+                        top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
+                        height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
+                      }"
                       style="pointer-events: none"
                     >
                       <div
@@ -258,7 +261,7 @@ export default {
     dates: { type: Array, required: true },
     responses: { type: Object, default: () => ({}) },
     loadingCalendarEvents: { type: Boolean, default: false },
-    calendarEvents: { type: Array, required: true },
+    calendarEventsByDay: { type: Array, required: true },
     initialShowCalendarEvents: { type: Boolean, default: false },
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
@@ -303,55 +306,55 @@ export default {
       /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
     },
-    calendarEventsByDay() {
-      /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
-      // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
+    // calendarEventsByDay() {
+    //   /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
+    //   // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
 
-      const calendarEventsByDay = []
+    //   const calendarEventsByDay = []
 
-      // Create a temporary array of all calendar events
-      const tmpCalendarEvents = this.calendarEvents
-      tmpCalendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
+    //   // Create a temporary array of all calendar events
+    //   const tmpCalendarEvents = this.calendarEvents
+    //   tmpCalendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
 
-      // Iterate through all the days and add the calendar events for that day
-      for (let i = 0; i < this.days.length; ++i) {
-        if (tmpCalendarEvents.length == 0) break
+    //   // Iterate through all the days and add the calendar events for that day
+    //   for (let i = 0; i < this.days.length; ++i) {
+    //     if (tmpCalendarEvents.length == 0) break
 
-        calendarEventsByDay[i] = []
-        const day = this.days[i]
-        const date = day.dateObject
+    //     calendarEventsByDay[i] = []
+    //     const day = this.days[i]
+    //     const date = day.dateObject
 
-        // Add all calendar events for the current date
-        while (tmpCalendarEvents.length > 0 && isDateInRange(tmpCalendarEvents[0].startDate, date, this.duration)) {
-          const calendarEvent = tmpCalendarEvents[0]
-          tmpCalendarEvents.splice(0, 1)
+    //     // Add all calendar events for the current date
+    //     while (tmpCalendarEvents.length > 0 && isDateInRange(tmpCalendarEvents[0].startDate, date, this.duration)) {
+    //       const calendarEvent = tmpCalendarEvents[0]
+    //       tmpCalendarEvents.splice(0, 1)
 
-          // The number of hours since start time
-          const hoursOffset =
-            (calendarEvent.startDate.getTime() - date.getTime()) /
-            (1000 * 60 * 60)
+    //       // The number of hours since start time
+    //       const hoursOffset =
+    //         (calendarEvent.startDate.getTime() - date.getTime()) /
+    //         (1000 * 60 * 60)
 
-          // The length of the event in hours
-          const hoursLength =
-            (calendarEvent.endDate.getTime() -
-              calendarEvent.startDate.getTime()) /
-            (1000 * 60 * 60)
+    //       // The length of the event in hours
+    //       const hoursLength =
+    //         (calendarEvent.endDate.getTime() -
+    //           calendarEvent.startDate.getTime()) /
+    //         (1000 * 60 * 60)
 
-          // Don't display event if the event is 0 hours long
-          if (hoursLength == 0) continue
+    //       // Don't display event if the event is 0 hours long
+    //       if (hoursLength == 0) continue
 
-          calendarEventsByDay[i].push({
-            ...calendarEvent,
-            style: {
-              top: `calc(${hoursOffset} * 2 * 1.25rem)`,
-              height: `calc(${hoursLength} * 2 * 1.25rem)`,
-            },
-          })
-        }
-      }
+    //       calendarEventsByDay[i].push({
+    //         ...calendarEvent,
+    //         style: {
+    //           top: `calc(${hoursOffset} * 2 * 1.25rem)`,
+    //           height: `calc(${hoursLength} * 2 * 1.25rem)`,
+    //         },
+    //       })
+    //     }
+    //   }
 
-      return calendarEventsByDay
-    },
+    //   return calendarEventsByDay
+    // },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
       const days = []

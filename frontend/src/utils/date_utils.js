@@ -1,4 +1,5 @@
 import { get } from './fetch_utils'
+import { isBetween } from './general_utils'
 /* 
   Date utils 
 */
@@ -204,76 +205,72 @@ export const getCurrentTimezone = () => {
   only between the time ranges of the event and clamping calendar events that extend beyond the time
   ranges
 */
-export const getCalendarEvents = (event) => {
-  let timeMin
-  let timeMax
-  let startTime
-  let endTime
-  if (event.startDate) {
-    // Legacy date representation
-    timeMin = event.startDate.toISOString()
-    timeMax = getDateDayOffset(event.endDate, 2).toISOString()
+export const getCalendarEventsByDay = async (event) => {
+  let timeMin = new Date(event.dates[0]).toISOString()
+  let timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 2).toISOString()
 
-    startTime = event.startTime
-    endTime = event.endTime
-  } else {
-    // New date representation
-    timeMin = new Date(event.dates[0]).toISOString()
-    timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 2).toISOString()
+  // Fetch calendar events from Google Calendar
+  const calendarEvents = await get(
+    `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
+  ).then(events => events.map(e => {
+    e.startDate = new Date(e.startDate)
+    e.endDate = new Date(e.endDate)
+    return e
+  }))
+  calendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
 
-    startTime = utcTimeToLocalTime(event.startTime)
-    endTime = utcTimeToLocalTime(event.endTime)
+  // Iterate through all dates and add calendar events to array
+  const calendarEventsByDay = []
+  for (const i in event.dates) {
+    if (calendarEvents.length == 0) break
+
+    calendarEventsByDay[i] = []
+    const start = new Date(event.dates[i])
+    const end = new Date(start)
+    end.setHours(start.getHours() + event.duration)
+
+    // Keep iterating through calendar events until it's empty or there are no more events for the current date
+    while (calendarEvents.length > 0 && end > calendarEvents[0].startDate) {
+      const [calendarEvent] = calendarEvents.splice(0, 1)
+
+      // Check if calendar event overlaps with event time ranges
+      const startDateWithinRange = isBetween(calendarEvent.startDate, start, end)
+      const endDateWithinRange = isBetween(calendarEvent.endDate, start, end)
+      const rangeWithinCalendarEvent = isBetween(start, calendarEvent.startDate, calendarEvent.endDate) && isBetween(end, calendarEvent.startDate, calendarEvent.endDate)
+      if (startDateWithinRange || endDateWithinRange || rangeWithinCalendarEvent) {
+        const rangeStartWithinCalendarEvent = isBetween(start, calendarEvent.startDate, calendarEvent.endDate)
+        const rangeEndWithinCalendarEvent = isBetween(end, calendarEvent.startDate, calendarEvent.endDate)
+        if (rangeStartWithinCalendarEvent) {
+          // Clamp calendarEvent start
+          calendarEvent = { ...calendarEvent, startDate: start }
+        }
+        if (rangeEndWithinCalendarEvent) {
+          // Clamp calendarEvent end
+          calendarEvent = { ...calendarEvent, endDate: end }
+        }
+
+        // The number of hours since start time
+        const hoursOffset =
+          (calendarEvent.startDate.getTime() - start.getTime()) /
+          (1000 * 60 * 60)
+
+        // The length of the event in hours
+        const hoursLength =
+          (calendarEvent.endDate.getTime() -
+            calendarEvent.startDate.getTime()) /
+          (1000 * 60 * 60)
+
+        // Don't display event if the event is 0 hours long
+        if (hoursLength == 0) continue
+
+        calendarEventsByDay[i].push({
+          ...calendarEvent,
+          hoursOffset,
+          hoursLength,
+        })
+      }
+    }
   }
 
-  return get(
-    `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
-  ).then((data) => {
-    return data
-      .map((calendarEvent) => {
-        // If calendarEvent has a time int between the start and end dates, clamp it based on whether it's the starttime or endtime
-        calendarEvent.startDate = new Date(calendarEvent.startDate)
-        calendarEvent.endDate = new Date(calendarEvent.endDate)
-        const { startDate, endDate } = calendarEvent
-        if (isTimeNumBetweenDates(startTime, startDate, endDate)) {
-          return {
-            ...calendarEvent,
-            startDate:
-              startDate.getHours() <= startTime
-                ? getDateWithTimeNum(startDate, startTime)
-                : getDateWithTimeNum(endDate, startTime),
-          }
-        } else if (isTimeNumBetweenDates(endTime, startDate, endDate)) {
-          return {
-            ...calendarEvent,
-            endDate:
-              endDate.getHours() >= endTime
-                ? getDateWithTimeNum(endDate, endTime)
-                : getDateWithTimeNum(startDate, endTime),
-          }
-        } else {
-          return calendarEvent
-        }
-      })
-      .filter((calendarEvent) => {
-        // Filter calendarEvent based on whether it's completely in between start time and end time
-
-        // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
-        const calendarEventDayStart = getDateWithTimeNum(calendarEvent.startDate, startTime)
-        if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
-          // Go back a day if calendarEventDayStart is past the calendarEvent start time
-          calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
-        }
-
-        // calendarEventDayEnd is a date representation of the event end time for the day the calendar event takes place
-        const calendarEventDayEnd = new Date(calendarEventDayStart)
-        if (endTime > startTime) {
-          calendarEventDayEnd.setHours(calendarEventDayEnd.getHours() + (endTime - startTime));
-        } else {
-          calendarEventDayEnd.setHours(calendarEventDayEnd.getHours() + (endTime + 24-startTime));
-        }
-
-        const isBetween = calendarEvent.startDate >= calendarEventDayStart && calendarEvent.endDate <= calendarEventDayEnd
-        return isBetween
-      })
-  })
+  return calendarEventsByDay
 }
