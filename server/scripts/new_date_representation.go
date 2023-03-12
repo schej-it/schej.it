@@ -88,7 +88,7 @@ func main() {
 
 		}
 
-		if true {
+		if dates != nil && duration > 0 {
 			fmt.Println(oldEvent.Id)
 			result, err := db.EventsCollection.UpdateOne(
 				context.Background(),

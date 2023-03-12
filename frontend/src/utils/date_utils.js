@@ -37,17 +37,8 @@ export const getDateRangeString = (date1, date2) => {
 
 /** Returns a string representing the date range for the provided event */
 export const getDateRangeStringForEvent = (event) => {
-  let startDate
-  let endDate
-  if (event.startDate) {
-    // Legacy date representation
-    startDate = new Date(event.startDate)
-    endDate = new Date(event.endDate)
-  } else {
-    // New date representation
-    startDate = getDateWithTimeNum(new Date(event.dates[0]), event.startTime, true)
-    endDate = getDateWithTimeNum(new Date(event.dates[event.dates.length - 1]), event.startTime, true)
-  }
+  const startDate = new Date(event.dates[0])
+  const endDate = new Date(event.dates[event.dates.length-1])
   return getDateRangeString(startDate, endDate);
 }
 
