@@ -88,10 +88,26 @@ export const splitTime = (timeString) => {
   return { hours: parseInt(hours), minutes: parseInt(minutes) }
 }
 
+/** Takes a timeNum (e.g. 9.5) and splits it into hours and minutes, returning an object of the form { hours, minutes } */
+export const splitTimeNum = (timeNum) => {
+  const hours = Math.floor(timeNum)
+  const minutes = Math.floor((timeNum - hours) * 60)
+  return { hours, minutes }
+}
+
 /** Returns the specified date offset by the given number of days (can be positive or negative) */
 export const getDateDayOffset = (date, offset) => {
   date = new Date(date)
   return new Date(date.getTime() + offset * 24 * 60 * 60 * 1000)
+}
+
+/** Returns the specified date offset by the given number of hours */
+export const getDateHoursOffset = (date, hoursOffset) => {
+  const { hours, minutes } = splitTimeNum(hoursOffset)
+  const newDate = new Date(date)
+  newDate.setHours(newDate.getHours() + hours)
+  newDate.setMinutes(newDate.getMinutes() + minutes)
+  return newDate
 }
 
 /** Converts a timeNum (e.g. 13) to a timeText (e.g. "1 pm") */
@@ -222,9 +238,10 @@ export const getCalendarEventsByDay = async (event) => {
   // Iterate through all dates and add calendar events to array
   const calendarEventsByDay = []
   for (const i in event.dates) {
+    calendarEventsByDay[i] = []
+
     if (calendarEvents.length == 0) break
 
-    calendarEventsByDay[i] = []
     const start = new Date(event.dates[i])
     const end = new Date(start)
     end.setHours(start.getHours() + event.duration)

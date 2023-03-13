@@ -239,6 +239,7 @@ import {
   dateCompare,
   compareDateDay,
   getDateWithTimeNum,
+  getDateHoursOffset,
   post,
   isBetween,
   isDateInRange,
@@ -261,7 +262,7 @@ export default {
     dates: { type: Array, required: true },
     responses: { type: Object, default: () => ({}) },
     loadingCalendarEvents: { type: Boolean, default: false },
-    calendarEventsByDay: { type: Array, required: true },
+    calendarEventsByDay: { type: Array, default: () => [] },
     initialShowCalendarEvents: { type: Boolean, default: false },
     noEventNames: { type: Boolean, default: false },
     calendarOnly: { type: Boolean, default: false },
@@ -306,55 +307,6 @@ export default {
       /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
     },
-    // calendarEventsByDay() {
-    //   /* Returns a 2d array of events based on the day they take place. Index 0 = first day */
-    //   // TODO: calendar event spanning two days breaks this (how to fix: split calendar events into two or more events if span multiple days)
-
-    //   const calendarEventsByDay = []
-
-    //   // Create a temporary array of all calendar events
-    //   const tmpCalendarEvents = this.calendarEvents
-    //   tmpCalendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
-
-    //   // Iterate through all the days and add the calendar events for that day
-    //   for (let i = 0; i < this.days.length; ++i) {
-    //     if (tmpCalendarEvents.length == 0) break
-
-    //     calendarEventsByDay[i] = []
-    //     const day = this.days[i]
-    //     const date = day.dateObject
-
-    //     // Add all calendar events for the current date
-    //     while (tmpCalendarEvents.length > 0 && isDateInRange(tmpCalendarEvents[0].startDate, date, this.duration)) {
-    //       const calendarEvent = tmpCalendarEvents[0]
-    //       tmpCalendarEvents.splice(0, 1)
-
-    //       // The number of hours since start time
-    //       const hoursOffset =
-    //         (calendarEvent.startDate.getTime() - date.getTime()) /
-    //         (1000 * 60 * 60)
-
-    //       // The length of the event in hours
-    //       const hoursLength =
-    //         (calendarEvent.endDate.getTime() -
-    //           calendarEvent.startDate.getTime()) /
-    //         (1000 * 60 * 60)
-
-    //       // Don't display event if the event is 0 hours long
-    //       if (hoursLength == 0) continue
-
-    //       calendarEventsByDay[i].push({
-    //         ...calendarEvent,
-    //         style: {
-    //           top: `calc(${hoursOffset} * 2 * 1.25rem)`,
-    //           height: `calc(${hoursLength} * 2 * 1.25rem)`,
-    //         },
-    //       })
-    //     }
-    //   }
-
-    //   return calendarEventsByDay
-    // },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
       const days = []
@@ -422,7 +374,7 @@ export default {
       const formatted = new Map()
       for (const day of this.days) {
         for (const time of this.times) {
-          const date = this.getDateTime(day.dateObject, time.timeNum)
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           formatted.set(date.getTime(), new Set())
           for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(
@@ -445,23 +397,19 @@ export default {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = []
 
-      let startTime = utcTimeToLocalTime(this.startTime, this.timezoneOffset)
-      let endTime = utcTimeToLocalTime(this.endTime, this.timezoneOffset)
-
-      let t = startTime
-      while (t != endTime) {
-        let timeNum = utcTimeToLocalTime(utcTimeToLocalTime(t, -this.timezoneOffset))
+      for (let i = 0; i < this.duration; ++i) {
+        const utcTimeNum = this.startTime + i
+        const localTimeNum = utcTimeToLocalTime(utcTimeNum, this.timezoneOffset)
 
         times.push({
-          timeNum: timeNum,
-          text: timeNumToTimeText(t),
+          hoursOffset: i,
+          text: timeNumToTimeText(localTimeNum)
         })
         times.push({
-          timeNum: timeNum + 0.5,
+          hoursOffset: i + 0.5,
         })
-        t++
-        t %= 24
       }
+
       return times
     },
     timezoneOffset() {
@@ -499,33 +447,6 @@ export default {
     ...mapActions(["showInfo"]),
 
     /*
-      Dates
-    */
-    getDateTime(calendarDate, timeNum) {
-      /* 
-        Returns a date object given the date and time, where calendarDate represents the start date of each individual day on the calendar
-        and timeNum represents the time row for that day
-      */
-      let startTime
-
-      if (this.startDate) {
-        // Legacy date representation method
-        startTime = this.startTime
-      } else {
-        // New date representation method
-        startTime = utcTimeToLocalTime(this.startTime)
-      }
-
-      const date = getDateWithTimeNum(calendarDate, timeNum)
-      if (timeNum < startTime) {
-        // Go to the next day if timeNum is less than start time
-        date.setDate(date.getDate() + 1)
-      }
-
-      return date
-    },
-
-    /*
       Respondent
     */
     mouseOverRespondent(e, id) {
@@ -558,9 +479,9 @@ export default {
     /*
       Aggregate user availability
     */
-    getRespondentsForDateTime(date, time) {
+    getRespondentsForHoursOffset(date, hoursOffset) {
       /* Returns an array of respondents for the given date/time */
-      const d = this.getDateTime(date, time)
+      const d = getDateHoursOffset(date, hoursOffset)
       return this.responsesFormatted.get(d.getTime())
     },
     showAvailability(d, t) {
@@ -576,9 +497,9 @@ export default {
         return
       }
 
-      const available = this.getRespondentsForDateTime(
+      const available = this.getRespondentsForHoursOffset(
         this.days[d].dateObject,
-        this.times[t].timeNum
+        this.times[t].hoursOffset
       )
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
@@ -614,8 +535,8 @@ export default {
         const day = this.days[d]
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = this.getDateTime(day.dateObject, time.timeNum)
-          const endDate = this.getDateTime(day.dateObject, time.timeNum + 0.5)
+          const startDate = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          const endDate = getDateHoursOffset(day.dateObject, time.hoursOffset + 0.5)
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             return (
               (dateCompare(e.startDate, startDate) < 0 &&
@@ -724,7 +645,7 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          const date = this.getDateTime(day.dateObject, time.timeNum)
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
             c += "tw-bg-avail-green-300 "
           }
@@ -733,18 +654,18 @@ export default {
         if (this.curRespondent) {
           // Show the currently selected respondent's availability
           const respondent = this.curRespondent
-          const respondents = this.getRespondentsForDateTime(
+          const respondents = this.getRespondentsForHoursOffset(
             day.dateObject,
-            time.timeNum
+            time.hoursOffset
           )
           if (respondents.has(respondent)) {
             c += "tw-bg-avail-green-300 "
           }
         } else {
           // Show everyone's availability
-          const numRespondents = this.getRespondentsForDateTime(
+          const numRespondents = this.getRespondentsForHoursOffset(
             day.dateObject,
-            time.timeNum
+            time.hoursOffset
           ).size
           if (numRespondents > 0) {
             // Determine color of timeslot based on number of people available
@@ -821,9 +742,9 @@ export default {
       return {
         dayIndex,
         timeIndex,
-        date: this.getDateTime(
+        date: getDateHoursOffset(
           this.days[dayIndex].dateObject,
-          this.times[timeIndex].timeNum
+          this.times[timeIndex].hoursOffset
         ),
       }
     },
@@ -843,9 +764,9 @@ export default {
       while (d != this.dragCur.dayIndex + dayInc) {
         let t = this.dragStart.timeIndex
         while (t != this.dragCur.timeIndex + timeInc) {
-          const date = this.getDateTime(
+          const date = getDateHoursOffset(
             this.days[d].dateObject,
-            this.times[t].timeNum
+            this.times[t].hoursOffset
           )
           if (this.dragType === this.DRAG_TYPES.ADD) {
             this.availability.add(date.getTime())
