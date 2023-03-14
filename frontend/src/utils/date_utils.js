@@ -228,23 +228,34 @@ export const getCalendarEventsByDay = async (event) => {
   // Fetch calendar events from Google Calendar
   const calendarEvents = await get(
     `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
-  ).then(events => events.map(e => {
+  )
+
+  const calendarEventsByDay = processCalendarEvents(event.dates, event.duration, calendarEvents)
+
+  return calendarEventsByDay
+}
+
+/** Takes an array of calendar events and returns a new array separated by day and with hoursOffset and hoursLength properties */
+export const processCalendarEvents = (dates, duration, calendarEvents) => {
+  // Put calendarEvents into the correct format
+  calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
+  calendarEvents = calendarEvents.map(e => {
     e.startDate = new Date(e.startDate)
     e.endDate = new Date(e.endDate)
     return e
-  }))
+  })
   calendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
 
   // Iterate through all dates and add calendar events to array
   const calendarEventsByDay = []
-  for (const i in event.dates) {
+  for (const i in dates) {
     calendarEventsByDay[i] = []
 
     if (calendarEvents.length == 0) break
 
-    const start = new Date(event.dates[i])
+    const start = new Date(dates[i])
     const end = new Date(start)
-    end.setHours(start.getHours() + event.duration)
+    end.setHours(start.getHours() + duration)
 
     // Keep iterating through calendar events until it's empty or there are no more events for the current date
     while (calendarEvents.length > 0 && end > calendarEvents[0].startDate) {

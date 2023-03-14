@@ -4,14 +4,14 @@
     style="box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.1);"
   >
     <ScheduleOverlap
-      :startDate="startDate"
-      :endDate="endDate"
+      :dates="dates"
+      :duration="duration"
       :startTime="startTime"
       :endTime="endTime"
       
       :responses="responses"
 
-      :calendarEvents="calendarEvents"
+      :calendarEventsByDay="calendarEventsByDay"
       :initialShowCalendarEvents="true"
 
       calendarOnly
@@ -22,7 +22,7 @@
 
 <script>
 import ScheduleOverlap from '@/components/ScheduleOverlap'
-import { getDateDayOffset, getDateWithTimeNum, isPhone } from '@/utils'
+import { getDateDayOffset, getDateWithTimeNum, isPhone, dateToTimeNum, processCalendarEvents } from '@/utils'
 
 export default {
   name: 'LandingPageCalendar',
@@ -32,21 +32,27 @@ export default {
   },
 
   data: () => ({
-    startDate: getDateWithTimeNum(getDateDayOffset(new Date(), -1), 9),
-    endDate: getDateWithTimeNum(getDateDayOffset(new Date(), 1), 22),
-    startTime: 9,
+    dates: [
+      getDateWithTimeNum(getDateDayOffset(new Date(), -1), 9),
+      getDateWithTimeNum(new Date(), 9),
+      getDateWithTimeNum(getDateDayOffset(new Date(), 1), 9),
+    ],
 
     responses: {},
   }),
 
   computed: {
-    endTime() {
-      return isPhone(this.$vuetify) ? 17 : 22
+    duration() {
+      return isPhone(this.$vuetify) ? 8 : 13
     },
-    calendarEvents() {
-      const day1 = this.startDate
-      const day2 = new Date()
-      const day3 = this.endDate
+    startTime() {
+      return dateToTimeNum(new Date(this.dates[0]), true)
+    },
+    endTime() {
+      return (this.startTime + this.duration) % 24
+    },
+    calendarEventsByDay() {
+      const [day1, day2, day3] = this.dates
       const events = [
         {
           startDate: getDateWithTimeNum(day1, 9),
@@ -73,15 +79,12 @@ export default {
         })
       }
 
-      return events
+      return processCalendarEvents(this.dates, this.duration, events)
     },
   },
 
   created() {
-    const day1 = this.startDate
-    const day2 = new Date()
-    const day3 = this.endDate
-
+    const [day1, day2, day3] = this.dates
 
     this.responses = {
       "62828fec1bc681fa020632f2": {
