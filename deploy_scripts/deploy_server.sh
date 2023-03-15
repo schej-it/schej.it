@@ -11,7 +11,23 @@ ROOT_FOLDER_SERVER_LOCATION="/schej.it"
 # scp -i $AWS_KEY_LOCATION -r $SCRIPT_DIR/../server/schools/waldorf/allowed_emails.json $SERVER_HOST:~/
 # ssh $SERVER_HOST -i $AWS_KEY_LOCATION "sudo mv ~/allowed_emails.json $ROOT_FOLDER_SERVER_LOCATION/server/schools/waldorf/"
 
-# Git pull on server, npm install, and restart server process
+# Build server locally
+echo "Building server..."
+cd server
+go build -buildvcs=false
+
+# Transfer build to server
+echo "Transferring build to server..."
+scp -i $AWS_KEY_LOCATION -r $SCRIPT_DIR/../server/server $SERVER_HOST:~/
+
+# git pull, move server executable to the correct folder, terminate old server instance, and start new server instance
 echo "Deploying server..."
-ssh $SERVER_HOST -i $AWS_KEY_LOCATION "cd $ROOT_FOLDER_SERVER_LOCATION && sudo git stash && sudo git pull && cd server && sudo go build -buildvcs=false && screen -XS schej.it-server quit; screen -dmS schej.it-server sudo ./server -release=true"
+
+ssh $SERVER_HOST -i $AWS_KEY_LOCATION " \
+cd $ROOT_FOLDER_SERVER_LOCATION && \ 
+sudo git stash && sudo git pull && \
+cd server && \
+sudo mv ~/server $ROOT_FOLDER_SERVER_LOCATION/server/ && \
+screen -XS schej.it-server quit; screen -dmS schej.it-server sudo ./server -release=true"
+
 echo "Done!"

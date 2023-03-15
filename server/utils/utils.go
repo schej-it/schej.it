@@ -146,7 +146,6 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 
 	// Parse the response
 	var res Response
-	// defer resp.Body.close() ??
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		logger.StdErr.Panicln(err)
 	}

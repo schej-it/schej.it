@@ -2,3 +2,4 @@
 *.exe
 server/logs.log
 .DS_Store
+server/server
