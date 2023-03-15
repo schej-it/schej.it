@@ -14,11 +14,11 @@ ROOT_FOLDER_SERVER_LOCATION="/schej.it"
 # Build server locally
 echo "Building server..."
 cd server
-go build -buildvcs=false
+GOOS="linux" GOARCH="amd64" go build -buildvcs=false
 
 # Transfer build to server
 echo "Transferring build to server..."
-scp -i $AWS_KEY_LOCATION -r $SCRIPT_DIR/../server/server $SERVER_HOST:~/
+scp -i $AWS_KEY_LOCATION $SCRIPT_DIR/../server/server $SERVER_HOST:~/
 
 # git pull, move server executable to the correct folder, terminate old server instance, and start new server instance
 echo "Deploying server..."
