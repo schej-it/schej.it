@@ -24,7 +24,7 @@ scp -i $AWS_KEY_LOCATION $SCRIPT_DIR/../server/server $SERVER_HOST:~/
 echo "Deploying server..."
 
 ssh $SERVER_HOST -i $AWS_KEY_LOCATION " \
-cd $ROOT_FOLDER_SERVER_LOCATION && \ 
+cd $ROOT_FOLDER_SERVER_LOCATION && \
 sudo git stash && sudo git pull && \
 cd server && \
 sudo mv ~/server $ROOT_FOLDER_SERVER_LOCATION/server/ && \
