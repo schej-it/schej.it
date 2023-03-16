@@ -10,7 +10,7 @@
     </div>
 
     <!-- FAB -->
-    <BottomFab @click="dialog = true">
+    <BottomFab id="create-event-btn" @click="dialog = true">
       <v-icon>mdi-plus</v-icon>
     </BottomFab>
   </div>

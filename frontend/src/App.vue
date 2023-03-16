@@ -24,7 +24,7 @@
         <v-spacer />
 
         <AuthUserMenu v-if="authUser" />
-        <v-btn v-else text @click="signIn">Sign in</v-btn>
+        <v-btn v-else id="top-right-sign-in-btn" text @click="signIn">Sign in</v-btn>
       </div>
     </div>
 

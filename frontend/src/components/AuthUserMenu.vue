@@ -6,7 +6,7 @@
     :close-on-content-click="false"
   >
     <template v-slot:activator="{ on }">
-      <v-btn icon :width="size" :height="size" v-on="on">
+      <v-btn id="user-menu-btn" icon :width="size" :height="size" v-on="on">
         <v-avatar :size="size">
           <UserAvatarContent :user="authUser" :size="size" />
         </v-avatar>
@@ -16,11 +16,11 @@
       <v-list-item>
         <v-list-item-title><strong>{{ `${authUser.firstName} ${authUser.lastName}` }}</strong></v-list-item-title>
       </v-list-item>
-      <v-list-item @click="giveFeedback">
+      <v-list-item id="feedback-btn" @click="giveFeedback">
         <v-list-item-title>Give feedback</v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
-      <v-list-item @click="signOut">
+      <v-list-item id="sign-out-btn" @click="signOut">
         <v-list-item-title class="red--text">Sign Out</v-list-item-title>
       </v-list-item>
     </v-list>

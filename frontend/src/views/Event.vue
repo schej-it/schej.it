@@ -67,6 +67,7 @@
               </div>
               <v-btn 
                 v-if="isOwner"
+                id="edit-event-btn"
                 @click="editEvent"
                 icon
                 dense 

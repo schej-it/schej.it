@@ -49,6 +49,7 @@
             Google Calendar integration
           </div>
           <v-btn
+            id="lets-schej-it-btn"
             class="tw-bg-green tw-rounded-lg"
             dark
             @click="getStarted"
@@ -119,7 +120,7 @@
         <div
           class="tw-flex-1 tw-mx-4 sm:tw-mx-16 tw-mb-12 tw-max-w-3xl"
         >
-          <div class="lg:tw-pt-3 tw-text-center">
+          <div id="faq-section" class="lg:tw-pt-3 tw-text-center">
             <Header>
               Frequently Asked Questions
             </Header>
