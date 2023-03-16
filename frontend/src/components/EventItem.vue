@@ -30,7 +30,7 @@
         <v-list justify="center">
           <v-dialog v-model="removeDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn text small class="red--text" v-bind="attrs" v-on="on"
+              <v-btn id="delete-event-btn" text small class="red--text" v-bind="attrs" v-on="on"
                 >Delete</v-btn
               >
             </template>

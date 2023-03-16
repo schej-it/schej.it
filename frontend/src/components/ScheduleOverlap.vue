@@ -163,22 +163,27 @@
 
       <!-- Select timezone -->
       <div
-        class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm"
         v-if="selectTimezone"
+        class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm"
       >
-        <div class="tw-mt-px tw-mr-2">
-          Shown in
+        <div 
+          class="tw-flex tw-justify-center tw-items-center"
+          id="timezone-select-container"
+        >
+          <div class="tw-mt-px tw-mr-2">
+            Shown in
+          </div>
+          <v-select
+            id="timezone-select"
+            v-model="curTimezone"
+            class="tw-text-sm -tw-mt-px tw-flex-none tw-min-w-min tw-max-w-xl"
+            :items="Object.keys(timezoneMap)"
+            dense
+            color="#219653"
+            item-color="green"
+            hide-details
+          ></v-select>
         </div>
-        <v-select
-          id="timezone-select"
-          v-model="curTimezone"
-          class="tw-text-sm -tw-mt-px tw-flex-none tw-min-w-min tw-max-w-xl"
-          :items="Object.keys(timezoneMap)"
-          dense
-          color="#219653"
-          item-color="green"
-          hide-details
-        ></v-select>
       </div>
 
       <div class="sm:tw-w-48"></div>

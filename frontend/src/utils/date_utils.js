@@ -259,7 +259,7 @@ export const processCalendarEvents = (dates, duration, calendarEvents) => {
 
     // Keep iterating through calendar events until it's empty or there are no more events for the current date
     while (calendarEvents.length > 0 && end > calendarEvents[0].startDate) {
-      const [calendarEvent] = calendarEvents.splice(0, 1)
+      let [calendarEvent] = calendarEvents.splice(0, 1)
 
       // Check if calendar event overlaps with event time ranges
       const startDateWithinRange = isBetween(calendarEvent.startDate, start, end)
