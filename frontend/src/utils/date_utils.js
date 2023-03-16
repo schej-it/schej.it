@@ -1,4 +1,5 @@
 import { get } from './fetch_utils'
+import { isBetween } from './general_utils'
 /* 
   Date utils 
 */
@@ -7,6 +8,19 @@ import { get } from './fetch_utils'
 export const getDateString = (date) => {
   date = new Date(date)
   return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
+/** Returns an ISO formatted date string */
+export const getISODateString = (date, utc=false) => {
+  date = new Date(date)
+  if (utc) {
+    return date.toISOString().substring(0, 10)
+  }
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /** Returns a string representing date range from date1 to date2, i.e. "5/14 - 5/27" */
@@ -24,17 +38,8 @@ export const getDateRangeString = (date1, date2) => {
 
 /** Returns a string representing the date range for the provided event */
 export const getDateRangeStringForEvent = (event) => {
-  let startDate
-  let endDate
-  if (event.startDate) {
-    // Legacy date representation
-    startDate = new Date(event.startDate)
-    endDate = new Date(event.endDate)
-  } else {
-    // New date representation
-    startDate = getDateWithTimeInt(new Date(event.dates[0]), event.startTime, true)
-    endDate = getDateWithTimeInt(new Date(event.dates[event.dates.length - 1]), event.startTime, true)
-  }
+  const startDate = new Date(event.dates[0])
+  const endDate = new Date(event.dates[event.dates.length-1])
   return getDateRangeString(startDate, endDate);
 }
 
@@ -52,12 +57,12 @@ export const getDateWithTime = (date, timeString) => {
   )
 }
 
-/** Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeInt (e.g. 11.5) */
-export const getDateWithTimeInt = (date, timeInt, utc=false) => {
+/** Returns a new date object with the given date (e.g. 5/2/2022) and the specified timeNum (e.g. 11.5) */
+export const getDateWithTimeNum = (date, timeNum, utc=false) => {
   date = new Date(date)
 
-  const hours = parseInt(timeInt)
-  const minutes = (timeInt - hours) * 60
+  const hours = parseInt(timeNum)
+  const minutes = (timeNum - hours) * 60
   if (!utc) {
     return new Date(
       date.getFullYear(),
@@ -83,38 +88,67 @@ export const splitTime = (timeString) => {
   return { hours: parseInt(hours), minutes: parseInt(minutes) }
 }
 
+/** Takes a timeNum (e.g. 9.5) and splits it into hours and minutes, returning an object of the form { hours, minutes } */
+export const splitTimeNum = (timeNum) => {
+  const hours = Math.floor(timeNum)
+  const minutes = Math.floor((timeNum - hours) * 60)
+  return { hours, minutes }
+}
+
 /** Returns the specified date offset by the given number of days (can be positive or negative) */
 export const getDateDayOffset = (date, offset) => {
   date = new Date(date)
   return new Date(date.getTime() + offset * 24 * 60 * 60 * 1000)
 }
 
-/** Converts a timeInt (e.g. 13) to a timeText (e.g. "1 pm") */
-export const timeIntToTimeText = (timeInt) => {
-  const hours = Math.floor(timeInt)
-  const minutesDecimal = timeInt - hours
-  const minutesString = minutesDecimal > 0 ? `:${Math.floor(minutesDecimal*60)}` : ''
+/** Returns the specified date offset by the given number of hours */
+export const getDateHoursOffset = (date, hoursOffset) => {
+  const { hours, minutes } = splitTimeNum(hoursOffset)
+  const newDate = new Date(date)
+  newDate.setHours(newDate.getHours() + hours)
+  newDate.setMinutes(newDate.getMinutes() + minutes)
+  return newDate
+}
+
+/** Converts a timeNum (e.g. 13) to a timeText (e.g. "1 pm") */
+export const timeNumToTimeText = (timeNum) => {
+  const hours = Math.floor(timeNum)
+  const minutesDecimal = timeNum - hours
+  const minutesString = minutesDecimal > 0 ? `:${String(Math.floor(minutesDecimal*60)).padStart(2, '0')}` : ''
   
 
-  if (timeInt >= 0 && timeInt < 1) return `12${minutesString} am`
-  else if (timeInt < 12) return `${hours}${minutesString} am`
-  else if (timeInt >= 12 && timeInt < 13) return `12${minutesString} pm`
+  if (timeNum >= 0 && timeNum < 1) return `12${minutesString} am`
+  else if (timeNum < 12) return `${hours}${minutesString} am`
+  else if (timeNum >= 12 && timeNum < 13) return `12${minutesString} pm`
   return `${hours - 12}${minutesString} pm`
 }
 
-/** Converts a date to a timeInt (e.g. 9.5) */
-export const dateToTimeInt = (date) => {
+/** Converts a timeNum (e.g. 9.5) to a timeString (e.g. 09:30:00) */
+export const timeNumToTimeString = (timeNum) => {
+  const hours = Math.floor(timeNum)
+  const minutesDecimal = timeNum - hours
+  const paddedHours = String(hours).padStart(2, '0');
+  const paddedMinutes = String(Math.floor(minutesDecimal*60)).padStart(2, '0');
+
+  return `${paddedHours}:${paddedMinutes}:00`
+}
+
+/** Converts a date to a timeNum (e.g. 9.5) */
+export const dateToTimeNum = (date, utc=false) => {
   date = new Date(date)
+  if (utc) {
+    return date.getUTCHours() + date.getUTCMinutes() / 60
+  }
   return date.getHours() + date.getMinutes() / 60
 }
 
 /** Clamps the date to the given time, type can either be "upper" or "lower" */
-export const clampDateToTimeInt = (date, timeInt, type) => {
-  const diff = dateToTimeInt(date) - timeInt
+export const clampDateToTimeNum = (date, timeNum, type) => {
+  const diff = dateToTimeNum(date) - timeNum
   if (type === 'upper' && diff < 0) {
-    return getDateWithTimeInt(date, timeInt)
+    return getDateWithTimeNum(date, timeNum)
   } else if (type === 'lower' && diff > 0) {
-    return getDateWithTimeInt(date, timeInt)
+    return getDateWithTimeNum(date, timeNum)
   }
 
   // Return original date
@@ -142,30 +176,37 @@ export const compareDateDay = (a, b) => {
 }
 
 /**
-Returns whether the given timeInt is between date1 and date2 
-such that date1.getHour() <= timeInt <= date2.getHour(), accounting 
+Returns whether the given timeNum is between date1 and date2 
+such that date1.getHour() <= timeNum <= date2.getHour(), accounting 
 for the possibility that date1 and date2 might be on separate days
 */
-export const isTimeIntBetweenDates = (timeInt, date1, date2) => {
+export const isTimeNumBetweenDates = (timeNum, date1, date2) => {
   const hour1 = date1.getHours()
   const hour2 = date2.getHours()
 
   if (hour1 <= hour2) {
-    return hour1 <= timeInt && timeInt <= hour2
+    return hour1 <= timeNum && timeNum <= hour2
   } else {
     return (
-      (hour1 <= timeInt && timeInt < 24) || (0 <= timeInt && timeInt <= hour2)
+      (hour1 <= timeNum && timeNum < 24) || (0 <= timeNum && timeNum <= hour2)
     )
   }
 }
 
-/** Converts a utc time int to a local time int based on the timezoneOffset */
-export const utcTimeToLocalTime = (timeInt, timezoneOffset = new Date().getTimezoneOffset()) => {
-  let localTimeInt = timeInt - timezoneOffset / 60
-  localTimeInt %= 24
-  if (localTimeInt < 0) localTimeInt += 24
+/** Returns whether date is in between startDate and startDate + duration (in hours) */
+export const isDateInRange = (date, startDate, duration) => {
+  const endDate = new Date(startDate)
+  endDate.setHours(endDate.getHours() + duration)
+  return startDate <= date && date <= endDate
+}
 
-  return localTimeInt
+/** Converts a utc time int to a local time int based on the timezoneOffset */
+export const utcTimeToLocalTime = (timeNum, timezoneOffset = new Date().getTimezoneOffset()) => {
+  let localTimeNum = timeNum - timezoneOffset / 60
+  localTimeNum %= 24
+  if (localTimeNum < 0) localTimeNum += 24
+
+  return localTimeNum
 }
 
 /** Returns a string representing the current timezone */
@@ -180,76 +221,84 @@ export const getCurrentTimezone = () => {
   only between the time ranges of the event and clamping calendar events that extend beyond the time
   ranges
 */
-export const getCalendarEvents = (event) => {
-  let timeMin
-  let timeMax
-  let startTime
-  let endTime
-  if (event.startDate) {
-    // Legacy date representation
-    timeMin = event.startDate.toISOString()
-    timeMax = getDateDayOffset(event.endDate, 2).toISOString()
+export const getCalendarEventsByDay = async (event) => {
+  let timeMin = new Date(event.dates[0]).toISOString()
+  let timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 2).toISOString()
 
-    startTime = event.startTime
-    endTime = event.endTime
-  } else {
-    // New date representation
-    timeMin = new Date(event.dates[0]).toISOString()
-    timeMax = getDateDayOffset(new Date(event.dates[event.dates.length - 1]), 2).toISOString()
+  // Fetch calendar events from Google Calendar
+  const calendarEvents = await get(
+    `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
+  )
 
-    startTime = utcTimeToLocalTime(event.startTime)
-    endTime = utcTimeToLocalTime(event.endTime)
+  const calendarEventsByDay = processCalendarEvents(event.dates, event.duration, calendarEvents)
+
+  return calendarEventsByDay
+}
+
+/** Takes an array of calendar events and returns a new array separated by day and with hoursOffset and hoursLength properties */
+export const processCalendarEvents = (dates, duration, calendarEvents) => {
+  // Put calendarEvents into the correct format
+  calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
+  calendarEvents = calendarEvents.map(e => {
+    e.startDate = new Date(e.startDate)
+    e.endDate = new Date(e.endDate)
+    return e
+  })
+  calendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
+
+  // Iterate through all dates and add calendar events to array
+  const calendarEventsByDay = []
+  for (const i in dates) {
+    calendarEventsByDay[i] = []
+
+    if (calendarEvents.length == 0) break
+
+    const start = new Date(dates[i])
+    const end = new Date(start)
+    end.setHours(start.getHours() + duration)
+
+    // Keep iterating through calendar events until it's empty or there are no more events for the current date
+    while (calendarEvents.length > 0 && end > calendarEvents[0].startDate) {
+      const [calendarEvent] = calendarEvents.splice(0, 1)
+
+      // Check if calendar event overlaps with event time ranges
+      const startDateWithinRange = isBetween(calendarEvent.startDate, start, end)
+      const endDateWithinRange = isBetween(calendarEvent.endDate, start, end)
+      const rangeWithinCalendarEvent = isBetween(start, calendarEvent.startDate, calendarEvent.endDate) && isBetween(end, calendarEvent.startDate, calendarEvent.endDate)
+      if (startDateWithinRange || endDateWithinRange || rangeWithinCalendarEvent) {
+        const rangeStartWithinCalendarEvent = isBetween(start, calendarEvent.startDate, calendarEvent.endDate)
+        const rangeEndWithinCalendarEvent = isBetween(end, calendarEvent.startDate, calendarEvent.endDate)
+        if (rangeStartWithinCalendarEvent) {
+          // Clamp calendarEvent start
+          calendarEvent = { ...calendarEvent, startDate: start }
+        }
+        if (rangeEndWithinCalendarEvent) {
+          // Clamp calendarEvent end
+          calendarEvent = { ...calendarEvent, endDate: end }
+        }
+
+        // The number of hours since start time
+        const hoursOffset =
+          (calendarEvent.startDate.getTime() - start.getTime()) /
+          (1000 * 60 * 60)
+
+        // The length of the event in hours
+        const hoursLength =
+          (calendarEvent.endDate.getTime() -
+            calendarEvent.startDate.getTime()) /
+          (1000 * 60 * 60)
+
+        // Don't display event if the event is 0 hours long
+        if (hoursLength == 0) continue
+
+        calendarEventsByDay[i].push({
+          ...calendarEvent,
+          hoursOffset,
+          hoursLength,
+        })
+      }
+    }
   }
 
-  return get(
-    `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
-  ).then((data) => {
-    return data
-      .map((calendarEvent) => {
-        // If calendarEvent has a time int between the start and end dates, clamp it based on whether it's the starttime or endtime
-        calendarEvent.startDate = new Date(calendarEvent.startDate)
-        calendarEvent.endDate = new Date(calendarEvent.endDate)
-        const { startDate, endDate } = calendarEvent
-        if (isTimeIntBetweenDates(startTime, startDate, endDate)) {
-          return {
-            ...calendarEvent,
-            startDate:
-              startDate.getHours() <= startTime
-                ? getDateWithTimeInt(startDate, startTime)
-                : getDateWithTimeInt(endDate, startTime),
-          }
-        } else if (isTimeIntBetweenDates(endTime, startDate, endDate)) {
-          return {
-            ...calendarEvent,
-            endDate:
-              endDate.getHours() >= endTime
-                ? getDateWithTimeInt(endDate, endTime)
-                : getDateWithTimeInt(startDate, endTime),
-          }
-        } else {
-          return calendarEvent
-        }
-      })
-      .filter((calendarEvent) => {
-        // Filter calendarEvent based on whether it's completely in between start time and end time
-
-        // calendarEventDayStart is a date representation of the event start time for the day the calendar event takes place
-        const calendarEventDayStart = getDateWithTimeInt(calendarEvent.startDate, startTime)
-        if (calendarEventDayStart.getTime() > calendarEvent.startDate.getTime()) {
-          // Go back a day if calendarEventDayStart is past the calendarEvent start time
-          calendarEventDayStart.setDate(calendarEventDayStart.getDate() - 1);
-        }
-
-        // calendarEventDayEnd is a date representation of the event end time for the day the calendar event takes place
-        const calendarEventDayEnd = new Date(calendarEventDayStart)
-        if (endTime > startTime) {
-          calendarEventDayEnd.setHours(calendarEventDayEnd.getHours() + (endTime - startTime));
-        } else {
-          calendarEventDayEnd.setHours(calendarEventDayEnd.getHours() + (endTime + 24-startTime));
-        }
-
-        const isBetween = calendarEvent.startDate >= calendarEventDayStart && calendarEvent.endDate <= calendarEventDayEnd
-        return isBetween
-      })
-  })
+  return calendarEventsByDay
 }

@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { isPhone, post, put, utcTimeToLocalTime } from "@/utils";
+import { isPhone, post, put, utcTimeToLocalTime, timeNumToTimeString, dateToTimeNum, getISODateString } from "@/utils";
 
 export default {
   name: "NewEventDialog",
@@ -112,16 +112,12 @@ export default {
   created() {
     if (this.event) {
       this.name = this.event.name
-      this.startTime = utcTimeToLocalTime(this.event.startTime)
-      this.endTime = utcTimeToLocalTime(this.event.endTime)
-      
-      // Format dates for the local timezone
-      const paddedStartTime = String(this.event.startTime).padStart(2, '0');
+      this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
+      this.endTime = (this.startTime + this.event.duration) % 24
+
       const selectedDays = []
       for (const date of this.event.dates) {
-        const localDate = new Date(`${date}T${paddedStartTime}:00:00Z`);
-        const dateString = new Date(localDate.getTime() - new Date().getTimezoneOffset() * 1000 * 60).toISOString().substring(0, 10);
-        selectedDays.push(dateString);
+        selectedDays.push(getISODateString(date))
       }
       this.selectedDays = selectedDays
     }
@@ -176,41 +172,38 @@ export default {
       this.selectedDays = [];
     },
     submit() {
-      // Calculate UTC dates array and UTC start/end times
-      const utcDates = [];
-      const paddedStartTime = String(this.startTime).padStart(2, '0');
-      const timezoneOffset = new Date().getTimezoneOffset();
-      let utcStartTime = (this.startTime + timezoneOffset/60) % 24;
-      if (utcStartTime < 0) utcStartTime += 24;
-      let utcEndTime = (this.endTime + timezoneOffset/60) % 24;
-      if (utcEndTime < 0) utcStartTime += 24;
-      
-      for (const date of this.selectedDays) {
-        const utcDate = new Date(`${date}T${paddedStartTime}:00:00`);
-        const dateString = utcDate.toISOString().substring(0, 10);
-        utcDates.push(dateString);
-      }
-      utcDates.sort()
+      this.selectedDays.sort()
 
-      // Create new event on backend
+      // Get duration of event
+      let duration = this.endTime - this.startTime
+      if (duration < 0) duration += 24
+
+      // Get date objects for each selected day
+      const startTimeString = timeNumToTimeString(this.startTime)
+      const dates = []
+      for (const day of this.selectedDays) {
+        const date = new Date(`${day}T${startTimeString}`);
+        dates.push(date)
+      }
+
       this.loading = true;
       if (!this.editEvent) {
+        // Create new event on backend
         post("/events", {
           name: this.name,
-          startTime: utcStartTime,
-          endTime: utcEndTime,
-          dates: utcDates,
+          duration,
+          dates,
         }).then(({ eventId }) => {
           this.$router.push({ name: "event", params: { eventId } });
           this.loading = false;
         });
       } else {
+        // Edit event on backend
         if (this.event) {
           put(`/events/${this.event._id}`, {
             name: this.name,
-            startTime: utcStartTime,
-            endTime: utcEndTime,
-            dates: utcDates,
+            duration,
+            dates,
           }).then(() => {
             window.location.reload()
           });

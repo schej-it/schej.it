@@ -2,6 +2,8 @@
   General utils
 */
 
+import { dateToTimeNum } from "./date_utils"
+
 var timeoutId
 /** Calls callback() on long press */
 export const onLongPress = (element, callback, capture = false) => {
@@ -87,10 +89,6 @@ export const dataURItoBlob = (dataURI) => {
 
 /** Reformats the given event object to the format we want */
 export const processEvent = (event) => {
-  if (event.startDate) {
-    event.startDate = new Date(event.startDate)
-    event.endDate = new Date(event.endDate)
-    event.startTime = event.startDate.getHours()
-    event.endTime = event.endDate.getHours()
-  } 
+  event.startTime = dateToTimeNum(new Date(event.dates[0]), true)
+  event.endTime = (event.startTime + event.duration) % 24
 }
