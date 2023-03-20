@@ -33,6 +33,11 @@ const routes = [
     name: 'privacy-policy',
     component: () => import('@/views/PrivacyPolicy.vue'),
   },
+  {
+    path: '/donut',
+    name: 'donut',
+    redirect: '/e/6417b47a0c6fc139f870a47d',
+  },
 ]
 
 const router = new VueRouter({
