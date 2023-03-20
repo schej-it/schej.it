@@ -24,21 +24,7 @@
     </v-dialog>
 
     <!-- Google sign in not supported dialog -->
-    <v-dialog v-model="webviewDialog" width="400" content-class="tw-m-0">
-      <v-card>
-        <v-card-title>Google sign in not supported</v-card-title>
-        <v-card-text>
-          The browser you are currently using does not support Google sign in!
-          Consider opening schej in another browser, such as Safari or Chrome.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn text class="tw-text-green" @click="webviewDialog = false">
-            Ok
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <SignInNotSupportedDialog v-model="webviewDialog" />
 
     <!-- Guest Dialog -->
     <GuestDialog
@@ -203,6 +189,7 @@ import ScheduleOverlap from "@/components/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
 import { errors } from "@/constants"
 import isWebview from "is-ua-webview"
+import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 
 export default {
   name: "Event",
@@ -216,7 +203,8 @@ export default {
     GuestDialog,
     ScheduleOverlap,
     NewEventDialog,
-  },
+    SignInNotSupportedDialog,
+},
 
   data: () => ({
     choiceDialog: false,

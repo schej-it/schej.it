@@ -2,6 +2,7 @@
   <v-app>
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
+    <SignInNotSupportedDialog v-model="webviewDialog" />
     <div
       v-if="showHeader"
       class="tw-h-14 sm:tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
@@ -66,6 +67,8 @@ import { mapMutations, mapState } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "./utils"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "./components/AuthUserMenu.vue"
+import SignInNotSupportedDialog from "./components/SignInNotSupportedDialog.vue"
+import isWebview from "is-ua-webview"
 
 export default {
   name: "App",
@@ -90,12 +93,14 @@ It's completely free to use, and it looks great on mobile.`,
   components: {
     AutoSnackbar,
     AuthUserMenu,
+    SignInNotSupportedDialog
   },
 
   data: () => ({
     mounted: false,
     loaded: false,
     scrollY: 0,
+    webviewDialog: false,
   }),
 
   computed: {
@@ -153,6 +158,10 @@ It's completely free to use, and it looks great on mobile.`,
     },
     signIn() {
       if (this.$route.name === "event") {
+        if (isWebview(navigator.userAgent)) {
+          this.webviewDialog = true
+          return
+        }
         signInGoogle(
           { type: "event-sign-in", eventId: this.$route.params.eventId },
           true
