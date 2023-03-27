@@ -39,9 +39,10 @@ func InitEvents(router *gin.Engine) {
 // @Router /events [post]
 func createEvent(c *gin.Context) {
 	payload := struct {
-		Name     string               `json:"name" binding:"required"`
-		Duration *float32             `json:"duration" binding:"required"`
-		Dates    []primitive.DateTime `json:"dates" binding:"required"`
+		Name                 string               `json:"name" binding:"required"`
+		Duration             *float32             `json:"duration" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		NotificationsEnabled bool                 `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -49,11 +50,12 @@ func createEvent(c *gin.Context) {
 	session := sessions.Default(c)
 
 	event := models.Event{
-		OwnerId:   utils.GetUserId(session),
-		Name:      payload.Name,
-		Duration:  payload.Duration,
-		Dates:     payload.Dates,
-		Responses: make(map[string]*models.Response),
+		OwnerId:              utils.GetUserId(session),
+		Name:                 payload.Name,
+		Duration:             payload.Duration,
+		Dates:                payload.Dates,
+		NotificationsEnabled: payload.NotificationsEnabled,
+		Responses:            make(map[string]*models.Response),
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -65,7 +67,7 @@ func createEvent(c *gin.Context) {
 
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)", insertedId, user.FirstName, user.LastName, user.Email))
+	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)\n**Notifications Enabled**: %v", insertedId, user.FirstName, user.LastName, user.Email, event.NotificationsEnabled))
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
 
