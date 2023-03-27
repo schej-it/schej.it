@@ -8,8 +8,9 @@ type Event struct {
 	OwnerId primitive.ObjectID `json:"ownerId" bson:"ownerId,omitempty"`
 	Name    string             `json:"name" bson:"name,omitempty"`
 
-	Duration *float32             `json:"duration" bson:"duration,omitempty"`
-	Dates    []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
+	Duration             *float32             `json:"duration" bson:"duration,omitempty"`
+	Dates                []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
+	NotificationsEnabled bool                 `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
 
 	// Availability responses
 	Responses map[string]*Response `json:"responses" bson:"responses"`

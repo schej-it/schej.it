@@ -120,6 +120,7 @@ func updateEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
 
 	var response models.Response
 	var userIdString string
@@ -146,6 +147,9 @@ func updateEventResponse(c *gin.Context) {
 		}
 	}
 
+	// Check if user has responded to event before (edit response) or not (new response)
+	_, userHasResponded := event.Responses[userIdString]
+
 	// Update responses in mongodb
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
@@ -158,6 +162,41 @@ func updateEventResponse(c *gin.Context) {
 	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
+	}
+
+	// Send email to creator of event if creator enabled it
+	if event.NotificationsEnabled && !userHasResponded && userIdString != event.OwnerId.Hex() {
+		// Send email asynchronously
+		go func() {
+			creator := db.GetUserById(event.OwnerId.Hex())
+			if creator == nil {
+				c.JSON(http.StatusOK, gin.H{})
+				return
+			}
+
+			var respondentName string
+			if *payload.Guest {
+				respondentName = payload.Name
+			} else {
+				respondent := db.GetUserById(userIdString)
+				respondentName = fmt.Sprintf("%s %s", respondent.FirstName, respondent.LastName)
+			}
+			utils.SendEmail(
+				creator.Email,
+				fmt.Sprintf("Someone just responded to your schej - \"%s\"!", event.Name),
+				fmt.Sprintf(
+					`<p>Hi %s,</p>
+
+					<p>%s just responded to your schej named "%s"!<br>
+					<a href="https://schej.it/e/%s">Click here to view the event</a></p>
+
+					<p>Best,<br>
+					schej team</p>`,
+					creator.FirstName, respondentName, event.Name, eventId,
+				),
+				"text/html",
+			)
+		}()
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
