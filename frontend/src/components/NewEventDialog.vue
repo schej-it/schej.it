@@ -112,10 +112,12 @@ export default {
   }),
 
   created() {
+    // Populate event fields if this.event exists
     if (this.event) {
       this.name = this.event.name
       this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
       this.endTime = (this.startTime + this.event.duration) % 24
+      this.notificationsEnabled = this.event.notificationsEnabled
 
       const selectedDays = []
       for (const date of this.event.dates) {

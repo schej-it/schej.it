@@ -216,7 +216,7 @@ func editEvent(c *gin.Context) {
 		Name                 string               `json:"name" binding:"required"`
 		Duration             *float32             `json:"duration" binding:"required"`
 		Dates                []primitive.DateTime `json:"dates" binding:"required"`
-		NotificationsEnabled bool                 `json:"notificationsEnabled" binding:"required"`
+		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -244,7 +244,7 @@ func editEvent(c *gin.Context) {
 				"name":                 payload.Name,
 				"duration":             payload.Duration,
 				"dates":                payload.Dates,
-				"notificationsEnabled": payload.NotificationsEnabled,
+				"notificationsEnabled": *payload.NotificationsEnabled,
 			},
 		},
 	)
