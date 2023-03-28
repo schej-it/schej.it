@@ -42,7 +42,7 @@ func createEvent(c *gin.Context) {
 		Name                 string               `json:"name" binding:"required"`
 		Duration             *float32             `json:"duration" binding:"required"`
 		Dates                []primitive.DateTime `json:"dates" binding:"required"`
-		NotificationsEnabled bool                 `json:"notificationsEnabled" binding:"required"`
+		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -54,7 +54,7 @@ func createEvent(c *gin.Context) {
 		Name:                 payload.Name,
 		Duration:             payload.Duration,
 		Dates:                payload.Dates,
-		NotificationsEnabled: payload.NotificationsEnabled,
+		NotificationsEnabled: *payload.NotificationsEnabled,
 		Responses:            make(map[string]*models.Response),
 	}
 
@@ -213,9 +213,10 @@ func updateEventResponse(c *gin.Context) {
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
 	payload := struct {
-		Name     string               `json:"name" binding:"required"`
-		Duration *float32             `json:"duration" binding:"required"`
-		Dates    []primitive.DateTime `json:"dates" binding:"required"`
+		Name                 string               `json:"name" binding:"required"`
+		Duration             *float32             `json:"duration" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		NotificationsEnabled bool                 `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -240,9 +241,10 @@ func editEvent(c *gin.Context) {
 		},
 		bson.M{
 			"$set": bson.M{
-				"name":     payload.Name,
-				"duration": payload.Duration,
-				"dates":    payload.Dates,
+				"name":                 payload.Name,
+				"duration":             payload.Duration,
+				"dates":                payload.Dates,
+				"notificationsEnabled": payload.NotificationsEnabled,
 			},
 		},
 	)
