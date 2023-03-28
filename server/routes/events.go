@@ -39,9 +39,10 @@ func InitEvents(router *gin.Engine) {
 // @Router /events [post]
 func createEvent(c *gin.Context) {
 	payload := struct {
-		Name     string               `json:"name" binding:"required"`
-		Duration *float32             `json:"duration" binding:"required"`
-		Dates    []primitive.DateTime `json:"dates" binding:"required"`
+		Name                 string               `json:"name" binding:"required"`
+		Duration             *float32             `json:"duration" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -49,11 +50,12 @@ func createEvent(c *gin.Context) {
 	session := sessions.Default(c)
 
 	event := models.Event{
-		OwnerId:   utils.GetUserId(session),
-		Name:      payload.Name,
-		Duration:  payload.Duration,
-		Dates:     payload.Dates,
-		Responses: make(map[string]*models.Response),
+		OwnerId:              utils.GetUserId(session),
+		Name:                 payload.Name,
+		Duration:             payload.Duration,
+		Dates:                payload.Dates,
+		NotificationsEnabled: *payload.NotificationsEnabled,
+		Responses:            make(map[string]*models.Response),
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -65,7 +67,7 @@ func createEvent(c *gin.Context) {
 
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)", insertedId, user.FirstName, user.LastName, user.Email))
+	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)\n**Notifications Enabled**: %v", insertedId, user.FirstName, user.LastName, user.Email, event.NotificationsEnabled))
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
 
@@ -120,6 +122,7 @@ func updateEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
 
 	var response models.Response
 	var userIdString string
@@ -146,6 +149,9 @@ func updateEventResponse(c *gin.Context) {
 		}
 	}
 
+	// Check if user has responded to event before (edit response) or not (new response)
+	_, userHasResponded := event.Responses[userIdString]
+
 	// Update responses in mongodb
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
@@ -160,6 +166,41 @@ func updateEventResponse(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 
+	// Send email to creator of event if creator enabled it
+	if event.NotificationsEnabled && !userHasResponded && userIdString != event.OwnerId.Hex() {
+		// Send email asynchronously
+		go func() {
+			creator := db.GetUserById(event.OwnerId.Hex())
+			if creator == nil {
+				c.JSON(http.StatusOK, gin.H{})
+				return
+			}
+
+			var respondentName string
+			if *payload.Guest {
+				respondentName = payload.Name
+			} else {
+				respondent := db.GetUserById(userIdString)
+				respondentName = fmt.Sprintf("%s %s", respondent.FirstName, respondent.LastName)
+			}
+			utils.SendEmail(
+				creator.Email,
+				fmt.Sprintf("Someone just responded to your schej - \"%s\"!", event.Name),
+				fmt.Sprintf(
+					`<p>Hi %s,</p>
+
+					<p>%s just responded to your schej named "%s"!<br>
+					<a href="https://schej.it/e/%s">Click here to view the event</a></p>
+
+					<p>Best,<br>
+					schej team</p>`,
+					creator.FirstName, respondentName, event.Name, eventId,
+				),
+				"text/html",
+			)
+		}()
+	}
+
 	c.JSON(http.StatusOK, gin.H{})
 }
 
@@ -172,9 +213,10 @@ func updateEventResponse(c *gin.Context) {
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
 	payload := struct {
-		Name     string               `json:"name" binding:"required"`
-		Duration *float32             `json:"duration" binding:"required"`
-		Dates    []primitive.DateTime `json:"dates" binding:"required"`
+		Name                 string               `json:"name" binding:"required"`
+		Duration             *float32             `json:"duration" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		NotificationsEnabled bool                 `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -199,9 +241,10 @@ func editEvent(c *gin.Context) {
 		},
 		bson.M{
 			"$set": bson.M{
-				"name":     payload.Name,
-				"duration": payload.Duration,
-				"dates":    payload.Dates,
+				"name":                 payload.Name,
+				"duration":             payload.Duration,
+				"dates":                payload.Dates,
+				"notificationsEnabled": payload.NotificationsEnabled,
 			},
 		},
 	)

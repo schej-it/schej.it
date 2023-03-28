@@ -57,7 +57,7 @@
           >
             What dates would you like to meet?
           </div>
-          <div class="tw-flex tw-flex-col tw-justify-center tw-items-center">
+          <div class="tw-flex tw-flex-col tw-justify-center tw-items-center tw-mb-2">
             <v-date-picker
               v-model="selectedDays"
               no-title
@@ -69,8 +69,9 @@
               :min="minCalendarDate"
             />
           </div>
-          
         </div>
+
+        <v-checkbox v-model="notificationsEnabled" label="Enable email notifications when people join this event"/>
 
         <v-spacer />
 
@@ -107,6 +108,7 @@ export default {
     endTime: 17,
     loading: false,
     selectedDays: [],
+    notificationsEnabled: false,
   }),
 
   created() {
@@ -193,6 +195,7 @@ export default {
           name: this.name,
           duration,
           dates,
+          notificationsEnabled: this.notificationsEnabled,
         }).then(({ eventId }) => {
           this.$router.push({ name: "event", params: { eventId } });
           this.loading = false;
@@ -204,6 +207,7 @@ export default {
             name: this.name,
             duration,
             dates,
+            notificationsEnabled: this.notificationsEnabled,
           }).then(() => {
             window.location.reload()
           });
