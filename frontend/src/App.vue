@@ -82,9 +82,7 @@ export default {
       { charset: "utf-8" },
       {
         name: "description",
-        content: `schej is a group scheduling platform that helps you find a time to meet.
-Users fill out their availability with the help of Google Calendar, and a heat map is generated showing when everybody is available.
-It's completely free to use, and it looks great on mobile.`,
+        content: `schej is a scheduling platform where users input their availability automatically via Google Calendar, generating a heatmap showing when everyone's available.`,
       },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
     ],
