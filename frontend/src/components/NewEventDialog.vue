@@ -71,7 +71,7 @@
           </div>
         </div>
 
-        <v-checkbox v-model="notificationsEnabled" label="Enable email notifications when people join this event"/>
+        <v-checkbox v-model="notificationsEnabled" label="Email me each time someone joins my event!"/>
 
         <v-spacer />
 
