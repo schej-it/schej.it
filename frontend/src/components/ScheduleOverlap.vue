@@ -174,27 +174,20 @@
     <div class="tw-flex">
       <div class="sm:tw-w-12"></div>
 
-      <!-- Select timezone -->
       <div
-        v-if="selectTimezone"
-        class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm"
+        class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm tw-justify-between"
       >
-        <div
-          class="tw-flex tw-justify-center tw-items-center"
-          id="timezone-select-container"
-        >
-          <div class="tw-mt-px tw-mr-2">Shown in</div>
-          <v-select
-            id="timezone-select"
-            v-model="curTimezone"
-            class="tw-text-sm -tw-mt-px tw-flex-none tw-min-w-min tw-max-w-xl"
-            :items="Object.keys(timezoneMap)"
-            dense
-            color="#219653"
-            item-color="green"
-            hide-details
-          ></v-select>
-        </div>
+        <!-- Select timezone -->
+        <TimezoneSelector
+          v-if="selectTimezone"
+          v-model="curTimezone"
+          :timezones="Object.keys(timezoneMap)"
+        />
+
+        <v-btn outlined class="tw-text-green">
+          <span class="tw-mr-2">Schedule event</span>
+          <v-img src="@/assets/gcal_logo.png" height="20" width="20" />
+        </v-btn>
       </div>
 
       <div class="sm:tw-w-48"></div>
@@ -266,6 +259,7 @@ import { mapActions, mapState } from "vuex";
 import UserAvatarContent from "./UserAvatarContent.vue";
 import ZigZag from "./ZigZag.vue";
 import timezoneData from "@/data/timezones.json";
+import TimezoneSelector from "./TimezoneSelector.vue";
 
 export default {
   name: "ScheduleOverlap",
@@ -434,6 +428,7 @@ export default {
       return this.timezoneMap[this.curTimezone] * -1; // Multiplying by -1 because offset is flipped
     },
     timezoneMap() {
+      /* Maps timezone name to the timezone offset */
       const map = timezoneData.reduce(function (map, obj) {
         map[obj.name] = obj.offset;
         return map;
@@ -920,6 +915,6 @@ export default {
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondent);
   },
-  components: { UserAvatarContent, ZigZag },
+  components: { UserAvatarContent, ZigZag, TimezoneSelector },
 };
 </script>
