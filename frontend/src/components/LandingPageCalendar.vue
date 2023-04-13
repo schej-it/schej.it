@@ -14,6 +14,7 @@
       calendarOnly
       :interactable="false"
       :showSnackbar="false"
+      :initialShowCalendarEvents="true"
       animateTimeslotAlways
     />
   </v-card>
