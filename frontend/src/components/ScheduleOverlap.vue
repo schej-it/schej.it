@@ -100,10 +100,7 @@
               </div>
             </div>
           </div>
-
-          
         </div>
-
       </div>
 
       <div class="break" v-if="isPhone"></div>
@@ -129,7 +126,7 @@
           class="/*tw-pl-4*/ tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
         >
           <div
-            v-for="user, i in respondents"
+            v-for="(user, i) in respondents"
             :key="user._id"
             class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
             :class="respondentClass(user._id)"
@@ -148,7 +145,7 @@
                   'tw-line-through tw-text-gray'
                 "
               >
-                {{ `anonymous usc student #${i}` }} 
+                {{ `anonymous usc student #${i}` }}
               </div>
             </template>
             <template v-else>
@@ -182,13 +179,11 @@
         v-if="selectTimezone"
         class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm"
       >
-        <div 
+        <div
           class="tw-flex tw-justify-center tw-items-center"
           id="timezone-select-container"
         >
-          <div class="tw-mt-px tw-mr-2">
-            Shown in
-          </div>
+          <div class="tw-mt-px tw-mr-2">Shown in</div>
           <v-select
             id="timezone-select"
             v-model="curTimezone"
@@ -204,7 +199,6 @@
 
       <div class="sm:tw-w-48"></div>
     </div>
-
   </div>
 </template>
 
@@ -247,7 +241,7 @@
 
 <style>
 /* Make timezone select element the same width as content */
-#timezone-select { 
+#timezone-select {
   width: 5px;
 }
 </style>
@@ -267,11 +261,11 @@ import {
   clamp,
   isPhone,
   utcTimeToLocalTime,
-} from "@/utils"
-import { mapActions, mapState } from "vuex"
-import UserAvatarContent from "./UserAvatarContent.vue"
-import ZigZag from "./ZigZag.vue"
-import timezoneData from "@/data/timezones.json"
+} from "@/utils";
+import { mapActions, mapState } from "vuex";
+import UserAvatarContent from "./UserAvatarContent.vue";
+import ZigZag from "./ZigZag.vue";
+import timezoneData from "@/data/timezones.json";
 
 export default {
   name: "ScheduleOverlap",
@@ -320,18 +314,18 @@ export default {
 
       /* Variables for timezone */
       curTimezone: this.getLocalTimezone(),
-    }
+    };
   },
   computed: {
     ...mapState(["authUser"]),
     availabilityArray() {
       /* Returns the availibility as an array */
-      return [...this.availability].map((item) => new Date(item))
+      return [...this.availability].map((item) => new Date(item));
     },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
-      const days = []
-      const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+      const days = [];
+      const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
       const months = [
         "jan",
         "feb",
@@ -345,123 +339,126 @@ export default {
         "oct",
         "nov",
         "dec",
-      ]
+      ];
 
       // New date representation method
       for (let date of this.dates) {
-        date = new Date(date)
+        date = new Date(date);
 
         days.push({
           dayText: daysOfWeek[date.getDay()],
-          dateString: `${
-            months[date.getMonth()]
-          } ${date.getDate()}`,
+          dateString: `${months[date.getMonth()]} ${date.getDate()}`,
           dateObject: date,
-        })
+        });
       }
-      return days
+      return days;
     },
     isPhone() {
-      return isPhone(this.$vuetify)
+      return isPhone(this.$vuetify);
     },
     respondents() {
-      return Object.values(this.parsedResponses).map((r) => r.user)
+      return Object.values(this.parsedResponses).map((r) => r.user);
     },
     selectedGuestRespondent() {
-      if (!this.curRespondentSelected || !this.curRespondent) return
+      if (!this.curRespondentSelected || !this.curRespondent) return;
 
-      const user = this.parsedResponses[this.curRespondent].user
+      const user = this.parsedResponses[this.curRespondent].user;
       return this.curRespondentSelected && this.isGuest(user)
         ? this.curRespondent
-        : ""
+        : "";
     },
     parsedResponses() {
       /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
-      const parsed = {}
+      const parsed = {};
       for (const k of Object.keys(this.responses)) {
         const newUser = {
           ...this.responses[k].user,
           _id: k,
-        }
+        };
         parsed[k] = {
           ...this.responses[k],
           user: newUser,
-        }
+        };
       }
-      return parsed
+      return parsed;
     },
     responsesFormatted() {
       /* Formats the responses in a map where date/time is mapped to the people that are available then */
-      const formatted = new Map()
+      const formatted = new Map();
       for (const day of this.days) {
         for (const time of this.times) {
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          formatted.set(date.getTime(), new Set())
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset);
+          formatted.set(date.getTime(), new Set());
           for (const response of Object.values(this.parsedResponses)) {
             const index = response.availability.findIndex(
               (d) => dateCompare(d, date) === 0
-            )
+            );
             if (index !== -1) {
               // TODO: determine whether I should delete the index??
-              formatted.get(date.getTime()).add(response.user._id)
+              formatted.get(date.getTime()).add(response.user._id);
             }
           }
           // Update max
           if (formatted.get(date.getTime()).size > this.max) {
-            this.max = formatted.get(date.getTime()).size
+            this.max = formatted.get(date.getTime()).size;
           }
         }
       }
-      return formatted
+      return formatted;
     },
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
-      const times = []
+      const times = [];
 
       for (let i = 0; i < this.duration; ++i) {
-        const utcTimeNum = this.startTime + i
-        const localTimeNum = utcTimeToLocalTime(utcTimeNum, this.timezoneOffset)
+        const utcTimeNum = this.startTime + i;
+        const localTimeNum = utcTimeToLocalTime(
+          utcTimeNum,
+          this.timezoneOffset
+        );
 
         times.push({
           hoursOffset: i,
-          text: timeNumToTimeText(localTimeNum)
-        })
+          text: timeNumToTimeText(localTimeNum),
+        });
         times.push({
           hoursOffset: i + 0.5,
-        })
+        });
       }
 
-      return times
+      return times;
     },
     timezoneOffset() {
-      return this.timezoneMap[this.curTimezone] * -1 // Multiplying by -1 because offset is flipped
+      return this.timezoneMap[this.curTimezone] * -1; // Multiplying by -1 because offset is flipped
     },
     timezoneMap() {
       const map = timezoneData.reduce(function (map, obj) {
-        map[obj.name] = obj.offset
-        return map
-      }, {})
+        map[obj.name] = obj.offset;
+        return map;
+      }, {});
 
       /* Adds current timezone to map if not in map */
-      const localTimezone = this.getLocalTimezone()
+      const localTimezone = this.getLocalTimezone();
       if (!map.hasOwnProperty(localTimezone)) {
-        map[localTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
+        map[localTimezone] = new Date().getTimezoneOffset() * -1; // Multiplying by -1 because offset is flipped
       }
-      return map
+      return map;
     },
     userHasResponded() {
-      return this.authUser && this.authUser._id in this.parsedResponses
+      return this.authUser && this.authUser._id in this.parsedResponses;
     },
     numUsersAvailable() {
-      this.curTimeslot
-      let numUsers = 0
+      this.curTimeslot;
+      let numUsers = 0;
       for (const key in this.curTimeslotAvailability) {
-        if (this.curTimeslotAvailability[key]) numUsers++
+        if (this.curTimeslotAvailability[key]) numUsers++;
       }
-      return numUsers
+      return numUsers;
     },
     isCurTimeslotSelected() {
-      return this.curTimeslot.dayIndex !== -1 && this.curTimeslot.timeIndex !== -1
+      return (
+        this.curTimeslot.dayIndex !== -1 && this.curTimeslot.timeIndex !== -1
+      );
     },
   },
   methods: {
@@ -471,30 +468,30 @@ export default {
       Respondent
     */
     mouseOverRespondent(e, id) {
-      if (!this.curRespondentSelected) this.curRespondent = id
+      if (!this.curRespondentSelected) this.curRespondent = id;
     },
     mouseLeaveRespondent(e) {
-      if (!this.curRespondentSelected) this.curRespondent = ""
+      if (!this.curRespondentSelected) this.curRespondent = "";
     },
     clickRespondent(e, id) {
-      this.curRespondentSelected = true
-      this.curRespondent = id
-      e.stopPropagation()
+      this.curRespondentSelected = true;
+      this.curRespondent = id;
+      e.stopPropagation();
     },
     deselectRespondent(e) {
-      this.curRespondentSelected = false
-      this.curRespondent = ""
+      this.curRespondentSelected = false;
+      this.curRespondent = "";
     },
     respondentClass(id) {
-      const c = []
+      const c = [];
       if (this.curRespondent == id) {
-        c.push("tw-font-bold")
+        c.push("tw-font-bold");
       }
-      return c
+      return c;
     },
 
     isGuest(user) {
-      return user._id == user.firstName
+      return user._id == user.firstName;
     },
 
     /*
@@ -502,31 +499,31 @@ export default {
     */
     getRespondentsForHoursOffset(date, hoursOffset) {
       /* Returns an array of respondents for the given date/time */
-      const d = getDateHoursOffset(date, hoursOffset)
-      return this.responsesFormatted.get(d.getTime())
+      const d = getDateHoursOffset(date, hoursOffset);
+      return this.responsesFormatted.get(d.getTime());
     },
     showAvailability(d, t) {
       if (this.editing && this.isPhone) {
         // Don't show currently selected timeslot when on phone and editing
-        return
+        return;
       }
 
-      this.curTimeslot = { dayIndex: d, timeIndex: t }
+      this.curTimeslot = { dayIndex: d, timeIndex: t };
 
       if (this.editing || this.curRespondent) {
         // Don't show availability when editing or when respondent is selected
-        return
+        return;
       }
 
       const available = this.getRespondentsForHoursOffset(
         this.days[d].dateObject,
         this.times[t].hoursOffset
-      )
+      );
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
-          this.curTimeslotAvailability[respondent._id] = true
+          this.curTimeslotAvailability[respondent._id] = true;
         } else {
-          this.curTimeslotAvailability[respondent._id] = false
+          this.curTimeslotAvailability[respondent._id] = false;
         }
       }
     },
@@ -536,28 +533,34 @@ export default {
     */
     resetCurUserAvailability() {
       /* resets cur user availability to the response stored on the server */
-      this.availability = new Set()
+      this.availability = new Set();
       if (this.userHasResponded) {
-        this.populateUserAvailability(this.authUser._id)
+        this.populateUserAvailability(this.authUser._id);
       }
     },
     populateUserAvailability(id) {
       /* Populates the availability set for the auth user from the responses object stored on the server */
       this.responses[id].availability.forEach((item) =>
         this.availability.add(new Date(item).getTime())
-      )
-      this.$nextTick(() => (this.unsavedChanges = false))
+      );
+      this.$nextTick(() => (this.unsavedChanges = false));
     },
     setAvailabilityAutomatically() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
-      const tmpAvailability = new Set()
+      const tmpAvailability = new Set();
       for (const d in this.days) {
-        const day = this.days[d]
+        const day = this.days[d];
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          const endDate = getDateHoursOffset(day.dateObject, time.hoursOffset + 0.5)
+          const startDate = getDateHoursOffset(
+            day.dateObject,
+            time.hoursOffset
+          );
+          const endDate = getDateHoursOffset(
+            day.dateObject,
+            time.hoursOffset + 0.5
+          );
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             return (
               (dateCompare(e.startDate, startDate) < 0 &&
@@ -566,64 +569,64 @@ export default {
                 dateCompare(e.endDate, endDate) > 0) ||
               (dateCompare(e.startDate, startDate) == 0 &&
                 dateCompare(e.endDate, endDate) == 0)
-            )
-          })
+            );
+          });
           if (index === -1) {
-            tmpAvailability.add(startDate.getTime())
+            tmpAvailability.add(startDate.getTime());
           }
         }
       }
-      this.animateAvailability(tmpAvailability)
+      this.animateAvailability(tmpAvailability);
     },
     animateAvailability(availability) {
       /* Animate the filling out of availability using setTimeout */
 
-      this.availabilityAnimEnabled = true
-      this.availabilityAnimTimeouts = []
+      this.availabilityAnimEnabled = true;
+      this.availabilityAnimTimeouts = [];
 
-      let msPerBlock = 25
+      let msPerBlock = 25;
       if (availability.size * msPerBlock > this.maxAnimTime) {
-        msPerBlock = this.maxAnimTime / availability.size
+        msPerBlock = this.maxAnimTime / availability.size;
       }
 
-      let i = 0
+      let i = 0;
       for (const a of availability) {
-        const index = i
+        const index = i;
         const timeout = setTimeout(() => {
-          this.availability.add(a)
-          this.availability = new Set(this.availability)
+          this.availability.add(a);
+          this.availability = new Set(this.availability);
 
           if (index == availability.size - 1) {
             setTimeout(() => {
-              this.availabilityAnimEnabled = false
+              this.availabilityAnimEnabled = false;
               this.showInfo(
                 "Your availability has been set automatically using your Google Calendar!"
-              )
-            }, 500)
+              );
+            }, 500);
           }
-        }, i * msPerBlock)
+        }, i * msPerBlock);
 
-        this.availabilityAnimTimeouts.push(timeout)
-        i++
+        this.availabilityAnimTimeouts.push(timeout);
+        i++;
       }
     },
     stopAvailabilityAnim() {
       for (const timeout of this.availabilityAnimTimeouts) {
-        clearTimeout(timeout)
+        clearTimeout(timeout);
       }
-      this.availabilityAnimEnabled = false
+      this.availabilityAnimEnabled = false;
     },
     async submitAvailability(name = "") {
-      const payload = { availability: this.availabilityArray }
+      const payload = { availability: this.availabilityArray };
       if (this.authUser) {
-        payload.guest = false
+        payload.guest = false;
       } else {
-        payload.guest = true
-        payload.name = name
+        payload.guest = true;
+        payload.name = name;
       }
-      await post(`/events/${this.eventId}/response`, payload)
-      this.$emit("refreshEvent")
-      this.unsavedChanges = false
+      await post(`/events/${this.eventId}/response`, payload);
+      this.$emit("refreshEvent");
+      this.unsavedChanges = false;
     },
 
     /*
@@ -633,106 +636,106 @@ export default {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
       ({ width: this.timeslot.width, height: this.timeslot.height } = document
         .querySelector(".timeslot")
-        .getBoundingClientRect())
+        .getBoundingClientRect());
     },
     timeslotClassStyle(day, time, d, t) {
       /* Returns a class string for the given timeslot div */
-      let c = ""
-      const s = {}
+      let c = "";
+      const s = {};
       // Animation
       if (this.availabilityAnimEnabled) {
-        c += "animate-bg-color "
+        c += "animate-bg-color ";
       }
 
       // Border style
       if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
-        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
+        c += "tw-border tw-border-dashed tw-border-black tw-z-10 ";
       } else {
-        if (!("text" in time)) c += "tw-border-b "
-        if (d === 0) c += "tw-border-l tw-border-l-gray "
-        if (d === this.days.length - 1) c += "tw-border-r-gray "
-        if (t === 0) c += "tw-border-t tw-border-t-gray "
-        if (t === this.times.length - 1) c += "tw-border-b-gray "
+        if (!("text" in time)) c += "tw-border-b ";
+        if (d === 0) c += "tw-border-l tw-border-l-gray ";
+        if (d === this.days.length - 1) c += "tw-border-r-gray ";
+        if (t === 0) c += "tw-border-t tw-border-t-gray ";
+        if (t === this.times.length - 1) c += "tw-border-b-gray ";
       }
       // Fill style
       if (this.editing) {
         // Show only current user availability
-        const inDragRange = this.inDragRange(d, t)
+        const inDragRange = this.inDragRange(d, t);
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            c += "tw-bg-avail-green-300 "
+            c += "tw-bg-avail-green-300 ";
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
           // Otherwise just show the current availability
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset);
           if (this.availability.has(date.getTime())) {
-            c += "tw-bg-avail-green-300 "
+            c += "tw-bg-avail-green-300 ";
           }
         }
       } else {
         if (this.curRespondent) {
           // Show the currently selected respondent's availability
-          const respondent = this.curRespondent
+          const respondent = this.curRespondent;
           const respondents = this.getRespondentsForHoursOffset(
             day.dateObject,
             time.hoursOffset
-          )
+          );
           if (respondents.has(respondent)) {
-            c += "tw-bg-avail-green-300 "
+            c += "tw-bg-avail-green-300 ";
           }
         } else {
           // Show everyone's availability
           const numRespondents = this.getRespondentsForHoursOffset(
             day.dateObject,
             time.hoursOffset
-          ).size
+          ).size;
           if (numRespondents > 0) {
             // Determine color of timeslot based on number of people available
-            const frac = numRespondents / this.max
-            const green = "#12B981"
+            const frac = numRespondents / this.max;
+            const green = "#12B981";
             let alpha = (frac * (255 - 30))
               .toString(16)
               .toUpperCase()
-              .substring(0, 2)
-            if (frac == 1) alpha = "FF"
+              .substring(0, 2);
+            if (frac == 1) alpha = "FF";
 
-            s.backgroundColor = green + alpha
+            s.backgroundColor = green + alpha;
           }
         }
       }
-      return { class: c, style: s }
+      return { class: c, style: s };
     },
     timeslotVon(d, t) {
       if (this.interactable) {
         return {
           click: () => this.showAvailability(d, t),
           mouseover: () => this.showAvailability(d, t),
-        }
+        };
       }
-      return {}
+      return {};
     },
     resetCurTimeslot() {
-      this.curTimeslotAvailability = {}
+      this.curTimeslotAvailability = {};
       for (const respondent of this.respondents) {
-        this.curTimeslotAvailability[respondent._id] = true
+        this.curTimeslotAvailability[respondent._id] = true;
       }
-      this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
+      this.curTimeslot = { dayIndex: -1, timeIndex: -1 };
 
       // End drag if mouse left time grid
-      this.endDrag()
+      this.endDrag();
     },
 
     /* 
       Editing
     */
     startEditing() {
-      this.editing = true
+      this.editing = true;
     },
     stopEditing() {
-      this.editing = false
-      this.stopAvailabilityAnim()
+      this.editing = false;
+      this.stopAvailabilityAnim();
     },
 
     /* 
@@ -740,26 +743,26 @@ export default {
     */
     normalizeXY(e) {
       /* Normalize the touch event to be relative to element */
-      let pageX, pageY
+      let pageX, pageY;
       if ("touches" in e) {
         // is a touch event
-        ;({ pageX, pageY } = e.touches[0])
+        ({ pageX, pageY } = e.touches[0]);
       } else {
         // is a mouse event
-        ;({ pageX, pageY } = e)
+        ({ pageX, pageY } = e);
       }
-      const { left, top } = e.currentTarget.getBoundingClientRect()
-      const x = pageX - left
-      const y = pageY - top - window.scrollY
-      return { x, y }
+      const { left, top } = e.currentTarget.getBoundingClientRect();
+      const x = pageX - left;
+      const y = pageY - top - window.scrollY;
+      return { x, y };
     },
     getDateFromXY(x, y) {
       /* Returns a date for the timeslot we are currently hovering over given the x and y position */
-      const { width, height } = this.timeslot
-      let dayIndex = Math.floor(x / width)
-      let timeIndex = Math.floor(y / height)
-      dayIndex = clamp(dayIndex, 0, this.days.length - 1)
-      timeIndex = clamp(timeIndex, 0, this.times.length - 1)
+      const { width, height } = this.timeslot;
+      let dayIndex = Math.floor(x / width);
+      let timeIndex = Math.floor(y / height);
+      dayIndex = clamp(dayIndex, 0, this.days.length - 1);
+      timeIndex = clamp(timeIndex, 0, this.times.length - 1);
       return {
         dayIndex,
         timeIndex,
@@ -767,42 +770,42 @@ export default {
           this.days[dayIndex].dateObject,
           this.times[timeIndex].hoursOffset
         ),
-      }
+      };
     },
     endDrag() {
-      if (!this.editing) return
-      if (!this.dragStart || !this.dragCur) return
+      if (!this.editing) return;
+      if (!this.dragStart || !this.dragCur) return;
       // Update availability set based on drag region
       let dayInc =
         (this.dragCur.dayIndex - this.dragStart.dayIndex) /
-        Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
+        Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex);
       let timeInc =
         (this.dragCur.timeIndex - this.dragStart.timeIndex) /
-        Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
-      if (isNaN(dayInc)) dayInc = 1
-      if (isNaN(timeInc)) timeInc = 1
-      let d = this.dragStart.dayIndex
+        Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex);
+      if (isNaN(dayInc)) dayInc = 1;
+      if (isNaN(timeInc)) timeInc = 1;
+      let d = this.dragStart.dayIndex;
       while (d != this.dragCur.dayIndex + dayInc) {
-        let t = this.dragStart.timeIndex
+        let t = this.dragStart.timeIndex;
         while (t != this.dragCur.timeIndex + timeInc) {
           const date = getDateHoursOffset(
             this.days[d].dateObject,
             this.times[t].hoursOffset
-          )
+          );
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            this.availability.add(date.getTime())
+            this.availability.add(date.getTime());
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
-            this.availability.delete(date.getTime())
+            this.availability.delete(date.getTime());
           }
-          t += timeInc
+          t += timeInc;
         }
-        d += dayInc
+        d += dayInc;
       }
-      this.availability = new Set(this.availability)
+      this.availability = new Set(this.availability);
       // Set dragging defaults
-      this.dragging = false
-      this.dragStart = null
-      this.dragCur = null
+      this.dragging = false;
+      this.dragStart = null;
+      this.dragCur = null;
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
@@ -828,49 +831,49 @@ export default {
               this.dragCur.timeIndex,
               this.dragStart.timeIndex
             ))
-        )
+        );
       }
     },
     moveDrag(e) {
-      if (!this.editing) return
-      e.preventDefault()
+      if (!this.editing) return;
+      e.preventDefault();
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
-      )
-      this.dragCur = { dayIndex, timeIndex }
+      );
+      this.dragCur = { dayIndex, timeIndex };
     },
     startDrag(e) {
-      if (!this.editing) return
-      this.dragging = true
+      if (!this.editing) return;
+      this.dragging = true;
 
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
-      )
-      this.dragStart = { dayIndex, timeIndex }
-      this.dragCur = { dayIndex, timeIndex }
+      );
+      this.dragStart = { dayIndex, timeIndex };
+      this.dragCur = { dayIndex, timeIndex };
       // Set drag type
       if (this.availability.has(date.getTime())) {
-        this.dragType = this.DRAG_TYPES.REMOVE
+        this.dragType = this.DRAG_TYPES.REMOVE;
       } else {
-        this.dragType = this.DRAG_TYPES.ADD
+        this.dragType = this.DRAG_TYPES.ADD;
       }
     },
-    
+
     /*
       Timezone
     */
     getLocalTimezone() {
       const split = new Date(this.dates[0])
         .toLocaleTimeString("en-us", { timeZoneName: "short" })
-        .split(" ")
-      const localTimezone = split[split.length - 1]
-      
-      return localTimezone
-    }
+        .split(" ");
+      const localTimezone = split[split.length - 1];
+
+      return localTimezone;
+    },
   },
   watch: {
     availability() {
-      this.unsavedChanges = true
+      this.unsavedChanges = true;
     },
     calendarEvents: {
       handler() {
@@ -880,39 +883,39 @@ export default {
     respondents: {
       immediate: true,
       handler() {
-        this.curTimeslotAvailability = {}
+        this.curTimeslotAvailability = {};
         for (const respondent of this.respondents) {
-          this.curTimeslotAvailability[respondent._id] = true
+          this.curTimeslotAvailability[respondent._id] = true;
         }
       },
     },
   },
   created() {
-    this.resetCurUserAvailability()
+    this.resetCurUserAvailability();
 
-    addEventListener("click", this.deselectRespondent)
+    addEventListener("click", this.deselectRespondent);
   },
   mounted() {
     // Get timeslot size
-    this.setTimeslotSize()
-    window.addEventListener("resize", this.setTimeslotSize)
+    this.setTimeslotSize();
+    window.addEventListener("resize", this.setTimeslotSize);
     if (!this.calendarOnly) {
-      const timesEl = document.getElementById("times")
+      const timesEl = document.getElementById("times");
       if (isPhone(this.$vuetify)) {
-        timesEl.addEventListener("touchstart", this.startDrag)
-        timesEl.addEventListener("touchmove", this.moveDrag)
-        timesEl.addEventListener("touchend", this.endDrag)
-        timesEl.addEventListener("touchcancel", this.endDrag)
+        timesEl.addEventListener("touchstart", this.startDrag);
+        timesEl.addEventListener("touchmove", this.moveDrag);
+        timesEl.addEventListener("touchend", this.endDrag);
+        timesEl.addEventListener("touchcancel", this.endDrag);
       } else {
-        timesEl.addEventListener("mousedown", this.startDrag)
-        timesEl.addEventListener("mousemove", this.moveDrag)
-        timesEl.addEventListener("mouseup", this.endDrag)
+        timesEl.addEventListener("mousedown", this.startDrag);
+        timesEl.addEventListener("mousemove", this.moveDrag);
+        timesEl.addEventListener("mouseup", this.endDrag);
       }
     }
   },
   beforeDestroy() {
-    removeEventListener("click", this.deselectRespondent)
+    removeEventListener("click", this.deselectRespondent);
   },
   components: { UserAvatarContent, ZigZag },
-}
+};
 </script>
