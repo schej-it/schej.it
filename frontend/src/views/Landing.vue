@@ -113,7 +113,7 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-bg-green tw-px-4 tw-pt-20 tw-pb-12 md:tw-pb-20 tw-justify-center"
+      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-12 tw-justify-center"
     >
       <div class="md:tw-h-96 sm:tw-h-80 tw-h-64 tw-max-w-3xl tw-flex-1">
         <iframe

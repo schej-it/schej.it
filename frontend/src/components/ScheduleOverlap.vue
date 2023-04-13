@@ -270,19 +270,21 @@ import timezoneData from "@/data/timezones.json";
 export default {
   name: "ScheduleOverlap",
   props: {
-    eventId: { type: String, default: "" },
-    startTime: { type: Number, required: true },
-    endTime: { type: Number, required: true },
-    duration: { type: Number, required: true },
-    dates: { type: Array, required: true },
-    responses: { type: Object, default: () => ({}) },
-    loadingCalendarEvents: { type: Boolean, default: false },
-    calendarEventsByDay: { type: Array, default: () => [] },
-    initialShowCalendarEvents: { type: Boolean, default: false },
-    noEventNames: { type: Boolean, default: false },
-    calendarOnly: { type: Boolean, default: false },
-    selectTimezone: { type: Boolean, default: false },
-    interactable: { type: Boolean, default: true },
+    eventId: { type: String, default: "" }, // ID of event
+    startTime: { type: Number, required: true }, // Start time of event
+    endTime: { type: Number, required: true }, // End time of event
+    duration: { type: Number, required: true }, // Duration of event
+    dates: { type: Array, required: true }, // Dates of the event
+    responses: { type: Object, default: () => ({}) }, // Map of user id to array of times they are available
+    loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
+    calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
+    initialShowCalendarEvents: { type: Boolean, default: false }, // Whether to show calendar events initially
+    noEventNames: { type: Boolean, default: false }, // Whether to show "busy" instead of the event name
+    calendarOnly: { type: Boolean, default: false }, // Whether to only show calendar and not respondents
+    selectTimezone: { type: Boolean, default: false }, // Whether to show timezone select
+    interactable: { type: Boolean, default: true }, // Whether to allow user to interact with component
+    showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
+    animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
   },
   data() {
     return {
@@ -599,9 +601,11 @@ export default {
           if (index == availability.size - 1) {
             setTimeout(() => {
               this.availabilityAnimEnabled = false;
-              this.showInfo(
-                "Your availability has been set automatically using your Google Calendar!"
-              );
+              if (this.showSnackbar) {
+                this.showInfo(
+                  "Your availability has been set automatically using your Google Calendar!"
+                );
+              }
             }, 500);
           }
         }, i * msPerBlock);
@@ -643,7 +647,7 @@ export default {
       let c = "";
       const s = {};
       // Animation
-      if (this.availabilityAnimEnabled) {
+      if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
         c += "animate-bg-color ";
       }
 
