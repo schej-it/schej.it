@@ -76,7 +76,7 @@
         <Header class="tw-text-center">How it works</Header>
         <div v-for="step, i in howItWorksSteps" :key="i" class="tw-flex tw-items-center tw-gap-2">
           <NumberBullet>{{ i+1 }}</NumberBullet>
-          <div class="md:tw-text-xl tw-text-base tw-font-medium">{{ step }}</div>
+          <div class="md:tw-text-xl tw-text-base tw-font-medium" v-html="step"></div>
         </div>
       </div>
       <div class="
@@ -179,7 +179,7 @@ export default {
     },
     howItWorksSteps: [
       'Create a schej',
-      'Automatically fill out your availability with Google Calendar',
+      '<span class="tw-underline tw-decoration-pale-green tw-decoration-4" style="text-underline-position: under;">Automatically</span> fill out your availability with Google Calendar',
       'Share the schej and find the best time to meet!',
     ],
     faqs: [
