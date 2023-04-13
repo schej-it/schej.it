@@ -79,7 +79,11 @@
       class="tw-pt-12 tw-grid tw-place-content-center tw-px-4"
     >
       <div class="tw-flex tw-flex-col tw-gap-4 tw-mx-auto">
-        <Header class="tw-text-center">How it works</Header>
+        <div
+          class="tw-text-center tw-text-2xl sm:tw-text-3xl lg:tw-text-4xl tw-font-medium tw-mb-4"
+        >
+          How it works
+        </div>
         <div
           v-for="(step, i) in howItWorksSteps"
           :key="i"
@@ -109,7 +113,7 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-bg-green tw-px-4 tw-pt-20 tw-pb-4 md:tw-pb-12 tw-justify-center"
+      class="tw-flex tw-bg-green tw-px-4 tw-pt-20 tw-pb-12 md:tw-pb-20 tw-justify-center"
     >
       <div class="md:tw-h-96 sm:tw-h-80 tw-h-64 tw-max-w-3xl tw-flex-1">
         <iframe
