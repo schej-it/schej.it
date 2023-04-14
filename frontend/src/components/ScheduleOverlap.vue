@@ -45,7 +45,7 @@
             >
               <!-- Loader -->
               <div
-                v-if="showCalendarEvents && loadingCalendarEvents"
+                v-if="(showCalendarEvents || editing) && loadingCalendarEvents"
                 class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10"
               >
                 <v-progress-circular class="tw-text-blue" indeterminate />
@@ -171,7 +171,7 @@
       </div>
     </div>
 
-    <div class="tw-flex">
+    <div class="tw-flex" v-if="!calendarOnly">
       <div class="sm:tw-w-12"></div>
 
       <div
@@ -179,7 +179,6 @@
       >
         <!-- Select timezone -->
         <TimezoneSelector
-          v-if="selectTimezone"
           v-model="curTimezone"
           :timezones="Object.keys(timezoneMap)"
         />
@@ -242,15 +241,10 @@
 <script>
 import {
   timeNumToTimeText,
-  timeNumToTimeString,
-  getDateDayOffset,
   dateCompare,
-  compareDateDay,
-  getDateWithTimeNum,
   getDateHoursOffset,
   post,
   isBetween,
-  isDateInRange,
   clamp,
   isPhone,
   utcTimeToLocalTime,
@@ -274,14 +268,21 @@ export default {
     calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
     initialShowCalendarEvents: { type: Boolean, default: false }, // Whether to show calendar events initially
     noEventNames: { type: Boolean, default: false }, // Whether to show "busy" instead of the event name
-    calendarOnly: { type: Boolean, default: false }, // Whether to only show calendar and not respondents
-    selectTimezone: { type: Boolean, default: false }, // Whether to show timezone select
+    calendarOnly: { type: Boolean, default: false }, // Whether to only show calendar and not respondents or any other controls
     interactable: { type: Boolean, default: true }, // Whether to allow user to interact with component
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
   },
   data() {
     return {
+      states: {
+        HEATMAP: "heatmap", // Display heatmap of availabilities
+        SINGLE_AVAILABILITY: "single_availability", // Show one person's availability
+        BEST_TIMES: "best_times", // Show only the times that work for most people
+        EDIT_AVAILBILITY: "edit_availability", // Edit current user's availability
+        SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
+      },
+
       max: 0,
       showCalendarEvents: this.initialShowCalendarEvents,
       availability: new Set(),

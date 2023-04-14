@@ -39,7 +39,6 @@
     <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
       <div class="tw-mx-8">
         <!-- Title and copy link -->
-
         <div class="tw-text-black tw-flex tw-items-center">
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
@@ -128,7 +127,6 @@
         :loadingCalendarEvents="loading"
         :calendarEventsByDay="calendarEventsByDay"
         @refreshEvent="refreshEvent"
-        :selectTimezone="true"
       />
     </div>
     <div class="tw-h-16"></div>
