@@ -39,14 +39,14 @@
         <!-- Hero -->
         <div class="tw-flex tw-flex-col tw-items-center">
           <div
-            class="tw-mt-16 tw-mb-4 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
+            class="tw-mt-16 tw-mb-4 sm:tw-mb-8 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
           >
             Finding a time to meet,<br />
             made simple.
           </div>
           <v-btn
             id="lets-schej-it-btn"
-            class="tw-bg-green tw-rounded-lg"
+            class="tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
             dark
             @click="getStarted"
             :large="$vuetify.breakpoint.smAndUp"
