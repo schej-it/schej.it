@@ -279,17 +279,17 @@ export default {
         HEATMAP: "heatmap", // Display heatmap of availabilities
         SINGLE_AVAILABILITY: "single_availability", // Show one person's availability
         BEST_TIMES: "best_times", // Show only the times that work for most people
-        EDIT_AVAILBILITY: "edit_availability", // Edit current user's availability
+        EDIT_AVAILABILITY: "edit_availability", // Edit current user's availability
         SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
       },
+      state: "heatmap",
 
-      max: 0,
+      max: 0, // The max amount of people available at any given time
       showCalendarEvents: this.initialShowCalendarEvents,
       availability: new Set(),
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false,
       maxAnimTime: 1200,
-      editing: false,
       unsavedChanges: false,
       curTimeslotAvailability: {},
       curTimeslot: { dayIndex: -1, timeIndex: -1 },
@@ -349,6 +349,14 @@ export default {
         });
       }
       return days;
+    },
+    defaultState() {
+      // Either the heatmap or the best_times state, depending on the toggle
+      return this.states.HEATMAP;
+    },
+    editing() {
+      // Returns whether currently in the editing state
+      return this.state === this.states.EDIT_AVAILABILITY;
     },
     isPhone() {
       return isPhone(this.$vuetify);
@@ -466,17 +474,33 @@ export default {
       Respondent
     */
     mouseOverRespondent(e, id) {
-      if (!this.curRespondentSelected) this.curRespondent = id;
+      if (!this.curRespondentSelected) {
+        if (this.state === this.defaultState)
+          this.state = this.states.SINGLE_AVAILABILITY;
+
+        this.curRespondent = id;
+      }
     },
     mouseLeaveRespondent(e) {
-      if (!this.curRespondentSelected) this.curRespondent = "";
+      if (!this.curRespondentSelected) {
+        if (this.state === this.states.SINGLE_AVAILABILITY)
+          this.state = this.defaultState;
+
+        this.curRespondent = "";
+      }
     },
     clickRespondent(e, id) {
+      if (this.state === this.defaultState)
+        this.state = this.states.SINGLE_AVAILABILITY;
+
       this.curRespondentSelected = true;
       this.curRespondent = id;
       e.stopPropagation();
     },
     deselectRespondent(e) {
+      if (this.state === this.states.SINGLE_AVAILABILITY)
+        this.state = this.defaultState;
+
       this.curRespondentSelected = false;
       this.curRespondent = "";
     },
@@ -501,18 +525,20 @@ export default {
       return this.responsesFormatted.get(d.getTime());
     },
     showAvailability(d, t) {
-      if (this.editing && this.isPhone) {
+      if (this.state === this.states.EDIT_AVAILABILITY && this.isPhone) {
         // Don't show currently selected timeslot when on phone and editing
         return;
       }
 
+      // Update current timeslot (the timeslot that has a dotted border around it)
       this.curTimeslot = { dayIndex: d, timeIndex: t };
 
-      if (this.editing || this.curRespondent) {
+      if (this.state === this.states.EDIT_AVAILABILITY || this.curRespondent) {
         // Don't show availability when editing or when respondent is selected
         return;
       }
 
+      // Update current timeslot availability to show who is available for the given timeslot
       const available = this.getRespondentsForHoursOffset(
         this.days[d].dateObject,
         this.times[t].hoursOffset
@@ -639,7 +665,7 @@ export default {
         .getBoundingClientRect());
     },
     timeslotClassStyle(day, time, d, t) {
-      /* Returns a class string for the given timeslot div */
+      /* Returns a class string and style object for the given timeslot div */
       let c = "";
       const s = {};
       // Animation
@@ -649,16 +675,19 @@ export default {
 
       // Border style
       if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
+        // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 ";
       } else {
+        // Normal border
         if (!("text" in time)) c += "tw-border-b ";
         if (d === 0) c += "tw-border-l tw-border-l-gray ";
         if (d === this.days.length - 1) c += "tw-border-r-gray ";
         if (t === 0) c += "tw-border-t tw-border-t-gray ";
         if (t === this.times.length - 1) c += "tw-border-b-gray ";
       }
+
       // Fill style
-      if (this.editing) {
+      if (this.state === this.states.EDIT_AVAILABILITY) {
         // Show only current user availability
         const inDragRange = this.inDragRange(d, t);
         if (inDragRange) {
@@ -674,35 +703,44 @@ export default {
             c += "tw-bg-avail-green-300 ";
           }
         }
-      } else {
-        if (this.curRespondent) {
-          // Show the currently selected respondent's availability
-          const respondent = this.curRespondent;
-          const respondents = this.getRespondentsForHoursOffset(
-            day.dateObject,
-            time.hoursOffset
-          );
-          if (respondents.has(respondent)) {
-            c += "tw-bg-avail-green-300 ";
-          }
-        } else {
-          // Show everyone's availability
-          const numRespondents = this.getRespondentsForHoursOffset(
-            day.dateObject,
-            time.hoursOffset
-          ).size;
-          if (numRespondents > 0) {
-            // Determine color of timeslot based on number of people available
-            const frac = numRespondents / this.max;
-            const green = "#12B981";
-            let alpha = (frac * (255 - 30))
-              .toString(16)
-              .toUpperCase()
-              .substring(0, 2);
-            if (frac == 1) alpha = "FF";
+      } else if (this.state === this.states.SINGLE_AVAILABILITY) {
+        // Show only the currently selected respondent's availability
+        const respondent = this.curRespondent;
+        const respondents = this.getRespondentsForHoursOffset(
+          day.dateObject,
+          time.hoursOffset
+        );
+        if (respondents.has(respondent)) {
+          c += "tw-bg-avail-green-300 ";
+        }
+      } else if (this.state === this.states.BEST_TIMES) {
+        const numRespondents = this.getRespondentsForHoursOffset(
+          day.dateObject,
+          time.hoursOffset
+        ).size;
+        if (numRespondents === this.max) {
+          // Only set timeslot to green for the times that most people are available
+          const green = "#12B981";
 
-            s.backgroundColor = green + alpha;
-          }
+          s.backgroundColor = green;
+        }
+      } else if (this.state === this.states.HEATMAP) {
+        // Show everyone's availability
+        const numRespondents = this.getRespondentsForHoursOffset(
+          day.dateObject,
+          time.hoursOffset
+        ).size;
+        if (numRespondents > 0) {
+          // Determine color of timeslot based on number of people available
+          const frac = numRespondents / this.max;
+          const green = "#12B981";
+          let alpha = (frac * (255 - 30))
+            .toString(16)
+            .toUpperCase()
+            .substring(0, 2);
+          if (frac == 1) alpha = "FF";
+
+          s.backgroundColor = green + alpha;
         }
       }
       return { class: c, style: s };
@@ -731,10 +769,10 @@ export default {
       Editing
     */
     startEditing() {
-      this.editing = true;
+      this.state = this.states.EDIT_AVAILABILITY;
     },
     stopEditing() {
-      this.editing = false;
+      this.state = this.defaultState;
       this.stopAvailabilityAnim();
     },
 
@@ -773,7 +811,7 @@ export default {
       };
     },
     endDrag() {
-      if (!this.editing) return;
+      if (this.state !== this.states.EDIT_AVAILABILITY) return;
       if (!this.dragStart || !this.dragCur) return;
       // Update availability set based on drag region
       let dayInc =
@@ -835,7 +873,7 @@ export default {
       }
     },
     moveDrag(e) {
-      if (!this.editing) return;
+      if (this.state !== this.states.EDIT_AVAILABILITY) return;
       e.preventDefault();
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
         ...Object.values(this.normalizeXY(e))
@@ -843,7 +881,7 @@ export default {
       this.dragCur = { dayIndex, timeIndex };
     },
     startDrag(e) {
-      if (!this.editing) return;
+      if (this.state !== this.states.EDIT_AVAILABILITY) return;
       this.dragging = true;
 
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
