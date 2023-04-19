@@ -272,6 +272,7 @@ export default {
     interactable: { type: Boolean, default: true }, // Whether to allow user to interact with component
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
+    showBestTimes: { type: Boolean, default: false }, // Whether to show the best times to meet
   },
   data() {
     return {
@@ -282,7 +283,7 @@ export default {
         EDIT_AVAILABILITY: "edit_availability", // Edit current user's availability
         SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
       },
-      state: "heatmap",
+      state: this.showBestTimes ? "best_times" : "heatmap",
 
       max: 0, // The max amount of people available at any given time
       showCalendarEvents: this.initialShowCalendarEvents,
@@ -352,7 +353,7 @@ export default {
     },
     defaultState() {
       // Either the heatmap or the best_times state, depending on the toggle
-      return this.states.HEATMAP;
+      return this.showBestTimes ? this.states.BEST_TIMES : this.states.HEATMAP;
     },
     editing() {
       // Returns whether currently in the editing state
@@ -475,31 +476,35 @@ export default {
     */
     mouseOverRespondent(e, id) {
       if (!this.curRespondentSelected) {
-        if (this.state === this.defaultState)
+        if (this.state === this.defaultState) {
           this.state = this.states.SINGLE_AVAILABILITY;
+        }
 
         this.curRespondent = id;
       }
     },
     mouseLeaveRespondent(e) {
       if (!this.curRespondentSelected) {
-        if (this.state === this.states.SINGLE_AVAILABILITY)
+        if (this.state === this.states.SINGLE_AVAILABILITY) {
           this.state = this.defaultState;
+        }
 
         this.curRespondent = "";
       }
     },
     clickRespondent(e, id) {
-      if (this.state === this.defaultState)
+      if (this.state === this.defaultState) {
         this.state = this.states.SINGLE_AVAILABILITY;
+      }
 
       this.curRespondentSelected = true;
       this.curRespondent = id;
       e.stopPropagation();
     },
     deselectRespondent(e) {
-      if (this.state === this.states.SINGLE_AVAILABILITY)
+      if (this.state === this.states.SINGLE_AVAILABILITY) {
         this.state = this.defaultState;
+      }
 
       this.curRespondentSelected = false;
       this.curRespondent = "";
