@@ -4,8 +4,14 @@
     <v-card>
       <v-card-title>Google sign in not supported</v-card-title>
       <v-card-text>
-        The browser you are currently using does not support Google sign in!
-        Consider opening schej in another browser, such as Safari or Chrome.
+        <p>
+          This usually happens when you open a schej link from Instagram or
+          Messenger.
+        </p>
+        <p>
+          To get around this issue, click the three dots in the top right and
+          then "Open in system browser" or "Open in Chrome"
+        </p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -19,10 +25,10 @@
 
 <script>
 export default {
-  name: 'SignInNotSupportedDialog',
+  name: "SignInNotSupportedDialog",
 
   props: {
     value: { type: Boolean, required: true },
   },
-}
+};
 </script>
