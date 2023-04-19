@@ -22,7 +22,7 @@
       <!-- Header -->
       <div class="tw-mb-12">
         <div
-          class="tw-pt-5 tw-px-5 tw-flex tw-justify-between tw-items-center tw-max-w-6xl tw-m-auto"
+          class="tw-pt-5 tw-px-5 tw-flex tw-items-center tw-max-w-6xl tw-m-auto"
         >
           <v-img
             alt="schej Logo"
@@ -33,6 +33,9 @@
             :width="logoWidth"
           />
 
+          <v-spacer />
+
+          <v-btn text href="#how-it-works">How it works</v-btn>
           <v-btn text @click="signIn">Sign in</v-btn>
         </div>
 
@@ -41,8 +44,8 @@
           <div
             class="tw-mt-16 tw-mb-4 sm:tw-mb-8 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
           >
-            Finding a time to meet,<br />
-            made simple.
+            <div class="tw-leading-normal">Finding a time to meet,</div>
+            <div class="tw-leading-normal">made simple.</div>
           </div>
           <v-btn
             id="lets-schej-it-btn"
@@ -51,11 +54,9 @@
             @click="getStarted"
             :large="$vuetify.breakpoint.smAndUp"
             :x-large="$vuetify.breakpoint.mdAndUp"
-            >Let's schej it</v-btn
           >
-          <a href="#how-it-works" class="tw-text-blue tw-mt-4 tw-text-sm"
-            >How it works</a
-          >
+            Let's schej it
+          </v-btn>
         </div>
       </div>
 
