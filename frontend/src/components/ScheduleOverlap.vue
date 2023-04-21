@@ -134,38 +134,22 @@
             @mouseleave="mouseLeaveRespondent"
             @click="(e) => clickRespondent(e, user._id)"
           >
-            <template v-if="eventId == '6417b47a0c6fc139f870a47d'">
-              <!-- DONUT UI -->
-              <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+            <UserAvatarContent
+              v-if="!isGuest(user)"
+              :user="user"
+              class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
+            ></UserAvatarContent>
+            <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
 
-              <div
-                class="tw-mr-1 tw-transition-all"
-                :class="
-                  !curTimeslotAvailability[user._id] &&
-                  'tw-line-through tw-text-gray'
-                "
-              >
-                {{ `anonymous usc student #${i}` }}
-              </div>
-            </template>
-            <template v-else>
-              <UserAvatarContent
-                v-if="!isGuest(user)"
-                :user="user"
-                class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
-              ></UserAvatarContent>
-              <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-
-              <div
-                class="tw-mr-1 tw-transition-all"
-                :class="
-                  !curTimeslotAvailability[user._id] &&
-                  'tw-line-through tw-text-gray'
-                "
-              >
-                {{ user.firstName + " " + user.lastName }}
-              </div>
-            </template>
+            <div
+              class="tw-mr-1 tw-transition-all"
+              :class="
+                !curTimeslotAvailability[user._id] &&
+                'tw-line-through tw-text-gray'
+              "
+            >
+              {{ user.firstName + " " + user.lastName }}
+            </div>
           </div>
         </div>
       </div>
@@ -183,10 +167,35 @@
           :timezones="Object.keys(timezoneMap)"
         />
 
-        <v-btn outlined class="tw-text-green">
-          <span class="tw-mr-2">Schedule event</span>
-          <v-img src="@/assets/gcal_logo.png" height="20" width="20" />
-        </v-btn>
+        <div style="width: 180.16px">
+          <template v-if="state !== states.SCHEDULE_EVENT">
+            <v-btn
+              outlined
+              class="tw-text-green tw-w-full"
+              @click="scheduleEvent"
+            >
+              <span class="tw-mr-2">Schedule event</span>
+              <v-img
+                src="@/assets/gcal_logo.png"
+                class="tw-flex-none"
+                height="20"
+                width="20"
+              />
+            </v-btn>
+          </template>
+          <template v-else>
+            <v-btn
+              outlined
+              class="tw-text-red tw-mr-1"
+              @click="cancelScheduleEvent"
+            >
+              Cancel
+            </v-btn>
+            <v-btn color="primary" @click="confirmScheduleEvent">
+              Schedule
+            </v-btn>
+          </template>
+        </div>
       </div>
 
       <div class="sm:tw-w-48"></div>
@@ -780,6 +789,17 @@ export default {
       this.state = this.defaultState;
       this.stopAvailabilityAnim();
     },
+
+    /*
+      Schedule event
+    */
+    scheduleEvent() {
+      this.state = this.states.SCHEDULE_EVENT;
+    },
+    cancelScheduleEvent() {
+      this.state = this.defaultState;
+    },
+    confirmScheduleEvent() {},
 
     /* 
       Drag Stuff 
