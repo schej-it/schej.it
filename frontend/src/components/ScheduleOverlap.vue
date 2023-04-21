@@ -184,15 +184,27 @@
       <div class="sm:tw-w-12"></div>
 
       <div
-        class="tw-flex-1 tw-flex tw-justify-center tw-items-center tw-mt-4 tw-text-sm tw-justify-between"
+        class="tw-flex-1 tw-flex tw-items-center tw-mt-4 tw-text-sm tw-justify-center sm:tw-justify-between"
       >
-        <!-- Select timezone -->
-        <TimezoneSelector
-          v-model="curTimezone"
-          :timezones="Object.keys(timezoneMap)"
-        />
+        <div class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row">
+          <!-- Select timezone -->
+          <TimezoneSelector
+            v-model="curTimezone"
+            :timezones="Object.keys(timezoneMap)"
+          />
 
-        <div style="width: 180.16px">
+          <div class="tw-flex tw-justify-center tw-items-center tw-gap-1">
+            <div>Show best times</div>
+            <v-switch
+              class="-tw-mb-1"
+              v-model="showBestTimes"
+              color="#219653"
+              @change="onShowBestTimesChange"
+            />
+          </div>
+        </div>
+
+        <div style="width: 180.16px" class="tw-hidden sm:tw-block">
           <template v-if="state !== states.SCHEDULE_EVENT">
             <v-btn
               outlined
@@ -310,7 +322,6 @@ export default {
     interactable: { type: Boolean, default: true }, // Whether to allow user to interact with component
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
-    showBestTimes: { type: Boolean, default: false }, // Whether to show the best times to meet
   },
   data() {
     return {
@@ -321,7 +332,7 @@ export default {
         EDIT_AVAILABILITY: "edit_availability", // Edit current user's availability
         SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
       },
-      state: this.showBestTimes ? "best_times" : "heatmap",
+      state: "best_times",
 
       max: 0, // The max amount of people available at any given time
       availability: new Set(), // The current user's availability
@@ -348,10 +359,11 @@ export default {
       dragStart: null,
       dragCur: null,
 
-      /* Variables for timezone */
+      /* Variables for options */
       curTimezone: this.getLocalTimezone(),
 
       scheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
+      showBestTimes: localStorage["showBestTimes"] == "true",
     }
   },
   computed: {
@@ -813,7 +825,6 @@ export default {
           s.backgroundColor = green + alpha
         }
       }
-
       return { class: c, style: s }
     },
     timeslotVon(d, t) {
@@ -1001,7 +1012,7 @@ export default {
     },
 
     /*
-      Timezone
+      Options
     */
     getLocalTimezone() {
       const split = new Date(this.dates[0])
@@ -1010,6 +1021,14 @@ export default {
       const localTimezone = split[split.length - 1]
 
       return localTimezone
+    },
+    onShowBestTimesChange() {
+      localStorage["showBestTimes"] = this.showBestTimes
+      if (
+        this.state == this.states.BEST_TIMES ||
+        this.state == this.states.HEATMAP
+      )
+        this.state = this.defaultState
     },
   },
   watch: {
@@ -1037,6 +1056,9 @@ export default {
     addEventListener("click", this.deselectRespondent)
   },
   mounted() {
+    // Set initial state to best_times or heatmap depending on show best times toggle.
+    this.state = this.showBestTimes ? "best_times" : "heatmap"
+
     // Get timeslot size
     this.setTimeslotSize()
     window.addEventListener("resize", this.setTimeslotSize)
