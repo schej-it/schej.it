@@ -159,16 +159,16 @@
       <div class="sm:tw-w-12"></div>
 
       <div
-        class="tw-flex-1 tw-flex tw-items-center tw-mt-4 tw-text-sm tw-justify-between"
+        class="tw-flex-1 tw-flex tw-items-center tw-mt-4 tw-text-sm tw-justify-center sm:tw-justify-between"
       >
-        <div class="tw-flex tw-gap-8">
+        <div class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row">
           <!-- Select timezone -->
           <TimezoneSelector
             v-model="curTimezone"
             :timezones="Object.keys(timezoneMap)"
           />
 
-          <div class="tw-flex tw-justify-center tw-items-center tw-gap-2">
+          <div class="tw-flex tw-justify-center tw-items-center tw-gap-1">
             <div>Show best times</div>
             <v-switch
             class="-tw-mb-1"
@@ -179,7 +179,7 @@
           </div>
         </div>
 
-        <div style="width: 180.16px">
+        <div style="width: 180.16px" class="tw-hidden sm:tw-block">
           <template v-if="state !== states.SCHEDULE_EVENT">
             <v-btn
               outlined
