@@ -204,7 +204,11 @@
           </div>
         </div>
 
-        <div style="width: 180.16px" class="tw-hidden sm:tw-block">
+        <div
+          v-if="authUser"
+          style="width: 180.16px"
+          class="tw-hidden sm:tw-block"
+        >
           <template v-if="state !== states.SCHEDULE_EVENT">
             <v-btn
               outlined

@@ -26,6 +26,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", middleware.AuthRequired(), createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
+	eventRouter.POST("/:eventId/schedule", middleware.AuthRequired(), scheduleEvent)
 	eventRouter.PUT("/:eventId", middleware.AuthRequired(), editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 }
@@ -200,6 +201,53 @@ func updateEventResponse(c *gin.Context) {
 			)
 		}()
 	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Schedules an event on the user's google calendar
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{startDate=primitive.DateTime,endDate=primitive.DateTime} true "Object containing info about the event to schedule"
+// @Success 200
+// @Router /events/{eventId}/schedule [post]
+func scheduleEvent(c *gin.Context) {
+	payload := struct {
+		StartDate *primitive.DateTime `json:"startDate" binding:"required"`
+		EndDate   *primitive.DateTime `json:"endDate" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	// session := sessions.Default(c)
+	eventId := c.Param("eventId")
+
+	scheduledEvent := models.CalendarEvent{
+		StartDate: *payload.StartDate,
+		EndDate: *payload.EndDate,
+	}
+
+	// Update event
+	_, err := db.EventsCollection.UpdateByID(
+		context.Background(),
+		utils.StringToObjectID(eventId),
+		bson.M{
+			"$set": bson.M{
+				"scheduledEvent": scheduledEvent,
+			},
+		},
+	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	// Update user's calendar
+	// event := db.GetEventById(eventId)
+	// for respondentId, respondent := range event.Responses {
+	// }
+
 
 	c.JSON(http.StatusOK, gin.H{})
 }
