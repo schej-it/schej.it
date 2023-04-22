@@ -540,9 +540,9 @@ export default {
   methods: {
     ...mapActions(["showInfo"]),
 
-    /*
-      Respondent
-    */
+    // -----------------------------------
+    //#region Respondent
+    // -----------------------------------
     mouseOverRespondent(e, id) {
       if (!this.curRespondentSelected) {
         if (this.state === this.defaultState) {
@@ -589,10 +589,11 @@ export default {
     isGuest(user) {
       return user._id == user.firstName
     },
+    //#endregion
 
-    /*
-      Aggregate user availability
-    */
+    // -----------------------------------
+    //#region Aggregate user availability
+    // -----------------------------------
     getRespondentsForHoursOffset(date, hoursOffset) {
       /* Returns an array of respondents for the given date/time */
       const d = getDateHoursOffset(date, hoursOffset)
@@ -625,10 +626,11 @@ export default {
         }
       }
     },
+    //#endregion
 
-    /*
-      Current user availability
-    */
+    // -----------------------------------
+    //#region Current user availability
+    // -----------------------------------
     resetCurUserAvailability() {
       /* resets cur user availability to the response stored on the server */
       this.availability = new Set()
@@ -725,10 +727,11 @@ export default {
       this.$emit("refreshEvent")
       this.unsavedChanges = false
     },
+    //#endregion
 
-    /*
-      Timeslot
-    */
+    // -----------------------------------
+    //#region Timeslot
+    // -----------------------------------
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
       ;({ width: this.timeslot.width, height: this.timeslot.height } = document
@@ -846,10 +849,11 @@ export default {
       // End drag if mouse left time grid
       this.endDrag()
     },
+    //#endregion
 
-    /* 
-      Editing
-    */
+    // -----------------------------------
+    //#region Editing
+    // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
       // console.log("start editing!!!", this.state)
@@ -858,10 +862,11 @@ export default {
       this.state = this.defaultState
       this.stopAvailabilityAnim()
     },
+    //#endregion
 
-    /*
-      Schedule event
-    */
+    // -----------------------------------
+    //#region Schedule event
+    // -----------------------------------
     scheduleEvent() {
       this.state = this.states.SCHEDULE_EVENT
     },
@@ -870,10 +875,11 @@ export default {
       this.scheduledEvent = null
     },
     confirmScheduleEvent() {},
+    //#endregion
 
-    /* 
-      Drag Stuff 
-    */
+    // -----------------------------------
+    //#region Drag Stuff
+    // -----------------------------------
     normalizeXY(e) {
       /* Normalize the touch event to be relative to element */
       let pageX, pageY
@@ -1010,10 +1016,11 @@ export default {
         this.dragType = this.DRAG_TYPES.ADD
       }
     },
+    //#endregion
 
-    /*
-      Options
-    */
+    // -----------------------------------
+    //#region Options
+    // -----------------------------------
     getLocalTimezone() {
       const split = new Date(this.dates[0])
         .toLocaleTimeString("en-us", { timeZoneName: "short" })
@@ -1030,6 +1037,7 @@ export default {
       )
         this.state = this.defaultState
     },
+    //#endregion
   },
   watch: {
     availability() {
