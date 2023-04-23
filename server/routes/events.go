@@ -210,13 +210,14 @@ func updateEventResponse(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{startDate=primitive.DateTime,endDate=primitive.DateTime} true "Object containing info about the event to schedule"
+// @Param payload body object{startDate=primitive.DateTime,endDate=primitive.DateTime,attendeeEmails=[]string} true "Object containing info about the event to schedule"
 // @Success 200
 // @Router /events/{eventId}/schedule [post]
 func scheduleEvent(c *gin.Context) {
 	payload := struct {
 		StartDate *primitive.DateTime `json:"startDate" binding:"required"`
 		EndDate   *primitive.DateTime `json:"endDate" binding:"required"`
+		AttendeeEmails []string `json:"attendeeEmails" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
