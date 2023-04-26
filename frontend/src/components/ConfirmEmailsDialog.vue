@@ -17,7 +17,7 @@
           Google Calendar invites will be sent to people at the following email
           addresses
         </div>
-        <div class="tw-max-h-64 tw-overflow-y-auto tw-table-auto">
+        <div class="tw-max-h-96 tw-overflow-y-auto tw-table-auto">
           <table class="tw-text-black tw-w-full tw-text-left">
             <thead>
               <tr class="tw-font-medium tw-bg-white">
@@ -30,7 +30,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="respondent in respondents">
+              <tr v-for="(respondent, r) in respondents">
                 <td class="tw-pb-4 tw-pr-4">
                   <div class="tw-flex tw-items-center">
                     <UserAvatarContent
@@ -45,16 +45,18 @@
                     {{ respondent.firstName }} {{ respondent.lastName }}
                   </div>
                 </td>
-                <td class="tw-pb-4 tw-pr-4">
-                  <span v-if="respondent.email.length > 0">
+                <td class="tw-pr-4">
+                  <div class="tw-pb-4" v-if="respondent.email.length > 0">
                     {{ respondent.email }}
-                  </span>
+                  </div>
                   <v-text-field
                     v-else
+                    v-model="emails[r]"
+                    class="tw-pt-2"
                     placeholder="Email"
                     outlined
                     dense
-                    hide-details
+                    :rules="[rules.validEmail]"
                   />
                 </td>
               </tr>
@@ -64,7 +66,9 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary">Confirm</v-btn>
+        <v-btn color="primary" @click="confirm" :disabled="!confirmEnabled">
+          Confirm
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -72,6 +76,7 @@
 
 <script>
 import UserAvatarContent from "./UserAvatarContent.vue"
+import { validateEmail } from "@/utils"
 
 export default {
   name: "ConfirmEmailsDialog",
@@ -81,8 +86,39 @@ export default {
     respondents: { type: Array, default: () => [] },
   },
 
+  data: () => ({
+    emails: [],
+    rules: {
+      validEmail: (email) => {
+        if (email.length > 0 && !validateEmail(email)) {
+          return "Please enter a valid email."
+        }
+        return true
+      },
+    },
+  }),
+
+  mounted() {
+    this.emails = this.respondents.map((r) => r.email)
+  },
+
+  computed: {
+    confirmEnabled() {
+      // Only enable confirm button if all emails are valid
+      for (const email of this.emails) {
+        if (this.rules.validEmail(email) !== true) {
+          return false
+        }
+      }
+
+      return true
+    },
+  },
+
   methods: {
-    confirm() {},
+    confirm() {
+      this.$emit("confirm", this.emails)
+    },
   },
 
   components: { UserAvatarContent },

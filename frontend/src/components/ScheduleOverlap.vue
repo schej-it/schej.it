@@ -4,6 +4,7 @@
     <ConfirmEmailsDialog
       v-model="confirmEmailsDialog"
       :respondents="respondents"
+      @confirm="createCalendarInvite"
     />
 
     <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
@@ -891,7 +892,12 @@ export default {
       this.state = this.defaultState
       this.scheduledEvent = null
     },
-    confirmScheduleEvent() {},
+    confirmScheduleEvent() {
+      this.confirmEmailsDialog = true
+    },
+    createCalendarInvite(emails) {
+      // console.log(emails)
+    },
     //#endregion
 
     // -----------------------------------
