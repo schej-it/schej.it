@@ -67,6 +67,7 @@ html {
 <script>
 import { mapMutations, mapState } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "./utils"
+import { authTypes } from "./constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "./components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "./components/SignInNotSupportedDialog.vue"
@@ -163,7 +164,10 @@ export default {
           return
         }
         signInGoogle({
-          state: { type: "event-sign-in", eventId: this.$route.params.eventId },
+          state: {
+            type: authTypes.EVENT_SIGN_IN,
+            eventId: this.$route.params.eventId,
+          },
           selectAccount: true,
         })
       }

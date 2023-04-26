@@ -31,6 +31,7 @@
 <script>
 import { getDateRangeString, signInGoogle, get, isPhone } from "@/utils"
 import { mapState } from "vuex"
+import { authTypes } from "@/constants"
 import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 
 export default {
@@ -61,7 +62,10 @@ export default {
     },
     signIn() {
       signInGoogle({
-        state: { type: "event-add-availability", eventId: this.eventId },
+        state: {
+          type: authTypes.EVENT_ADD_AVAILABILITY,
+          eventId: this.eventId,
+        },
       })
     },
   },

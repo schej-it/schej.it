@@ -184,7 +184,7 @@ import { mapActions, mapState } from "vuex"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import ScheduleOverlap from "@/components/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
-import { errors } from "@/constants"
+import { errors, authTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 
@@ -295,14 +295,20 @@ export default {
         if (this.authUser) {
           // Request permission if calendar permissions not yet granted
           signInGoogle({
-            state: { type: "event-add-availability", eventId: this.eventId },
+            state: {
+              type: authTypes.EVENT_ADD_AVAILABILITY,
+              eventId: this.eventId,
+            },
             selectAccount: false,
             requestCalendarPermission: true,
           })
         } else {
           // Ask the user to select the account they want to sign in with if not logged in yet
           signInGoogle({
-            state: { type: "event-add-availability", eventId: this.eventId },
+            state: {
+              type: authTypes.EVENT_ADD_AVAILABILITY,
+              eventId: this.eventId,
+            },
             selectAccount: true,
             requestCalendarPermission: true,
           })

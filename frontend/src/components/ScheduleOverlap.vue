@@ -830,7 +830,7 @@ export default {
           day.dateObject,
           time.hoursOffset
         ).size
-        if (numRespondents === this.max) {
+        if (this.max > 0 && numRespondents === this.max) {
           // Only set timeslot to green for the times that most people are available
           const green = "#12B981"
 
@@ -911,20 +911,21 @@ export default {
     },
     createCalendarInvite(emails) {
       // console.log(emails)
+      const { dayIndex, hoursOffset, hoursLength } = this.scheduledEvent
+      const payload = {
+        startDate: this.getDateFromDayTimeIndex(dayIndex, hoursOffset * 2),
+        endDate: this.getDateFromDayTimeIndex(
+          dayIndex,
+          (hoursOffset + hoursLength) * 2
+        ),
+        attendeeEmails: emails.filter((email) => email.length > 0),
+      }
+
       // If calendar edit permission not granted, ask for it
+
       // Otherwise, schedule event on the backend
       return
-      post(`/events/${this.eventId}/schedule`, {
-        startDate: getDateFromDayTimeIndex(
-          this.scheduledEvent.dayIndex,
-          this.scheduledEvent.hoursOffset
-        ),
-        endDate: getDateFromDayTimeIndex(
-          this.scheduledEvent.dayIndex,
-          this.scheduledEvent.hoursOffset + this.scheduledEvent.hoursLength
-        ),
-        attendeeEmails: emails,
-      })
+      post(`/events/${this.eventId}/schedule`, payload)
     },
     //#endregion
 

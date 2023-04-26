@@ -1,21 +1,31 @@
 import store from "@/store"
 
+export const useDevOAuthClient = false
+
 /** Redirects user to the correct google sign in page */
 export const signInGoogle = ({
   state = null,
   selectAccount = false,
   requestCalendarPermission = false,
+  requestEditCalendarPermission = false,
 }) => {
-  const clientId =
-    "523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com"
-  // const clientId =
-  //   "7346820053-cu9906684uq808ds5ei24nbhnfijl9in.apps.googleusercontent.com" // schej-it-dev
+  let clientId
+  if (useDevOAuthClient) {
+    clientId =
+      "7346820053-cu9906684uq808ds5ei24nbhnfijl9in.apps.googleusercontent.com" // schej-it-dev
+  } else {
+    clientId =
+      "523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com"
+  }
   const redirectUri = `${window.location.origin}/auth`
 
   let scope = "openid email profile "
   if (requestCalendarPermission) {
     scope +=
-      "https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly"
+      "https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly "
+  }
+  if (requestEditCalendarPermission) {
+    scope += "https://www.googleapis.com/auth/calendar.events "
   }
   scope = encodeURIComponent(scope)
 

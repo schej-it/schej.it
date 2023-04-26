@@ -1,39 +1,48 @@
-<template>
-  
-</template>
+<template></template>
 
 <script>
-import { get, post } from '@/utils'
-import { mapMutations } from 'vuex'
+import { get, post } from "@/utils"
+import { mapMutations } from "vuex"
+import { authTypes } from "@/constants"
 
 export default {
-  name: 'Auth',
+  name: "Auth",
 
   methods: {
-    ...mapMutations([ 'setAuthUser' ]),
+    ...mapMutations(["setAuthUser"]),
   },
 
   async created() {
     let { error, code, state } = this.$route.query
     if (error) this.$router.replace({ name: "home" })
-    
+
     if (state) state = JSON.parse(state)
 
     // Sign in and set auth user
     try {
-      if (process.env.NODE_ENV === 'development') console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
-      await post('/auth/sign-in', { code, timezoneOffset: new Date().getTimezoneOffset() })
-      const authUser = await get('/user/profile')
+      if (process.env.NODE_ENV === "development")
+        console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
+      await post("/auth/sign-in", {
+        code,
+        timezoneOffset: new Date().getTimezoneOffset(),
+      })
+      const authUser = await get("/user/profile")
       this.setAuthUser(authUser)
 
       // Redirect to the correct place based on "state", otherwise, just redirect to home
       if (state) {
         switch (state.type) {
-          case 'event-add-availability':
-            this.$router.replace({ name: 'event', params: { eventId: state.eventId, fromSignIn: true } })
+          case authTypes.EVENT_ADD_AVAILABILITY:
+            this.$router.replace({
+              name: "event",
+              params: { eventId: state.eventId, fromSignIn: true },
+            })
             break
-          case 'event-sign-in':
-            this.$router.replace({ name: 'event', params: { eventId: state.eventId } })
+          case authTypes.EVENT_SIGN_IN:
+            this.$router.replace({
+              name: "event",
+              params: { eventId: state.eventId },
+            })
             break
         }
       } else {
