@@ -559,6 +559,19 @@ export default {
     ...mapActions(["showInfo"]),
 
     // -----------------------------------
+    //#region Date
+    // -----------------------------------
+
+    /** Returns a date object from the dayindex and timeindex given */
+    getDateFromDayTimeIndex(dayIndex, timeIndex) {
+      return getDateHoursOffset(
+        this.days[dayIndex].dateObject,
+        this.times[timeIndex].hoursOffset
+      )
+    },
+    //#endregion
+
+    // -----------------------------------
     //#region Respondent
     // -----------------------------------
     mouseOverRespondent(e, id) {
@@ -612,8 +625,9 @@ export default {
     // -----------------------------------
     //#region Aggregate user availability
     // -----------------------------------
+
+    /** Returns an array of respondents for the given date/time */
     getRespondentsForHoursOffset(date, hoursOffset) {
-      /* Returns an array of respondents for the given date/time */
       const d = getDateHoursOffset(date, hoursOffset)
       return this.responsesFormatted.get(d.getTime())
     },
@@ -897,6 +911,20 @@ export default {
     },
     createCalendarInvite(emails) {
       // console.log(emails)
+      // If calendar edit permission not granted, ask for it
+      // Otherwise, schedule event on the backend
+      return
+      post(`/events/${this.eventId}/schedule`, {
+        startDate: getDateFromDayTimeIndex(
+          this.scheduledEvent.dayIndex,
+          this.scheduledEvent.hoursOffset
+        ),
+        endDate: getDateFromDayTimeIndex(
+          this.scheduledEvent.dayIndex,
+          this.scheduledEvent.hoursOffset + this.scheduledEvent.hoursLength
+        ),
+        attendeeEmails: emails,
+      })
     },
     //#endregion
 

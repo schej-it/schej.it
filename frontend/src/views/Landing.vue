@@ -157,12 +157,12 @@
 </template>
 
 <script>
-import LandingPageCalendar from "@/components/LandingPageCalendar.vue";
-import { isPhone, signInGoogle } from "@/utils";
-import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue";
-import FAQ from "@/components/FAQ.vue";
-import Header from "@/components/Header.vue";
-import NumberBullet from "@/components/NumberBullet.vue";
+import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
+import { isPhone, signInGoogle } from "@/utils"
+import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
+import FAQ from "@/components/FAQ.vue"
+import Header from "@/components/Header.vue"
+import NumberBullet from "@/components/NumberBullet.vue"
 
 export default {
   name: "Landing",
@@ -221,25 +221,25 @@ export default {
 
   computed: {
     isPhone() {
-      return isPhone(this.$vuetify);
+      return isPhone(this.$vuetify)
     },
     logoWidth() {
-      return 90;
+      return 90
     },
   },
 
   methods: {
     signInGoogle() {
-      signInGoogle(null, true);
+      signInGoogle({ state: null, selectAccount: true })
     },
     signIn() {
-      this.dialog = true;
-      this.dialogType = this.DIALOG_TYPES.SIGN_IN;
+      this.dialog = true
+      this.dialogType = this.DIALOG_TYPES.SIGN_IN
     },
     getStarted() {
-      this.dialog = true;
-      this.dialogType = this.DIALOG_TYPES.SIGN_UP;
+      this.dialog = true
+      this.dialogType = this.DIALOG_TYPES.SIGN_UP
     },
   },
-};
+}
 </script>

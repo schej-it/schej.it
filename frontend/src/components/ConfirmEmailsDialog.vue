@@ -53,7 +53,7 @@
                     v-else
                     v-model="emails[r]"
                     class="tw-pt-2"
-                    placeholder="Email"
+                    placeholder="Email (optional)"
                     outlined
                     dense
                     :rules="[rules.validEmail]"
