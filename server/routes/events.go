@@ -225,12 +225,10 @@ func scheduleEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
 
-	// TODO: update event if calendarEventId exists
-
 	// Create google calendar invite
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails)
+	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, eventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails)
 	if googleApiError != nil {
 		c.JSON(googleApiError.Code, responses.Error{Error: *googleApiError})
 		return

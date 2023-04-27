@@ -56,8 +56,8 @@ func signIn(c *gin.Context) {
 		redirectUri = "http://localhost:8080/auth"
 	}
 	values := url.Values{
-		"client_id":     {os.Getenv("CLIENT_ID")},
-		"client_secret": {os.Getenv("CLIENT_SECRET")},
+		"client_id":     {os.Getenv("DEV_CLIENT_ID")},
+		"client_secret": {os.Getenv("DEV_CLIENT_SECRET")},
 		"code":          {payload.Code},
 		"grant_type":    {"authorization_code"},
 		"redirect_uri":  {redirectUri},

@@ -583,6 +583,11 @@ export default {
         this.times[timeIndex].hoursOffset
       )
     },
+
+    /** Returns a date object from the dayindex and hoursoffset given */
+    getDateFromDayHoursOffset(dayIndex, hoursOffset) {
+      return getDateHoursOffset(this.days[dayIndex].dateObject, hoursOffset)
+    },
     //#endregion
 
     // -----------------------------------
@@ -927,10 +932,10 @@ export default {
     createCalendarInvite(emails) {
       const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
       const payload = {
-        startDate: this.getDateFromDayTimeIndex(dayIndex, hoursOffset * 2),
-        endDate: this.getDateFromDayTimeIndex(
+        startDate: this.getDateFromDayHoursOffset(dayIndex, hoursOffset),
+        endDate: this.getDateFromDayHoursOffset(
           dayIndex,
-          (hoursOffset + hoursLength) * 2
+          hoursOffset + hoursLength
         ),
         attendeeEmails: emails.filter(
           (email) => email.length > 0 && email !== this.authUser.email
