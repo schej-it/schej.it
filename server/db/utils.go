@@ -231,7 +231,7 @@ func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.T
 	return calendarEvents, nil
 }
 
-func ScheduleEvent(user *models.User, eventName string, eventId string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string) (*string, *errs.GoogleAPIError) {
+func ScheduleEvent(user *models.User, eventName string, eventId string, calendarEventId string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string) (*string, *errs.GoogleAPIError) {
 	RefreshUserTokenIfNecessary(user)
 
 	attendees := make(bson.A, 0)
@@ -247,19 +247,29 @@ func ScheduleEvent(user *models.User, eventName string, eventId string, startDat
 		"end": bson.M{
 			"dateTime": endDate,
 		},
-		"attendees": attendees,
-		"summary": eventName,
+		"attendees":   attendees,
+		"summary":     eventName,
 		"description": fmt.Sprintf(`This event was scheduled with schej: https://schej.it/e/%s`, eventId),
-		"guestsCanModify": true,
 	})
 	reqBody := bytes.NewBuffer(body)
 
 	// Create calendar event
-	req, _ := http.NewRequest(
-		"POST",
-		"https://www.googleapis.com/calendar/v3/calendars/primary/events?fields=id&sendUpdates=all",
-		reqBody,
-	)
+	var req *http.Request
+	if len(calendarEventId) > 0 {
+		// Update existing event
+		req, _ = http.NewRequest(
+			"PUT",
+			fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events/%s?fields=id&sendUpdates=all", calendarEventId),
+			reqBody,
+		)
+	} else {
+		// Create new event
+		req, _ = http.NewRequest(
+			"POST",
+			"https://www.googleapis.com/calendar/v3/calendars/primary/events?fields=id&sendUpdates=all",
+			reqBody,
+		)
+	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -269,7 +279,7 @@ func ScheduleEvent(user *models.User, eventName string, eventId string, startDat
 
 	// Parse the response
 	response := struct {
-		Id string `json:"id"`
+		Id    string              `json:"id"`
 		Error errs.GoogleAPIError `json:"error"`
 	}{}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
@@ -282,4 +292,37 @@ func ScheduleEvent(user *models.User, eventName string, eventId string, startDat
 	}
 
 	return &response.Id, nil
+}
+
+func UnscheduleEvent(user *models.User, calendarEventId string) *errs.GoogleAPIError {
+	RefreshUserTokenIfNecessary(user)
+
+	req, _ := http.NewRequest(
+		"DELETE",
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events/%s?fields=id&sendUpdates=all", calendarEventId),
+		nil,
+	)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 204 {
+		// Parse the response
+		response := struct {
+			Error errs.GoogleAPIError `json:"error"`
+		}{}
+		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+			logger.StdErr.Panicln(err)
+		}
+
+		// Check if the response returned an error
+		if response.Error.Errors != nil {
+			return &response.Error
+		}
+	}
+
+	return nil
 }

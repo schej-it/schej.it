@@ -220,7 +220,7 @@
           </div>
 
           <div
-            v-if="authUser"
+            v-if="authUser && isOwner"
             style="width: 180.16px"
             class="tw-hidden sm:tw-block"
           >
@@ -335,6 +335,7 @@ export default {
   name: "ScheduleOverlap",
   props: {
     eventId: { type: String, default: "" }, // ID of event
+    ownerId: { type: String, default: "" }, // ID of the owner of the event
     name: { type: String, default: "" }, // Name of event
     startTime: { type: Number, required: true }, // Start time of event
     endTime: { type: Number, required: true }, // End time of event
@@ -451,6 +452,9 @@ export default {
     },
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    isOwner() {
+      return this.authUser?._id === this.ownerId
     },
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user)

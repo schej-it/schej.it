@@ -215,20 +215,26 @@ func updateEventResponse(c *gin.Context) {
 // @Router /events/{eventId}/schedule [post]
 func scheduleEvent(c *gin.Context) {
 	payload := struct {
-		StartDate *primitive.DateTime `json:"startDate" binding:"required"`
-		EndDate   *primitive.DateTime `json:"endDate" binding:"required"`
-		AttendeeEmails []string `json:"attendeeEmails" binding:"required"`
+		StartDate      *primitive.DateTime `json:"startDate" binding:"required"`
+		EndDate        *primitive.DateTime `json:"endDate" binding:"required"`
+		AttendeeEmails []string            `json:"attendeeEmails" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
-
-	// Create google calendar invite
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
-	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, eventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails)
+
+	// Only allow event owner to schedule the event
+	if user.Id != event.OwnerId {
+		c.JSON(http.StatusForbidden, gin.H{"Error": errs.UserNotEventOwner})
+		return
+	}
+
+	// Create google calendar invite
+	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, eventId, event.CalendarEventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails)
 	if googleApiError != nil {
 		c.JSON(googleApiError.Code, responses.Error{Error: *googleApiError})
 		return
@@ -236,7 +242,7 @@ func scheduleEvent(c *gin.Context) {
 
 	scheduledEvent := models.CalendarEvent{
 		StartDate: *payload.StartDate,
-		EndDate: *payload.EndDate,
+		EndDate:   *payload.EndDate,
 	}
 
 	// Update event
@@ -245,7 +251,7 @@ func scheduleEvent(c *gin.Context) {
 		utils.StringToObjectID(eventId),
 		bson.M{
 			"$set": bson.M{
-				"scheduledEvent": scheduledEvent,
+				"scheduledEvent":  scheduledEvent,
 				"calendarEventId": calendarEventId,
 			},
 		},
@@ -253,7 +259,6 @@ func scheduleEvent(c *gin.Context) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-
 
 	c.JSON(http.StatusOK, gin.H{})
 }
