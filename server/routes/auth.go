@@ -54,7 +54,6 @@ func signIn(c *gin.Context) {
 		redirectUri = "https://schej.it/auth"
 	} else {
 		redirectUri = "http://localhost:8080/auth"
-		// redirectUri = "com.googleusercontent.apps.523323684219-vntbcabt43u6ago35a8s9mkjlhrserdg:/oauth2redirect"
 	}
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},

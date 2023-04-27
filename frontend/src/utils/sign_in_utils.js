@@ -1,6 +1,6 @@
 import store from "@/store"
 
-export const useDevOAuthClient = false
+export const useDevOAuthClient = true
 
 /** Redirects user to the correct google sign in page */
 export const signInGoogle = ({

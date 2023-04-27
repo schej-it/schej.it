@@ -44,6 +44,14 @@ export default {
               params: { eventId: state.eventId },
             })
             break
+          case authTypes.EVENT_SCHEDULE:
+            this.$router.replace({
+              name: "event",
+              params: {
+                eventId: state.eventId,
+                scheduleEventPayload: state.payload,
+              },
+            })
         }
       } else {
         this.$router.replace({ name: "home" })

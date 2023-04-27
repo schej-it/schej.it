@@ -1,6 +1,7 @@
 package db
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -228,4 +229,55 @@ func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.T
 	}
 
 	return calendarEvents, nil
+}
+
+func ScheduleEvent(user *models.User, eventName string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string) (*string, *errs.GoogleAPIError) {
+	RefreshUserTokenIfNecessary(user)
+
+	attendees := make(bson.A, 0)
+	attendees = append(attendees, bson.M{"email": user.Email, "responseStatus": "accepted"})
+	for _, email := range attendeeEmails {
+		attendees = append(attendees, bson.M{"email": email})
+	}
+
+	body, _ := json.Marshal(bson.M{
+		"start": bson.M{
+			"dateTime": startDate,
+		},
+		"end": bson.M{
+			"dateTime": endDate,
+		},
+		"attendees": attendees,
+		"summary": eventName,
+	})
+	reqBody := bytes.NewBuffer(body)
+
+	// Create calendar event
+	req, _ := http.NewRequest(
+		"POST",
+		"https://www.googleapis.com/calendar/v3/calendars/primary/events?fields=id&sendUpdates=all",
+		reqBody,
+	)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer resp.Body.Close()
+
+	// Parse the response
+	response := struct {
+		Id string `json:"id"`
+		Error errs.GoogleAPIError `json:"error"`
+	}{}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	// Check if the response returned an error
+	if response.Error.Errors != nil {
+		return nil, &response.Error
+	}
+
+	return &response.Id, nil
 }

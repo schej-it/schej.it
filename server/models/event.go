@@ -17,6 +17,7 @@ type Event struct {
 
 	// Scheduled event
 	ScheduledEvent *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
+	CalendarEventId string `json:"calendarEventId" bson:"calendarEventId,omitempty"`
 }
 
 // A response object containing an array of times that the given user is available

@@ -222,8 +222,19 @@ func scheduleEvent(c *gin.Context) {
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
-	// session := sessions.Default(c)
 	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
+
+	// TODO: update event if calendarEventId exists
+
+	// Create google calendar invite
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails)
+	if googleApiError != nil {
+		c.JSON(googleApiError.Code, responses.Error{Error: *googleApiError})
+		return
+	}
 
 	scheduledEvent := models.CalendarEvent{
 		StartDate: *payload.StartDate,
@@ -237,17 +248,13 @@ func scheduleEvent(c *gin.Context) {
 		bson.M{
 			"$set": bson.M{
 				"scheduledEvent": scheduledEvent,
+				"calendarEventId": calendarEventId,
 			},
 		},
 	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-
-	// Update user's calendar
-	// event := db.GetEventById(eventId)
-	// for respondentId, respondent := range event.Responses {
-	// }
 
 
 	c.JSON(http.StatusOK, gin.H{})

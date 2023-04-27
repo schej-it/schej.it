@@ -173,6 +173,7 @@
 <script>
 import {
   get,
+  post,
   signInGoogle,
   isPhone,
   processEvent,
@@ -194,6 +195,7 @@ export default {
   props: {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
+    scheduleEventPayload: { type: Object, default: null },
   },
 
   components: {
@@ -421,6 +423,10 @@ export default {
       })
   },
 
+  beforeDestroy() {
+    window.removeEventListener("beforeunload", this.onBeforeUnload)
+  },
+
   watch: {
     event() {
       if (this.event) {
@@ -431,11 +437,18 @@ export default {
     },
     scheduleOverlapComponent() {
       if (!this.scheduleOverlapComponentLoaded) {
-        this.scheduleOverlapComponentLoaded
+        this.scheduleOverlapComponentLoaded = true
 
         // Put into editing mode if just signed in
         if (this.fromSignIn) {
           this.scheduleOverlapComponent.startEditing()
+        }
+
+        // Schedule event if payload exists
+        if (this.scheduleEventPayload) {
+          this.scheduleOverlapComponent?.createCalendarInviteFromPayload(
+            this.scheduleEventPayload
+          )
         }
       }
     },
