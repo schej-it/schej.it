@@ -6,17 +6,19 @@
       :respondents="respondents"
       @confirm="createCalendarInvite"
     />
-
+    
     <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap">
         <!-- Times -->
         <div class="tw-w-12 tw-mt-12">
-          <div
-            v-for="(time, i) in times"
-            :key="i"
-            class="tw-h-5 tw-text-xs tw-pt-1 tw-pr-2 tw-text-right tw-uppercase tw-font-light"
-          >
-            {{ time.text }}
+          <div class="-tw-mt-[8px]">
+            <div
+              v-for="(time, i) in times"
+              :key="i"
+              class="tw-h-5 tw-text-xs tw-pr-2 tw-text-right tw-uppercase tw-font-light"
+            >
+              {{ time.text }}
+            </div>
           </div>
         </div>
 
