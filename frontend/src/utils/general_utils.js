@@ -7,9 +7,8 @@ import { dateToTimeNum } from "./date_utils"
 var timeoutId
 /** Calls callback() on long press */
 export const onLongPress = (element, callback, capture = false) => {
-
   element.addEventListener(
-    'touchstart',
+    "touchstart",
     function (e) {
       timeoutId = setTimeout(function () {
         timeoutId = null
@@ -21,7 +20,7 @@ export const onLongPress = (element, callback, capture = false) => {
   )
 
   element.addEventListener(
-    'contextmenu',
+    "contextmenu",
     function (e) {
       e.preventDefault()
     },
@@ -29,7 +28,7 @@ export const onLongPress = (element, callback, capture = false) => {
   )
 
   element.addEventListener(
-    'touchend',
+    "touchend",
     function () {
       if (timeoutId) clearTimeout(timeoutId)
     },
@@ -37,7 +36,7 @@ export const onLongPress = (element, callback, capture = false) => {
   )
 
   element.addEventListener(
-    'touchmove',
+    "touchmove",
     function () {
       if (timeoutId) clearTimeout(timeoutId)
     },
@@ -62,7 +61,7 @@ export const clamp = (value, lower, upper) => {
 }
 
 export const isPhone = (vuetify) => {
-  return vuetify.breakpoint.name === 'xs'
+  return vuetify.breakpoint.name === "xs"
 }
 
 export const br = (vuetify, breakpoint) => {
@@ -72,10 +71,10 @@ export const br = (vuetify, breakpoint) => {
 /** convert base64 to raw binary data held in a string */
 export const dataURItoBlob = (dataURI) => {
   // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
-  var byteString = atob(dataURI.split(',')[1])
+  var byteString = atob(dataURI.split(",")[1])
 
   // separate out the mime component
-  var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+  var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0]
 
   // write the bytes of the string to an ArrayBuffer
   var ab = new ArrayBuffer(byteString.length)
@@ -91,4 +90,13 @@ export const dataURItoBlob = (dataURI) => {
 export const processEvent = (event) => {
   event.startTime = dateToTimeNum(new Date(event.dates[0]), true)
   event.endTime = (event.startTime + event.duration) % 24
+}
+
+/** Checks whether email is a valid email */
+export const validateEmail = (email) => {
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    )
 }

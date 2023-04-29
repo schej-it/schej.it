@@ -8,6 +8,7 @@ const (
 	EventNotFound         string = "event-not-found"
 	FriendRequestNotFound string = "friend-request-not-found"
 	UserNotFriends        string = "user-not-friends"
+	UserNotEventOwner     string = "user-not-event-owner"
 )
 
 type GoogleAPIError struct {

@@ -1,45 +1,42 @@
 <template>
   <div v-if="event" class="tw-flex tw-flex-col tw-h-full tw-w-full">
-    <div class="tw-flex-1 tw-bg-green tw-text-white tw-flex tw-justify-center tw-items-center">
+    <div
+      class="tw-flex-1 tw-bg-green tw-text-white tw-flex tw-justify-center tw-items-center"
+    >
       <div class="-tw-mt-8 tw-flex tw-flex-col tw-items-center tw-space-y-3">
-        <div 
-          class="tw-text-center tw-font-bold tw-text-5xl"
-        >{{ event.name }}</div>
-        <div
-          class="tw-font-light tw-text-2xl"
-        >{{ dateString }}</div>
-        <div
-          class="tw-font-light tw-text-sm tw-flex tw-items-center"
-        ><v-icon class="tw-text-white tw-mr-2 tw-text-base">mdi-account-multiple</v-icon>{{ Object.keys(event.responses).length }} respondents</div>
+        <div class="tw-text-center tw-font-bold tw-text-5xl">
+          {{ event.name }}
+        </div>
+        <div class="tw-font-light tw-text-2xl">{{ dateString }}</div>
+        <div class="tw-font-light tw-text-sm tw-flex tw-items-center">
+          <v-icon class="tw-text-white tw-mr-2 tw-text-base"
+            >mdi-account-multiple</v-icon
+          >{{ Object.keys(event.responses).length }} respondents
+        </div>
       </div>
     </div>
     <div class="tw-flex tw-flex-col tw-items-center tw-justify-center tw-py-12">
-      <v-btn
-        v-if="authUser"
-        class="tw-bg-blue tw-mb-2"
-        dark
-        @click="join"
-      >Join event</v-btn>
-      <SignInGoogleBtn 
-        v-else
-        @click="signIn"
-        dark
-      />
-      <div 
-        class="tw-text-xs tw-mx-10 tw-text-black tw-text-center"
-      >Schej.it automatically inputs your availability <br v-if="isPhone"> using your Google calendar</div>
+      <v-btn v-if="authUser" class="tw-bg-blue tw-mb-2" dark @click="join"
+        >Join event</v-btn
+      >
+      <SignInGoogleBtn v-else @click="signIn" dark />
+      <div class="tw-text-xs tw-mx-10 tw-text-black tw-text-center">
+        Schej.it automatically inputs your availability <br v-if="isPhone" />
+        using your Google calendar
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getDateRangeString, signInGoogle, get, isPhone } from '@/utils'
-import { mapState } from 'vuex'
-import SignInGoogleBtn from '@/components/SignInGoogleBtn.vue'
+import { getDateRangeString, signInGoogle, get, isPhone } from "@/utils"
+import { mapState } from "vuex"
+import { authTypes } from "@/constants"
+import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 
 export default {
   components: { SignInGoogleBtn },
-  name: 'Join',
+  name: "Join",
 
   props: {
     eventId: { type: String, required: true },
@@ -50,7 +47,7 @@ export default {
   }),
 
   computed: {
-    ...mapState([ 'authUser', 'events' ]),
+    ...mapState(["authUser", "events"]),
     dateString() {
       return getDateRangeString(this.event.startDate, this.event.endDate)
     },
@@ -61,10 +58,15 @@ export default {
 
   methods: {
     join() {
-      this.$router.replace({ name: 'event', params: { eventId: this.eventId } })
+      this.$router.replace({ name: "event", params: { eventId: this.eventId } })
     },
     signIn() {
-      signInGoogle({ type: 'event-add-availability', eventId: this.eventId })
+      signInGoogle({
+        state: {
+          type: authTypes.EVENT_ADD_AVAILABILITY,
+          eventId: this.eventId,
+        },
+      })
     },
   },
 
@@ -73,6 +75,6 @@ export default {
     this.event = await get(`/events/${this.eventId}`)
     this.event.startDate = new Date(this.event.startDate)
     this.event.endDate = new Date(this.event.endDate)
-  }
+  },
 }
 </script>

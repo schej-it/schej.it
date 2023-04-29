@@ -14,21 +14,21 @@
       calendarOnly
       :interactable="false"
       :showSnackbar="false"
-      :initialShowCalendarEvents="true"
+      :alwaysShowCalendarEvents="true"
       animateTimeslotAlways
     />
   </v-card>
 </template>
 
 <script>
-import ScheduleOverlap from "@/components/ScheduleOverlap";
+import ScheduleOverlap from "@/components/ScheduleOverlap"
 import {
   getDateDayOffset,
   getDateWithTimeNum,
   isPhone,
   dateToTimeNum,
   processCalendarEvents,
-} from "@/utils";
+} from "@/utils"
 
 export default {
   name: "LandingPageCalendar",
@@ -51,19 +51,19 @@ export default {
 
   computed: {
     duration() {
-      return isPhone(this.$vuetify) ? 8 : 13;
+      return isPhone(this.$vuetify) ? 8 : 13
     },
     startTime() {
-      return dateToTimeNum(new Date(this.dates[0]), true);
+      return dateToTimeNum(new Date(this.dates[0]), true)
     },
     endTime() {
-      return (this.startTime + this.duration) % 24;
+      return (this.startTime + this.duration) % 24
     },
   },
 
   methods: {
     getCalendarEventsByDay() {
-      const [day1, day2, day3] = this.dates;
+      const [day1, day2, day3] = this.dates
       const events = [
         {
           startDate: getDateWithTimeNum(day1, 9),
@@ -80,24 +80,24 @@ export default {
           endDate: getDateWithTimeNum(day3, 17),
           summary: "Study session",
         },
-      ];
+      ]
 
       if (!isPhone(this.$vuetify)) {
         events.push({
           startDate: getDateWithTimeNum(day3, 20.5),
           endDate: getDateWithTimeNum(day3, 22),
           summary: "Hackathon meeting",
-        });
+        })
       }
 
       this.calendarEventsByDay = processCalendarEvents(
         this.dates,
         this.duration,
         events
-      );
+      )
     },
     getResponses() {
-      const [day1, day2, day3] = this.dates;
+      const [day1, day2, day3] = this.dates
       this.responses = {
         "62828fec1bc681fa020632f2": {
           user: { _id: "1", name: "1" },
@@ -236,22 +236,22 @@ export default {
             getDateWithTimeNum(day3, 20),
           ],
         },
-      };
+      }
     },
   },
 
   mounted() {
-    this.$refs.scheduleOverlap.startEditing();
+    this.$refs.scheduleOverlap.startEditing()
     setTimeout(() => {
-      this.getCalendarEventsByDay();
-      this.getResponses();
+      this.getCalendarEventsByDay()
+      this.getResponses()
       setTimeout(() => {
-        this.$refs.scheduleOverlap.setAvailabilityAutomatically();
+        this.$refs.scheduleOverlap.setAvailabilityAutomatically()
         setTimeout(() => {
-          this.$refs.scheduleOverlap.stopEditing();
-        }, 2000);
-      }, 500);
-    }, 200);
+          this.$refs.scheduleOverlap.stopEditing()
+        }, 2000)
+      }, 500)
+    }, 200)
   },
-};
+}
 </script>

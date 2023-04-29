@@ -25,7 +25,9 @@
         <v-spacer />
 
         <AuthUserMenu v-if="authUser" />
-        <v-btn v-else id="top-right-sign-in-btn" text @click="signIn">Sign in</v-btn>
+        <v-btn v-else id="top-right-sign-in-btn" text @click="signIn"
+          >Sign in</v-btn
+        >
       </div>
     </div>
 
@@ -65,6 +67,7 @@ html {
 <script>
 import { mapMutations, mapState } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "./utils"
+import { authTypes } from "./constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "./components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "./components/SignInNotSupportedDialog.vue"
@@ -91,7 +94,7 @@ export default {
   components: {
     AutoSnackbar,
     AuthUserMenu,
-    SignInNotSupportedDialog
+    SignInNotSupportedDialog,
   },
 
   data: () => ({
@@ -160,10 +163,13 @@ export default {
           this.webviewDialog = true
           return
         }
-        signInGoogle(
-          { type: "event-sign-in", eventId: this.$route.params.eventId },
-          true
-        )
+        signInGoogle({
+          state: {
+            type: authTypes.EVENT_SIGN_IN,
+            eventId: this.$route.params.eventId,
+          },
+          selectAccount: true,
+        })
       }
     },
   },
