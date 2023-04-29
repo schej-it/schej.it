@@ -145,6 +145,17 @@
 
         <div class="break" v-if="isPhone"></div>
 
+        <!-- Hint text (mobile) -->
+        <div v-if="isPhone" class="tw-flex">
+          <div class="tw-w-12"></div>
+          <div
+            class="tw-text-dark-gray tw-text-xs tw-mt-2"
+            style="min-height: 1rem"
+          >
+            {{ hintText.mobile }}
+          </div>
+        </div>
+
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
@@ -195,11 +206,22 @@
         </div>
       </div>
 
+      <!-- Hint text (desktop) -->
+      <div v-if="!isPhone" class="tw-flex">
+        <div class="tw-w-12"></div>
+        <div
+          class="tw-text-dark-gray tw-text-sm tw-mt-2"
+          style="min-height: 1.4rem"
+        >
+          {{ hintText.desktop }}
+        </div>
+      </div>
+
       <div class="tw-flex" v-if="!calendarOnly">
         <div class="sm:tw-w-12"></div>
 
         <div
-          class="tw-flex-1 tw-flex tw-items-center tw-mt-4 tw-text-sm tw-justify-center sm:tw-justify-between"
+          class="tw-flex-1 tw-flex tw-items-center tw-mt-4 sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
         >
           <div
             class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row tw-justify-between tw-flex-1 sm:tw-flex-none"
@@ -451,6 +473,24 @@ export default {
     editing() {
       // Returns whether currently in the editing state
       return this.state === this.states.EDIT_AVAILABILITY
+    },
+    hintText() {
+      switch (this.state) {
+        case this.states.EDIT_AVAILABILITY:
+          return {
+            desktop: "Click and drag on the calendar to edit your availability",
+            mobile: "Tap and drag on the calendar to edit your availability",
+          }
+        case this.states.SCHEDULE_EVENT:
+          return {
+            desktop:
+              "Click and drag on the calendar to schedule a Google Calendar event during those times",
+            mobile:
+              "Tap and drag on the calendar to schedule a Google Calendar event during those times",
+          }
+        default:
+          return { desktop: "", mobile: "" }
+      }
     },
     isPhone() {
       return isPhone(this.$vuetify)
