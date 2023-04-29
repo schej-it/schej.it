@@ -37,7 +37,7 @@
     <NewEventDialog v-model="editEventDialog" :event="event" edit-event />
 
     <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
-      <div class="tw-mx-8">
+      <div class="tw-mx-4">
         <!-- Title and copy link -->
         <div class="tw-text-black tw-flex tw-items-center">
           <div>

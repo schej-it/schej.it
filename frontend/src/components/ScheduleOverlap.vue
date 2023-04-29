@@ -148,7 +148,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-p-4 sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48"
+          class="tw-py-4 tw-w-full sm:tw-pl-8 sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48"
         >
           <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
             <div class="tw-mr-1 tw-text-lg">Responses</div>
@@ -201,7 +201,9 @@
         <div
           class="tw-flex-1 tw-flex tw-items-center tw-mt-4 tw-text-sm tw-justify-center sm:tw-justify-between"
         >
-          <div class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row">
+          <div
+            class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row tw-justify-between tw-flex-1 sm:tw-flex-none"
+          >
             <!-- Select timezone -->
             <TimezoneSelector
               v-model="curTimezone"
