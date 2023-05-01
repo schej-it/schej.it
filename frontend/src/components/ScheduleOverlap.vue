@@ -1,12 +1,13 @@
 <template>
   <span>
     <!-- Confirm emails dialog -->
-    <ConfirmEmailsDialog
-      v-model="confirmEmailsDialog"
+    <ConfirmDetailsDialog
+      v-model="confirmDetailsDialog"
       :respondents="respondents"
+      :loading="creatingCalendarInvite"
       @confirm="createCalendarInvite"
     />
-    
+
     <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap">
         <!-- Times -->
@@ -354,7 +355,7 @@ import UserAvatarContent from "./UserAvatarContent.vue"
 import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
-import ConfirmEmailsDialog from "./ConfirmEmailsDialog.vue"
+import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import { authTypes } from "@/constants"
 
 export default {
@@ -422,7 +423,8 @@ export default {
       prevScheduledEvent: null, // The scheduled event before making changes
       scheduled: false, // Whether event has been scheduled or not
       showBestTimes: localStorage["showBestTimes"] == "true",
-      confirmEmailsDialog: false,
+      confirmDetailsDialog: false,
+      creatingCalendarInvite: false,
     }
   },
   computed: {
@@ -618,7 +620,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["showInfo"]),
+    ...mapActions(["showInfo", "showError"]),
 
     // -----------------------------------
     //#region Date
@@ -973,11 +975,13 @@ export default {
       this.state = this.defaultState
     },
     confirmScheduleEvent() {
-      this.confirmEmailsDialog = true
+      this.confirmDetailsDialog = true
     },
 
     /** Creates a google calendar invite and officially schedules the event on the server */
-    createCalendarInvite(emails) {
+    createCalendarInvite({ emails, location, description }) {
+      this.creatingCalendarInvite = true
+
       const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
       const payload = {
         startDate: this.getDateFromDayHoursOffset(dayIndex, hoursOffset),
@@ -988,13 +992,16 @@ export default {
         attendeeEmails: emails.filter(
           (email) => email.length > 0 && email !== this.authUser.email
         ),
-        curScheduledEvent: this.curScheduledEvent,
+        location,
+        description,
       }
 
       // Schedule event on backend
       post(`/events/${this.eventId}/schedule`, payload)
         .then(() => {
-          this.confirmEmailsDialog = false
+          this.creatingCalendarInvite = false
+
+          this.confirmDetailsDialog = false
           this.prevScheduledEvent = this.curScheduledEvent // Needed so the scheduled event stays there after exiting scheduling state
           this.scheduled = true
           this.state = this.defaultState
@@ -1004,6 +1011,7 @@ export default {
           console.error(err)
           // If calendar edit permission not granted, ask for it
           if (err.error.code === 401 || err.error.code === 403) {
+            payload.curScheduledEvent = this.curScheduledEvent
             signInGoogle({
               state: {
                 type: authTypes.EVENT_SCHEDULE,
@@ -1012,7 +1020,13 @@ export default {
               },
               requestEditCalendarPermission: true,
             })
+          } else {
+            this.showError(
+              "Something went wrong when creating that calendar invite. Please try again later."
+            )
           }
+
+          this.creatingCalendarInvite = false
         })
     },
 
@@ -1273,7 +1287,7 @@ export default {
     UserAvatarContent,
     ZigZag,
     TimezoneSelector,
-    ConfirmEmailsDialog,
+    ConfirmDetailsDialog,
   },
 }
 </script>

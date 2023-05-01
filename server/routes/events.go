@@ -218,6 +218,8 @@ func scheduleEvent(c *gin.Context) {
 		StartDate      *primitive.DateTime `json:"startDate" binding:"required"`
 		EndDate        *primitive.DateTime `json:"endDate" binding:"required"`
 		AttendeeEmails []string            `json:"attendeeEmails" binding:"required"`
+		Location       string              `json:"location"`
+		Description    string              `json:"description"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -234,7 +236,7 @@ func scheduleEvent(c *gin.Context) {
 	}
 
 	// Create google calendar invite
-	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, eventId, event.CalendarEventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails)
+	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, eventId, event.CalendarEventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails, payload.Location, payload.Description)
 	if googleApiError != nil {
 		c.JSON(googleApiError.Code, responses.Error{Error: *googleApiError})
 		return

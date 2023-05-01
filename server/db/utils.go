@@ -231,7 +231,7 @@ func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.T
 	return calendarEvents, nil
 }
 
-func ScheduleEvent(user *models.User, eventName string, eventId string, calendarEventId string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string) (*string, *errs.GoogleAPIError) {
+func ScheduleEvent(user *models.User, eventName string, eventId string, calendarEventId string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string, location string, description string) (*string, *errs.GoogleAPIError) {
 	RefreshUserTokenIfNecessary(user)
 
 	attendees := make(bson.A, 0)
@@ -249,7 +249,8 @@ func ScheduleEvent(user *models.User, eventName string, eventId string, calendar
 		},
 		"attendees":   attendees,
 		"summary":     eventName,
-		"description": fmt.Sprintf(`This event was scheduled with schej: https://schej.it/e/%s`, eventId),
+		"description": fmt.Sprintf("%s\n\nThis event was scheduled with schej: https://schej.it/e/%s", description, eventId),
+		"location":    location,
 	})
 	reqBody := bytes.NewBuffer(body)
 
