@@ -183,7 +183,7 @@ import {
 import { mapActions, mapState } from "vuex"
 
 import NewEventDialog from "@/components/NewEventDialog.vue"
-import ScheduleOverlap from "@/components/ScheduleOverlap.vue"
+import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
 import { errors, authTypes } from "@/constants"
 import isWebview from "is-ua-webview"

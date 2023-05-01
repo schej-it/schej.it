@@ -144,6 +144,80 @@
               </div>
             </div>
           </div>
+
+          <!-- Hint text (desktop) -->
+          <div v-if="!isPhone" class="tw-flex">
+            <div
+              class="tw-text-dark-gray tw-text-sm tw-mt-2"
+              style="min-height: 1.4rem"
+            >
+              {{ hintText.desktop }}
+            </div>
+          </div>
+
+          <div class="tw-flex" v-if="!calendarOnly && !isPhone">
+            <div
+              class="tw-flex-1 tw-flex tw-items-center tw-mt-4 sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
+            >
+              <div
+                class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row tw-justify-between tw-flex-1 sm:tw-flex-none"
+              >
+                <!-- Select timezone -->
+                <TimezoneSelector
+                  v-model="curTimezone"
+                  :timezones="Object.keys(timezoneMap)"
+                />
+
+                <div class="tw-flex tw-justify-center tw-items-center tw-gap-1">
+                  <div>Show best times</div>
+                  <v-switch
+                    class="-tw-mb-1"
+                    v-model="showBestTimes"
+                    color="#219653"
+                    @change="onShowBestTimesChange"
+                  />
+                </div>
+              </div>
+
+              <div
+                v-if="authUser && isOwner"
+                style="width: 180.16px"
+                class="tw-hidden sm:tw-block"
+              >
+                <template v-if="state !== states.SCHEDULE_EVENT">
+                  <v-btn
+                    outlined
+                    class="tw-text-green tw-w-full"
+                    @click="scheduleEvent"
+                  >
+                    <span class="tw-mr-2">Schedule event</span>
+                    <v-img
+                      src="@/assets/gcal_logo.png"
+                      class="tw-flex-none"
+                      height="20"
+                      width="20"
+                    />
+                  </v-btn>
+                </template>
+                <template v-else>
+                  <v-btn
+                    outlined
+                    class="tw-text-red tw-mr-1"
+                    @click="cancelScheduleEvent"
+                  >
+                    Cancel
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    @click="confirmScheduleEvent"
+                    :disabled="!curScheduledEvent"
+                  >
+                    Schedule
+                  </v-btn>
+                </template>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="break" v-if="isPhone"></div>
@@ -209,20 +283,7 @@
         </div>
       </div>
 
-      <!-- Hint text (desktop) -->
-      <div v-if="!isPhone" class="tw-flex">
-        <div class="tw-w-12"></div>
-        <div
-          class="tw-text-dark-gray tw-text-sm tw-mt-2"
-          style="min-height: 1.4rem"
-        >
-          {{ hintText.desktop }}
-        </div>
-      </div>
-
-      <div class="tw-flex" v-if="!calendarOnly">
-        <div class="sm:tw-w-12"></div>
-
+      <div class="tw-flex" v-if="!calendarOnly && isPhone">
         <div
           class="tw-flex-1 tw-flex tw-items-center tw-mt-4 sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
         >
@@ -245,47 +306,7 @@
               />
             </div>
           </div>
-
-          <div
-            v-if="authUser && isOwner"
-            style="width: 180.16px"
-            class="tw-hidden sm:tw-block"
-          >
-            <template v-if="state !== states.SCHEDULE_EVENT">
-              <v-btn
-                outlined
-                class="tw-text-green tw-w-full"
-                @click="scheduleEvent"
-              >
-                <span class="tw-mr-2">Schedule event</span>
-                <v-img
-                  src="@/assets/gcal_logo.png"
-                  class="tw-flex-none"
-                  height="20"
-                  width="20"
-                />
-              </v-btn>
-            </template>
-            <template v-else>
-              <v-btn
-                outlined
-                class="tw-text-red tw-mr-1"
-                @click="cancelScheduleEvent"
-              >
-                Cancel
-              </v-btn>
-              <v-btn
-                color="primary"
-                @click="confirmScheduleEvent"
-                :disabled="!curScheduledEvent"
-              >
-                Schedule
-              </v-btn>
-            </template>
-          </div>
         </div>
-
-        <div class="sm:tw-w-48"></div>
       </div>
     </div>
   </span>
@@ -351,7 +372,7 @@ import {
   processCalendarEvents,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
-import UserAvatarContent from "./UserAvatarContent.vue"
+import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
@@ -671,6 +692,7 @@ export default {
       e.stopPropagation()
     },
     deselectRespondent(e) {
+      console.log("deselect!!!")
       if (this.state === this.states.SINGLE_AVAILABILITY) {
         this.state = this.defaultState
       }
@@ -1043,6 +1065,8 @@ export default {
 
     /** Sets curScheduledEvent by reformatting the scheduledEvent stored in the server */
     processScheduledEvent() {
+      if (!this.scheduledEvent) return
+
       const eventsByDay = processCalendarEvents(this.dates, this.duration, [
         this.scheduledEvent,
       ])

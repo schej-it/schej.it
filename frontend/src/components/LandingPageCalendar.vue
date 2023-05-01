@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import ScheduleOverlap from "@/components/ScheduleOverlap"
+import ScheduleOverlap from "@/components//schedule_overlap/ScheduleOverlap"
 import {
   getDateDayOffset,
   getDateWithTimeNum,

@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import UserAvatarContent from "./UserAvatarContent.vue"
+import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import { validateEmail } from "@/utils"
 
 export default {
