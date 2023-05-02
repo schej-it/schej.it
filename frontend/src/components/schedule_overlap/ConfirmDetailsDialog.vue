@@ -21,7 +21,13 @@
             <v-expansion-panel-content>
               <div class="tw-mb-4 tw-text-dark-gray">
                 Google Calendar invites will be sent to people at the following
-                email addresses
+                email addresses.
+                <span v-if="!hasContactsAccess">
+                  <a class="tw-underline" @click="requestContactsAccess"
+                    >Enable contacts access</a
+                  >
+                  to receive email autosuggestions.
+                </span>
               </div>
               <div class="tw-max-h-96 tw-overflow-y-auto tw-table-auto">
                 <table class="tw-text-black tw-w-full tw-text-left">
@@ -125,6 +131,7 @@ export default {
     value: { type: Boolean, required: true },
     respondents: { type: Array, default: () => [] },
     loading: { type: Boolean, default: false },
+    hasContactsAccess: { type: Boolean, default: false },
   },
 
   data: () => ({
@@ -165,6 +172,18 @@ export default {
         location: this.location,
         description: this.description,
       })
+    },
+    requestContactsAccess() {
+      this.$emit("requestContactsAccess", {
+        emails: this.emails,
+        location: this.location,
+        description: this.description,
+      })
+    },
+    setData({ emails, location, description }) {
+      this.emails = emails
+      this.location = location
+      this.description = description
     },
   },
 

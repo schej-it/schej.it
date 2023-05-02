@@ -2,10 +2,13 @@
   <span>
     <!-- Confirm emails dialog -->
     <ConfirmDetailsDialog
+      ref="confirmDetailsDialog"
       v-model="confirmDetailsDialog"
       :respondents="respondents"
       :loading="creatingCalendarInvite"
+      :has-contacts-access="false"
       @confirm="createCalendarInvite"
+      @requestContactsAccess="requestContactsAccess"
     />
 
     <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
@@ -1024,6 +1027,31 @@ export default {
           break
         }
       }
+    },
+
+    /** Redirects user to oauth page requesting access to the user's contacts */
+    requestContactsAccess({ emails, location, description }) {
+      const payload = {
+        curScheduledEvent: this.curScheduledEvent,
+        emails,
+        location,
+        description,
+      }
+      signInGoogle({
+        state: {
+          type: authTypes.EVENT_CONTACTS,
+          eventId: this.eventId,
+          payload,
+        },
+        requestContactsPermission: true,
+      })
+    },
+
+    /** Update state based on the contactsPayload after granting contacts access */
+    contactsAccessGranted({ curScheduledEvent, ...data }) {
+      this.curScheduledEvent = curScheduledEvent
+      this.$refs.confirmDetailsDialog?.setData(data)
+      this.confirmDetailsDialog = true
     },
     //#endregion
 
