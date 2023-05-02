@@ -14,6 +14,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/calendar"
 	"schej.it/server/utils"
 )
 
@@ -111,7 +112,7 @@ func getCalendar(c *gin.Context) {
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
 
-	calendarEvents, err := db.GetUsersCalendarEvents(user, payload.TimeMin, payload.TimeMax)
+	calendarEvents, err := calendar.GetUsersCalendarEvents(user, payload.TimeMin, payload.TimeMax)
 	if err != nil {
 		c.JSON(err.Code, responses.Error{Error: *err})
 		return

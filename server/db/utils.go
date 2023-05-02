@@ -1,7 +1,6 @@
 package db
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -206,124 +204,4 @@ func UpdateDailyUserLog(user *models.User) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-}
-
-func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
-	RefreshUserTokenIfNecessary(user)
-
-	calendars, err := utils.GetCalendarList(user.AccessToken)
-	if err != nil {
-		return nil, err
-	}
-
-	// Call the google calendar API to get a list of calendar events from the user's gcal
-	// TODO: get events for all user's calendars, not just selected calendars
-	calendarEvents := make([]models.CalendarEvent, 0)
-	for _, calendar := range calendars {
-		events, err := utils.GetCalendarEvents(user.AccessToken, calendar.Id, timeMin, timeMax)
-		if err != nil {
-			return nil, err
-		}
-
-		calendarEvents = append(calendarEvents, events...)
-	}
-
-	return calendarEvents, nil
-}
-
-func ScheduleEvent(user *models.User, eventName string, eventId string, calendarEventId string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string, location string, description string) (*string, *errs.GoogleAPIError) {
-	RefreshUserTokenIfNecessary(user)
-
-	attendees := make(bson.A, 0)
-	attendees = append(attendees, bson.M{"email": user.Email, "responseStatus": "accepted"})
-	for _, email := range attendeeEmails {
-		attendees = append(attendees, bson.M{"email": email, "responseStatus": "needsAction"})
-	}
-
-	body, _ := json.Marshal(bson.M{
-		"start": bson.M{
-			"dateTime": startDate,
-		},
-		"end": bson.M{
-			"dateTime": endDate,
-		},
-		"attendees":   attendees,
-		"summary":     eventName,
-		"description": fmt.Sprintf("%s\n\nThis event was scheduled with schej: https://schej.it/e/%s", description, eventId),
-		"location":    location,
-	})
-	reqBody := bytes.NewBuffer(body)
-
-	// Create calendar event
-	var req *http.Request
-	if len(calendarEventId) > 0 {
-		// Update existing event
-		req, _ = http.NewRequest(
-			"PUT",
-			fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events/%s?fields=id&sendUpdates=all", calendarEventId),
-			reqBody,
-		)
-	} else {
-		// Create new event
-		req, _ = http.NewRequest(
-			"POST",
-			"https://www.googleapis.com/calendar/v3/calendars/primary/events?fields=id&sendUpdates=all",
-			reqBody,
-		)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
-
-	// Parse the response
-	response := struct {
-		Id    string              `json:"id"`
-		Error errs.GoogleAPIError `json:"error"`
-	}{}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	// Check if the response returned an error
-	if response.Error.Errors != nil {
-		return nil, &response.Error
-	}
-
-	return &response.Id, nil
-}
-
-func UnscheduleEvent(user *models.User, calendarEventId string) *errs.GoogleAPIError {
-	RefreshUserTokenIfNecessary(user)
-
-	req, _ := http.NewRequest(
-		"DELETE",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events/%s?fields=id&sendUpdates=all", calendarEventId),
-		nil,
-	)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 204 {
-		// Parse the response
-		response := struct {
-			Error errs.GoogleAPIError `json:"error"`
-		}{}
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			logger.StdErr.Panicln(err)
-		}
-
-		// Check if the response returned an error
-		if response.Error.Errors != nil {
-			return &response.Error
-		}
-	}
-
-	return nil
 }
