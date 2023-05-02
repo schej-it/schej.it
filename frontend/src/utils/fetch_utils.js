@@ -42,25 +42,24 @@ export const fetchMethod = (method, route, body = {}) => {
     .then(async (res) => {
       const text = await res.text()
 
-      // Check if response was ok
-      if (!res.ok) {
+      // Parse JSON if text is not empty
+      let returnValue
+      if (text.length === 0) {
+        returnValue = text
+      } else {
         try {
-          throw JSON.parse(text)
+          returnValue = JSON.parse(text)
         } catch (err) {
           throw { error: errors.JsonError }
         }
       }
 
-      // Parse data if it is json, otherwise throw an error
-      try {
-        if (text.length === 0) {
-          return text
-        } else {
-          return JSON.parse(text)
-        }
-      } catch (err) {
-        throw { error: errors.JsonError }
+      // Check if response was ok
+      if (!res.ok) {
+        throw returnValue
       }
+
+      return returnValue
     })
     .then((data) => {
       return data
