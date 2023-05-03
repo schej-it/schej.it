@@ -26,7 +26,7 @@
                   <a class="tw-underline" @click="requestContactsAccess"
                     >Enable contacts access</a
                   >
-                  to receive email autosuggestions.
+                  to receive email auto-suggestions.
                 </span>
               </div>
               <div class="tw-max-h-96 tw-overflow-y-auto tw-table-auto">
@@ -122,7 +122,7 @@
 
 <script>
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
-import { validateEmail } from "@/utils"
+import { validateEmail, get } from "@/utils"
 
 export default {
   name: "ConfirmDetailsDialog",
@@ -131,16 +131,16 @@ export default {
     value: { type: Boolean, required: true },
     respondents: { type: Array, default: () => [] },
     loading: { type: Boolean, default: false },
-    hasContactsAccess: { type: Boolean, default: false },
   },
 
   data: () => ({
     emails: [],
     location: "",
     description: "",
+    hasContactsAccess: true,
     rules: {
       validEmail: (email) => {
-        if (email.length > 0 && !validateEmail(email)) {
+        if (email?.length > 0 && !validateEmail(email)) {
           return "Please enter a valid email."
         }
         return true
@@ -150,6 +150,14 @@ export default {
 
   mounted() {
     this.emails = this.respondents.map((r) => r.email)
+
+    // Send a warmup request to update cache and check if contacts permissions are enabled
+    get(`/user/searchContacts?query=`).catch((err) => {
+      // User has not granted contacts permissions
+      if (err.error?.code === 403) {
+        this.hasContactsAccess = false
+      }
+    })
   },
 
   computed: {
@@ -184,6 +192,12 @@ export default {
       this.emails = emails
       this.location = location
       this.description = description
+    },
+  },
+
+  watch: {
+    emails() {
+      console.log("emails changed!!!")
     },
   },
 

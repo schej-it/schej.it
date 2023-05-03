@@ -104,8 +104,6 @@ func DeleteFriendRequestById(friendRequestId string) {
 func RefreshUserTokenIfNecessary(u *models.User) {
 	// logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		// logger.StdOut.Println("REFRESHING TOKEN")
-
 		// Refresh token by calling google token endpoint
 		values := url.Values{
 			"client_id":     {utils.GetClientIdFromTokenOrigin(u.TokenOrigin)},
@@ -147,13 +145,13 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 }
 
 /*
-  Finds a daily user log, localized to the user's month/day/year, by:
-  Checking if the given date (in server time) and timezone offset (in client time) match the day of a daily user log (in UTC time)
-  If none exist, then create a new daily log
+Finds a daily user log, localized to the user's month/day/year, by:
+Checking if the given date (in server time) and timezone offset (in client time) match the day of a daily user log (in UTC time)
+If none exist, then create a new daily log
 
-  Note: we find the log localized to the user's month/day/year in order to track if the user has signed in on different days in their
-  own timezone, rather than the server's timezone. For example, if a user signed in at 11pm on Monday, then signed in at 8am on Tuesday,
-  it could theoretically count as the same day if we were to use server time
+Note: we find the log localized to the user's month/day/year in order to track if the user has signed in on different days in their
+own timezone, rather than the server's timezone. For example, if a user signed in at 11pm on Monday, then signed in at 8am on Tuesday,
+it could theoretically count as the same day if we were to use server time
 */
 func GetDailyUserLogByDate(date time.Time, timezoneOffset int) *models.DailyUserLog {
 	timezoneOffsetDuration, _ := time.ParseDuration(fmt.Sprintf("%dm", timezoneOffset))

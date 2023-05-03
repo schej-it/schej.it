@@ -15,6 +15,7 @@ import (
 	"schej.it/server/models"
 	"schej.it/server/responses"
 	"schej.it/server/services/calendar"
+	"schej.it/server/services/contacts"
 	"schej.it/server/utils"
 )
 
@@ -25,6 +26,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.GET("/profile", getProfile)
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendar", getCalendar)
+	userRouter.GET("/searchContacts", searchContacts)
 	userRouter.POST("/visibility", updateVisibility)
 }
 
@@ -156,4 +158,31 @@ func updateVisibility(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Searches the user's contacts based on the given query
+// @Tags user
+// @Produce json
+// @Param query query string true "Query to search for"
+// @Success 200 {object} []models.UserProfile
+// @Router /user/searchContacts [get]
+func searchContacts(c *gin.Context) {
+	// Bind query parameters
+	payload := struct {
+		Query string `form:"query"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	contacts, googleError := contacts.SearchContacts(user, payload.Query)
+	if googleError != nil {
+		c.JSON(googleError.Code, responses.Error{Error: *googleError})
+		return
+	}
+
+	c.JSON(http.StatusOK, contacts)
 }

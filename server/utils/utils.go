@@ -13,7 +13,6 @@ import (
 
 	"github.com/brianvoe/sjwt"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/logger"
 	"schej.it/server/models"
@@ -25,7 +24,7 @@ func IsRelease() bool {
 	return mode == "release"
 }
 
-func PrintJson(s gin.H) {
+func PrintJson(s interface{}) {
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		logger.StdErr.Panicln(err)

@@ -13,6 +13,8 @@ const (
 
 type GoogleAPIError struct {
 	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Status  string      `json:"status"`
 	Details interface{} `json:"details"`
 	Errors  interface{} `json:"errors"`
 }
