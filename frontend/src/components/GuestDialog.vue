@@ -1,7 +1,7 @@
 <template>
-  <v-dialog 
+  <v-dialog
     :value="value"
-    @input="e => $emit('input', e)"
+    @input="(e) => $emit('input', e)"
     width="400"
     content-class="tw-m-0"
   >
@@ -9,21 +9,21 @@
       <v-card-title class="tw-flex">
         <div>Continue as guest</div>
         <v-spacer />
-        <v-btn 
-          icon 
-          @click="$emit('input', false)"
-        ><v-icon>mdi-close</v-icon></v-btn>
+        <v-btn icon @click="$emit('input', false)">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </v-card-title>
       <v-card-text>
         <v-text-field
-            v-model="name"
-            :error="alreadyTaken"
-            class="-tw-mt-1"
-            placeholder="Enter your name..."
-            :hint="alreadyTaken ? 'Name already taken' : ''"
-            persistent-hint
-            autofocus
-          ></v-text-field>
+          v-model="name"
+          @keyup.enter="submit"
+          :error="alreadyTaken"
+          class="-tw-mt-1"
+          placeholder="Enter your name..."
+          :hint="alreadyTaken ? 'Name already taken' : ''"
+          persistent-hint
+          autofocus
+        ></v-text-field>
         <div class="tw-flex">
           <v-spacer />
           <v-btn
@@ -41,12 +41,12 @@
 </template>
 
 <script>
-import { isPhone } from '@/utils'
+import { isPhone } from "@/utils"
 
 export default {
-  name: 'GuestDialog',
+  name: "GuestDialog",
 
-  emits: ['input', 'submit'],
+  emits: ["input", "submit"],
 
   props: {
     value: { type: Boolean, required: true },
@@ -55,7 +55,7 @@ export default {
 
   data() {
     return {
-      name: '',
+      name: "",
     }
   },
 
@@ -68,19 +68,20 @@ export default {
     },
     alreadyTaken() {
       return this.respondents.includes(this.name)
-    }
+    },
   },
 
   methods: {
     submit() {
-      if (!this.alreadyTaken) this.$emit('submit', this.name)
+      if (!this.alreadyTaken && this.formComplete)
+        this.$emit("submit", this.name)
     },
   },
 
   watch: {
     value() {
       if (this.value) {
-        this.name = ''
+        this.name = ""
       }
     },
   },
