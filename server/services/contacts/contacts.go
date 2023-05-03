@@ -3,6 +3,7 @@ package contacts
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"schej.it/server/errs"
 	"schej.it/server/logger"
@@ -28,7 +29,7 @@ func SearchContacts(user *models.User, query string) ([]models.UserProfile, *err
 	response := services.CallGoogleApi(
 		user,
 		"GET",
-		fmt.Sprintf("https://people.googleapis.com/v1/people:searchContacts?query=%s&pageSize=5&readMask=names,emailAddresses,photos", query),
+		fmt.Sprintf("https://people.googleapis.com/v1/people:searchContacts?query=%s&pageSize=10&readMask=names,emailAddresses,photos", url.QueryEscape(query)),
 		nil,
 	)
 	defer response.Body.Close()
@@ -53,7 +54,7 @@ func SearchContacts(user *models.User, query string) ([]models.UserProfile, *err
 		response = services.CallGoogleApi(
 			user,
 			"GET",
-			fmt.Sprintf("https://people.googleapis.com/v1/people:searchDirectoryPeople?query=%s&pageSize=5&readMask=names,emailAddresses,photos&sources=DIRECTORY_SOURCE_TYPE_DOMAIN_PROFILE", query),
+			fmt.Sprintf("https://people.googleapis.com/v1/people:searchDirectoryPeople?query=%s&pageSize=10&readMask=names,emailAddresses,photos&sources=DIRECTORY_SOURCE_TYPE_DOMAIN_PROFILE", url.QueryEscape(query)),
 			nil,
 		)
 		defer response.Body.Close()

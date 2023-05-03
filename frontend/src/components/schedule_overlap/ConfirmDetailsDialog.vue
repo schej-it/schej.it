@@ -65,15 +65,41 @@
                         <div class="tw-pb-4" v-if="respondent.email.length > 0">
                           {{ respondent.email }}
                         </div>
-                        <v-text-field
+                        <v-combobox
                           v-else
-                          v-model="emails[r]"
+                          :search-input.sync="emails[r]"
+                          :items="formattedEmailSuggestions[r]"
+                          no-filter
+                          item-text="email"
+                          item-value="email"
+                          hide-no-data
+                          return-object
+                          append-icon=""
                           class="tw-pt-2"
                           placeholder="Email (optional)"
                           outlined
                           dense
                           :rules="[rules.validEmail]"
-                        />
+                        >
+                          <template v-slot:item="{ item }">
+                            <v-list-item-avatar>
+                              <img
+                                v-if="item.picture.length > 0"
+                                :src="item.picture"
+                                referrerpolicy="no-referrer"
+                              />
+                              <v-icon v-else>mdi-account</v-icon>
+                            </v-list-item-avatar>
+                            <v-list-item-content>
+                              <v-list-item-title
+                                v-text="`${item.firstName} ${item.lastName}`"
+                              ></v-list-item-title>
+                              <v-list-item-subtitle
+                                v-text="item.email"
+                              ></v-list-item-subtitle>
+                            </v-list-item-content>
+                          </template>
+                        </v-combobox>
                       </td>
                     </tr>
                   </tbody>
@@ -134,7 +160,11 @@ export default {
   },
 
   data: () => ({
-    emails: [],
+    emails: [], // Currently displayed emails
+    prevEmails: new Set(), // Set that tracks previous emails to track the emails that have been changed
+    timeouts: [], // Timeouts for search debouncing
+    emailSuggestions: [], // Auto-suggestions for each email input
+
     location: "",
     description: "",
     hasContactsAccess: true,
@@ -150,6 +180,8 @@ export default {
 
   mounted() {
     this.emails = this.respondents.map((r) => r.email)
+    this.timeouts = this.respondents.map(() => null)
+    this.emailSuggestions = this.respondents.map(() => [])
 
     // Send a warmup request to update cache and check if contacts permissions are enabled
     get(`/user/searchContacts?query=`).catch((err) => {
@@ -170,6 +202,12 @@ export default {
       }
 
       return true
+    },
+    formattedEmailSuggestions() {
+      // Only return suggestions if email is not empty
+      return this.emailSuggestions.map((suggestion, i) =>
+        this.emails[i]?.length > 0 ? suggestion : []
+      )
     },
   },
 
@@ -193,11 +231,46 @@ export default {
       this.location = location
       this.description = description
     },
+    searchContacts(emailsIndex, query) {
+      // Searches the user's contacts using the google contacts API
+      if (this.hasContactsAccess) {
+        clearTimeout(this.timeouts[emailsIndex])
+        this.timeouts[emailsIndex] = setTimeout(() => {
+          get(`/user/searchContacts?query=${query}`).then((results) => {
+            this.$set(this.emailSuggestions, emailsIndex, results)
+          })
+        }, 300)
+      }
+    },
+    emailFilter(item, queryText) {
+      // Custom email filter (unused)
+      const searchText = `${item.firstName} ${item.lastName} ${item.email}`
+      return searchText.toLowerCase().includes(queryText.toLowerCase())
+    },
   },
 
   watch: {
     emails() {
-      console.log("emails changed!!!")
+      // If an email has been changed, search user's contacts for that query
+
+      if (this.value && this.hasContactsAccess) {
+        // Only search contacts if dialog is shown and has contacts access
+        const difference = this.emails.filter(
+          (x) => x && !this.prevEmails.has(x)
+        )
+        if (difference.length === 0) {
+          return
+        }
+
+        const changedEmail = difference[0]
+        const changedEmailIndex = this.emails.indexOf(changedEmail)
+
+        if (changedEmail.length > 0) {
+          this.searchContacts(changedEmailIndex, changedEmail)
+        }
+
+        this.prevEmails = new Set(this.emails)
+      }
     },
   },
 

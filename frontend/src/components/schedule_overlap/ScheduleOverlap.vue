@@ -955,7 +955,7 @@ export default {
           hoursOffset + hoursLength
         ),
         attendeeEmails: emails.filter(
-          (email) => email.length > 0 && email !== this.authUser.email
+          (email) => email?.length > 0 && email !== this.authUser.email
         ),
         location,
         description,
