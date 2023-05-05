@@ -17,6 +17,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/calendar"
 	"schej.it/server/utils"
 )
 
@@ -236,7 +237,7 @@ func scheduleEvent(c *gin.Context) {
 	}
 
 	// Create google calendar invite
-	calendarEventId, googleApiError := db.ScheduleEvent(user, event.Name, eventId, event.CalendarEventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails, payload.Location, payload.Description)
+	calendarEventId, googleApiError := calendar.ScheduleEvent(user, event.Name, eventId, event.CalendarEventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails, payload.Location, payload.Description)
 	if googleApiError != nil {
 		c.JSON(googleApiError.Code, responses.Error{Error: *googleApiError})
 		return

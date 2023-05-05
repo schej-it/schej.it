@@ -17,6 +17,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/calendar"
 	"schej.it/server/utils"
 )
 
@@ -120,7 +121,7 @@ func getFriendsCalendar(c *gin.Context) {
 	}
 
 	// Get calendar events
-	calendarEvents, googleErr := db.GetUsersCalendarEvents(friend, payload.TimeMin, payload.TimeMax)
+	calendarEvents, googleErr := calendar.GetUsersCalendarEvents(friend, payload.TimeMin, payload.TimeMax)
 	if googleErr != nil {
 		c.JSON(googleErr.Code, responses.Error{Error: *googleErr})
 		return
@@ -161,7 +162,7 @@ func getFriendsStatus(c *gin.Context) {
 	}
 
 	// Get calendar events
-	calendarEvents, googleErr := db.GetUsersCalendarEvents(friend, time.Now(), time.Now().Add(time.Second))
+	calendarEvents, googleErr := calendar.GetUsersCalendarEvents(friend, time.Now(), time.Now().Add(time.Second))
 	if googleErr != nil {
 		c.JSON(googleErr.Code, responses.Error{Error: *googleErr})
 		return
