@@ -172,6 +172,7 @@ import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
+import { confetti } from "tsparticles-confetti"
 
 export default {
   name: "Landing",
@@ -239,7 +240,22 @@ export default {
 
   methods: {
     confetti() {
-      console.log("confetti!!!")
+      confetti({
+        spread: 360,
+        ticks: 1000,
+        // count: 100,
+        shapes: ["image"],
+        scalar: 5,
+        shapeOptions: {
+          image: [
+            {
+              src: require("@/assets/schej_logo.png"),
+              width: 32,
+              height: 32,
+            },
+          ],
+        },
+      })
     },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
