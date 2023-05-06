@@ -91,10 +91,18 @@
           class="tw-flex tw-items-center tw-gap-2"
         >
           <NumberBullet>{{ i + 1 }}</NumberBullet>
-          <div
-            class="md:tw-text-xl tw-text-base tw-font-medium"
-            v-html="step"
-          ></div>
+          <div class="md:tw-text-xl tw-text-base tw-font-medium">
+            <div v-if="i == 1">
+              <span
+                class="tw-cursor-pointer tw-underline tw-decoration-pale-green hover:tw-decoration-green tw-decoration-4"
+                style="text-underline-position: under"
+                @click="confetti"
+                >Automatically</span
+              >
+              fill out your availability with Google Calendar,
+            </div>
+            <div v-else v-html="step"></div>
+          </div>
         </div>
       </div>
       <div
@@ -185,7 +193,7 @@ export default {
     },
     howItWorksSteps: [
       "Create a schej",
-      '<span class="tw-underline tw-decoration-pale-green tw-decoration-4" style="text-underline-position: under;">Automatically</span> fill out your availability with Google Calendar',
+      "",
       "Share the schej and find the best time to meet!",
     ],
     faqs: [
@@ -230,6 +238,9 @@ export default {
   },
 
   methods: {
+    confetti() {
+      console.log("confetti!!!")
+    },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
     },
