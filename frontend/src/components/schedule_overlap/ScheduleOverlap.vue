@@ -303,7 +303,6 @@ import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
-import { authTypes } from "@/constants"
 import ToolRow from "./ToolRow.vue"
 
 export default {
