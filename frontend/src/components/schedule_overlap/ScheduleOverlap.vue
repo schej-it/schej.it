@@ -1,16 +1,5 @@
 <template>
   <span>
-    <!-- Confirm emails dialog -->
-    <ConfirmDetailsDialog
-      ref="confirmDetailsDialog"
-      v-model="confirmDetailsDialog"
-      :respondents="respondents"
-      :loading="creatingCalendarInvite"
-      :has-contacts-access="false"
-      @confirm="createCalendarInvite"
-      @requestContactsAccess="requestContactsAccess"
-    />
-
     <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap">
         <!-- Times -->
@@ -939,11 +928,46 @@ export default {
     cancelScheduleEvent() {
       this.state = this.defaultState
     },
+
+    /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
-      this.confirmDetailsDialog = true
+      // Get start date, and end date from the area that the user has dragged out
+      const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
+      const startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)
+      const endDate = this.getDateFromDayHoursOffset(
+        dayIndex,
+        hoursOffset + hoursLength
+      )
+
+      // Format email string separated by commas
+      const emails = this.respondents.map((r) => {
+        // Return email if they are not a guest, otherwise return their name
+        if (r.email.length > 0) {
+          return r.email
+        } else {
+          return `${r.firstName} (no email)`
+        }
+      })
+      const emailsString = encodeURIComponent(emails.join(","))
+
+      // Format start and end date to be in the format required by gcal (remove -, :, and .000)
+      const start = startDate.toISOString().replace(/([-:]|\.000)/g, "")
+      const end = endDate.toISOString().replace(/([-:]|\.000)/g, "")
+
+      // Construct Google Calendar event creation template url
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+        this.name
+      )}&dates=${start}/${end}&details=${encodeURIComponent(
+        "\n\nThis event was scheduled with schej: https://schej.it/e/"
+      )}${this.eventId}&add=${emailsString}`
+
+      // Navigate to url and reset state
+      window.open(url, "_blank")
+      this.state = this.defaultState
     },
 
     /** Creates a google calendar invite and officially schedules the event on the server */
+    // DEPRECATED in favor of link based event creation
     createCalendarInvite({ emails, location, description }) {
       this.creatingCalendarInvite = true
 
