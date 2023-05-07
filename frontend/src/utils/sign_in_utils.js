@@ -7,8 +7,8 @@ export const signInGoogle = ({
   state = null,
   selectAccount = false,
   requestCalendarPermission = false,
-  requestEditCalendarPermission = false,
-  requestContactsPermission = false,
+  // requestEditCalendarPermission = false,
+  // requestContactsPermission = false,
 }) => {
   let clientId
   if (useDevOAuthClient) {
@@ -25,13 +25,13 @@ export const signInGoogle = ({
     scope +=
       "https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly "
   }
-  if (requestEditCalendarPermission) {
-    scope += "https://www.googleapis.com/auth/calendar.events "
-  }
-  if (requestContactsPermission) {
-    scope +=
-      "https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/directory.readonly "
-  }
+  // if (requestEditCalendarPermission) {
+  //   scope += "https://www.googleapis.com/auth/calendar.events "
+  // }
+  // if (requestContactsPermission) {
+  //   scope +=
+  //     "https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/directory.readonly "
+  // }
   scope = encodeURIComponent(scope)
 
   let stateString = ""

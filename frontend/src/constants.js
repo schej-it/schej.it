@@ -16,6 +16,4 @@ export const errors = Object.freeze({
 export const authTypes = Object.freeze({
   EVENT_ADD_AVAILABILITY: "event-add-availability",
   EVENT_SIGN_IN: "event-sign-in",
-  EVENT_SCHEDULE: "event-schedule",
-  EVENT_CONTACTS: "event-contacts",
 })

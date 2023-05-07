@@ -105,13 +105,7 @@
                   </div>
 
                   <!-- Scheduled event -->
-                  <div
-                    v-if="
-                      state !== states.EDIT_AVAILABILITY &&
-                      state !== states.SINGLE_AVAILABILITY &&
-                      (state === states.SCHEDULE_EVENT || scheduled)
-                    "
-                  >
+                  <div v-if="state === states.SCHEDULE_EVENT">
                     <div
                       v-if="
                         (dragStart && dragStart.dayIndex === d) ||
@@ -323,7 +317,6 @@ export default {
     duration: { type: Number, required: true }, // Duration of event
     dates: { type: Array, required: true }, // Dates of the event
     responses: { type: Object, default: () => ({}) }, // Map of user id to array of times they are available
-    scheduledEvent: { type: Object, default: null }, // The scheduled event if event has already been scheduled
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
@@ -374,11 +367,7 @@ export default {
       curTimezone: this.getLocalTimezone(),
 
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
-      prevScheduledEvent: null, // The scheduled event before making changes
-      scheduled: false, // Whether event has been scheduled or not
       showBestTimes: localStorage["showBestTimes"] == "true",
-      confirmDetailsDialog: false,
-      creatingCalendarInvite: false,
     }
   },
   computed: {
@@ -965,118 +954,6 @@ export default {
       window.open(url, "_blank")
       this.state = this.defaultState
     },
-
-    /** Creates a google calendar invite and officially schedules the event on the server */
-    // DEPRECATED in favor of link based event creation
-    createCalendarInvite({ emails, location, description }) {
-      this.creatingCalendarInvite = true
-
-      const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
-      const payload = {
-        startDate: this.getDateFromDayHoursOffset(dayIndex, hoursOffset),
-        endDate: this.getDateFromDayHoursOffset(
-          dayIndex,
-          hoursOffset + hoursLength
-        ),
-        attendeeEmails: emails.filter(
-          (email) => email?.length > 0 && email !== this.authUser.email
-        ),
-        location,
-        description,
-      }
-
-      // Schedule event on backend
-      post(`/events/${this.eventId}/schedule`, payload)
-        .then(() => {
-          this.creatingCalendarInvite = false
-
-          this.confirmDetailsDialog = false
-          this.prevScheduledEvent = this.curScheduledEvent // Needed so the scheduled event stays there after exiting scheduling state
-          this.scheduled = true
-          this.state = this.defaultState
-          this.showInfo("Event has been scheduled!")
-        })
-        .catch((err) => {
-          console.error(err)
-          // If calendar edit permission not granted, ask for it
-          if (err.error.code === 401 || err.error.code === 403) {
-            payload.curScheduledEvent = this.curScheduledEvent
-            signInGoogle({
-              state: {
-                type: authTypes.EVENT_SCHEDULE,
-                eventId: this.eventId,
-                payload,
-              },
-              requestEditCalendarPermission: true,
-            })
-          } else {
-            this.showError(
-              "Something went wrong when creating that calendar invite. Please try again later."
-            )
-          }
-
-          this.creatingCalendarInvite = false
-        })
-    },
-
-    /** Creates a calendar invite with the given payload (used right after enabling calendar permissions) */
-    createCalendarInviteFromPayload(payload) {
-      post(`/events/${this.eventId}/schedule`, payload).then(() => {
-        this.curScheduledEvent = payload.curScheduledEvent
-        this.prevScheduledEvent = this.curScheduledEvent // Needed so the scheduled event stays there after exiting scheduling state
-        this.scheduled = true
-        this.state = this.defaultState
-        this.showInfo("Event has been scheduled!")
-      })
-    },
-
-    /** Sets curScheduledEvent by reformatting the scheduledEvent stored in the server */
-    processScheduledEvent() {
-      if (!this.scheduledEvent) return
-
-      const eventsByDay = processCalendarEvents(this.dates, this.duration, [
-        this.scheduledEvent,
-      ])
-      for (const d in eventsByDay) {
-        if (eventsByDay[d].length > 0) {
-          const event = eventsByDay[d][0]
-          this.curScheduledEvent = {
-            dayIndex: parseInt(d),
-            hoursOffset: event.hoursOffset,
-            hoursLength: event.hoursLength,
-          }
-          this.prevScheduledEvent = this.curScheduledEvent
-          this.scheduled = true
-
-          break
-        }
-      }
-    },
-
-    /** Redirects user to oauth page requesting access to the user's contacts */
-    requestContactsAccess({ emails, location, description }) {
-      const payload = {
-        curScheduledEvent: this.curScheduledEvent,
-        emails,
-        location,
-        description,
-      }
-      signInGoogle({
-        state: {
-          type: authTypes.EVENT_CONTACTS,
-          eventId: this.eventId,
-          payload,
-        },
-        requestContactsPermission: true,
-      })
-    },
-
-    /** Update state based on the contactsPayload after granting contacts access */
-    contactsAccessGranted({ curScheduledEvent, ...data }) {
-      this.curScheduledEvent = curScheduledEvent
-      this.$refs.confirmDetailsDialog?.setData(data)
-      this.confirmDetailsDialog = true
-    },
     //#endregion
 
     // -----------------------------------
@@ -1246,12 +1123,9 @@ export default {
       this.unsavedChanges = true
     },
     state(nextState, prevState) {
+      // Reset scheduled event when exiting schedule event state
       if (prevState === this.states.SCHEDULE_EVENT) {
-        this.curScheduledEvent = this.prevScheduledEvent
-      }
-
-      if (nextState === this.states.SCHEDULE_EVENT) {
-        this.prevScheduledEvent = this.curScheduledEvent
+        this.curScheduledEvent = null
       }
     },
     calendarEvents: {
@@ -1271,7 +1145,6 @@ export default {
   },
   created() {
     this.resetCurUserAvailability()
-    this.processScheduledEvent()
 
     addEventListener("click", this.deselectRespondent)
   },
