@@ -1,16 +1,5 @@
 <template>
   <span>
-    <!-- Confirm emails dialog -->
-    <ConfirmDetailsDialog
-      ref="confirmDetailsDialog"
-      v-model="confirmDetailsDialog"
-      :respondents="respondents"
-      :loading="creatingCalendarInvite"
-      :has-contacts-access="false"
-      @confirm="createCalendarInvite"
-      @requestContactsAccess="requestContactsAccess"
-    />
-
     <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap">
         <!-- Times -->
@@ -116,13 +105,7 @@
                   </div>
 
                   <!-- Scheduled event -->
-                  <div
-                    v-if="
-                      state !== states.EDIT_AVAILABILITY &&
-                      state !== states.SINGLE_AVAILABILITY &&
-                      (state === states.SCHEDULE_EVENT || scheduled)
-                    "
-                  >
+                  <div v-if="state === states.SCHEDULE_EVENT">
                     <div
                       v-if="
                         (dragStart && dragStart.dayIndex === d) ||
@@ -149,7 +132,7 @@
           </div>
 
           <!-- Hint text (desktop) -->
-          <div v-if="!isPhone" class="tw-flex">
+          <div v-if="!isPhone && showHintText" class="tw-flex">
             <div
               class="tw-text-dark-gray tw-text-sm tw-mt-2"
               style="min-height: 1.4rem"
@@ -177,7 +160,7 @@
         <div class="break" v-if="isPhone"></div>
 
         <!-- Hint text (mobile) -->
-        <div v-if="isPhone" class="tw-flex">
+        <div v-if="isPhone && showHintText" class="tw-flex">
           <div class="tw-w-12"></div>
           <div
             class="tw-text-dark-gray tw-text-xs tw-mt-2"
@@ -320,7 +303,6 @@ import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
-import { authTypes } from "@/constants"
 import ToolRow from "./ToolRow.vue"
 
 export default {
@@ -334,7 +316,6 @@ export default {
     duration: { type: Number, required: true }, // Duration of event
     dates: { type: Array, required: true }, // Dates of the event
     responses: { type: Object, default: () => ({}) }, // Map of user id to array of times they are available
-    scheduledEvent: { type: Object, default: null }, // The scheduled event if event has already been scheduled
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
@@ -344,6 +325,7 @@ export default {
     interactable: { type: Boolean, default: true }, // Whether to allow user to interact with component
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
+    showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
   },
   data() {
     return {
@@ -385,11 +367,7 @@ export default {
       curTimezone: this.getLocalTimezone(),
 
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
-      prevScheduledEvent: null, // The scheduled event before making changes
-      scheduled: false, // Whether event has been scheduled or not
       showBestTimes: localStorage["showBestTimes"] == "true",
-      confirmDetailsDialog: false,
-      creatingCalendarInvite: false,
     }
   },
   computed: {
@@ -939,119 +917,42 @@ export default {
     cancelScheduleEvent() {
       this.state = this.defaultState
     },
+
+    /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
-      this.confirmDetailsDialog = true
-    },
-
-    /** Creates a google calendar invite and officially schedules the event on the server */
-    createCalendarInvite({ emails, location, description }) {
-      this.creatingCalendarInvite = true
-
+      // Get start date, and end date from the area that the user has dragged out
       const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
-      const payload = {
-        startDate: this.getDateFromDayHoursOffset(dayIndex, hoursOffset),
-        endDate: this.getDateFromDayHoursOffset(
-          dayIndex,
-          hoursOffset + hoursLength
-        ),
-        attendeeEmails: emails.filter(
-          (email) => email?.length > 0 && email !== this.authUser.email
-        ),
-        location,
-        description,
-      }
+      const startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)
+      const endDate = this.getDateFromDayHoursOffset(
+        dayIndex,
+        hoursOffset + hoursLength
+      )
 
-      // Schedule event on backend
-      post(`/events/${this.eventId}/schedule`, payload)
-        .then(() => {
-          this.creatingCalendarInvite = false
-
-          this.confirmDetailsDialog = false
-          this.prevScheduledEvent = this.curScheduledEvent // Needed so the scheduled event stays there after exiting scheduling state
-          this.scheduled = true
-          this.state = this.defaultState
-          this.showInfo("Event has been scheduled!")
-        })
-        .catch((err) => {
-          console.error(err)
-          // If calendar edit permission not granted, ask for it
-          if (err.error.code === 401 || err.error.code === 403) {
-            payload.curScheduledEvent = this.curScheduledEvent
-            signInGoogle({
-              state: {
-                type: authTypes.EVENT_SCHEDULE,
-                eventId: this.eventId,
-                payload,
-              },
-              requestEditCalendarPermission: true,
-            })
-          } else {
-            this.showError(
-              "Something went wrong when creating that calendar invite. Please try again later."
-            )
-          }
-
-          this.creatingCalendarInvite = false
-        })
-    },
-
-    /** Creates a calendar invite with the given payload (used right after enabling calendar permissions) */
-    createCalendarInviteFromPayload(payload) {
-      post(`/events/${this.eventId}/schedule`, payload).then(() => {
-        this.curScheduledEvent = payload.curScheduledEvent
-        this.prevScheduledEvent = this.curScheduledEvent // Needed so the scheduled event stays there after exiting scheduling state
-        this.scheduled = true
-        this.state = this.defaultState
-        this.showInfo("Event has been scheduled!")
-      })
-    },
-
-    /** Sets curScheduledEvent by reformatting the scheduledEvent stored in the server */
-    processScheduledEvent() {
-      if (!this.scheduledEvent) return
-
-      const eventsByDay = processCalendarEvents(this.dates, this.duration, [
-        this.scheduledEvent,
-      ])
-      for (const d in eventsByDay) {
-        if (eventsByDay[d].length > 0) {
-          const event = eventsByDay[d][0]
-          this.curScheduledEvent = {
-            dayIndex: parseInt(d),
-            hoursOffset: event.hoursOffset,
-            hoursLength: event.hoursLength,
-          }
-          this.prevScheduledEvent = this.curScheduledEvent
-          this.scheduled = true
-
-          break
+      // Format email string separated by commas
+      const emails = this.respondents.map((r) => {
+        // Return email if they are not a guest, otherwise return their name
+        if (r.email.length > 0) {
+          return r.email
+        } else {
+          return `${r.firstName} (no email)`
         }
-      }
-    },
-
-    /** Redirects user to oauth page requesting access to the user's contacts */
-    requestContactsAccess({ emails, location, description }) {
-      const payload = {
-        curScheduledEvent: this.curScheduledEvent,
-        emails,
-        location,
-        description,
-      }
-      signInGoogle({
-        state: {
-          type: authTypes.EVENT_CONTACTS,
-          eventId: this.eventId,
-          payload,
-        },
-        requestContactsPermission: true,
       })
-    },
+      const emailsString = encodeURIComponent(emails.join(","))
 
-    /** Update state based on the contactsPayload after granting contacts access */
-    contactsAccessGranted({ curScheduledEvent, ...data }) {
-      this.curScheduledEvent = curScheduledEvent
-      this.$refs.confirmDetailsDialog?.setData(data)
-      this.confirmDetailsDialog = true
+      // Format start and end date to be in the format required by gcal (remove -, :, and .000)
+      const start = startDate.toISOString().replace(/([-:]|\.000)/g, "")
+      const end = endDate.toISOString().replace(/([-:]|\.000)/g, "")
+
+      // Construct Google Calendar event creation template url
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+        this.name
+      )}&dates=${start}/${end}&details=${encodeURIComponent(
+        "\n\nThis event was scheduled with schej: https://schej.it/e/"
+      )}${this.eventId}&add=${emailsString}`
+
+      // Navigate to url and reset state
+      window.open(url, "_blank")
+      this.state = this.defaultState
     },
     //#endregion
 
@@ -1222,12 +1123,9 @@ export default {
       this.unsavedChanges = true
     },
     state(nextState, prevState) {
+      // Reset scheduled event when exiting schedule event state
       if (prevState === this.states.SCHEDULE_EVENT) {
-        this.curScheduledEvent = this.prevScheduledEvent
-      }
-
-      if (nextState === this.states.SCHEDULE_EVENT) {
-        this.prevScheduledEvent = this.curScheduledEvent
+        this.curScheduledEvent = null
       }
     },
     calendarEvents: {
@@ -1247,7 +1145,6 @@ export default {
   },
   created() {
     this.resetCurUserAvailability()
-    this.processScheduledEvent()
 
     addEventListener("click", this.deselectRespondent)
   },

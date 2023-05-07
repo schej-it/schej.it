@@ -16,6 +16,7 @@
       :showSnackbar="false"
       :alwaysShowCalendarEvents="true"
       animateTimeslotAlways
+      :showHintText="false"
     />
   </v-card>
 </template>

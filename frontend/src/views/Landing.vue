@@ -91,10 +91,18 @@
           class="tw-flex tw-items-center tw-gap-2"
         >
           <NumberBullet>{{ i + 1 }}</NumberBullet>
-          <div
-            class="md:tw-text-xl tw-text-base tw-font-medium"
-            v-html="step"
-          ></div>
+          <div class="md:tw-text-xl tw-text-base tw-font-medium">
+            <div v-if="i == 1">
+              <span
+                class="tw-cursor-pointer tw-underline tw-decoration-pale-green hover:tw-decoration-green tw-decoration-4"
+                style="text-underline-position: under"
+                @click="confetti"
+                >Automatically</span
+              >
+              fill out your availability with Google Calendar,
+            </div>
+            <div v-else v-html="step"></div>
+          </div>
         </div>
       </div>
       <div
@@ -105,8 +113,8 @@
       <v-img
         alt="schej character"
         src="@/assets/schej_character.png"
-        :max-height="isPhone ? 200 : 300"
-        transition="scale-transition"
+        :height="isPhone ? 200 : 300"
+        transition="fade-transition"
         contain
         class="-tw-mb-12"
       />
@@ -164,6 +172,7 @@ import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
+import { confetti } from "tsparticles-confetti"
 
 export default {
   name: "Landing",
@@ -185,7 +194,7 @@ export default {
     },
     howItWorksSteps: [
       "Create a schej",
-      '<span class="tw-underline tw-decoration-pale-green tw-decoration-4" style="text-underline-position: under;">Automatically</span> fill out your availability with Google Calendar',
+      "",
       "Share the schej and find the best time to meet!",
     ],
     faqs: [
@@ -230,6 +239,24 @@ export default {
   },
 
   methods: {
+    confetti() {
+      confetti({
+        spread: 360,
+        ticks: 1000,
+        // count: 100,
+        shapes: ["image"],
+        scalar: 5,
+        shapeOptions: {
+          image: [
+            {
+              src: require("@/assets/schej_logo.png"),
+              width: 32,
+              height: 32,
+            },
+          ],
+        },
+      })
+    },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
     },

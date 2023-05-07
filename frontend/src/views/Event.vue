@@ -195,8 +195,6 @@ export default {
   props: {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
-    scheduleEventPayload: { type: Object, default: null },
-    contactsPayload: { type: Object, default: null },
   },
 
   components: {
@@ -443,20 +441,6 @@ export default {
         // Put into editing mode if just signed in
         if (this.fromSignIn) {
           this.scheduleOverlapComponent.startEditing()
-        }
-
-        // Schedule event if payload exists
-        if (this.scheduleEventPayload) {
-          this.scheduleOverlapComponent?.createCalendarInviteFromPayload(
-            this.scheduleEventPayload
-          )
-        }
-
-        // Open schedule dialog if contacts permission granted
-        if (this.contactsPayload) {
-          this.scheduleOverlapComponent?.contactsAccessGranted(
-            this.contactsPayload
-          )
         }
       }
     },
