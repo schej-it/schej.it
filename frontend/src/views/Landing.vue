@@ -113,8 +113,8 @@
       <v-img
         alt="schej character"
         src="@/assets/schej_character.png"
-        :max-height="isPhone ? 200 : 300"
-        transition="scale-transition"
+        :height="isPhone ? 200 : 300"
+        transition="fade-transition"
         contain
         class="-tw-mb-12"
       />

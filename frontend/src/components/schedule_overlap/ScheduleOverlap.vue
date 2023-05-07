@@ -132,7 +132,7 @@
           </div>
 
           <!-- Hint text (desktop) -->
-          <div v-if="!isPhone" class="tw-flex">
+          <div v-if="!isPhone && showHintText" class="tw-flex">
             <div
               class="tw-text-dark-gray tw-text-sm tw-mt-2"
               style="min-height: 1.4rem"
@@ -160,7 +160,7 @@
         <div class="break" v-if="isPhone"></div>
 
         <!-- Hint text (mobile) -->
-        <div v-if="isPhone" class="tw-flex">
+        <div v-if="isPhone && showHintText" class="tw-flex">
           <div class="tw-w-12"></div>
           <div
             class="tw-text-dark-gray tw-text-xs tw-mt-2"
@@ -325,6 +325,7 @@ export default {
     interactable: { type: Boolean, default: true }, // Whether to allow user to interact with component
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
+    showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
   },
   data() {
     return {
