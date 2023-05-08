@@ -24,11 +24,7 @@
         </div>
       </div>
 
-      <div
-        v-if="authUser"
-        style="width: 180.16px"
-        class="tw-hidden sm:tw-block"
-      >
+      <div v-if="isOwner" style="width: 180.16px" class="tw-hidden sm:tw-block">
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
@@ -67,7 +63,6 @@
 
 <script>
 import TimezoneSelector from "./TimezoneSelector.vue"
-import { mapState } from "vuex"
 
 export default {
   name: "ToolRow",
@@ -84,10 +79,6 @@ export default {
 
   components: {
     TimezoneSelector,
-  },
-
-  computed: {
-    ...mapState(["authUser"]),
   },
 
   methods: {
