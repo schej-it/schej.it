@@ -172,7 +172,7 @@
           <div class="tw-w-12"></div>
           <div
             class="tw-text-dark-gray tw-text-xs tw-mt-2"
-            style="min-height: 1rem"
+            style="min-height: 2rem"
           >
             {{ hintText.mobile }}
           </div>
@@ -254,34 +254,6 @@
 .break {
   flex-basis: 100%;
   height: 0;
-}
-
-@media only screen and (max-width: 600px) {
-  ::-webkit-scrollbar {
-    -webkit-appearance: none;
-  }
-
-  /* ::-webkit-scrollbar:vertical {
-    width: 28px;
-  } */
-
-  ::-webkit-scrollbar:horizontal {
-    height: 18px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: theme("colors.gray");
-    /* border-radius: 0px 0px 5px 5px; */
-    /* border-radius: 10px; */
-    border-top: 10px solid white;
-    /* border-bottom: 10px solid white; */
-  }
-
-  ::-webkit-scrollbar-track {
-    /* background-color: ; */
-    border: 1px solid theme("colors.off-white");
-    /* border-radius: 0px 0px 5px 5px; */
-  }
 }
 </style>
 
@@ -434,7 +406,8 @@ export default {
         case this.states.EDIT_AVAILABILITY:
           return {
             desktop: "Click and drag on the calendar to edit your availability",
-            mobile: "Tap and drag on the calendar to edit your availability",
+            mobile:
+              "Tap and drag on the calendar to edit your availability. Use two fingers to scroll around.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
@@ -1079,6 +1052,7 @@ export default {
     },
     moveDrag(e) {
       if (!this.allowDrag) return
+      if (e.touches?.length > 1) return // If dragging with more than one finger
 
       e.preventDefault()
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
@@ -1088,6 +1062,7 @@ export default {
     },
     startDrag(e) {
       if (!this.allowDrag) return
+      if (e.touches?.length > 1) return // If dragging with more than one finger
 
       this.dragging = true
 
