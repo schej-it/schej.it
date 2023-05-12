@@ -428,7 +428,7 @@ export default {
           return {
             desktop: "Click and drag on the calendar to edit your availability",
             mobile:
-              "Tap and drag on the calendar to edit your availability. Use two fingers to scroll.",
+              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
