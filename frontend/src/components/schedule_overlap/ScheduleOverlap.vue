@@ -17,117 +17,124 @@
           </div>
 
           <div class="tw-grow tw-overflow-hidden">
-            <div
-              class="tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative"
-            >
-              <!-- Days -->
-              <div class="tw-flex tw-h-12">
-                <div
-                  v-for="(day, i) in days"
-                  :key="i"
-                  class="tw-flex-1"
-                  style="min-width: 50px"
-                >
-                  <div class="tw-text-center">
-                    <div class="tw-capitalize tw-font-light tw-text-xs">
-                      {{ day.dateString }}
-                    </div>
-                    <div class="tw-text-lg tw-capitalize">
-                      {{ day.dayText }}
+            <div class="tw-overflow-hidden tw-relative">
+              <div
+                ref="calendar"
+                @scroll="onCalendarScroll"
+                class="tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative"
+              >
+                <!-- Days -->
+                <div class="tw-flex tw-h-12 tw-bg-white tw-z-10">
+                  <div
+                    v-for="(day, i) in days"
+                    :key="i"
+                    class="tw-flex-1 tw-bg-white"
+                    style="min-width: 50px"
+                  >
+                    <div class="tw-text-center">
+                      <div class="tw-capitalize tw-font-light tw-text-xs">
+                        {{ day.dateString }}
+                      </div>
+                      <div class="tw-text-lg tw-capitalize">
+                        {{ day.dayText }}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Calendar -->
-              <div class="tw-flex tw-flex-col">
-                <div class="tw-flex-1">
-                  <div
-                    id="times"
-                    data-long-press-delay="500"
-                    class="tw-flex tw-relative"
-                    @mouseleave="resetCurTimeslot"
-                  >
-                    <!-- Loader -->
+                <!-- Calendar -->
+                <div class="tw-flex tw-flex-col">
+                  <div class="tw-flex-1">
                     <div
-                      v-if="
-                        (alwaysShowCalendarEvents || editing) &&
-                        loadingCalendarEvents
-                      "
-                      class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10"
+                      id="times"
+                      data-long-press-delay="500"
+                      class="tw-flex tw-relative"
+                      @mouseleave="resetCurTimeslot"
                     >
-                      <v-progress-circular class="tw-text-blue" indeterminate />
-                    </div>
-
-                    <div
-                      v-for="(day, d) in days"
-                      :key="d"
-                      class="tw-flex-1 tw-relative"
-                      style="min-width: 50px"
-                    >
-                      <!-- Timeslots -->
+                      <!-- Loader -->
                       <div
-                        v-for="(time, t) in times"
-                        :key="t"
-                        class="tw-w-full"
+                        v-if="
+                          (alwaysShowCalendarEvents || editing) &&
+                          loadingCalendarEvents
+                        "
+                        class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10"
                       >
-                        <div
-                          class="timeslot tw-h-5 tw-border-light-gray tw-border-r"
-                          :class="timeslotClassStyle(day, time, d, t).class"
-                          :style="timeslotClassStyle(day, time, d, t).style"
-                          v-on="timeslotVon(d, t)"
-                        ></div>
+                        <v-progress-circular
+                          class="tw-text-blue"
+                          indeterminate
+                        />
                       </div>
 
-                      <!-- Calendar events -->
-                      <div v-if="editing || alwaysShowCalendarEvents">
-                        <v-fade-transition
-                          v-for="(event, e) in calendarEventsByDay[d]"
-                          :key="`${d}-${e}`"
-                          appear
+                      <div
+                        v-for="(day, d) in days"
+                        :key="d"
+                        class="tw-flex-1 tw-relative"
+                        style="min-width: 50px"
+                      >
+                        <!-- Timeslots -->
+                        <div
+                          v-for="(time, t) in times"
+                          :key="t"
+                          class="tw-w-full"
                         >
                           <div
+                            class="timeslot tw-h-5 tw-border-light-gray tw-border-r"
+                            :class="timeslotClassStyle(day, time, d, t).class"
+                            :style="timeslotClassStyle(day, time, d, t).style"
+                            v-on="timeslotVon(d, t)"
+                          ></div>
+                        </div>
+
+                        <!-- Calendar events -->
+                        <div v-if="editing || alwaysShowCalendarEvents">
+                          <v-fade-transition
+                            v-for="(event, e) in calendarEventsByDay[d]"
+                            :key="`${d}-${e}`"
+                            appear
+                          >
+                            <div
+                              class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                              :style="{
+                                top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
+                                height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
+                              }"
+                              style="pointer-events: none"
+                            >
+                              <div
+                                class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                              >
+                                <div
+                                  :class="`tw-text-${
+                                    noEventNames ? 'dark-gray' : 'blue'
+                                  }`"
+                                  class="tw-font-medium"
+                                >
+                                  {{ noEventNames ? "BUSY" : event.summary }}
+                                </div>
+                              </div>
+                            </div>
+                          </v-fade-transition>
+                        </div>
+
+                        <!-- Scheduled event -->
+                        <div v-if="state === states.SCHEDULE_EVENT">
+                          <div
+                            v-if="
+                              (dragStart && dragStart.dayIndex === d) ||
+                              (!dragStart &&
+                                curScheduledEvent &&
+                                curScheduledEvent.dayIndex === d)
+                            "
                             class="tw-absolute tw-w-full tw-p-px tw-select-none"
-                            :style="{
-                              top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
-                              height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
-                            }"
+                            :style="scheduledEventStyle"
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                              class="tw-border-blue tw-bg-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                             >
-                              <div
-                                :class="`tw-text-${
-                                  noEventNames ? 'dark-gray' : 'blue'
-                                }`"
-                                class="tw-font-medium"
-                              >
-                                {{ noEventNames ? "BUSY" : event.summary }}
+                              <div class="tw-text-white tw-font-medium">
+                                {{ name }}
                               </div>
-                            </div>
-                          </div>
-                        </v-fade-transition>
-                      </div>
-
-                      <!-- Scheduled event -->
-                      <div v-if="state === states.SCHEDULE_EVENT">
-                        <div
-                          v-if="
-                            (dragStart && dragStart.dayIndex === d) ||
-                            (!dragStart &&
-                              curScheduledEvent &&
-                              curScheduledEvent.dayIndex === d)
-                          "
-                          class="tw-absolute tw-w-full tw-p-px tw-select-none"
-                          :style="scheduledEventStyle"
-                          style="pointer-events: none"
-                        >
-                          <div
-                            class="tw-border-blue tw-bg-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
-                          >
-                            <div class="tw-text-white tw-font-medium">
-                              {{ name }}
                             </div>
                           </div>
                         </div>
@@ -136,6 +143,17 @@
                   </div>
                 </div>
               </div>
+
+              <ZigZag
+                v-if="showLeftZigZag"
+                left
+                class="tw-w-3 tw-h-full tw-absolute tw-left-0 tw-top-0"
+              />
+              <ZigZag
+                v-if="showRightZigZag"
+                right
+                class="tw-w-3 tw-h-full tw-absolute tw-right-0 tw-top-0"
+              />
             </div>
 
             <!-- Hint text (desktop) -->
@@ -345,9 +363,12 @@ export default {
 
       /* Variables for options */
       curTimezone: this.getLocalTimezone(),
-
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
+
+      /* Variables for scrolling */
+      calendarScrollLeft: 0, // The current scroll position of the calendar
+      calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
     }
   },
   computed: {
@@ -407,7 +428,7 @@ export default {
           return {
             desktop: "Click and drag on the calendar to edit your availability",
             mobile:
-              "Tap and drag on the calendar to edit your availability. Use two fingers to scroll around.",
+              "Tap and drag on the calendar to edit your availability. Use two fingers to scroll.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
@@ -541,6 +562,13 @@ export default {
       return (
         this.curTimeslot.dayIndex !== -1 && this.curTimeslot.timeIndex !== -1
       )
+    },
+
+    showLeftZigZag() {
+      return this.calendarScrollLeft > 0
+    },
+    showRightZigZag() {
+      return this.calendarScrollLeft !== this.calendarMaxScroll
     },
   },
   methods: {
@@ -1100,6 +1128,15 @@ export default {
         this.state = this.defaultState
     },
     //#endregion
+
+    // -----------------------------------
+    //#region Scroll
+    // -----------------------------------
+    onCalendarScroll(e) {
+      this.calendarMaxScroll = e.target.scrollWidth - e.target.offsetWidth
+      this.calendarScrollLeft = e.target.scrollLeft
+    },
+    //#endregion
   },
   watch: {
     availability() {
@@ -1134,6 +1171,10 @@ export default {
   mounted() {
     // Set initial state to best_times or heatmap depending on show best times toggle.
     this.state = this.showBestTimes ? "best_times" : "heatmap"
+
+    // Set initial calendar max scroll
+    this.calendarMaxScroll =
+      this.$refs.calendar.scrollWidth - this.$refs.calendar.offsetWidth
 
     // Get timeslot size
     this.setTimeslotSize()

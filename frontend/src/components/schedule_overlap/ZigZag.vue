@@ -1,30 +1,54 @@
 <!-- Used to indicate that a schedule overlap component has more to scroll -->
 <template>
-  <div ref="container" class="tw-relative tw-overflow-hidden">
+  <div ref="container" class="tw-overflow-hidden">
     <div :class="left ? 'line1-left' : 'line1-right'" :style="lineStyle"></div>
     <div :class="left ? 'line2-left' : 'line2-right'" :style="lineStyle"></div>
   </div>
 </template>
 
 <style scoped>
-  .line1-left {
-    background: linear-gradient(45deg, white, white 49%, transparent 49%, transparent 51%);
-  }
-  .line2-left {
-    background: linear-gradient(-45deg, transparent, transparent 49%, transparent 49%, white 51%);
-   }
+.line1-left {
+  background: linear-gradient(
+    45deg,
+    white,
+    white 49%,
+    black 49%,
+    transparent 51%
+  );
+}
+.line2-left {
+  background: linear-gradient(
+    -45deg,
+    transparent,
+    transparent 49%,
+    black 49%,
+    white 51%
+  );
+}
 
-  .line1-right {
-    background: linear-gradient(45deg, transparent, transparent 49%, transparent 49%, white 51%);
-  }
-  .line2-right {
-    background: linear-gradient(-45deg, white, white 49%, transparent 49%, transparent 51%);
-   }
+.line1-right {
+  background: linear-gradient(
+    45deg,
+    transparent,
+    transparent 49%,
+    black 51%,
+    white 51%
+  );
+}
+.line2-right {
+  background: linear-gradient(
+    -45deg,
+    white,
+    white 49%,
+    black 51%,
+    transparent 51%
+  );
+}
 </style>
 
-<script> 
+<script>
 export default {
-  name: 'ZigZag',
+  name: "ZigZag",
 
   props: {
     left: { type: Boolean, default: false },
@@ -45,11 +69,13 @@ export default {
   computed: {
     lineStyle() {
       return {
-        position: 'absolute',
-        width: '200%',
-        height: '100%',
+        position: "absolute",
+        width: "200%",
+        height: "100%",
         backgroundSize: `${this.backgroundSize}px ${this.backgroundSize}px`,
-        transform: this.left ? `translate(${-this.backgroundSize/2}px, 0)` : '',
+        transform: this.left
+          ? `translate(${-this.backgroundSize / 2}px, 0)`
+          : "",
       }
     },
   },
