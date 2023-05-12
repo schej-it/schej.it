@@ -568,7 +568,7 @@ export default {
       return this.calendarScrollLeft > 0
     },
     showRightZigZag() {
-      return this.calendarScrollLeft !== this.calendarMaxScroll
+      return this.calendarScrollLeft < this.calendarMaxScroll
     },
   },
   methods: {
