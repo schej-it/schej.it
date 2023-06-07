@@ -426,9 +426,10 @@ export default {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
           return {
-            desktop: "Click and drag on the calendar to edit your availability",
+            desktop:
+              "Click and drag on the calendar to edit your availability. Green means available.",
             mobile:
-              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll.",
+              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll. Green means available.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
