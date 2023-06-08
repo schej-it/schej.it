@@ -49,7 +49,7 @@
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
-                class="tw-text-green"
+                class="tw-text-dark-green"
                 @click="copyLink"
               >
                 <span v-if="!isPhone" class="tw-text-green tw-mr-2"
@@ -74,7 +74,7 @@
                 <v-btn
                   v-else
                   width="10.25rem"
-                  class="tw-text-white tw-bg-green"
+                  class="tw-text-white tw-bg-dark-green"
                   :disabled="loading && !userHasResponded"
                   @click="addAvailability"
                 >
@@ -92,7 +92,7 @@
                   Cancel
                 </v-btn>
                 <v-btn
-                  class="tw-text-white tw-bg-green tw-w-20"
+                  class="tw-text-white tw-bg-dark-green tw-w-20"
                   @click="saveChanges"
                 >
                   Save

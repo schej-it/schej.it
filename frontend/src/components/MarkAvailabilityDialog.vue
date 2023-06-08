@@ -15,7 +15,7 @@
           <div class="">
             <v-btn
               @click="showPermissions"
-              class="tw-bg-green tw-mb-2"
+              class="tw-bg-dark-green tw-mb-2"
               dark
               block
             >
@@ -77,7 +77,7 @@
             </v-btn>
             <v-btn
               @click="setAvailabilityAutomatically"
-              class="tw-flex-1 tw-bg-green"
+              class="tw-flex-1 tw-bg-dark-green"
               dark
             >
               Continue
