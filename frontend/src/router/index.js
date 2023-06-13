@@ -16,6 +16,11 @@ const routes = [
     component: () => import('@/views/Home.vue')
   },
   {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('@/views/Settings.vue')
+  },
+  {
     path: '/e/:eventId',
     name: 'event',
     component: () => import('@/views/Event.vue'),
@@ -26,8 +31,6 @@ const routes = [
     name: 'auth',
     component: () => import('@/views/Auth.vue')
   },
-
-
   {
     path: '/privacy-policy',
     name: 'privacy-policy',

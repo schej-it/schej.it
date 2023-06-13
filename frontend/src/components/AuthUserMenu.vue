@@ -20,6 +20,9 @@
         <v-list-item-title>Give feedback</v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
+      <v-list-item id="settings-btn" @click="goToSettings">
+        <v-list-item-title>Settings</v-list-item-title>
+      </v-list-item>
       <v-list-item id="sign-out-btn" @click="signOut">
         <v-list-item-title class="red--text">Sign Out</v-list-item-title>
       </v-list-item>
@@ -58,7 +61,10 @@ export default {
         await post('/auth/sign-out')
         this.setAuthUser(null)
         location.reload()
-      }
+      },
+      goToSettings() {
+        this.$router.replace({ name: "settings" })
+      },
   },
 }
 </script>
