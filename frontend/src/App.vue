@@ -144,7 +144,7 @@ export default {
     },
     redirectUser(authenticated) {
       let authRoutes = ["home"]
-      let noAuthRoutes = ["landing"]
+      let noAuthRoutes = ["landing", "createEvent"]
 
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {

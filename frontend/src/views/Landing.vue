@@ -51,7 +51,7 @@
             id="lets-schej-it-btn"
             class="tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
             dark
-            @click="getStarted"
+            @click="$router.push({ name: 'createEvent'})"
             :large="$vuetify.breakpoint.smAndUp"
             :x-large="$vuetify.breakpoint.mdAndUp"
           >

@@ -39,15 +39,11 @@
           <v-btn text @click="signIn">Sign in</v-btn>
         </div>
 
-          
+        <div class="tw-flex tw-flex-col tw-items-center tw-mt-8">
+          <NewEvent :dialog="false"/>
+        </div>
       </div>
     </div>
-
-    <NewEventDialog 
-      v-model="somedialog"
-    />
-
-
 
     <!-- Privacy Policy -->
     <div class="tw-bg-green tw-flex tw-flex-col">
@@ -70,7 +66,7 @@ import { isPhone, signInGoogle } from "@/utils"
 import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
-import NewEventDialog from "@/components/NewEventDialog.vue"
+import NewEvent from "@/components/NewEvent.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
 import { confetti } from "tsparticles-confetti"
 
@@ -83,7 +79,7 @@ export default {
     FAQ,
     Header,
     NumberBullet,
-    NewEventDialog,
+    NewEvent,
   },
 
   data: () => ({

@@ -1,9 +1,9 @@
 <template>
-    <v-card tile class="tw-flex tw-flex-col">
+    <v-card class="tw-flex tw-flex-col tw-rounded-lg">
       <v-card-title class="tw-flex">
         <div>{{ editEvent ? 'Edit Event' : 'New Event' }}</div>
         <v-spacer />
-        <v-btn icon @click="$emit('input', false)"
+        <v-btn v-if="dialog" icon @click="$emit('input', false)"
           ><v-icon>mdi-close</v-icon></v-btn
         >
       </v-card-title>
@@ -14,7 +14,7 @@
           autofocus
           :disabled="loading"
           class="tw-text-white tw-flex-initial"
-          placeholder="Name of event..."
+          :placeholder="dialog ? 'Name of event...' : 'My Super Fun Event'"
           hide-details
           @keyup.enter="blurNameField"
         />
@@ -63,7 +63,7 @@
           </div>
         </div>
 
-        <v-checkbox v-model="notificationsEnabled" label="Email me each time someone joins my event!"/>
+        <v-checkbox v-if="dialog" v-model="notificationsEnabled" label="Email me each time someone joins my event!"/>
 
         <v-spacer />
 
@@ -78,7 +78,7 @@
       </v-card-text>
     </v-card>
 </template>
-
+ 
 <script>
 import { post, put, timeNumToTimeString, dateToTimeNum, getISODateString } from "@/utils";
 
@@ -90,6 +90,7 @@ export default {
   props: {
     event: { type: Object, },
     editEvent: { type: Boolean, default: false },
+    dialog: { type: Boolean, default: true },
   },
 
   data: () => ({
