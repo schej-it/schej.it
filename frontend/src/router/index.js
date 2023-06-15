@@ -1,12 +1,18 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Landing from '@/views/Landing'
+import CreateEvent from '@/views/CreateEvent'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
+    name: 'createEvent',
+    component: CreateEvent,
+  },
+  {
+    path: '/landing',
     name: 'landing',
     component: Landing,
   },
@@ -26,8 +32,6 @@ const routes = [
     name: 'auth',
     component: () => import('@/views/Auth.vue')
   },
-
-
   {
     path: '/privacy-policy',
     name: 'privacy-policy',

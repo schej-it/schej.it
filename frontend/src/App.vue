@@ -111,6 +111,7 @@ export default {
     },
     showHeader() {
       return (
+        this.$route.name !== "createEvent" &&
         this.$route.name !== "landing" &&
         this.$route.name !== "auth" &&
         this.$route.name !== "privacy-policy"
