@@ -61,70 +61,26 @@
 </template>
 
 <script>
-import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
 import { isPhone, signInGoogle } from "@/utils"
 import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
-import FAQ from "@/components/FAQ.vue"
-import Header from "@/components/Header.vue"
 import NewEvent from "@/components/NewEvent.vue"
-import NumberBullet from "@/components/NumberBullet.vue"
 import { confetti } from "tsparticles-confetti"
 
 export default {
   name: "CreateEvent",
 
   components: {
-    LandingPageCalendar,
     SignInGoogleBtn,
-    FAQ,
-    Header,
-    NumberBullet,
     NewEvent,
   },
 
   data: () => ({
     dialog: false,
-    somedialog: true,
     dialogType: 0,
     DIALOG_TYPES: {
       SIGN_IN: 0,
       SIGN_UP: 1,
     },
-    howItWorksSteps: [
-      "Create a schej",
-      "",
-      "Share the schej and find the best time to meet!",
-    ],
-    faqs: [
-      {
-        question: "Do I need to sign in with Google in order to use schej?",
-        answer:
-          "Signing in with Google is required to create events, but anybody can add their availability once an event is created, whether or not they are signed in with Google!",
-      },
-      {
-        question: "How is schej different from lettucemeet or when2meet?",
-        points: [
-          "Much better UI (web and mobile)",
-          "Seemless and working calendar integration",
-          "No ads :)",
-        ],
-      },
-      {
-        question: "Is Google Calendar access required in order to use schej?",
-        answer:
-          "Nope! You can manually input your availability, but we highly recommend allowing Google Calendar access in order to view your calendar events while doing so.",
-      },
-      {
-        question: "Will other people be able to see my calendar events?",
-        answer:
-          "Nope! All other users will be able to see is the availability that you enter for an event.",
-      },
-      {
-        question: "How do I edit my availability?",
-        answer:
-          'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
-      },
-    ],
   }),
 
   computed: {
