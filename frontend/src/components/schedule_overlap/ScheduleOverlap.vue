@@ -477,7 +477,7 @@ export default {
       if (this.curRespondents.length !== 1) return ""
 
       const user = this.parsedResponses[this.curRespondents[0]].user
-      return this.isGuest(user) ? this.curRespondent : ""
+      return this.isGuest(user) ? user._id : ""
     },
     scheduledEventStyle() {
       const style = {}
