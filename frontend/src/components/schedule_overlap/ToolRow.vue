@@ -16,6 +16,7 @@
         <div class="tw-flex tw-justify-center tw-items-center tw-gap-1">
           <div>Show best times</div>
           <v-switch
+            id="show-best-times-toggle"
             class="-tw-mb-1"
             :input-value="showBestTimes"
             @change="updateShowBestTimes"
