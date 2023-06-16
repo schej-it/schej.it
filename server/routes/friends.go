@@ -135,7 +135,6 @@ func getFriendsCalendar(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "ID of friend"
-// @Success 200 {object} object{status=models.UserStatus,eventName=string}
 // @Router /friends/{id}/status [get]
 func getFriendsStatus(c *gin.Context) {
 	// Bind query parameters

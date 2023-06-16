@@ -236,14 +236,14 @@ var doc = `{
                                                 "type": "string"
                                             }
                                         },
-                                        "endTime": {
+                                        "duration": {
                                             "type": "number"
                                         },
                                         "name": {
                                             "type": "string"
                                         },
-                                        "startTime": {
-                                            "type": "number"
+                                        "notificationsEnabled": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -335,14 +335,14 @@ var doc = `{
                                                 "type": "string"
                                             }
                                         },
-                                        "endTime": {
+                                        "duration": {
                                             "type": "number"
                                         },
                                         "name": {
                                             "type": "string"
                                         },
-                                        "startTime": {
-                                            "type": "number"
+                                        "notificationsEnabled": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -420,6 +420,62 @@ var doc = `{
                                         },
                                         "name": {
                                             "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/events/{eventId}/schedule": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Schedules an event on the user's google calendar",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Object containing info about the event to schedule",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "attendeeEmails": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "endDate": {
+                                            "$ref": "#/definitions/primitive.DateTime"
+                                        },
+                                        "startDate": {
+                                            "$ref": "#/definitions/primitive.DateTime"
                                         }
                                     }
                                 }
@@ -684,30 +740,7 @@ var doc = `{
                         "in": "path",
                         "required": true
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "eventName": {
-                                            "type": "string"
-                                        },
-                                        "status": {
-                                            "$ref": "#/definitions/models.UserStatus"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
+                ]
             }
         },
         "/user/calendar": {
@@ -809,6 +842,37 @@ var doc = `{
                 }
             }
         },
+        "/user/searchContacts": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Searches the user's contacts based on the given query",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Query to search for",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.UserProfile"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/visibility": {
             "post": {
                 "consumes": [
@@ -886,10 +950,12 @@ var doc = `{
             "type": "object",
             "properties": {
                 "endDate": {
-                    "type": "string"
+                    "type": "object",
+                    "$ref": "#/definitions/primitive.DateTime"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "object",
+                    "$ref": "#/definitions/primitive.DateTime"
                 },
                 "summary": {
                     "type": "string"
@@ -902,20 +968,23 @@ var doc = `{
                 "_id": {
                     "type": "string"
                 },
+                "calendarEventId": {
+                    "type": "string"
+                },
                 "dates": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/primitive.DateTime"
                     }
                 },
-                "endDate": {
-                    "type": "string"
-                },
-                "endTime": {
+                "duration": {
                     "type": "number"
                 },
                 "name": {
                     "type": "string"
+                },
+                "notificationsEnabled": {
+                    "type": "boolean"
                 },
                 "ownerId": {
                     "type": "string"
@@ -927,12 +996,10 @@ var doc = `{
                         "$ref": "#/definitions/models.Response"
                     }
                 },
-                "startDate": {
-                    "type": "string"
-                },
-                "startTime": {
-                    "description": "StartTime and EndTime are UTC hours, dates are an array of utc dates",
-                    "type": "number"
+                "scheduledEvent": {
+                    "description": "Scheduled event",
+                    "type": "object",
+                    "$ref": "#/definitions/models.CalendarEvent"
                 }
             }
         },
@@ -943,7 +1010,8 @@ var doc = `{
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
+                    "type": "object",
+                    "$ref": "#/definitions/primitive.DateTime"
                 },
                 "from": {
                     "type": "string"
@@ -1031,8 +1099,8 @@ var doc = `{
                 }
             }
         },
-        "models.UserStatus": {
-            "type": "string"
+        "primitive.DateTime": {
+            "type": "integer"
         },
         "responses.Error": {
             "type": "object",
