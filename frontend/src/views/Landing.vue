@@ -44,8 +44,8 @@
           <div
             class="tw-mt-16 tw-mb-4 sm:tw-mb-8 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
           >
-            <div class="tw-leading-normal">Finding a time to meet,</div>
-            <div class="tw-leading-normal">made simple.</div>
+            <div class="tw-leading-tight">Finding a time to meet,</div>
+            <div class="tw-leading-snug">made simple.</div>
           </div>
           <v-btn
             id="lets-schej-it-btn"

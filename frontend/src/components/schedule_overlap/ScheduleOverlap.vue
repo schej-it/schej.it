@@ -203,14 +203,21 @@
         >
           <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
             <div class="tw-mr-1 tw-text-lg">Responses</div>
-            <div v-if="isCurTimeslotSelected" class="">
-              {{ `(${numUsersAvailable}/${respondents.length})` }}
-            </div>
-            <div
-              v-else
-              class="tw-bg-black tw-text-white tw-font-bold tw-w-5 tw-h-5 tw-flex tw-justify-center tw-items-center tw-rounded-full tw-text-xs"
-            >
-              {{ respondents.length }}
+            <div class="tw-font-normal">
+              <template v-if="curRespondents.length === 0">
+                {{
+                  isCurTimeslotSelected
+                    ? `(${numUsersAvailable}/${respondents.length})`
+                    : `(${respondents.length})`
+                }}
+              </template>
+              <template v-else>
+                {{
+                  isCurTimeslotSelected
+                    ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
+                    : `(${curRespondents.length})`
+                }}
+              </template>
             </div>
           </div>
           <div
@@ -220,7 +227,6 @@
               v-for="(user, i) in respondents"
               :key="user._id"
               class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
-              :class="respondentClass(user._id)"
               @mouseover="(e) => mouseOverRespondent(e, user._id)"
               @mouseleave="mouseLeaveRespondent"
               @click="(e) => clickRespondent(e, user._id)"
@@ -234,10 +240,7 @@
 
               <div
                 class="tw-mr-1 tw-transition-all"
-                :class="
-                  !curTimeslotAvailability[user._id] &&
-                  'tw-line-through tw-text-gray'
-                "
+                :class="respondentClass(user._id)"
               >
                 {{ user.firstName + " " + user.lastName }}
               </div>
@@ -292,8 +295,6 @@ import {
   clamp,
   isPhone,
   utcTimeToLocalTime,
-  signInGoogle,
-  processCalendarEvents,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
@@ -330,6 +331,7 @@ export default {
       states: {
         HEATMAP: "heatmap", // Display heatmap of availabilities
         SINGLE_AVAILABILITY: "single_availability", // Show one person's availability
+        SUBSET_AVAILABILITY: "subset_availability", // Show availability for a subset of people
         BEST_TIMES: "best_times", // Show only the times that work for most people
         EDIT_AVAILABILITY: "edit_availability", // Edit current user's availability
         SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
@@ -345,7 +347,7 @@ export default {
       curTimeslot: { dayIndex: -1, timeIndex: -1 }, // The currently highlighted timeslot
       curTimeslotAvailability: {}, // The users available for the current timeslot
       curRespondent: "", // Id of the active respondent (set on hover)
-      curRespondentSelected: false, // Whether a respondent has been selected (clicked)
+      curRespondents: [], // Id of currently selected respondents (set on click)
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -382,6 +384,26 @@ export default {
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
       )
+    },
+    curRespondentsSet() {
+      return new Set(this.curRespondents)
+    },
+    /** Returns the max number of people in the curRespondents array available at any given time */
+    curRespondentsMax() {
+      let max = 0
+      for (const day of this.days) {
+        for (const time of this.times) {
+          const num = [
+            ...this.getRespondentsForHoursOffset(
+              day.dateObject,
+              time.hoursOffset
+            ),
+          ].filter((r) => this.curRespondentsSet.has(r)).length
+
+          if (num > max) max = num
+        }
+      }
+      return max
     },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
@@ -426,9 +448,10 @@ export default {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
           return {
-            desktop: "Click and drag on the calendar to edit your availability",
+            desktop:
+              "Click and drag on the calendar to edit your availability. Green means available.",
             mobile:
-              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll.",
+              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll. Green means available.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
@@ -451,12 +474,10 @@ export default {
       return Object.values(this.parsedResponses).map((r) => r.user)
     },
     selectedGuestRespondent() {
-      if (!this.curRespondentSelected || !this.curRespondent) return
+      if (this.curRespondents.length !== 1) return ""
 
-      const user = this.parsedResponses[this.curRespondent].user
-      return this.curRespondentSelected && this.isGuest(user)
-        ? this.curRespondent
-        : ""
+      const user = this.parsedResponses[this.curRespondents[0]].user
+      return this.isGuest(user) ? user._id : ""
     },
     scheduledEventStyle() {
       const style = {}
@@ -550,6 +571,18 @@ export default {
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
     },
+    numCurRespondentsAvailable() {
+      this.curTimeslot
+      let numUsers = 0
+      for (const key in this.curTimeslotAvailability) {
+        if (
+          this.curTimeslotAvailability[key] &&
+          this.curRespondentsSet.has(key)
+        )
+          numUsers++
+      }
+      return numUsers
+    },
     numUsersAvailable() {
       this.curTimeslot
       let numUsers = 0
@@ -596,7 +629,7 @@ export default {
     //#region Respondent
     // -----------------------------------
     mouseOverRespondent(e, id) {
-      if (!this.curRespondentSelected) {
+      if (this.curRespondents.length === 0) {
         if (this.state === this.defaultState) {
           this.state = this.states.SINGLE_AVAILABILITY
         }
@@ -605,7 +638,7 @@ export default {
       }
     },
     mouseLeaveRespondent(e) {
-      if (!this.curRespondentSelected) {
+      if (this.curRespondents.length === 0) {
         if (this.state === this.states.SINGLE_AVAILABILITY) {
           this.state = this.defaultState
         }
@@ -614,26 +647,49 @@ export default {
       }
     },
     clickRespondent(e, id) {
-      if (this.state === this.defaultState) {
-        this.state = this.states.SINGLE_AVAILABILITY
+      this.state = this.states.SUBSET_AVAILABILITY
+      this.curRespondent = ""
+
+      if (this.curRespondentsSet.has(id)) {
+        // Remove id
+        this.curRespondents = this.curRespondents.filter((r) => r != id)
+
+        // Go back to default state if all users deselected
+        if (this.curRespondents.length === 0) {
+          this.state = this.defaultState
+        }
+      } else {
+        // Add id
+        this.curRespondents.push(id)
       }
 
-      this.curRespondentSelected = true
-      this.curRespondent = id
       e.stopPropagation()
     },
-    deselectRespondent(e) {
-      if (this.state === this.states.SINGLE_AVAILABILITY) {
+    deselectRespondents(e) {
+      // Don't deselect respondents if toggled best times
+      if (
+        e.target?.previousElementSibling?.id === "show-best-times-toggle" ||
+        e.target?.firstChild?.firstChild?.id === "show-best-times-toggle"
+      )
+        return
+
+      if (this.state === this.states.SUBSET_AVAILABILITY) {
         this.state = this.defaultState
       }
 
-      this.curRespondentSelected = false
-      this.curRespondent = ""
+      this.curRespondents = []
     },
     respondentClass(id) {
       const c = []
-      if (this.curRespondent == id) {
+      if (this.curRespondent == id || this.curRespondentsSet.has(id)) {
         c.push("tw-font-bold")
+      } else if (this.curRespondents.length > 0) {
+        c.push("tw-text-gray")
+      }
+
+      if (!this.curTimeslotAvailability[id]) {
+        c.push("tw-line-through")
+        c.push("tw-text-gray")
       }
       return c
     },
@@ -647,7 +703,7 @@ export default {
     //#region Aggregate user availability
     // -----------------------------------
 
-    /** Returns an array of respondents for the given date/time */
+    /** Returns a set of respondents for the given date/time */
     getRespondentsForHoursOffset(date, hoursOffset) {
       const d = getDateHoursOffset(date, hoursOffset)
       return this.responsesFormatted.get(d.getTime())
@@ -831,6 +887,7 @@ export default {
           }
         }
       }
+
       if (this.state === this.states.SINGLE_AVAILABILITY) {
         // Show only the currently selected respondent's availability
         const respondent = this.curRespondent
@@ -842,45 +899,59 @@ export default {
           c += "tw-bg-avail-green-300 "
         }
       }
+
       if (
         this.state === this.states.BEST_TIMES ||
-        (this.state === this.states.SCHEDULE_EVENT &&
-          this.defaultState === this.states.BEST_TIMES)
-      ) {
-        const numRespondents = this.getRespondentsForHoursOffset(
-          day.dateObject,
-          time.hoursOffset
-        ).size
-        if (this.max > 0 && numRespondents === this.max) {
-          // Only set timeslot to green for the times that most people are available
-          const green = "#12B981"
-
-          s.backgroundColor = green
-        }
-      }
-      if (
         this.state === this.states.HEATMAP ||
-        (this.state === this.states.SCHEDULE_EVENT &&
-          this.defaultState === this.states.HEATMAP)
+        this.state === this.states.SCHEDULE_EVENT ||
+        this.state === this.states.SUBSET_AVAILABILITY
       ) {
-        // Show everyone's availability
-        const numRespondents = this.getRespondentsForHoursOffset(
-          day.dateObject,
-          time.hoursOffset
-        ).size
-        if (numRespondents > 0) {
-          // Determine color of timeslot based on number of people available
-          const frac = numRespondents / this.max
-          const green = "#12B981"
-          let alpha = (frac * (255 - 30))
-            .toString(16)
-            .toUpperCase()
-            .substring(0, 2)
-          if (frac == 1) alpha = "FF"
+        let numRespondents
+        let max
 
-          s.backgroundColor = green + alpha
+        if (
+          this.state === this.states.BEST_TIMES ||
+          this.state === this.states.HEATMAP ||
+          this.state === this.states.SCHEDULE_EVENT
+        ) {
+          numRespondents = this.getRespondentsForHoursOffset(
+            day.dateObject,
+            time.hoursOffset
+          ).size
+          max = this.max
+        } else if (this.state === this.states.SUBSET_AVAILABILITY) {
+          numRespondents = [
+            ...this.getRespondentsForHoursOffset(
+              day.dateObject,
+              time.hoursOffset
+            ),
+          ].filter((r) => this.curRespondentsSet.has(r)).length
+
+          max = this.curRespondentsMax
+        }
+
+        if (this.defaultState === this.states.BEST_TIMES) {
+          if (max > 0 && numRespondents === max) {
+            // Only set timeslot to green for the times that most people are available
+            const green = "#12B981"
+            s.backgroundColor = green
+          }
+        } else if (this.defaultState === this.states.HEATMAP) {
+          if (numRespondents > 0) {
+            // Determine color of timeslot based on number of people available
+            const frac = numRespondents / max
+            const green = "#12B981"
+            let alpha = (frac * (255 - 30))
+              .toString(16)
+              .toUpperCase()
+              .substring(0, 2)
+            if (frac == 1) alpha = "FF"
+
+            s.backgroundColor = green + alpha
+          }
         }
       }
+
       return { class: c, style: s }
     },
     timeslotVon(d, t) {
@@ -1166,7 +1237,7 @@ export default {
   created() {
     this.resetCurUserAvailability()
 
-    addEventListener("click", this.deselectRespondent)
+    addEventListener("click", this.deselectRespondents)
   },
   mounted() {
     // Set initial state to best_times or heatmap depending on show best times toggle.
@@ -1194,7 +1265,7 @@ export default {
     }
   },
   beforeDestroy() {
-    removeEventListener("click", this.deselectRespondent)
+    removeEventListener("click", this.deselectRespondents)
   },
   components: {
     UserAvatarContent,
