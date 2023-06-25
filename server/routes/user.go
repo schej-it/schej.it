@@ -28,7 +28,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.GET("/calendar", getCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
 	userRouter.POST("/visibility", updateVisibility)
-	userRouter.DELETE("/", deleteUser)
+	userRouter.DELETE("", deleteUser)
 }
 
 // @Summary Gets the user's profile
@@ -197,7 +197,7 @@ func deleteUser(c *gin.Context) {
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
 
-	_, err := db.UsersCollection.DeleteOne(context.Background(), bson.M{"id": user.Id})
+	_, err := db.UsersCollection.DeleteOne(context.Background(), bson.M{"_id": user.Id})
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
