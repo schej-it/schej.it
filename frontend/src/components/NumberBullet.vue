@@ -1,7 +1,7 @@
 <!-- Displays a number within a green circle -->
 <template>
   <div
-    class="tw-grid tw-place-content-center tw-rounded-full tw-shrink-0 tw-bg-dark-green tw-text-white md:tw-w-10 md:tw-h-10 tw-w-7 tw-h-7 md:tw-text-xl tw-text-base tw-font-medium"
+    class="tw-grid tw-place-content-center tw-rounded-full tw-shrink-0 tw-bg-dark-green tw-text-white tw-w-7 tw-h-7 tw-text-sm tw-font-medium"
   >
     <slot></slot>
   </div>
@@ -10,5 +10,5 @@
 <script>
 export default {
   name: "NumberBullet",
-};
+}
 </script>

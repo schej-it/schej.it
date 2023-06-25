@@ -1,25 +1,40 @@
 <template>
-    <v-card class="tw-flex tw-flex-col tw-rounded-lg">
-      <v-card-title class="tw-flex">
-        <div>{{ editEvent ? 'Edit Event' : 'New Event' }}</div>
-        <v-spacer />
-        <v-btn v-if="dialog" icon @click="$emit('input', false)"
-          ><v-icon>mdi-close</v-icon></v-btn
-        >
-      </v-card-title>
-      <v-card-text class="tw-space-y-4 tw-flex tw-flex-col tw-flex-1">
+  <v-card class="tw-flex tw-flex-col tw-rounded-lg tw-p-4 tw-relative">
+    <!-- <v-btn
+      v-if="dialog"
+      icon
+      @click="$emit('input', false)"
+      class="tw-absolute tw-top-3 tw-right-3"
+    >
+      <v-icon>mdi-close</v-icon>
+    </v-btn> -->
+    <v-card-title class="tw-flex tw-mb-2">
+      <div>
+        {{ editEvent ? "Edit event" : "New event" }}
+      </div>
+      <v-spacer />
+      <v-btn v-if="dialog" @click="$emit('input', false)" icon>
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </v-card-title>
+    <v-card-text class="tw-flex tw-flex-col">
+      <div class="tw-space-y-12 tw-flex tw-flex-col">
         <v-text-field
           ref="name-field"
           v-model="name"
           autofocus
           :disabled="loading"
           class="tw-text-white tw-flex-initial"
-          :placeholder="dialog ? 'Name of event...' : 'My Super Fun Event'"
+          placeholder="Name your event..."
           hide-details
+          solo
           @keyup.enter="blurNameField"
         />
 
         <div>
+          <div class="tw-text-lg tw-text-black tw-mb-4">
+            What times might work?
+          </div>
           <div class="tw-flex tw-space-x-2 tw-items-baseline tw-justify-center">
             <v-select
               v-model="startTime"
@@ -27,8 +42,8 @@
               class="tw-flex-initial /*tw-w-28*/"
               menu-props="auto"
               :items="times"
-              outlined
               hide-details
+              solo
             ></v-select>
             <div>to</div>
             <v-select
@@ -37,50 +52,60 @@
               class="tw-flex-initial /*tw-w-28*/"
               menu-props="auto"
               :items="times"
-              outlined
               hide-details
+              solo
             ></v-select>
           </div>
         </div>
 
         <div>
-          <div
-            class="tw-text-lg tw-text-black tw-text-center tw-font-medium tw-mt-6 tw-mb-2"
-          >
-            What dates would you like to meet?
+          <div class="tw-text-lg tw-text-black tw-mb-4">
+            What dates might work?
           </div>
-          <div class="tw-flex tw-flex-col tw-justify-center tw-items-center tw-mb-2">
-            <v-date-picker
-              v-model="selectedDays"
-              no-title
-              multiple
-              color="primary"
-              elevation="2"
-              :show-current="false"
-              class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
-              :min="minCalendarDate"
-            />
-          </div>
+          <v-date-picker
+            v-model="selectedDays"
+            no-title
+            multiple
+            color="primary"
+            elevation="2"
+            :show-current="false"
+            class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
+            :min="minCalendarDate"
+            full-width
+          />
         </div>
 
-        <v-checkbox v-if="dialog" v-model="notificationsEnabled" label="Email me each time someone joins my event!"/>
+        <v-checkbox
+          v-if="dialog"
+          v-model="notificationsEnabled"
+          label="Email me each time someone joins my event!"
+          hide-details
+        />
+      </div>
 
-        <v-spacer />
+      <v-spacer />
 
-        <v-btn
-          :loading="loading"
-          :dark="formComplete"
-          class="tw-bg-green"
-          :disabled="!formComplete"
-          @click="submit"
-          >{{ editEvent ? 'Edit' : 'Create' }}</v-btn
-        >
-      </v-card-text>
-    </v-card>
+      <v-btn
+        block
+        :loading="loading"
+        :dark="formComplete"
+        class="tw-mt-4 tw-bg-green"
+        :disabled="!formComplete"
+        @click="submit"
+        >{{ editEvent ? "Edit" : "Create" }}</v-btn
+      >
+    </v-card-text>
+  </v-card>
 </template>
- 
+
 <script>
-import { post, put, timeNumToTimeString, dateToTimeNum, getISODateString } from "@/utils";
+import {
+  post,
+  put,
+  timeNumToTimeString,
+  dateToTimeNum,
+  getISODateString,
+} from "@/utils"
 
 export default {
   name: "NewEvent",
@@ -88,7 +113,7 @@ export default {
   emits: ["input"],
 
   props: {
-    event: { type: Object, },
+    event: { type: Object },
     editEvent: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
   },
@@ -123,45 +148,46 @@ export default {
       return (
         this.name.length > 0 &&
         this.selectedDays.length > 0 &&
-        (this.startTime < this.endTime || (this.endTime === 0 && this.startTime != 0))
-      );
+        (this.startTime < this.endTime ||
+          (this.endTime === 0 && this.startTime != 0))
+      )
     },
     times() {
-      const times = [];
+      const times = []
 
       for (let h = 1; h < 12; ++h) {
-        times.push({ text: `${h} am`, value: h });
+        times.push({ text: `${h} am`, value: h })
       }
       for (let h = 0; h < 12; ++h) {
-        times.push({ text: `${h == 0 ? 12 : h} pm`, value: h + 12 });
+        times.push({ text: `${h == 0 ? 12 : h} pm`, value: h + 12 })
       }
-      times.push({ text: "12 am", value: 0 });
+      times.push({ text: "12 am", value: 0 })
 
-      return times;
+      return times
     },
     minCalendarDate() {
       if (this.editEvent) {
-        return ''
+        return ""
       }
 
-      let today = new Date();
-      let dd = String(today.getDate()).padStart(2, '0');
-      let mm = String(today.getMonth() + 1).padStart(2, '0');
-      let yyyy = today.getFullYear();
-      
-      return yyyy + '-' + mm + '-' + dd;
-    }
+      let today = new Date()
+      let dd = String(today.getDate()).padStart(2, "0")
+      let mm = String(today.getMonth() + 1).padStart(2, "0")
+      let yyyy = today.getFullYear()
+
+      return yyyy + "-" + mm + "-" + dd
+    },
   },
 
   methods: {
     blurNameField() {
-      this.$refs["name-field"].blur();
+      this.$refs["name-field"].blur()
     },
     reset() {
-      this.name = "";
-      this.startTime = 9;
-      this.endTime = 17;
-      this.selectedDays = [];
+      this.name = ""
+      this.startTime = 9
+      this.endTime = 17
+      this.selectedDays = []
     },
     submit() {
       this.selectedDays.sort()
@@ -174,11 +200,11 @@ export default {
       const startTimeString = timeNumToTimeString(this.startTime)
       const dates = []
       for (const day of this.selectedDays) {
-        const date = new Date(`${day}T${startTimeString}`);
+        const date = new Date(`${day}T${startTimeString}`)
         dates.push(date)
       }
 
-      this.loading = true;
+      this.loading = true
       if (!this.editEvent) {
         // Create new event on backend
         post("/events", {
@@ -187,9 +213,9 @@ export default {
           dates,
           notificationsEnabled: this.notificationsEnabled,
         }).then(({ eventId }) => {
-          this.$router.push({ name: "event", params: { eventId } });
-          this.loading = false;
-        });
+          this.$router.push({ name: "event", params: { eventId } })
+          this.loading = false
+        })
       } else {
         // Edit event on backend
         if (this.event) {
@@ -200,10 +226,10 @@ export default {
             notificationsEnabled: this.notificationsEnabled,
           }).then(() => {
             window.location.reload()
-          });
+          })
         }
       }
     },
   },
-};
+}
 </script>

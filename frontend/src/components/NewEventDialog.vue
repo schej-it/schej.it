@@ -4,15 +4,19 @@
     @input="(e) => $emit('input', e)"
     :fullscreen="isPhone"
     :hide-overlay="isPhone"
-    content-class="tw-max-w-xl"
+    content-class="tw-max-w-md"
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
-    <NewEvent :event="event" :editEvent="editEvent" @input="$emit('input', false)"></NewEvent>
+    <NewEvent
+      :event="event"
+      :editEvent="editEvent"
+      @input="$emit('input', false)"
+    ></NewEvent>
   </v-dialog>
 </template>
 
 <script>
-import { isPhone } from "@/utils";
+import { isPhone } from "@/utils"
 import NewEvent from "@/components/NewEvent.vue"
 
 export default {
@@ -22,7 +26,7 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
-    event: { type: Object, },
+    event: { type: Object },
     editEvent: { type: Boolean, default: false },
   },
 
@@ -30,20 +34,16 @@ export default {
     NewEvent,
   },
 
-  data: () => ({
-  }),
+  data: () => ({}),
 
-  created() {
-  },
+  created() {},
 
   computed: {
     isPhone() {
-      return isPhone(this.$vuetify);
+      return isPhone(this.$vuetify)
     },
   },
 
-  methods: {
-    
-  },
-};
+  methods: {},
+}
 </script>

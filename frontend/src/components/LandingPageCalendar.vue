@@ -1,6 +1,6 @@
 <template>
   <v-card
-    class="tw-mx-4 md:tw-w-[42rem] tw-rounded-lg"
+    class="tw-mx-4 md:tw-w-[36rem] tw-rounded-lg"
     style="box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.1)"
   >
     <ScheduleOverlap
@@ -239,20 +239,29 @@ export default {
         },
       }
     },
+    reset() {
+      this.responses = {}
+      this.calendarEventsByDay = []
+    },
+    playAnimation() {
+      this.reset()
+
+      this.$refs.scheduleOverlap.startEditing()
+      setTimeout(() => {
+        this.getCalendarEventsByDay()
+        this.getResponses()
+        setTimeout(() => {
+          this.$refs.scheduleOverlap.setAvailabilityAutomatically()
+          setTimeout(() => {
+            this.$refs.scheduleOverlap.stopEditing()
+          }, 2000)
+        }, 500)
+      }, 200)
+    },
   },
 
   mounted() {
-    this.$refs.scheduleOverlap.startEditing()
-    setTimeout(() => {
-      this.getCalendarEventsByDay()
-      this.getResponses()
-      setTimeout(() => {
-        this.$refs.scheduleOverlap.setAvailabilityAutomatically()
-        setTimeout(() => {
-          this.$refs.scheduleOverlap.stopEditing()
-        }, 2000)
-      }, 500)
-    }, 200)
+    this.playAnimation()
   },
 }
 </script>
