@@ -1,5 +1,7 @@
 <template>
-  <v-card class="tw-flex tw-flex-col tw-rounded-lg tw-p-4 tw-relative">
+  <v-card
+    class="tw-flex tw-flex-col tw-rounded-lg tw-p-4 tw-relative tw-overflow-none"
+  >
     <!-- <v-btn
       v-if="dialog"
       icon
@@ -17,7 +19,7 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text class="tw-flex tw-flex-col">
+    <v-card-text class="tw-flex tw-flex-col tw-overflow-auto tw-py-1 tw-flex-1">
       <div class="tw-space-y-12 tw-flex tw-flex-col">
         <v-text-field
           ref="name-field"
@@ -62,7 +64,16 @@
           <div class="tw-text-lg tw-text-black tw-mb-4">
             What dates might work?
           </div>
+          <v-select
+            v-model="selectedDateOption"
+            :items="Object.values(dateOptions)"
+            solo
+            hide-details
+            class="tw-mb-2"
+          />
+
           <v-date-picker
+            v-if="selectedDateOption === dateOptions.SPECIFIC"
             v-model="selectedDays"
             no-title
             multiple
@@ -73,18 +84,41 @@
             :min="minCalendarDate"
             full-width
           />
+          <div v-else-if="selectedDateOption === dateOptions.DOW">
+            <div class="tw-flex tw-mt-4">
+              <v-btn-toggle
+                v-model="selectedDaysOfWeek"
+                multiple
+                solo
+                color="primary"
+              >
+                <v-btn v-if="!mondayStart"> S </v-btn>
+                <v-btn> M </v-btn>
+                <v-btn> T </v-btn>
+                <v-btn> W </v-btn>
+                <v-btn> T </v-btn>
+                <v-btn> F </v-btn>
+                <v-btn> S </v-btn>
+                <v-btn v-if="mondayStart"> S </v-btn>
+              </v-btn-toggle>
+            </div>
+            <v-checkbox
+              v-model="mondayStart"
+              label="Start on Monday"
+              hide-details
+            />
+          </div>
         </div>
-
         <v-checkbox
           v-if="dialog"
           v-model="notificationsEnabled"
           label="Email me each time someone joins my event!"
           hide-details
+          class="tw-mt-2"
         />
       </div>
-
-      <v-spacer />
-
+    </v-card-text>
+    <v-card-actions>
       <v-btn
         block
         :loading="loading"
@@ -92,9 +126,10 @@
         class="tw-mt-4 tw-bg-green"
         :disabled="!formComplete"
         @click="submit"
-        >{{ editEvent ? "Edit" : "Create" }}</v-btn
       >
-    </v-card-text>
+        {{ editEvent ? "Edit" : "Create" }}
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -124,7 +159,15 @@ export default {
     endTime: 17,
     loading: false,
     selectedDays: [],
+    selectedDaysOfWeek: [],
+    mondayStart: false,
     notificationsEnabled: false,
+
+    dateOptions: Object.freeze({
+      SPECIFIC: "Specific dates",
+      DOW: "Days of the week",
+    }),
+    selectedDateOption: "Specific dates",
   }),
 
   created() {

@@ -5,6 +5,7 @@
     :fullscreen="isPhone"
     :hide-overlay="isPhone"
     content-class="tw-max-w-md"
+    scrollable
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
     <NewEvent
