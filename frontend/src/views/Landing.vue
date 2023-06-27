@@ -7,7 +7,7 @@
       ></div>
 
       <!-- Header -->
-      <div class="tw-mb-12">
+      <div class="tw-mb-16">
         <div class="tw-pt-5 tw-px-5 tw-flex tw-items-center">
           <v-img
             alt="schej Logo"
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <div class="tw-flex tw-gap-24 tw-mt-12">
+      <div class="tw-flex tw-gap-24">
         <!-- Left side -->
         <div>
           <!-- Hero -->

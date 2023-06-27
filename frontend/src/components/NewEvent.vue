@@ -1,16 +1,8 @@
 <template>
   <v-card
-    class="tw-flex tw-flex-col tw-rounded-lg tw-p-4 tw-relative tw-overflow-none"
+    class="tw-py-4 tw-flex tw-flex-col tw-rounded-lg tw-relative tw-overflow-none"
   >
-    <!-- <v-btn
-      v-if="dialog"
-      icon
-      @click="$emit('input', false)"
-      class="tw-absolute tw-top-3 tw-right-3"
-    >
-      <v-icon>mdi-close</v-icon>
-    </v-btn> -->
-    <v-card-title class="tw-flex tw-mb-2">
+    <v-card-title class="tw-px-8 tw-flex tw-mb-2">
       <div>
         {{ editEvent ? "Edit event" : "New event" }}
       </div>
@@ -19,8 +11,8 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text class="tw-flex tw-flex-col tw-overflow-auto tw-py-1 tw-flex-1">
-      <div class="tw-space-y-12 tw-flex tw-flex-col">
+    <v-card-text class="tw-px-8 tw-overflow-auto tw-py-1 tw-flex-1">
+      <div class="tw-space-y-10 tw-flex tw-flex-col">
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -72,42 +64,44 @@
             class="tw-mb-2"
           />
 
-          <v-date-picker
-            v-if="selectedDateOption === dateOptions.SPECIFIC"
-            v-model="selectedDays"
-            no-title
-            multiple
-            color="primary"
-            elevation="2"
-            :show-current="false"
-            class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
-            :min="minCalendarDate"
-            full-width
-          />
-          <div v-else-if="selectedDateOption === dateOptions.DOW">
-            <div class="tw-flex tw-mt-4">
-              <v-btn-toggle
-                v-model="selectedDaysOfWeek"
-                multiple
-                solo
-                color="primary"
-              >
-                <v-btn v-if="!mondayStart"> S </v-btn>
-                <v-btn> M </v-btn>
-                <v-btn> T </v-btn>
-                <v-btn> W </v-btn>
-                <v-btn> T </v-btn>
-                <v-btn> F </v-btn>
-                <v-btn> S </v-btn>
-                <v-btn v-if="mondayStart"> S </v-btn>
-              </v-btn-toggle>
-            </div>
-            <v-checkbox
-              v-model="mondayStart"
-              label="Start on Monday"
-              hide-details
+          <v-expand-transition>
+            <v-date-picker
+              v-if="selectedDateOption === dateOptions.SPECIFIC"
+              v-model="selectedDays"
+              no-title
+              multiple
+              color="primary"
+              elevation="2"
+              :show-current="false"
+              class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
+              :min="minCalendarDate"
+              full-width
             />
-          </div>
+            <div v-else-if="selectedDateOption === dateOptions.DOW">
+              <div class="tw-flex tw-mt-4">
+                <v-btn-toggle
+                  v-model="selectedDaysOfWeek"
+                  multiple
+                  solo
+                  color="primary"
+                >
+                  <v-btn v-if="!mondayStart"> S </v-btn>
+                  <v-btn> M </v-btn>
+                  <v-btn> T </v-btn>
+                  <v-btn> W </v-btn>
+                  <v-btn> T </v-btn>
+                  <v-btn> F </v-btn>
+                  <v-btn> S </v-btn>
+                  <v-btn v-if="mondayStart"> S </v-btn>
+                </v-btn-toggle>
+              </div>
+              <v-checkbox
+                v-model="mondayStart"
+                label="Start on Monday"
+                hide-details
+              />
+            </div>
+          </v-expand-transition>
         </div>
         <v-checkbox
           v-if="dialog"
@@ -118,7 +112,7 @@
         />
       </div>
     </v-card-text>
-    <v-card-actions>
+    <v-card-actions class="tw-px-8 tw-relative">
       <v-btn
         block
         :loading="loading"
