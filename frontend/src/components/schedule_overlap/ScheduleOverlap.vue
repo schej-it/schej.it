@@ -32,7 +32,9 @@
                     style="min-width: 50px"
                   >
                     <div class="tw-text-center">
-                      <div class="tw-capitalize tw-font-light tw-text-xs">
+                      <div
+                        class="tw-capitalize tw-font-light tw-text-xs tw-text-very-dark-gray"
+                      >
                         {{ day.dateString }}
                       </div>
                       <div class="tw-text-lg tw-capitalize">

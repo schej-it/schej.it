@@ -2,14 +2,16 @@
   <v-container
     @click="$emit('click')"
     v-ripple
-    class="hover:tw-drop-shadow-lg tw-drop-shadow-md tw-shadow-inner tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-py-3"
+    class="hover:tw-drop-shadow-md tw-drop-shadow tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-px-4 tw-py-2.5 sm:tw-py-3"
   >
     <div class="tw-ml-1">
       <div>{{ this.event.name }}</div>
-      <div class="tw-text-sm tw-font-light">{{ dateString }}</div>
+      <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
+        {{ dateString }}
+      </div>
     </div>
     <div class="tw-min-w-max">
-      <v-chip small class="tw-text-very-dark-gray tw-m-2 tw-bg-off-white">
+      <v-chip small class="tw-text-very-dark-gray tw-m-0.5 tw-bg-off-white">
         <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
@@ -27,11 +29,17 @@
           </v-btn>
         </template>
 
-        <v-list justify="center">
+        <v-list justify="center" class="tw-py-1">
           <v-dialog v-model="removeDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn id="delete-event-btn" text small class="red--text" v-bind="attrs" v-on="on"
-                >Delete</v-btn
+              <v-btn
+                id="delete-event-btn"
+                text
+                class="tw-px-6 red--text"
+                v-bind="attrs"
+                v-on="on"
+                block
+                >Delete event</v-btn
               >
             </template>
             <v-card>
@@ -56,7 +64,7 @@
 </template>
 
 <script>
-import { getDateRangeStringForEvent, _delete } from "@/utils"
+import { getDateRangeStringForEvent, _delete, isPhone } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
 export default {
@@ -71,7 +79,7 @@ export default {
   }),
 
   computed: {
-    ...mapState([ 'authUser' ]),
+    ...mapState(["authUser"]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
@@ -82,6 +90,9 @@ export default {
 
   methods: {
     ...mapActions(["showError", "showInfo", "getEvents"]),
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
     removeEvent() {
       _delete(`/events/${this.event._id}`)
         .then(() => {

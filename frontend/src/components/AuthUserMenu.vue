@@ -1,10 +1,6 @@
 <!-- Displays auth user's avatar, which displays a menu when clicked -->
 <template>
-  <v-menu
-    v-if="authUser"
-    offset-y
-    :close-on-content-click="false"
-  >
+  <v-menu v-if="authUser" offset-y :close-on-content-click="false">
     <template v-slot:activator="{ on }">
       <v-btn id="user-menu-btn" icon :width="size" :height="size" v-on="on">
         <v-avatar :size="size">
@@ -14,7 +10,11 @@
     </template>
     <v-list class="py-0" :dense="isPhone">
       <v-list-item>
-        <v-list-item-title><strong>{{ `${authUser.firstName} ${authUser.lastName}` }}</strong></v-list-item-title>
+        <v-list-item-title
+          ><strong>{{
+            `${authUser.firstName} ${authUser.lastName}`
+          }}</strong></v-list-item-title
+        >
       </v-list-item>
       <v-list-item id="feedback-btn" @click="giveFeedback">
         <v-list-item-title>Give feedback</v-list-item-title>
@@ -31,24 +31,24 @@
 </template>
 
 <script>
-import UserAvatarContent from '@/components/UserAvatarContent'
-import { mapState, mapMutations } from 'vuex'
-import { post, isPhone } from '@/utils'
+import UserAvatarContent from "@/components/UserAvatarContent"
+import { mapState, mapMutations } from "vuex"
+import { post, isPhone } from "@/utils"
 
 export default {
-  name: 'AuthUserMenu',
+  name: "AuthUserMenu",
 
   components: {
     UserAvatarContent,
   },
 
   computed: {
-    ...mapState([ 'authUser' ]),
+    ...mapState(["authUser"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
     size() {
-      return this.isPhone ? 36 : 48
+      return this.isPhone ? 32 : 42
     },
   },
 
