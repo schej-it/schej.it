@@ -2,7 +2,7 @@
   <v-container
     @click="$emit('click')"
     v-ripple
-    class="hover:tw-drop-shadow-lg tw-drop-shadow-md tw-shadow-inner tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-py-3"
+    class="hover:tw-drop-shadow-md tw-drop-shadow tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-px-4 tw-py-3"
   >
     <div class="tw-ml-1">
       <div>{{ this.event.name }}</div>

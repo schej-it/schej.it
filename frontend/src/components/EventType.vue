@@ -10,7 +10,7 @@
     </div>
     <div
       v-else
-      class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-4 tw-my-3"
+      class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-3 tw-my-3"
     >
       <EventItem
         class="tw-cursor-pointer"
