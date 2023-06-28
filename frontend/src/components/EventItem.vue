@@ -29,17 +29,17 @@
           </v-btn>
         </template>
 
-        <v-list justify="center">
+        <v-list justify="center" class="tw-py-1">
           <v-dialog v-model="removeDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
               <v-btn
                 id="delete-event-btn"
                 text
-                small
-                class="red--text"
+                class="tw-px-6 red--text"
                 v-bind="attrs"
                 v-on="on"
-                >Delete</v-btn
+                block
+                >Delete event</v-btn
               >
             </template>
             <v-card>
@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import { getDateRangeStringForEvent, _delete } from "@/utils"
+import { getDateRangeStringForEvent, _delete, isPhone } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
 export default {
@@ -90,6 +90,9 @@ export default {
 
   methods: {
     ...mapActions(["showError", "showInfo", "getEvents"]),
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
     removeEvent() {
       _delete(`/events/${this.event._id}`)
         .then(() => {

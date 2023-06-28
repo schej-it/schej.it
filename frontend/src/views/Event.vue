@@ -27,7 +27,9 @@
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
             <div class="tw-flex tw-items-baseline tw-gap-1">
-              <div class="tw-text-sm sm:tw-text-base tw-font-normal">
+              <div
+                class="tw-text-sm sm:tw-text-base tw-font-normal tw-text-very-dark-gray"
+              >
                 {{ dateString }}
               </div>
               <v-btn
