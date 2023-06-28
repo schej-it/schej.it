@@ -2,14 +2,16 @@
   <v-container
     @click="$emit('click')"
     v-ripple
-    class="hover:tw-drop-shadow-md tw-drop-shadow tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-px-4 tw-py-3"
+    class="hover:tw-drop-shadow-md tw-drop-shadow tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-px-4 tw-py-2.5 sm:tw-py-3"
   >
     <div class="tw-ml-1">
       <div>{{ this.event.name }}</div>
-      <div class="tw-text-sm tw-font-light">{{ dateString }}</div>
+      <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
+        {{ dateString }}
+      </div>
     </div>
     <div class="tw-min-w-max">
-      <v-chip small class="tw-text-very-dark-gray tw-m-2 tw-bg-off-white">
+      <v-chip small class="tw-text-very-dark-gray tw-m-0.5 tw-bg-off-white">
         <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
@@ -30,7 +32,13 @@
         <v-list justify="center">
           <v-dialog v-model="removeDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn id="delete-event-btn" text small class="red--text" v-bind="attrs" v-on="on"
+              <v-btn
+                id="delete-event-btn"
+                text
+                small
+                class="red--text"
+                v-bind="attrs"
+                v-on="on"
                 >Delete</v-btn
               >
             </template>
@@ -71,7 +79,7 @@ export default {
   }),
 
   computed: {
-    ...mapState([ 'authUser' ]),
+    ...mapState(["authUser"]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },

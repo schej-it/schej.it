@@ -1,7 +1,7 @@
 <!-- Displays an event type (i.e. created or joined) on the home page -->
 <template>
   <div class="tw-mb-5">
-    <div class="tw-text-2xl tw-font-bold tw-text-dark-green">
+    <div class="tw-text-xl sm:tw-text-2xl tw-font-medium tw-text-dark-green">
       {{ eventType.header }}
     </div>
 
@@ -10,14 +10,11 @@
     </div>
     <div
       v-else
-      class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-3 tw-my-3"
+      class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-3 tw-my-3"
     >
       <EventItem
         class="tw-cursor-pointer"
-        v-for="(event, i) in sortedEvents.slice(
-          0,
-          DEFAULT_NUM_EVENTS_TO_SHOW
-        )"
+        v-for="(event, i) in sortedEvents.slice(0, DEFAULT_NUM_EVENTS_TO_SHOW)"
         :key="i"
         :event="event"
         @click="goToEvent(event._id)"
@@ -43,13 +40,19 @@
           />
         </div>
       </v-expand-transition>
-      <div @click="toggleShowAll" class="tw-cursor-pointer tw-text-very-dark-gray tw-text-sm" :class="showAll && 'tw-mt-2'">Show {{showAll ? 'less' : 'more'}}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon></div>
+      <div
+        @click="toggleShowAll"
+        class="tw-cursor-pointer tw-text-very-dark-gray tw-text-sm tw-mt-4"
+      >
+        Show {{ showAll ? "less" : "more"
+        }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import EventItem from "@/components/EventItem.vue";
+import EventItem from "@/components/EventItem.vue"
 
 export default {
   name: "EventType",
@@ -71,7 +74,7 @@ export default {
     numEventsToShow() {
       return this.showAll
         ? this.eventType.events.length
-        : this.DEFAULT_NUM_EVENTS_TO_SHOW;
+        : this.DEFAULT_NUM_EVENTS_TO_SHOW
     },
     sortedEvents() {
       const sorted = [...this.eventType.events]
@@ -96,11 +99,11 @@ export default {
 
   methods: {
     toggleShowAll() {
-      this.showAll = !this.showAll;
+      this.showAll = !this.showAll
     },
     goToEvent(eventId) {
-      this.$router.push({ name: "event", params: { eventId } });
+      this.$router.push({ name: "event", params: { eventId } })
     },
   },
-};
+}
 </script>

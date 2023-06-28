@@ -1,12 +1,13 @@
 <template>
-  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12 tw-mt-5">
-
+  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12 tw-mt-4 sm:tw-mt-7">
     <!-- Dialog -->
-    <NewEventDialog 
-      v-model="dialog"
-    />
-    <div class="tw-grid tw-p-4 tw-gap-14">
-      <EventType v-for="eventType, t in events" :key="t" :eventType="eventType"></EventType>
+    <NewEventDialog v-model="dialog" />
+    <div class="tw-grid tw-p-4 tw-gap-4 sm:tw-gap-8">
+      <EventType
+        v-for="(eventType, t) in events"
+        :key="t"
+        :eventType="eventType"
+      ></EventType>
     </div>
 
     <!-- FAB -->
@@ -17,13 +18,13 @@
 </template>
 
 <script>
-import NewEventDialog from '@/components/NewEventDialog.vue'
-import EventType from '@/components/EventType.vue'
-import BottomFab from '@/components/BottomFab.vue'
-import { mapState, mapActions } from 'vuex'
+import NewEventDialog from "@/components/NewEventDialog.vue"
+import EventType from "@/components/EventType.vue"
+import BottomFab from "@/components/BottomFab.vue"
+import { mapState, mapActions } from "vuex"
 
 export default {
-  name: 'Home',
+  name: "Home",
 
   components: {
     NewEventDialog,
@@ -36,23 +37,23 @@ export default {
   }),
 
   computed: {
-    ...mapState([ 'createdEvents', 'joinedEvents' ]),
+    ...mapState(["createdEvents", "joinedEvents"]),
     events() {
       return [
-          {
-            header: 'Events I created',
-            events: this.createdEvents,
-          },
-          {
-            header: 'Events I joined',
-            events: this.joinedEvents,
-          },
-        ] 
-    }
+        {
+          header: "Events I created",
+          events: this.createdEvents,
+        },
+        {
+          header: "Events I joined",
+          events: this.joinedEvents,
+        },
+      ]
+    },
   },
 
   methods: {
-    ...mapActions( ['getEvents'] )
+    ...mapActions(["getEvents"]),
   },
 
   created() {
