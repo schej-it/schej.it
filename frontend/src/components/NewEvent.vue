@@ -56,13 +56,13 @@
           <div class="tw-text-lg tw-text-black tw-mb-4">
             What dates might work?
           </div>
-          <v-select
+          <!-- <v-select
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
             hide-details
             class="tw-mb-2"
-          />
+          /> -->
 
           <v-expand-transition>
             <v-date-picker
@@ -85,21 +85,15 @@
                   solo
                   color="primary"
                 >
-                  <v-btn v-if="!mondayStart"> S </v-btn>
+                  <v-btn> S </v-btn>
                   <v-btn> M </v-btn>
                   <v-btn> T </v-btn>
                   <v-btn> W </v-btn>
                   <v-btn> T </v-btn>
                   <v-btn> F </v-btn>
                   <v-btn> S </v-btn>
-                  <v-btn v-if="mondayStart"> S </v-btn>
                 </v-btn-toggle>
               </div>
-              <v-checkbox
-                v-model="mondayStart"
-                label="Start on Monday"
-                hide-details
-              />
             </div>
           </v-expand-transition>
         </div>
@@ -154,7 +148,6 @@ export default {
     loading: false,
     selectedDays: [],
     selectedDaysOfWeek: [],
-    mondayStart: false,
     notificationsEnabled: false,
 
     dateOptions: Object.freeze({
