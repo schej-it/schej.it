@@ -1,8 +1,5 @@
 <template>
-  <v-card
-    class="tw-mx-4 md:tw-w-[36rem] tw-rounded-lg"
-    style="box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.1)"
-  >
+  <v-card class="tw-mx-4 md:tw-w-[36rem] tw-rounded-lg tw-drop-shadow-2xl">
     <ScheduleOverlap
       ref="scheduleOverlap"
       :dates="dates"
