@@ -97,18 +97,26 @@
                 data will be lost.</v-card-text
               >
               <div class="tw-mx-6">
-                <div class="tw-text-dark-gray tw-text-sm">Type your email in the box below to confirm:</div>
-              <v-text-field
-                v-model="deleteValidateEmail"
-                autofocus
-                class="tw-text-white tw-flex-initial"
-                :placeholder="authUser.email"
-              />
-            </div>
+                <div class="tw-text-dark-gray tw-text-sm">
+                  Type your email in the box below to confirm:
+                </div>
+                <v-text-field
+                  v-model="deleteValidateEmail"
+                  autofocus
+                  class="tw-text-white tw-flex-initial"
+                  :placeholder="authUser.email"
+                />
+              </div>
               <v-card-actions>
                 <v-spacer />
                 <v-btn text @click="deleteDialog = false">Cancel</v-btn>
-                <v-btn text color="error" @click="deleteAccount()" :disabled="authUser.email != deleteValidateEmail">Delete</v-btn>
+                <v-btn
+                  text
+                  color="error"
+                  @click="deleteAccount()"
+                  :disabled="authUser.email != deleteValidateEmail"
+                  >Delete</v-btn
+                >
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -151,15 +159,18 @@ export default {
   },
 
   methods: {
-    ...mapActions([]),
+    ...mapActions(["showError"]),
     deleteAccount() {
       _delete(`/user`)
+        .then(() => {
+          window.location.reload()
+        })
         .catch((err) => {
           this.showError(
             "There was a problem deleting your account! Please try again later."
           )
         })
-    }
+    },
   },
 
   created() {},
