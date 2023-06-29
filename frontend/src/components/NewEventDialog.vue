@@ -4,7 +4,7 @@
     @input="(e) => $emit('input', e)"
     :fullscreen="isPhone"
     :hide-overlay="isPhone"
-    content-class="tw-max-w-md"
+    content-class="tw-max-w-[28rem]"
     scrollable
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >

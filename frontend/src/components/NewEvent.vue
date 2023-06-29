@@ -1,6 +1,6 @@
 <template>
   <v-card
-    class="tw-py-4 tw-flex tw-flex-col tw-rounded-lg tw-relative tw-overflow-none"
+    class="tw-py-4 tw-flex tw-flex-col tw-rounded-lg tw-relative tw-overflow-none tw-max-w-[28rem]"
   >
     <v-card-title class="tw-px-8 tw-flex tw-mb-2">
       <div>

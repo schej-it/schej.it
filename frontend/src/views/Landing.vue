@@ -1,6 +1,13 @@
 <template>
   <div>
-    <div class="tw-min-h-screen tw-flex tw-flex-col tw-max-w-6xl tw-m-auto">
+    <div
+      class="tw-min-h-screen tw-flex tw-flex-col tw-max-w-6xl tw-m-auto tw-relative"
+    >
+      <!-- Green background -->
+      <div
+        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-2/5"
+      ></div>
+
       <!-- Header -->
       <div class="tw-mb-16">
         <div class="tw-pt-5 tw-px-5 tw-flex tw-items-center">
@@ -20,23 +27,38 @@
         </div>
       </div>
 
-      <div class="tw-flex tw-gap-24 tw-relative tw-pb-24">
-        <div
-          class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-1/2"
-        ></div>
+      <div
+        class="tw-flex tw-justify-center lg:tw-justify-between tw-relative tw-pb-24"
+      >
         <!-- Left side -->
         <div>
           <!-- Hero -->
-          <div class="tw-mb-20 tw-mx-4">
+          <div
+            class="tw-flex tw-flex-col tw-items-center lg:tw-items-start tw-mb-4 lg:tw-mb-20 tw-mx-4"
+          >
             <div
-              class="tw-text-2xl sm:tw-text-3xl lg:tw-text-5xl tw-font-medium tw-mb-4"
+              class="tw-flex tw-flex-col tw-items-center lg:tw-items-start tw-text-2xl sm:tw-text-5xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-4"
             >
               <div class="tw-leading-tight">Finding a time to meet,</div>
               <div class="tw-leading-snug">made simple.</div>
             </div>
-            <div class="tw-text-lg tw-text-very-dark-gray">
+
+            <v-btn
+              id="lets-schej-it-btn"
+              class="mb-12 tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
+              dark
+              @click="newEventDialog = true"
+              :large="$vuetify.breakpoint.smAndUp"
+              :x-large="$vuetify.breakpoint.mdAndUp"
+            >
+              Create event
+            </v-btn>
+
+            <div
+              class="tw-text-base md:tw-text-lg lg:tw-text-md xl:tw-text-lg tw-text-very-dark-gray"
+            >
               <b>Automatically</b> fill out your availability with Google
-              Calendar—<br />
+              Calendar—<br v-if="!isPhone" />
               it’s like When2Meet with Google Calendar integration!
             </div>
           </div>
@@ -46,7 +68,7 @@
         </div>
 
         <!-- Right side -->
-        <div class="mr-4">
+        <div class="mx-4 tw-hidden lg:tw-block">
           <NewEvent class="tw-drop-shadow-2xl" :dialog="false" />
         </div>
       </div>
@@ -101,7 +123,7 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-12 tw-justify-center"
+      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-16 tw-justify-center"
     >
       <div class="md:tw-h-96 sm:tw-h-80 tw-h-64 tw-max-w-3xl tw-flex-1">
         <iframe
@@ -159,6 +181,9 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <!-- New event dialog -->
+    <NewEventDialog v-model="newEventDialog" />
   </div>
 </template>
 
@@ -170,6 +195,7 @@ import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
+import NewEventDialog from "@/components/NewEventDialog.vue"
 import { confetti } from "tsparticles-confetti"
 
 export default {
@@ -182,10 +208,12 @@ export default {
     Header,
     NumberBullet,
     NewEvent,
+    NewEventDialog,
   },
 
   data: () => ({
     signInDialog: false,
+    newEventDialog: false,
     howItWorksSteps: [
       "Create a schej event",
       "Automatically fill out your availability with Google Calendar",
