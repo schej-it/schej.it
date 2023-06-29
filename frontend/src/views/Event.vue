@@ -1,27 +1,11 @@
 <template>
   <div v-if="event" class="tw-mt-8">
     <!-- Mark availability option dialog -->
-    <v-dialog v-model="choiceDialog" width="400" content-class="tw-m-0">
-      <v-card class="tw-text-center sm:tw-p-6 tw-p-4">
-        <div class="tw-text-md tw-pb-4">
-          How would you like to mark <br v-if="isPhone" />
-          your availability?
-        </div>
-        <div class="">
-          <v-btn
-            @click="setAvailabilityAutomatically"
-            class="tw-bg-blue tw-mb-2"
-            dark
-            block
-          >
-            <div class="tw-text-sm -tw-mx-4">
-              Automatically with Google Calendar
-            </div>
-          </v-btn>
-          <v-btn @click="setAvailabilityManually" block>Manually</v-btn>
-        </div>
-      </v-card>
-    </v-dialog>
+    <MarkAvailabilityDialog
+      v-model="choiceDialog"
+      @setAvailabilityAutomatically="setAvailabilityAutomatically"
+      @setAvailabilityManually="setAvailabilityManually"
+    />
 
     <!-- Google sign in not supported dialog -->
     <SignInNotSupportedDialog v-model="webviewDialog" />
@@ -43,7 +27,9 @@
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
             <div class="tw-flex tw-items-baseline tw-gap-1">
-              <div class="tw-text-sm sm:tw-text-base tw-font-normal">
+              <div
+                class="tw-text-sm sm:tw-text-base tw-font-normal tw-text-very-dark-gray"
+              >
                 {{ dateString }}
               </div>
               <v-btn
@@ -188,6 +174,7 @@ import GuestDialog from "@/components/GuestDialog.vue"
 import { errors, authTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
+import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
 
 export default {
   name: "Event",
@@ -202,6 +189,7 @@ export default {
     ScheduleOverlap,
     NewEventDialog,
     SignInNotSupportedDialog,
+    MarkAvailabilityDialog,
   },
 
   data: () => ({

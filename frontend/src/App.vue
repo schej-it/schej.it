@@ -7,10 +7,9 @@
       v-if="showHeader"
       class="tw-h-14 sm:tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
       dark
-      :class="'tw-drop-shadow'"
     >
       <div
-        class="tw-relative tw-px-2 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto"
+        class="tw-relative tw-px-4 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto"
       >
         <v-img
           @click="goHome"
@@ -19,7 +18,7 @@
           contain
           src="@/assets/schej_logo_with_text.png"
           transition="scale-transition"
-          width="90"
+          :width="isPhone ? 70 : 90"
         />
 
         <v-spacer />
