@@ -16,10 +16,9 @@
         <v-text-field
           ref="name-field"
           v-model="name"
+          placeholder="Name your event..."
           autofocus
           :disabled="loading"
-          class="tw-text-white tw-flex-initial"
-          placeholder="Name your event..."
           hide-details
           solo
           @keyup.enter="blurNameField"
@@ -71,9 +70,8 @@
               no-title
               multiple
               color="primary"
-              elevation="2"
               :show-current="false"
-              class="tw-min-w-full sm:tw-min-w-0 tw-border-0"
+              class="tw-min-w-full sm:tw-min-w-0 tw-border-0 tw-drop-shadow"
               :min="minCalendarDate"
               full-width
             />

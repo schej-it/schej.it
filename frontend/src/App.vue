@@ -61,6 +61,20 @@ html {
   letter-spacing: unset !important;
   text-transform: unset !important;
 }
+
+.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
+  > .v-input__control
+  > .v-input__slot {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
+    drop-shadow(0 1px 1px rgb(0 0 0 / 0.06)) !important;
+  box-shadow: none !important;
+}
+
+.v-menu__content {
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04))
+    drop-shadow(0 4px 3px rgb(0 0 0 / 0.1)) !important;
+  box-shadow: none !important;
+}
 </style>
 
 <script>
