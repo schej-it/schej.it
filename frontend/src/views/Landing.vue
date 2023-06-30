@@ -171,7 +171,7 @@
       <v-card>
         <v-card-title>Sign in</v-card-title>
         <v-card-text class="tw-flex tw-flex-col tw-items-center">
-          <SignInGoogleBtn @click="signInGoogle" dark />
+          <SignInGoogleBtn class="tw-mb-4" @click="signInGoogle" dark />
           <div class="tw-text-xs tw-text-center">
             By continuing, you agree to our
             <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
