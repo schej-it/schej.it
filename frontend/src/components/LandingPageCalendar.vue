@@ -1,20 +1,22 @@
 <template>
-  <v-card class="tw-mx-4 md:tw-w-[36rem] tw-rounded-lg tw-drop-shadow-2xl">
-    <ScheduleOverlap
-      ref="scheduleOverlap"
-      :dates="dates"
-      :duration="duration"
-      :startTime="startTime"
-      :endTime="endTime"
-      :responses="responses"
-      :calendarEventsByDay="calendarEventsByDay"
-      calendarOnly
-      :interactable="false"
-      :showSnackbar="false"
-      :alwaysShowCalendarEvents="true"
-      animateTimeslotAlways
-      :showHintText="false"
-    />
+  <v-card class="tw-m-4 md:tw-w-[36rem] tw-rounded-lg">
+    <div class="-tw-ml-3 sm:tw-ml-0">
+      <ScheduleOverlap
+        ref="scheduleOverlap"
+        :dates="dates"
+        :duration="duration"
+        :startTime="startTime"
+        :endTime="endTime"
+        :responses="responses"
+        :calendarEventsByDay="calendarEventsByDay"
+        calendarOnly
+        :interactable="false"
+        :showSnackbar="false"
+        :alwaysShowCalendarEvents="true"
+        animateTimeslotAlways
+        :showHintText="false"
+      />
+    </div>
   </v-card>
 </template>
 

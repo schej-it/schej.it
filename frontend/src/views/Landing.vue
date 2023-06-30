@@ -28,34 +28,23 @@
       </div>
 
       <div
-        class="tw-flex tw-justify-center lg:tw-justify-between tw-relative tw-pb-24"
+        class="tw-flex tw-justify-center lg:tw-justify-between tw-relative tw-pb-12 lg:tw-pb-24"
       >
         <!-- Left side -->
-        <div>
+        <div class="tw-flex tw-flex-col">
           <!-- Hero -->
           <div
-            class="tw-flex tw-flex-col tw-items-center lg:tw-items-start tw-mb-4 lg:tw-mb-20 tw-mx-4"
+            class="tw-max-w-[26rem] sm:tw-max-w-none tw-flex tw-flex-col tw-items-start lg:tw-mb-20 tw-mx-4"
           >
             <div
-              class="tw-flex tw-flex-col tw-items-center lg:tw-items-start tw-text-2xl sm:tw-text-5xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-4"
+              class="tw-text-left tw-text-2xl sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-2 sm:tw-mb-4"
             >
               <div class="tw-leading-tight">Finding a time to meet,</div>
               <div class="tw-leading-snug">made simple.</div>
             </div>
 
-            <v-btn
-              id="lets-schej-it-btn"
-              class="mb-12 tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
-              dark
-              @click="newEventDialog = true"
-              :large="$vuetify.breakpoint.smAndUp"
-              :x-large="$vuetify.breakpoint.mdAndUp"
-            >
-              Create event
-            </v-btn>
-
             <div
-              class="tw-text-base md:tw-text-lg lg:tw-text-md xl:tw-text-lg tw-text-very-dark-gray"
+              class="tw-text-left tw-text-sm sm:tw-text-lg md:tw-text-lg lg:tw-text-md xl:tw-text-lg tw-text-very-dark-gray tw-mb-4"
             >
               <b>Automatically</b> fill out your availability with Google
               Calendar—<br v-if="!isPhone" />
@@ -63,13 +52,24 @@
             </div>
           </div>
 
+          <v-btn
+            id="lets-schej-it-btn"
+            class="tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
+            dark
+            @click="newEventDialog = true"
+            large
+            :x-large="$vuetify.breakpoint.mdAndUp"
+          >
+            Create event
+          </v-btn>
+
           <!-- Calendar -->
-          <LandingPageCalendar />
+          <LandingPageCalendar class="tw-drop-shadow-lg" />
         </div>
 
         <!-- Right side -->
         <div class="mx-4 tw-hidden lg:tw-block">
-          <NewEvent class="tw-drop-shadow-2xl" :dialog="false" />
+          <NewEvent class="tw-drop-shadow-lg" :dialog="false" />
         </div>
       </div>
     </div>
@@ -123,7 +123,7 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-16 tw-justify-center"
+      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-16 tw-justify-center"
     >
       <div class="md:tw-h-96 sm:tw-h-80 tw-h-64 tw-max-w-3xl tw-flex-1">
         <iframe
