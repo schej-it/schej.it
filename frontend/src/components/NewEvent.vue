@@ -57,13 +57,13 @@
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
           </div>
-          <v-select
+          <!-- <v-select
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
             hide-details
             class="tw-mb-4"
-          />
+          /> -->
 
           <v-expand-transition>
             <v-date-picker
