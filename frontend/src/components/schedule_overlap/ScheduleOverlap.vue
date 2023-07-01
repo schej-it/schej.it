@@ -470,7 +470,7 @@ export default {
       return this.authUser?._id === this.event.ownerId
     },
     isSpecificDates() {
-      return this.event.type === eventTypes.SPECIFIC_DATES
+      return this.event.type === eventTypes.SPECIFIC_DATES || !this.event.type
     },
     isWeekly() {
       return this.event.type === eventTypes.DOW

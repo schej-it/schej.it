@@ -226,7 +226,7 @@ export default {
       return isPhone(this.$vuetify)
     },
     isSpecificDates() {
-      return this.event?.type === eventTypes.SPECIFIC_DATES
+      return this.event?.type === eventTypes.SPECIFIC_DATES || !this.event?.type
     },
     isWeekly() {
       return this.event?.type === eventTypes.DOW
