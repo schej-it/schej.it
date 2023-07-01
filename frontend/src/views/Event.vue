@@ -109,8 +109,7 @@
 
       <ScheduleOverlap
         ref="scheduleOverlap"
-        :eventId="eventId"
-        v-bind="event"
+        :event="event"
         :loadingCalendarEvents="loading"
         :calendarEventsByDay="calendarEventsByDay"
         @refreshEvent="refreshEvent"
@@ -210,7 +209,12 @@ export default {
   computed: {
     ...mapState(["authUser", "events"]),
     dateString() {
-      return getDateRangeStringForEvent(this.event)
+      if (this.isWeekly) {
+        return "Week"
+      } else if (this.isSpecificDates) {
+        return getDateRangeStringForEvent(this.event)
+      }
+      return ""
     },
     isEditing() {
       return this.scheduleOverlapComponent?.editing
@@ -220,6 +224,12 @@ export default {
     },
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    isSpecificDates() {
+      return Boolean(this.event?.dates)
+    },
+    isWeekly() {
+      return Boolean(this.event?.days)
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges

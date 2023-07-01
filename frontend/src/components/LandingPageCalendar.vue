@@ -3,11 +3,7 @@
     <div class="-tw-ml-3 sm:tw-ml-0">
       <ScheduleOverlap
         ref="scheduleOverlap"
-        :dates="dates"
-        :duration="duration"
-        :startTime="startTime"
-        :endTime="endTime"
-        :responses="responses"
+        :event="event"
         :calendarEventsByDay="calendarEventsByDay"
         calendarOnly
         :interactable="false"
@@ -50,6 +46,15 @@ export default {
   }),
 
   computed: {
+    event() {
+      return {
+        dates: this.dates,
+        duration: this.duration,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        responses: this.responses,
+      }
+    },
     duration() {
       return isPhone(this.$vuetify) ? 8 : 13
     },

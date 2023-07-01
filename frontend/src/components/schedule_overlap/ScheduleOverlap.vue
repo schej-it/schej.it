@@ -33,6 +33,7 @@
                   >
                     <div class="tw-text-center">
                       <div
+                        v-if="isSpecificDates"
                         class="tw-capitalize tw-font-light tw-text-xs tw-text-very-dark-gray"
                       >
                         {{ day.dateString }}
@@ -135,7 +136,7 @@
                               class="tw-border-blue tw-bg-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
                             >
                               <div class="tw-text-white tw-font-medium">
-                                {{ name }}
+                                {{ event.name }}
                               </div>
                             </div>
                           </div>
@@ -309,14 +310,7 @@ import ToolRow from "./ToolRow.vue"
 export default {
   name: "ScheduleOverlap",
   props: {
-    eventId: { type: String, default: "" }, // ID of event
-    ownerId: { type: String, default: "" }, // ID of the owner of the event
-    name: { type: String, default: "" }, // Name of event
-    startTime: { type: Number, required: true }, // Start time of event
-    endTime: { type: Number, required: true }, // End time of event
-    duration: { type: Number, required: true }, // Duration of event
-    dates: { type: Array, required: true }, // Dates of the event
-    responses: { type: Object, default: () => ({}) }, // Map of user id to array of times they are available
+    event: { type: Object, required: true },
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
@@ -427,7 +421,7 @@ export default {
       ]
 
       // New date representation method
-      for (let date of this.dates) {
+      for (let date of this.event.dates) {
         date = new Date(date)
 
         days.push({
@@ -470,7 +464,13 @@ export default {
       return isPhone(this.$vuetify)
     },
     isOwner() {
-      return this.authUser?._id === this.ownerId
+      return this.authUser?._id === this.event.ownerId
+    },
+    isSpecificDates() {
+      return Boolean(this.event.dates)
+    },
+    isWeekly() {
+      return Boolean(this.event.days)
     },
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user)
@@ -498,13 +498,13 @@ export default {
     parsedResponses() {
       /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
       const parsed = {}
-      for (const k of Object.keys(this.responses)) {
+      for (const k of Object.keys(this.event.responses)) {
         const newUser = {
-          ...this.responses[k].user,
+          ...this.event.responses[k].user,
           _id: k,
         }
         parsed[k] = {
-          ...this.responses[k],
+          ...this.event.responses[k],
           user: newUser,
         }
       }
@@ -538,8 +538,8 @@ export default {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = []
 
-      for (let i = 0; i < this.duration; ++i) {
-        const utcTimeNum = this.startTime + i
+      for (let i = 0; i < this.event.duration; ++i) {
+        const utcTimeNum = this.event.startTime + i
         const localTimeNum = utcTimeToLocalTime(utcTimeNum, this.timezoneOffset)
 
         times.push({
@@ -751,7 +751,7 @@ export default {
     },
     populateUserAvailability(id) {
       /* Populates the availability set for the auth user from the responses object stored on the server */
-      this.responses[id].availability.forEach((item) =>
+      this.event.responses[id].availability.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -834,7 +834,7 @@ export default {
         payload.guest = true
         payload.name = name
       }
-      await post(`/events/${this.eventId}/response`, payload)
+      await post(`/events/${this.event._id}/response`, payload)
       this.$emit("refreshEvent")
       this.unsavedChanges = false
     },
@@ -1030,7 +1030,7 @@ export default {
         this.name
       )}&dates=${start}/${end}&details=${encodeURIComponent(
         "\n\nThis event was scheduled with schej: https://schej.it/e/"
-      )}${this.eventId}&add=${emailsString}`
+      )}${this.event._id}&add=${emailsString}`
 
       // Navigate to url and reset state
       window.open(url, "_blank")
@@ -1185,7 +1185,7 @@ export default {
     //#region Options
     // -----------------------------------
     getLocalTimezone() {
-      const split = new Date(this.dates[0])
+      const split = new Date(this.event.dates[0])
         .toLocaleTimeString("en-us", { timeZoneName: "short" })
         .split(" ")
       const localTimezone = split[split.length - 1]
