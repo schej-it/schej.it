@@ -229,6 +229,7 @@ export default {
       } else if (this.selectedDateOption === this.dateOptions.DOW) {
         type = eventTypes.DOW
 
+        this.selectedDaysOfWeek.sort((a, b) => a - b)
         for (const dayIndex of this.selectedDaysOfWeek) {
           const day = dayIndexToDayString[dayIndex]
           const date = new Date(`${day}T${startTimeString}`)
@@ -277,13 +278,21 @@ export default {
           this.endTime = (this.startTime + this.event.duration) % 24
           this.notificationsEnabled = this.event.notificationsEnabled
 
-          const selectedDays = []
-          for (const date of this.event.dates) {
-            selectedDays.push(getISODateString(date))
+          if (this.event.type === eventTypes.SPECIFIC_DATES) {
+            this.selectedDateOption = this.dateOptions.SPECIFIC
+            const selectedDays = []
+            for (const date of this.event.dates) {
+              selectedDays.push(getISODateString(date))
+            }
+            this.selectedDays = selectedDays
+          } else if (this.event.type === eventTypes.DOW) {
+            this.selectedDateOption = this.dateOptions.DOW
+            const selectedDaysOfWeek = []
+            for (const date of this.event.dates) {
+              selectedDaysOfWeek.push(new Date(date).getDay())
+            }
+            this.selectedDaysOfWeek = selectedDaysOfWeek
           }
-          this.selectedDays = selectedDays
-
-          // TODO: support `days` as well, and also autopopulate the select dropdown
         }
       },
     },
