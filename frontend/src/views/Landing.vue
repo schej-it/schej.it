@@ -5,7 +5,7 @@
     >
       <!-- Green background -->
       <div
-        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-2/5"
+        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-[47%]"
       ></div>
 
       <!-- Header -->
@@ -70,7 +70,11 @@
 
         <!-- Right side -->
         <div class="tw-ml-12 tw-mr-4 tw-hidden lg:tw-block">
-          <NewEvent class="tw-drop-shadow-lg" :dialog="false" />
+          <NewEvent
+            class="tw-drop-shadow-lg"
+            :dialog="false"
+            :allow-notifications="false"
+          />
         </div>
       </div>
     </div>
@@ -130,7 +134,7 @@
         <iframe
           class="tw-w-full tw-h-full"
           src="https://www.youtube.com/embed/Wzth9Ov7bkI?fs=0&color=white&rel=0&controls=0"
-          title="Demo of Schej"
+          title="schej demo"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
@@ -184,7 +188,7 @@
     </v-dialog>
 
     <!-- New event dialog -->
-    <NewEventDialog v-model="newEventDialog" />
+    <NewEventDialog v-model="newEventDialog" :allow-notifications="false" />
   </div>
 </template>
 

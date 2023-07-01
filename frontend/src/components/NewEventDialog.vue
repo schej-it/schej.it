@@ -11,6 +11,7 @@
     <NewEvent
       :event="event"
       :editEvent="editEvent"
+      :allow-notifications="allowNotifications"
       @input="$emit('input', false)"
     ></NewEvent>
   </v-dialog>
@@ -29,6 +30,7 @@ export default {
     value: { type: Boolean, required: true },
     event: { type: Object },
     editEvent: { type: Boolean, default: false },
+    allowNotifications: { type: Boolean, default: true },
   },
 
   components: {

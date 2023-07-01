@@ -2,7 +2,7 @@
   <v-card
     class="tw-py-4 tw-flex tw-flex-col tw-rounded-lg tw-relative tw-overflow-none tw-max-w-[28rem]"
   >
-    <v-card-title class="tw-px-8 tw-flex tw-mb-2">
+    <v-card-title class="tw-px-4 sm:tw-px-8 tw-flex tw-mb-2">
       <div>
         {{ editEvent ? "Edit event" : "New event" }}
       </div>
@@ -11,7 +11,7 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text class="tw-px-8 tw-overflow-auto tw-py-1 tw-flex-1">
+    <v-card-text class="tw-px-4 sm:tw-px-8 tw-overflow-auto tw-py-1 tw-flex-1">
       <div class="tw-space-y-10 tw-flex tw-flex-col">
         <v-text-field
           ref="name-field"
@@ -53,15 +53,17 @@
 
         <div>
           <div class="tw-text-lg tw-text-black tw-mb-4">
-            What dates might work?
+            What
+            {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
+            might work?
           </div>
-          <!-- <v-select
+          <v-select
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
             hide-details
-            class="tw-mb-2"
-          /> -->
+            class="tw-mb-4"
+          />
 
           <v-expand-transition>
             <v-date-picker
@@ -76,27 +78,25 @@
               full-width
             />
             <div v-else-if="selectedDateOption === dateOptions.DOW">
-              <div class="tw-flex tw-mt-4">
-                <v-btn-toggle
-                  v-model="selectedDaysOfWeek"
-                  multiple
-                  solo
-                  color="primary"
-                >
-                  <v-btn> S </v-btn>
-                  <v-btn> M </v-btn>
-                  <v-btn> T </v-btn>
-                  <v-btn> W </v-btn>
-                  <v-btn> T </v-btn>
-                  <v-btn> F </v-btn>
-                  <v-btn> S </v-btn>
-                </v-btn-toggle>
-              </div>
+              <v-btn-toggle
+                v-model="selectedDaysOfWeek"
+                multiple
+                solo
+                color="primary"
+              >
+                <v-btn> S </v-btn>
+                <v-btn> M </v-btn>
+                <v-btn> T </v-btn>
+                <v-btn> W </v-btn>
+                <v-btn> T </v-btn>
+                <v-btn> F </v-btn>
+                <v-btn> S </v-btn>
+              </v-btn-toggle>
             </div>
           </v-expand-transition>
         </div>
         <v-checkbox
-          v-if="dialog"
+          v-if="allowNotifications"
           v-model="notificationsEnabled"
           label="Email me each time someone joins my event!"
           hide-details
@@ -126,6 +126,7 @@ import {
   timeNumToTimeString,
   dateToTimeNum,
   getISODateString,
+  isPhone,
 } from "@/utils"
 
 export default {
@@ -137,6 +138,7 @@ export default {
     event: { type: Object },
     editEvent: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
+    allowNotifications: { type: Boolean, default: true },
   },
 
   data: () => ({
@@ -204,6 +206,9 @@ export default {
       let yyyy = today.getFullYear()
 
       return yyyy + "-" + mm + "-" + dd
+    },
+    isPhone() {
+      return isPhone(this.$vuetify)
     },
   },
 
