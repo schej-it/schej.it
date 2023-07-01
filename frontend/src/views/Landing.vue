@@ -5,7 +5,7 @@
     >
       <!-- Green background -->
       <div
-        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-[47%]"
+        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-[40%] sm:tw-h-[47%]"
       ></div>
 
       <!-- Header -->
