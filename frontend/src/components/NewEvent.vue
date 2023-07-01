@@ -157,27 +157,11 @@ export default {
     selectedDateOption: "Specific dates",
   }),
 
-  created() {
-    // Populate event fields if this.event exists
-    if (this.event) {
-      this.name = this.event.name
-      this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
-      this.endTime = (this.startTime + this.event.duration) % 24
-      this.notificationsEnabled = this.event.notificationsEnabled
-
-      const selectedDays = []
-      for (const date of this.event.dates) {
-        selectedDays.push(getISODateString(date))
-      }
-      this.selectedDays = selectedDays
-    }
-  },
-
   computed: {
     formComplete() {
       return (
         this.name.length > 0 &&
-        this.selectedDays.length > 0 &&
+        (this.selectedDays.length > 0 || this.selectedDaysOfWeek.length > 0) &&
         (this.startTime < this.endTime ||
           (this.endTime === 0 && this.startTime != 0))
       )
@@ -229,12 +213,18 @@ export default {
       let duration = this.endTime - this.startTime
       if (duration < 0) duration += 24
 
-      // Get date objects for each selected day
-      const startTimeString = timeNumToTimeString(this.startTime)
-      const dates = []
-      for (const day of this.selectedDays) {
-        const date = new Date(`${day}T${startTimeString}`)
-        dates.push(date)
+      let dates = []
+      let days = []
+
+      if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+        // Get date objects for each selected day
+        const startTimeString = timeNumToTimeString(this.startTime)
+        for (const day of this.selectedDays) {
+          const date = new Date(`${day}T${startTimeString}`)
+          dates.push(date)
+        }
+      } else if (this.selectedDateOption === this.dateOptions.DOW) {
+        days = this.selectedDaysOfWeek
       }
 
       this.loading = true
@@ -243,6 +233,7 @@ export default {
         post("/events", {
           name: this.name,
           duration,
+          days,
           dates,
           notificationsEnabled: this.notificationsEnabled,
         }).then(({ eventId }) => {
@@ -261,6 +252,37 @@ export default {
             window.location.reload()
           })
         }
+      }
+    },
+  },
+
+  watch: {
+    event: {
+      immediate: true,
+      handler() {
+        // Populate event fields if this.event exists
+        if (this.event) {
+          this.name = this.event.name
+          this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
+          this.endTime = (this.startTime + this.event.duration) % 24
+          this.notificationsEnabled = this.event.notificationsEnabled
+
+          const selectedDays = []
+          for (const date of this.event.dates) {
+            selectedDays.push(getISODateString(date))
+          }
+          this.selectedDays = selectedDays
+
+          // TODO: support `days` as well, and also autopopulate the select dropdown
+        }
+      },
+    },
+    selectedDateOption() {
+      // Reset the other date / day selection when date option is changed
+      if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+        this.selectedDaysOfWeek = []
+      } else if (this.selectedDateOption === this.dateOptions.DOW) {
+        this.selectedDays = []
       }
     },
   },

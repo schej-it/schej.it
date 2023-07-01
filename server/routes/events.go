@@ -43,13 +43,19 @@ func createEvent(c *gin.Context) {
 	payload := struct {
 		Name                 string               `json:"name" binding:"required"`
 		Duration             *float32             `json:"duration" binding:"required"`
-		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates"`
+		Days                 []int                `json:"days"`
 		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 	session := sessions.Default(c)
+
+	if (len(payload.Dates) == 0 && len(payload.Days) == 0) || (len(payload.Dates) != 0 && len(payload.Days) != 0) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Must specify exactly one of the following parameters: `dates`, `days`"})
+		return
+	}
 
 	// If user logged in, set owner id to their user id, otherwise set owner id to nil
 	userIdInterface := session.Get("userId")
@@ -66,6 +72,7 @@ func createEvent(c *gin.Context) {
 		Name:                 payload.Name,
 		Duration:             payload.Duration,
 		Dates:                payload.Dates,
+		Days:                 payload.Days,
 		NotificationsEnabled: *payload.NotificationsEnabled,
 		Responses:            make(map[string]*models.Response),
 	}

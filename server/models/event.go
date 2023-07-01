@@ -10,14 +10,15 @@ type Event struct {
 
 	Duration             *float32             `json:"duration" bson:"duration,omitempty"`
 	Dates                []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
+	Days                 []int                `json:"days" bson:"days,omitempty"` // 0 is Sunday, 1 is Monday, etc.
 	NotificationsEnabled bool                 `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
 
 	// Availability responses
 	Responses map[string]*Response `json:"responses" bson:"responses"`
 
 	// Scheduled event
-	ScheduledEvent *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
-	CalendarEventId string `json:"calendarEventId" bson:"calendarEventId,omitempty"`
+	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
+	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
 }
 
 // A response object containing an array of times that the given user is available
