@@ -120,6 +120,7 @@
 </template>
 
 <script>
+import { eventTypes, dayIndexToDayString } from "@/constants"
 import {
   post,
   put,
@@ -214,17 +215,25 @@ export default {
       if (duration < 0) duration += 24
 
       let dates = []
-      let days = []
+      let type = ""
 
+      // Get date objects for each selected day
+      const startTimeString = timeNumToTimeString(this.startTime)
       if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
-        // Get date objects for each selected day
-        const startTimeString = timeNumToTimeString(this.startTime)
+        type = eventTypes.SPECIFIC_DATES
+
         for (const day of this.selectedDays) {
           const date = new Date(`${day}T${startTimeString}`)
           dates.push(date)
         }
       } else if (this.selectedDateOption === this.dateOptions.DOW) {
-        days = this.selectedDaysOfWeek
+        type = eventTypes.DOW
+
+        for (const dayIndex of this.selectedDaysOfWeek) {
+          const day = dayIndexToDayString[dayIndex]
+          const date = new Date(`${day}T${startTimeString}`)
+          dates.push(date)
+        }
       }
 
       this.loading = true
@@ -233,9 +242,9 @@ export default {
         post("/events", {
           name: this.name,
           duration,
-          days,
           dates,
           notificationsEnabled: this.notificationsEnabled,
+          type,
         }).then(({ eventId }) => {
           this.$router.push({ name: "event", params: { eventId } })
           this.loading = false
@@ -248,6 +257,7 @@ export default {
             duration,
             dates,
             notificationsEnabled: this.notificationsEnabled,
+            type,
           }).then(() => {
             window.location.reload()
           })

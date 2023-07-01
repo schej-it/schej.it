@@ -170,7 +170,7 @@ import { mapActions, mapState } from "vuex"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
-import { errors, authTypes } from "@/constants"
+import { errors, authTypes, eventTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
@@ -226,10 +226,10 @@ export default {
       return isPhone(this.$vuetify)
     },
     isSpecificDates() {
-      return Boolean(this.event?.dates)
+      return this.event?.type === eventTypes.SPECIFIC_DATES
     },
     isWeekly() {
-      return Boolean(this.event?.days)
+      return this.event?.type === eventTypes.DOW
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges

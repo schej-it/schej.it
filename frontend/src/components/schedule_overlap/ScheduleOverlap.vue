@@ -24,7 +24,9 @@
                 class="tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative"
               >
                 <!-- Days -->
-                <div class="tw-flex tw-h-12 tw-bg-white tw-z-10">
+                <div
+                  class="tw-flex tw-items-center tw-h-12 tw-bg-white tw-z-10"
+                >
                   <div
                     v-for="(day, i) in days"
                     :key="i"
@@ -299,6 +301,7 @@ import {
   isPhone,
   utcTimeToLocalTime,
 } from "@/utils"
+import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import ZigZag from "./ZigZag.vue"
@@ -467,10 +470,10 @@ export default {
       return this.authUser?._id === this.event.ownerId
     },
     isSpecificDates() {
-      return Boolean(this.event.dates)
+      return this.event.type === eventTypes.SPECIFIC_DATES
     },
     isWeekly() {
-      return Boolean(this.event.days)
+      return this.event.type === eventTypes.DOW
     },
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user)

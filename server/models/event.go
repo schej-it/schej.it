@@ -2,6 +2,13 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+type EventType string
+
+const (
+	SPECIFIC_DATES EventType = "specific_dates"
+	DOW            EventType = "dow"
+)
+
 // Representation of an Event in the mongoDB database
 type Event struct {
 	Id      primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
@@ -10,8 +17,9 @@ type Event struct {
 
 	Duration             *float32             `json:"duration" bson:"duration,omitempty"`
 	Dates                []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
-	Days                 []int                `json:"days" bson:"days,omitempty"` // 0 is Sunday, 1 is Monday, etc.
 	NotificationsEnabled bool                 `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
+
+	Type EventType `json:"type" bson:"type,omitempty"`
 
 	// Availability responses
 	Responses map[string]*Response `json:"responses" bson:"responses"`
