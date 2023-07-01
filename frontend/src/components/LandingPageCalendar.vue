@@ -1,5 +1,5 @@
 <template>
-  <v-card class="tw-m-4 md:tw-w-[36rem] tw-rounded-lg">
+  <v-card class="tw-m-4 lg:tw-w-[34rem] tw-rounded-lg">
     <div class="-tw-ml-3 sm:tw-ml-0">
       <ScheduleOverlap
         ref="scheduleOverlap"

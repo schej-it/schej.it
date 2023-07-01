@@ -37,9 +37,10 @@
             class="tw-max-w-[26rem] sm:tw-max-w-none tw-flex tw-flex-col tw-items-start lg:tw-mb-20 tw-mx-4"
           >
             <div
-              class="tw-text-left tw-text-2xl sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-2 sm:tw-mb-4"
+              id="header"
+              class="tw-text-left tw-text-2xl sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-4"
             >
-              <div class="tw-leading-tight">Finding a time to meet,</div>
+              <div class="tw-leading-snug">Finding a time to meet,</div>
               <div class="tw-leading-snug">made simple.</div>
             </div>
 
@@ -54,7 +55,7 @@
 
           <v-btn
             id="lets-schej-it-btn"
-            class="tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
+            class="tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-10 sm:tw-px-10 lg:tw-px-12"
             dark
             @click="newEventDialog = true"
             large
@@ -68,7 +69,7 @@
         </div>
 
         <!-- Right side -->
-        <div class="mx-4 tw-hidden lg:tw-block">
+        <div class="tw-ml-12 tw-mr-4 tw-hidden lg:tw-block">
           <NewEvent class="tw-drop-shadow-lg" :dialog="false" />
         </div>
       </div>
@@ -186,6 +187,15 @@
     <NewEventDialog v-model="newEventDialog" />
   </div>
 </template>
+
+<style scoped>
+@media screen and (min-width: 375px) and (max-width: 640px) {
+  #header {
+    font-size: 1.875rem !important; /* 30px */
+    line-height: 2.25rem !important; /* 36px */
+  }
+}
+</style>
 
 <script>
 import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
