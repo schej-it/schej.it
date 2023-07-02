@@ -1,23 +1,22 @@
 <template>
-  <v-card
-    class="tw-mx-4 md:tw-w-[42rem] tw-rounded-lg"
-    style="box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.1)"
-  >
-    <ScheduleOverlap
-      ref="scheduleOverlap"
-      :dates="dates"
-      :duration="duration"
-      :startTime="startTime"
-      :endTime="endTime"
-      :responses="responses"
-      :calendarEventsByDay="calendarEventsByDay"
-      calendarOnly
-      :interactable="false"
-      :showSnackbar="false"
-      :alwaysShowCalendarEvents="true"
-      animateTimeslotAlways
-      :showHintText="false"
-    />
+  <v-card class="tw-m-4 lg:tw-w-[34rem] tw-rounded-lg">
+    <div class="-tw-ml-3 sm:tw-ml-0">
+      <ScheduleOverlap
+        ref="scheduleOverlap"
+        :dates="dates"
+        :duration="duration"
+        :startTime="startTime"
+        :endTime="endTime"
+        :responses="responses"
+        :calendarEventsByDay="calendarEventsByDay"
+        calendarOnly
+        :interactable="false"
+        :showSnackbar="false"
+        :alwaysShowCalendarEvents="true"
+        animateTimeslotAlways
+        :showHintText="false"
+      />
+    </div>
   </v-card>
 </template>
 
@@ -239,20 +238,29 @@ export default {
         },
       }
     },
+    reset() {
+      this.responses = {}
+      this.calendarEventsByDay = []
+    },
+    playAnimation() {
+      this.reset()
+
+      this.$refs.scheduleOverlap.startEditing()
+      setTimeout(() => {
+        this.getCalendarEventsByDay()
+        this.getResponses()
+        setTimeout(() => {
+          this.$refs.scheduleOverlap.setAvailabilityAutomatically()
+          setTimeout(() => {
+            this.$refs.scheduleOverlap.stopEditing()
+          }, 2000)
+        }, 500)
+      }, 200)
+    },
   },
 
   mounted() {
-    this.$refs.scheduleOverlap.startEditing()
-    setTimeout(() => {
-      this.getCalendarEventsByDay()
-      this.getResponses()
-      setTimeout(() => {
-        this.$refs.scheduleOverlap.setAvailabilityAutomatically()
-        setTimeout(() => {
-          this.$refs.scheduleOverlap.stopEditing()
-        }, 2000)
-      }, 500)
-    }, 200)
+    this.playAnimation()
   },
 }
 </script>

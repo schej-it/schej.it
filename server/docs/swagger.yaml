@@ -2,9 +2,11 @@ definitions:
   models.CalendarEvent:
     properties:
       endDate:
-        type: string
+        $ref: '#/definitions/primitive.DateTime'
+        type: object
       startDate:
-        type: string
+        $ref: '#/definitions/primitive.DateTime'
+        type: object
       summary:
         type: string
     type: object
@@ -12,16 +14,18 @@ definitions:
     properties:
       _id:
         type: string
+      calendarEventId:
+        type: string
       dates:
         items:
-          type: string
+          $ref: '#/definitions/primitive.DateTime'
         type: array
-      endDate:
-        type: string
-      endTime:
+      duration:
         type: number
       name:
         type: string
+      notificationsEnabled:
+        type: boolean
       ownerId:
         type: string
       responses:
@@ -29,19 +33,18 @@ definitions:
           $ref: '#/definitions/models.Response'
         description: Availability responses
         type: object
-      startDate:
-        type: string
-      startTime:
-        description: StartTime and EndTime are UTC hours, dates are an array of utc
-          dates
-        type: number
+      scheduledEvent:
+        $ref: '#/definitions/models.CalendarEvent'
+        description: Scheduled event
+        type: object
     type: object
   models.FriendRequest:
     properties:
       _id:
         type: string
       createdAt:
-        type: string
+        $ref: '#/definitions/primitive.DateTime'
+        type: object
       from:
         type: string
       fromUser:
@@ -99,8 +102,8 @@ definitions:
       visibility:
         type: integer
     type: object
-  models.UserStatus:
-    type: string
+  primitive.DateTime:
+    type: integer
   responses.Error:
     properties:
       error:
@@ -245,12 +248,12 @@ paths:
                 items:
                   type: string
                 type: array
-              endTime:
+              duration:
                 type: number
               name:
                 type: string
-              startTime:
-                type: number
+              notificationsEnabled:
+                type: boolean
             type: object
       produces:
       - application/json
@@ -318,12 +321,12 @@ paths:
                 items:
                   type: string
                 type: array
-              endTime:
+              duration:
                 type: number
               name:
                 type: string
-              startTime:
-                type: number
+              notificationsEnabled:
+                type: boolean
             type: object
       produces:
       - application/json
@@ -364,6 +367,40 @@ paths:
       responses:
         "200": {}
       summary: Updates the current user's availability
+      tags:
+      - events
+  /events/{eventId}/schedule:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing info about the event to schedule
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              attendeeEmails:
+                items:
+                  type: string
+                type: array
+              endDate:
+                $ref: '#/definitions/primitive.DateTime'
+              startDate:
+                $ref: '#/definitions/primitive.DateTime'
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Schedules an event on the user's google calendar
       tags:
       - events
   /friends:
@@ -438,18 +475,6 @@ paths:
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - type: object
-            - properties:
-                eventName:
-                  type: string
-                status:
-                  $ref: '#/definitions/models.UserStatus'
-              type: object
       summary: Returns whether the friend is free or busy
       tags:
       - friends
@@ -604,6 +629,26 @@ paths:
           schema:
             $ref: '#/definitions/models.UserProfile'
       summary: Gets the user's profile
+      tags:
+      - user
+  /user/searchContacts:
+    get:
+      parameters:
+      - description: Query to search for
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.UserProfile'
+            type: array
+      summary: Searches the user's contacts based on the given query
       tags:
       - user
   /user/visibility:

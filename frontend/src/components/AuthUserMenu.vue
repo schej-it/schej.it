@@ -1,6 +1,6 @@
 <!-- Displays auth user's avatar, which displays a menu when clicked -->
 <template>
-  <v-menu v-if="authUser" offset-y :close-on-content-click="false">
+  <v-menu v-if="authUser" offset-y left :close-on-content-click="false">
     <template v-slot:activator="{ on }">
       <v-btn id="user-menu-btn" icon :width="size" :height="size" v-on="on">
         <v-avatar :size="size">
