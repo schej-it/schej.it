@@ -94,14 +94,14 @@ export default {
     htmlAttrs: {
       lang: "en-US",
     },
-    meta: [
-      { charset: "utf-8" },
-      {
-        name: "description",
-        content: `schej helps you quickly find the best time for your group to meet. It's like When2meet with Google Calendar integration.`,
-      },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-    ],
+    // meta: [
+    //   { charset: "utf-8" },
+    //   {
+    //     name: "description",
+    //     content: `schej helps you quickly find the best time for your group to meet. It's like When2meet with Google Calendar integration.`,
+    //   },
+    //   { name: "viewport", content: "width=device-width, initial-scale=1" },
+    // ],
   },
 
   components: {

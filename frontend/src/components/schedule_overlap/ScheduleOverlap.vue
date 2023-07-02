@@ -878,14 +878,14 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            c += "tw-bg-avail-green-300 "
+            s.backgroundColor = "#00994C88"
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
           // Otherwise just show the current availability
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
-            c += "tw-bg-avail-green-300 "
+            s.backgroundColor = "#00994C88"
           }
         }
       }
@@ -898,7 +898,7 @@ export default {
           time.hoursOffset
         )
         if (respondents.has(respondent)) {
-          c += "tw-bg-avail-green-300 "
+          s.backgroundColor = "#00994C88"
         }
       }
 
@@ -935,14 +935,14 @@ export default {
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
             // Only set timeslot to green for the times that most people are available
-            const green = "#12B981"
+            const green = "#00994C"
             s.backgroundColor = green
           }
         } else if (this.defaultState === this.states.HEATMAP) {
           if (numRespondents > 0) {
             // Determine color of timeslot based on number of people available
             const frac = numRespondents / max
-            const green = "#12B981"
+            const green = "#00994C"
             let alpha = (frac * (255 - 30))
               .toString(16)
               .toUpperCase()
