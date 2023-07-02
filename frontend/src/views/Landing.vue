@@ -159,7 +159,7 @@
     <!-- Privacy Policy -->
     <div class="tw-bg-green tw-flex tw-flex-col">
       <div
-        class="tw-flex tw-flex-col tw-gap-4 tw-items-center tw-m-2 tw-pt-6 tw-pb-16"
+        class="tw-flex tw-flex-col tw-gap-4 tw-items-center tw-m-2 tw-pt-6 tw-pb-6"
       >
         <router-link
           class="tw-text-white tw-font-bold"
@@ -234,11 +234,6 @@ export default {
       "Share the schej and find the best time to meet!",
     ],
     faqs: [
-      {
-        question: "Do I need to sign in with Google in order to use schej?",
-        answer:
-          "Signing in with Google is required to create events, but anybody can add their availability once an event is created, whether or not they are signed in with Google!",
-      },
       {
         question: "How is schej different from lettucemeet or when2meet?",
         points: [

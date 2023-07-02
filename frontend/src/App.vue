@@ -98,7 +98,7 @@ export default {
       { charset: "utf-8" },
       {
         name: "description",
-        content: `schej is a scheduling platform where users input their availability automatically via Google Calendar, generating a heatmap showing when everyone's available.`,
+        content: `schej helps you quickly find the best time for your group to meet. It's like When2meet with Google Calendar integration.`,
       },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
     ],
