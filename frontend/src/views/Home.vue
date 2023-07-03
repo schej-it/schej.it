@@ -22,6 +22,7 @@ import NewEventDialog from "@/components/NewEventDialog.vue"
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import { mapState, mapActions } from "vuex"
+import { eventTypes } from "@/constants"
 
 export default {
   name: "Home",
@@ -40,15 +41,29 @@ export default {
     ...mapState(["createdEvents", "joinedEvents"]),
     events() {
       return [
+        ...(this.createdWeeklyEvents.length > 0
+          ? [
+              {
+                header: "Weekly",
+                events: this.createdWeeklyEvents,
+              },
+            ]
+          : []),
         {
           header: "Events I created",
-          events: this.createdEvents,
+          events: this.createdEventsWithSpecificDates,
         },
         {
           header: "Events I joined",
           events: this.joinedEvents,
         },
       ]
+    },
+    createdEventsWithSpecificDates() {
+      return this.createdEvents.filter((e) => e.type !== eventTypes.DOW)
+    },
+    createdWeeklyEvents() {
+      return this.createdEvents.filter((e) => e.type === eventTypes.DOW)
     },
   },
 

@@ -209,12 +209,7 @@ export default {
   computed: {
     ...mapState(["authUser", "events"]),
     dateString() {
-      if (this.isWeekly) {
-        return "Week"
-      } else if (this.isSpecificDates) {
-        return getDateRangeStringForEvent(this.event)
-      }
-      return ""
+      return getDateRangeStringForEvent(this.event)
     },
     isEditing() {
       return this.scheduleOverlapComponent?.editing

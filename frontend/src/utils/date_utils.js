@@ -1,3 +1,4 @@
+import { eventTypes } from "@/constants"
 import { get } from "./fetch_utils"
 import { isBetween } from "./general_utils"
 /* 
@@ -38,6 +39,19 @@ export const getDateRangeString = (date1, date2) => {
 
 /** Returns a string representing the date range for the provided event */
 export const getDateRangeStringForEvent = (event) => {
+  if (event.type === eventTypes.DOW) {
+    let s = ""
+
+    const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    for (const date of event.dates) {
+      const abbr = dayAbbreviations[new Date(date).getDay()]
+      s += abbr + ", "
+    }
+    s = s.substring(0, s.length - 2)
+    return s
+  }
+
+  // Specific dates
   const startDate = new Date(event.dates[0])
   const endDate = new Date(event.dates[event.dates.length - 1])
   return getDateRangeString(startDate, endDate)
