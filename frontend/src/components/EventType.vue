@@ -77,23 +77,8 @@ export default {
         : this.DEFAULT_NUM_EVENTS_TO_SHOW
     },
     sortedEvents() {
-      const sorted = [...this.eventType.events]
-      sorted.sort((a, b) => {
-        let aStartDate, bStartDate
-        if (a.dates && a.dates.length > 0) {
-          aStartDate = a.dates[0]
-        } else {
-          aStartDate = a.startDate
-        }
-        if (b.dates && b.dates.length > 0) {
-          bStartDate = b.dates[0]
-        } else {
-          bStartDate = b.startDate
-        }
-
-        return new Date(bStartDate) - new Date(aStartDate)
-      })
-      return sorted
+      // Events are sorted serverside, so no need to sort here
+      return this.eventType.events
     },
   },
 

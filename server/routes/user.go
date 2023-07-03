@@ -9,6 +9,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
@@ -58,12 +59,13 @@ func getEvents(c *gin.Context) {
 
 	// Get the events associated with the current user
 	events := make([]models.Event, 0)
+	opts := options.Find().SetSort(bson.M{"_id": -1})
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{"ownerId": userId},
 			bson.M{"responses." + userIdString: bson.M{"$exists": true}},
 		},
-	})
+	}, opts)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
