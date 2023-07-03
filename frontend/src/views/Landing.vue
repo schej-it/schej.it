@@ -55,7 +55,7 @@
 
           <v-btn
             id="lets-schej-it-btn"
-            class="tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-10 sm:tw-px-10 lg:tw-px-12"
+            class="tw-text-base tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-10 sm:tw-px-10 lg:tw-px-12"
             dark
             @click="newEventDialog = true"
             large

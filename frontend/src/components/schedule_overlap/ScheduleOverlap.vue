@@ -80,7 +80,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-5 tw-border-light-gray tw-border-r"
+                            class="timeslot tw-h-5 tw-border-[#DDDDDD88] tw-border-r"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
