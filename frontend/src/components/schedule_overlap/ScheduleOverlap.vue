@@ -226,31 +226,38 @@
               </template>
             </div>
           </div>
-          <div
-            class="/*tw-pl-4*/ tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
-          >
-            <div
-              v-for="(user, i) in respondents"
-              :key="user._id"
-              class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
-              @mouseover="(e) => mouseOverRespondent(e, user._id)"
-              @mouseleave="mouseLeaveRespondent"
-              @click="(e) => clickRespondent(e, user._id)"
-            >
-              <UserAvatarContent
-                v-if="!isGuest(user)"
-                :user="user"
-                class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
-              ></UserAvatarContent>
-              <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-
-              <div
-                class="tw-mr-1 tw-transition-all"
-                :class="respondentClass(user._id)"
-              >
-                {{ user.firstName + " " + user.lastName }}
+          <div class="tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block">
+            <template v-if="respondents.length === 0">
+              <div class="tw-px-2 tw-text-very-dark-gray">
+                No responses yet!
               </div>
-            </div>
+            </template>
+            <template v-else>
+              <div
+                v-for="(user, i) in respondents"
+                :key="user._id"
+                class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
+                @mouseover="(e) => mouseOverRespondent(e, user._id)"
+                @mouseleave="mouseLeaveRespondent"
+                @click="(e) => clickRespondent(e, user._id)"
+              >
+                <UserAvatarContent
+                  v-if="!isGuest(user)"
+                  :user="user"
+                  class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
+                ></UserAvatarContent>
+                <v-icon v-else class="tw-ml-1 tw-mr-3" small
+                  >mdi-account</v-icon
+                >
+
+                <div
+                  class="tw-mr-1 tw-transition-all"
+                  :class="respondentClass(user._id)"
+                >
+                  {{ user.firstName + " " + user.lastName }}
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>

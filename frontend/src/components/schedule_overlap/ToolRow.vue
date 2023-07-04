@@ -1,5 +1,5 @@
 <template>
-  <div class="tw-flex tw-mb-16 sm:tw-mb-0">
+  <div>
     <div
       class="tw-min-h-[5rem] tw-flex-1 tw-flex tw-items-center sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
     >
@@ -67,14 +67,14 @@
           </v-btn>
         </template>
       </div>
-
-      <!-- GCal week selector when user is using phone view -->
-      <template
-        v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY"
-      >
-        <GCalWeekSelector />
-      </template>
     </div>
+
+    <!-- GCal week selector when user is using phone view -->
+    <template v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY">
+      <div class="tw-text-sm tw-h-16">
+        <GCalWeekSelector />
+      </div>
+    </template>
   </div>
 </template>
 
