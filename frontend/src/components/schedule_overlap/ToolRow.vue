@@ -4,7 +4,12 @@
       class="tw-min-h-[5rem] tw-flex-1 tw-flex tw-items-center sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
     >
       <div
-        class="tw-flex-wrap tw-flex tw-py-4 tw-gap-y-4 tw-gap-x-4 sm:tw-gap-x-8 tw-justify-between sm:tw-justify-start tw-flex-1"
+        :class="
+          state === states.EDIT_AVAILABILITY
+            ? 'tw-justify-center'
+            : 'tw-justify-between'
+        "
+        class="tw-flex-wrap tw-flex tw-py-4 tw-gap-y-4 tw-gap-x-4 sm:tw-gap-x-8 sm:tw-justify-start tw-flex-1"
       >
         <!-- Select timezone -->
         <TimezoneSelector
