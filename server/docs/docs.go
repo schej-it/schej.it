@@ -244,6 +244,9 @@ var doc = `{
                                         },
                                         "notificationsEnabled": {
                                             "type": "boolean"
+                                        },
+                                        "type": {
+                                            "$ref": "#/definitions/models.EventType"
                                         }
                                     }
                                 }
@@ -343,6 +346,9 @@ var doc = `{
                                         },
                                         "notificationsEnabled": {
                                             "type": "boolean"
+                                        },
+                                        "type": {
+                                            "$ref": "#/definitions/models.EventType"
                                         }
                                     }
                                 }
@@ -1000,8 +1006,14 @@ var doc = `{
                     "description": "Scheduled event",
                     "type": "object",
                     "$ref": "#/definitions/models.CalendarEvent"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
+        },
+        "models.EventType": {
+            "type": "string"
         },
         "models.FriendRequest": {
             "type": "object",

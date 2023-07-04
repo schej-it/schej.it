@@ -37,7 +37,11 @@ definitions:
         $ref: '#/definitions/models.CalendarEvent'
         description: Scheduled event
         type: object
+      type:
+        type: string
     type: object
+  models.EventType:
+    type: string
   models.FriendRequest:
     properties:
       _id:
@@ -254,6 +258,8 @@ paths:
                 type: string
               notificationsEnabled:
                 type: boolean
+              type:
+                $ref: '#/definitions/models.EventType'
             type: object
       produces:
       - application/json
@@ -327,6 +333,8 @@ paths:
                 type: string
               notificationsEnabled:
                 type: boolean
+              type:
+                $ref: '#/definitions/models.EventType'
             type: object
       produces:
       - application/json
