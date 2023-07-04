@@ -163,7 +163,7 @@
       >
         <router-link
           class="tw-text-white tw-font-bold"
-          :to="{ path: 'privacy-policy' }"
+          :to="{ name: 'privacy-policy' }"
         >
           Privacy Policy
         </router-link>

@@ -11,15 +11,16 @@
       <div
         class="tw-relative tw-px-4 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto"
       >
-        <v-img
-          @click="goHome"
-          alt="Schej Logo"
-          class="shrink tw-cursor-pointer"
-          contain
-          src="@/assets/schej_logo_with_text.png"
-          transition="scale-transition"
-          :width="isPhone ? 70 : 90"
-        />
+        <router-link :to="{ name: 'home' }">
+          <v-img
+            alt="Schej Logo"
+            class="shrink tw-cursor-pointer"
+            contain
+            src="@/assets/schej_logo_with_text.png"
+            transition="scale-transition"
+            :width="isPhone ? 70 : 90"
+          />
+        </router-link>
 
         <v-spacer />
 
@@ -145,13 +146,6 @@ export default {
 
   methods: {
     ...mapMutations(["setAuthUser"]),
-    goHome() {
-      if (this.$route.name !== "home") {
-        this.$router.push({ name: "home" })
-      } else {
-        location.reload()
-      }
-    },
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
