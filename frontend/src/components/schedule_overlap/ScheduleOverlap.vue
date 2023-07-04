@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-5 tw-border-light-gray tw-border-r"
+                            class="timeslot tw-h-5 tw-border-[#DDDDDD88] tw-border-r"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -890,14 +890,14 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            c += "tw-bg-avail-green-300 "
+            s.backgroundColor = "#00994C88"
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
           // Otherwise just show the current availability
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
-            c += "tw-bg-avail-green-300 "
+            s.backgroundColor = "#00994C88"
           }
         }
       }
@@ -910,7 +910,7 @@ export default {
           time.hoursOffset
         )
         if (respondents.has(respondent)) {
-          c += "tw-bg-avail-green-300 "
+          s.backgroundColor = "#00994C88"
         }
       }
 
@@ -947,14 +947,14 @@ export default {
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
             // Only set timeslot to green for the times that most people are available
-            const green = "#12B981"
+            const green = "#00994C"
             s.backgroundColor = green
           }
         } else if (this.defaultState === this.states.HEATMAP) {
           if (numRespondents > 0) {
             // Determine color of timeslot based on number of people available
             const frac = numRespondents / max
-            const green = "#12B981"
+            const green = "#00994C"
             let alpha = (frac * (255 - 30))
               .toString(16)
               .toUpperCase()

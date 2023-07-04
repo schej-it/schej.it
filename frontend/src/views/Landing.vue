@@ -1,16 +1,16 @@
 <template>
   <div>
     <div
-      class="tw-min-h-screen tw-flex tw-flex-col tw-max-w-6xl tw-m-auto tw-relative"
+      class="tw-relative tw-m-auto tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col"
     >
       <!-- Green background -->
       <div
-        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-[47%]"
+        class="tw-absolute tw-left-1/2 tw-bottom-0 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:tw-h-[47%]"
       ></div>
 
       <!-- Header -->
       <div class="tw-mb-16">
-        <div class="tw-pt-5 tw-px-5 tw-flex tw-items-center">
+        <div class="tw-flex tw-items-center tw-px-5 tw-pt-5">
           <v-img
             alt="schej Logo"
             class="shrink tw-cursor-pointer"
@@ -28,24 +28,24 @@
       </div>
 
       <div
-        class="tw-flex tw-justify-center lg:tw-justify-between tw-relative tw-pb-12 lg:tw-pb-24"
+        class="tw-relative tw-flex tw-justify-center tw-pb-12 lg:tw-justify-between lg:tw-pb-24"
       >
         <!-- Left side -->
         <div class="tw-flex tw-flex-col">
           <!-- Hero -->
           <div
-            class="tw-max-w-[26rem] sm:tw-max-w-none tw-flex tw-flex-col tw-items-start lg:tw-mb-20 tw-mx-4"
+            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-max-w-none lg:tw-mb-20"
           >
             <div
               id="header"
-              class="tw-text-left tw-text-2xl sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-4"
+              class="tw-mb-4 tw-text-left tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
             >
               <div class="tw-leading-snug">Finding a time to meet,</div>
               <div class="tw-leading-snug">made simple.</div>
             </div>
 
             <div
-              class="tw-text-left tw-text-sm sm:tw-text-lg md:tw-text-lg lg:tw-text-md xl:tw-text-lg tw-text-very-dark-gray tw-mb-4"
+              class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
             >
               <b>Automatically</b> fill out your availability with Google
               Calendar—<br v-if="!isPhone" />
@@ -55,7 +55,7 @@
 
           <v-btn
             id="lets-schej-it-btn"
-            class="tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-10 sm:tw-px-10 lg:tw-px-12"
+            class="tw-my-6 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-hidden lg:tw-px-12"
             dark
             @click="newEventDialog = true"
             large
@@ -82,11 +82,11 @@
     <!-- How it works -->
     <div
       id="how-it-works"
-      class="tw-pt-12 tw-grid tw-place-content-center tw-px-4"
+      class="tw-grid tw-place-content-center tw-px-4 tw-pt-12"
     >
-      <div class="tw-flex tw-flex-col tw-gap-4 tw-mx-auto">
+      <div class="tw-mx-auto tw-flex tw-flex-col tw-gap-4">
         <div
-          class="tw-text-center tw-text-2xl sm:tw-text-3xl lg:tw-text-4xl tw-font-medium tw-mb-4"
+          class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-3xl lg:tw-text-4xl"
         >
           How it works
         </div>
@@ -96,10 +96,10 @@
           class="tw-flex tw-items-center tw-gap-2"
         >
           <NumberBullet>{{ i + 1 }}</NumberBullet>
-          <div class="md:tw-text-xl tw-text-base tw-font-medium">
+          <div class="tw-text-base tw-font-medium md:tw-text-xl">
             <div v-if="i == 1">
               <span
-                class="tw-cursor-pointer tw-underline tw-decoration-pale-green hover:tw-decoration-green tw-decoration-4"
+                class="tw-cursor-pointer tw-underline tw-decoration-pale-green tw-decoration-4 hover:tw-decoration-green"
                 style="text-underline-position: under"
                 @click="confetti"
               >
@@ -112,7 +112,7 @@
         </div>
       </div>
       <div
-        class="tw-mt-10 tw-mb-6 md:tw-mt-20 md:tw-mb-12 tw-text-3xl md:tw-text-6xl tw-font-medium tw-text-center"
+        class="tw-mt-10 tw-mb-6 tw-text-center tw-text-3xl tw-font-medium md:tw-mt-20 md:tw-mb-12 md:tw-text-6xl"
       >
         It's that simple.
       </div>
@@ -128,11 +128,11 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-16 tw-justify-center"
+      class="tw-flex tw-justify-center tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-16"
     >
-      <div class="md:tw-h-96 sm:tw-h-80 tw-h-64 tw-max-w-3xl tw-flex-1">
+      <div class="tw-h-64 tw-max-w-3xl tw-flex-1 sm:tw-h-80 md:tw-h-96">
         <iframe
-          class="tw-w-full tw-h-full"
+          class="tw-h-full tw-w-full"
           src="https://www.youtube.com/embed/Wzth9Ov7bkI?fs=0&color=white&rel=0&controls=0"
           title="schej demo"
           frameborder="0"
@@ -144,8 +144,8 @@
 
     <!-- FAQ -->
     <div class="tw-flex tw-justify-center tw-pt-12">
-      <div class="tw-flex-1 tw-mx-4 sm:tw-mx-16 tw-mb-12 tw-max-w-3xl">
-        <div id="faq-section" class="lg:tw-pt-3 tw-text-center">
+      <div class="tw-mx-4 tw-mb-12 tw-max-w-3xl tw-flex-1 sm:tw-mx-16">
+        <div id="faq-section" class="tw-text-center lg:tw-pt-3">
           <Header> Frequently Asked Questions </Header>
           <div
             class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
@@ -157,12 +157,12 @@
     </div>
 
     <!-- Privacy Policy -->
-    <div class="tw-bg-green tw-flex tw-flex-col">
+    <div class="tw-flex tw-flex-col tw-bg-green">
       <div
-        class="tw-flex tw-flex-col tw-gap-4 tw-items-center tw-m-2 tw-pt-6 tw-pb-16"
+        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pt-6 tw-pb-6"
       >
         <router-link
-          class="tw-text-white tw-font-bold"
+          class="tw-font-bold tw-text-white"
           :to="{ name: 'privacy-policy' }"
         >
           Privacy Policy
@@ -177,7 +177,7 @@
         <v-card-title>Sign in</v-card-title>
         <v-card-text class="tw-flex tw-flex-col tw-items-center">
           <SignInGoogleBtn class="tw-mb-4" @click="signInGoogle" dark />
-          <div class="tw-text-xs tw-text-center">
+          <div class="tw-text-center tw-text-xs">
             By continuing, you agree to our
             <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
               >privacy policy</router-link
@@ -234,11 +234,6 @@ export default {
       "Share the schej and find the best time to meet!",
     ],
     faqs: [
-      {
-        question: "Do I need to sign in with Google in order to use schej?",
-        answer:
-          "Signing in with Google is required to create events, but anybody can add their availability once an event is created, whether or not they are signed in with Google!",
-      },
       {
         question: "How is schej different from lettucemeet or when2meet?",
         points: [

@@ -1,8 +1,8 @@
 <template>
   <v-card
-    class="tw-py-4 tw-flex tw-flex-col tw-rounded-lg tw-relative tw-overflow-none tw-max-w-[28rem]"
+    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4"
   >
-    <v-card-title class="tw-px-4 sm:tw-px-8 tw-flex tw-mb-2">
+    <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
       <div>
         {{ editEvent ? "Edit event" : "New event" }}
       </div>
@@ -11,8 +11,8 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text class="tw-px-4 sm:tw-px-8 tw-overflow-auto tw-py-1 tw-flex-1">
-      <div class="tw-space-y-10 tw-flex tw-flex-col">
+    <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
+      <div class="tw-flex tw-flex-col tw-space-y-10">
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -25,14 +25,14 @@
         />
 
         <div>
-          <div class="tw-text-lg tw-text-black tw-mb-4">
+          <div class="tw-mb-4 tw-text-lg tw-text-black">
             What times might work?
           </div>
-          <div class="tw-flex tw-space-x-2 tw-items-baseline tw-justify-center">
+          <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
             <v-select
               v-model="startTime"
               :disabled="loading"
-              class="tw-flex-initial /*tw-w-28*/"
+              class="/*tw-w-28*/ tw-flex-initial"
               menu-props="auto"
               :items="times"
               hide-details
@@ -42,7 +42,7 @@
             <v-select
               v-model="endTime"
               :disabled="loading"
-              class="tw-flex-initial /*tw-w-28*/"
+              class="/*tw-w-28*/ tw-flex-initial"
               menu-props="auto"
               :items="times"
               hide-details
@@ -52,7 +52,7 @@
         </div>
 
         <div>
-          <div class="tw-text-lg tw-text-black tw-mb-4">
+          <div class="tw-mb-4 tw-text-lg tw-text-black">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
@@ -73,7 +73,7 @@
               multiple
               color="primary"
               :show-current="false"
-              class="tw-min-w-full sm:tw-min-w-0 tw-border-0 tw-drop-shadow"
+              class="tw-min-w-full tw-border-0 tw-drop-shadow sm:tw-min-w-0"
               :min="minCalendarDate"
               full-width
             />
@@ -104,7 +104,7 @@
         />
       </div>
     </v-card-text>
-    <v-card-actions class="tw-px-8 tw-relative">
+    <v-card-actions class="tw-relative tw-px-8">
       <v-btn
         block
         :loading="loading"
