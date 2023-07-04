@@ -1,10 +1,10 @@
 <template>
-  <div class="tw-flex">
+  <div class="tw-flex tw-mb-16 sm:tw-mb-0">
     <div
-      class="tw-flex-1 tw-flex tw-items-center tw-mt-4 sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
+      class="tw-min-h-[5rem] tw-flex-1 tw-flex tw-items-center sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
     >
       <div
-        class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row tw-justify-between sm:tw-justify-start tw-flex-1"
+        class="tw-flex-wrap tw-flex tw-py-4 tw-gap-y-4 tw-gap-x-4 sm:tw-gap-x-8 tw-justify-between sm:tw-justify-start tw-flex-1"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -13,19 +13,29 @@
           :timezones="Object.keys(timezoneMap)"
         />
 
-        <div class="tw-flex tw-justify-center tw-items-center tw-gap-1">
-          <div>Show best times</div>
-          <v-switch
-            id="show-best-times-toggle"
-            class="-tw-mb-1"
-            :input-value="showBestTimes"
-            @change="updateShowBestTimes"
-            color="#219653"
-          />
-        </div>
+        <template v-if="state !== states.EDIT_AVAILABILITY">
+          <div class="tw-flex tw-justify-center tw-items-center tw-gap-2">
+            <div>Show best times</div>
+            <v-switch
+              id="show-best-times-toggle"
+              class="tw-mt-0 tw-py-2.5"
+              :input-value="showBestTimes"
+              @change="updateShowBestTimes"
+              color="#219653"
+              hide-details
+            />
+          </div>
+        </template>
+        <template v-else-if="isWeekly && !isPhone">
+          <GCalWeekSelector />
+        </template>
       </div>
 
-      <div v-if="isOwner" style="width: 180.16px" class="tw-hidden sm:tw-block">
+      <div
+        v-if="isOwner && state !== states.EDIT_AVAILABILITY"
+        style="width: 180.16px"
+        class="tw-hidden sm:tw-block"
+      >
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
@@ -52,18 +62,26 @@
           <v-btn
             color="primary"
             @click="(e) => $emit('confirmScheduleEvent', e)"
-            :disabled="!curScheduledEvent"
           >
             Schedule
           </v-btn>
         </template>
       </div>
+
+      <!-- GCal week selector when user is using phone view -->
+      <template
+        v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY"
+      >
+        <GCalWeekSelector />
+      </template>
     </div>
   </div>
 </template>
 
 <script>
 import TimezoneSelector from "./TimezoneSelector.vue"
+import GCalWeekSelector from "./GCalWeekSelector.vue"
+import { isPhone } from "@/utils"
 
 export default {
   name: "ToolRow",
@@ -75,11 +93,18 @@ export default {
     timezoneMap: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     isOwner: { type: Boolean, required: true },
-    curScheduledEvent: { type: Object | null, required: true },
+    isWeekly: { type: Boolean, required: true },
   },
 
   components: {
     TimezoneSelector,
+    GCalWeekSelector,
+  },
+
+  computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
   },
 
   methods: {

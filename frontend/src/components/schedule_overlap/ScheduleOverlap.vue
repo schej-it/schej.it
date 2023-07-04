@@ -173,6 +173,7 @@
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
+              :is-weekly="isWeekly"
               :state="state"
               :states="states"
               :cur-timezone.sync="curTimezone"
@@ -263,6 +264,7 @@
         :show-best-times.sync="showBestTimes"
         :is-owner="isOwner"
         :cur-scheduled-event="curScheduledEvent"
+        :is-weekly="isWeekly"
         @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
         @cancelScheduleEvent="cancelScheduleEvent"
