@@ -12,7 +12,6 @@
     "core-js": "^3.8.3",
     "html2canvas": "^1.4.1",
     "is-ua-webview": "^1.1.0",
-    "long-press-event": "^2.4.4",
     "register-service-worker": "^1.7.2",
     "tsparticles-confetti": "^2.9.3",
     "ua-parser-js": "^1.0.33",
