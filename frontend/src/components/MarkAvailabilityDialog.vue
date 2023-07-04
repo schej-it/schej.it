@@ -5,7 +5,7 @@
     width="400"
     content-class="tw-m-0"
   >
-    <v-card class="sm:tw-p-6 tw-p-4">
+    <v-card class="tw-p-4 sm:tw-p-6">
       <v-expand-transition>
         <div v-show="state === states.CHOICES">
           <div class="tw-text-md tw-pb-4 tw-text-center">
@@ -15,11 +15,11 @@
           <div class="">
             <v-btn
               @click="showPermissions"
-              class="tw-bg-green tw-mb-2"
+              class="tw-mb-2 tw-bg-green"
               dark
               block
             >
-              <div class="tw-text-sm -tw-mx-4">
+              <div class="-tw-mx-4 tw-text-sm">
                 Automatically with Google Calendar
               </div>
             </v-btn>
@@ -29,12 +29,12 @@
       </v-expand-transition>
       <v-expand-transition>
         <div v-show="state === states.PERMISSIONS">
-          <div class="tw-text-md tw-font-medium tw-mb-4">
+          <div class="tw-text-md tw-mb-4 tw-font-medium">
             We need the following permissions to access your Google Calendar
             events
           </div>
 
-          <div class="tw-flex tw-flex-col tw-gap-4 tw-mb-8 tw-ml-4">
+          <div class="tw-mb-8 tw-ml-4 tw-flex tw-flex-col tw-gap-4">
             <div class="tw-flex tw-gap-2 tw-text-sm">
               <v-img
                 src="@/assets/gcal_logo.png"
@@ -55,11 +55,11 @@
             </div>
           </div>
 
-          <div class="tw-text-md tw-font-medium tw-mb-4">
+          <div class="tw-text-md tw-mb-4 tw-font-medium">
             These permissions will
           </div>
           <div
-            class="tw-flex tw-flex-col tw-gap-4 tw-mb-8 tw-text-very-dark-gray tw-text-sm"
+            class="tw-mb-8 tw-flex tw-flex-col tw-gap-4 tw-text-sm tw-text-very-dark-gray"
           >
             <div>
               Allow us to display the names/times of your calendar events
@@ -72,7 +72,7 @@
 
           <div class="tw-flex">
             <!-- <v-spacer /> -->
-            <v-btn @click="showChoices" text class="tw-flex-1 tw-mr-2">
+            <v-btn @click="showChoices" text class="tw-mr-2 tw-flex-1">
               Back
             </v-btn>
             <v-btn

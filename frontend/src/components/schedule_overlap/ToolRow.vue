@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      class="tw-min-h-[5rem] tw-flex-1 tw-flex tw-items-center sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
+      class="tw-flex tw-min-h-[5rem] tw-flex-1 tw-items-center tw-justify-center tw-text-sm sm:tw-mt-0 sm:tw-justify-between"
     >
       <div
         :class="
@@ -9,7 +9,7 @@
             ? 'tw-justify-center'
             : 'tw-justify-between'
         "
-        class="tw-flex-wrap tw-flex tw-py-4 tw-gap-y-4 tw-gap-x-4 sm:tw-gap-x-8 sm:tw-justify-start tw-flex-1"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -19,7 +19,7 @@
         />
 
         <template v-if="state !== states.EDIT_AVAILABILITY">
-          <div class="tw-flex tw-justify-center tw-items-center tw-gap-2">
+          <div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
             <div>Show best times</div>
             <v-switch
               id="show-best-times-toggle"
@@ -44,7 +44,7 @@
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
-            class="tw-text-green tw-w-full"
+            class="tw-w-full tw-text-green"
             @click="(e) => $emit('scheduleEvent', e)"
           >
             <span class="tw-mr-2">Schedule event</span>
@@ -59,7 +59,7 @@
         <template v-else>
           <v-btn
             outlined
-            class="tw-text-red tw-mr-1"
+            class="tw-mr-1 tw-text-red"
             @click="(e) => $emit('cancelScheduleEvent', e)"
           >
             Cancel
@@ -76,7 +76,7 @@
 
     <!-- GCal week selector when user is using phone view -->
     <template v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY">
-      <div class="tw-text-sm tw-h-16">
+      <div class="tw-h-16 tw-text-sm">
         <GCalWeekSelector />
       </div>
     </template>

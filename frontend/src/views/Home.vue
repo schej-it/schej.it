@@ -1,8 +1,8 @@
 <template>
-  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12 tw-mt-4 sm:tw-mt-7">
+  <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl sm:tw-mt-7">
     <!-- Dialog -->
     <NewEventDialog v-model="dialog" />
-    <div class="tw-grid tw-p-4 tw-gap-4 sm:tw-gap-8">
+    <div class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8">
       <EventType
         v-for="(eventType, t) in events"
         :key="t"

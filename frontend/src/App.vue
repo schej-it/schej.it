@@ -5,11 +5,11 @@
     <SignInNotSupportedDialog v-model="webviewDialog" />
     <div
       v-if="showHeader"
-      class="tw-h-14 sm:tw-h-16 tw-bg-white tw-fixed tw-w-screen tw-z-40"
+      class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-bg-white sm:tw-h-16"
       dark
     >
       <div
-        class="tw-relative tw-px-4 tw-flex tw-items-center tw-justify-center tw-max-w-6xl tw-h-full tw-m-auto"
+        class="tw-relative tw-m-auto tw-flex tw-h-full tw-max-w-6xl tw-items-center tw-justify-center tw-px-4"
       >
         <router-link :to="{ name: 'home' }">
           <v-img
@@ -32,9 +32,9 @@
     </div>
 
     <v-main>
-      <div class="tw-h-screen tw-flex tw-flex-col">
+      <div class="tw-flex tw-h-screen tw-flex-col">
         <div
-          class="tw-flex-1 tw-relative tw-overscroll-auto"
+          class="tw-relative tw-flex-1 tw-overscroll-auto"
           :class="routerViewClass"
         >
           <router-view v-if="loaded" />

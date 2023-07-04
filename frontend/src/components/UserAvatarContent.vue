@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: 'UserAvatarContent',
+  name: "UserAvatarContent",
   props: {
     user: Object,
     size: { type: Number, default: 48 },

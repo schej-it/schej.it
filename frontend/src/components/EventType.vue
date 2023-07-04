@@ -1,7 +1,7 @@
 <!-- Displays an event type (i.e. created or joined) on the home page -->
 <template>
   <div class="tw-mb-5">
-    <div class="tw-text-xl sm:tw-text-2xl tw-font-medium tw-text-dark-green">
+    <div class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl">
       {{ eventType.header }}
     </div>
 
@@ -10,7 +10,7 @@
     </div>
     <div
       v-else
-      class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-3 tw-my-3"
+      class="tw-gr id-cols-1 tw-my-3 tw-grid tw-gap-3 sm:tw-grid-cols-2 md:tw-grid-cols-2"
     >
       <EventItem
         class="tw-cursor-pointer"
@@ -26,7 +26,7 @@
       <v-expand-transition>
         <div
           v-if="showAll"
-          class="tw-grid tw-gr id-cols-1 sm:tw-grid-cols-2 md:tw-grid-cols-2 tw-gap-2 sm:tw-gap-4"
+          class="tw-gr id-cols-1 tw-grid tw-gap-2 sm:tw-grid-cols-2 sm:tw-gap-4 md:tw-grid-cols-2"
         >
           <EventItem
             v-for="(event, i) in sortedEvents.slice(
@@ -42,7 +42,7 @@
       </v-expand-transition>
       <div
         @click="toggleShowAll"
-        class="tw-cursor-pointer tw-text-very-dark-gray tw-text-sm tw-mt-4"
+        class="tw-mt-4 tw-cursor-pointer tw-text-sm tw-text-very-dark-gray"
       >
         Show {{ showAll ? "less" : "more"
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>

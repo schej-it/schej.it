@@ -1,15 +1,15 @@
 <template>
   <span>
-    <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
+    <div class="tw-select-none tw-p-4" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
-        <div class="tw-grow tw-flex tw-overflow-hidden">
+        <div class="tw-flex tw-grow tw-overflow-hidden">
           <!-- Times -->
-          <div class="tw-w-12 tw-mt-12 tw-flex-none">
+          <div class="tw-mt-12 tw-w-12 tw-flex-none">
             <div class="-tw-mt-[8px]">
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-5 tw-text-xs tw-pr-2 tw-text-right tw-uppercase tw-font-light"
+                class="tw-h-5 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
               >
                 {{ time.text }}
               </div>
@@ -17,15 +17,15 @@
           </div>
 
           <div class="tw-grow tw-overflow-hidden">
-            <div class="tw-overflow-hidden tw-relative">
+            <div class="tw-relative tw-overflow-hidden">
               <div
                 ref="calendar"
                 @scroll="onCalendarScroll"
-                class="tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative"
+                class="tw-relative tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden"
               >
                 <!-- Days -->
                 <div
-                  class="tw-flex tw-items-center tw-h-12 tw-bg-white tw-z-10"
+                  class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white"
                 >
                   <div
                     v-for="(day, i) in days"
@@ -36,7 +36,7 @@
                     <div class="tw-text-center">
                       <div
                         v-if="isSpecificDates"
-                        class="tw-capitalize tw-font-light tw-text-xs tw-text-very-dark-gray"
+                        class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
                       >
                         {{ day.dateString }}
                       </div>
@@ -53,7 +53,7 @@
                     <div
                       id="times"
                       data-long-press-delay="500"
-                      class="tw-flex tw-relative"
+                      class="tw-relative tw-flex"
                       @mouseleave="resetCurTimeslot"
                     >
                       <!-- Loader -->
@@ -62,7 +62,7 @@
                           (alwaysShowCalendarEvents || editing) &&
                           loadingCalendarEvents
                         "
-                        class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10"
+                        class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                       >
                         <v-progress-circular
                           class="tw-text-blue"
@@ -73,7 +73,7 @@
                       <div
                         v-for="(day, d) in days"
                         :key="d"
-                        class="tw-flex-1 tw-relative"
+                        class="tw-relative tw-flex-1"
                         style="min-width: 50px"
                       >
                         <!-- Timeslots -->
@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-5 tw-border-[#DDDDDD88] tw-border-r"
+                            class="timeslot tw-h-5 tw-border-r tw-border-[#DDDDDD88]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -98,7 +98,7 @@
                             appear
                           >
                             <div
-                              class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
                               :style="{
                                 top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
                                 height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
@@ -106,7 +106,7 @@
                               style="pointer-events: none"
                             >
                               <div
-                                class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
                               >
                                 <div
                                   :class="`tw-text-${
@@ -130,14 +130,14 @@
                                 curScheduledEvent &&
                                 curScheduledEvent.dayIndex === d)
                             "
-                            class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="scheduledEventStyle"
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-border-blue tw-bg-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
                             >
-                              <div class="tw-text-white tw-font-medium">
+                              <div class="tw-font-medium tw-text-white">
                                 {{ event.name }}
                               </div>
                             </div>
@@ -152,19 +152,19 @@
               <ZigZag
                 v-if="showLeftZigZag"
                 left
-                class="tw-w-3 tw-h-full tw-absolute tw-left-0 tw-top-0"
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
               />
               <ZigZag
                 v-if="showRightZigZag"
                 right
-                class="tw-w-3 tw-h-full tw-absolute tw-right-0 tw-top-0"
+                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
               />
             </div>
 
             <!-- Hint text (desktop) -->
             <div v-if="!isPhone && showHintText" class="tw-flex">
               <div
-                class="tw-text-dark-gray tw-text-sm tw-mt-2"
+                class="tw-mt-2 tw-text-sm tw-text-dark-gray"
                 style="min-height: 1.4rem"
               >
                 {{ hintText.desktop }}
@@ -195,7 +195,7 @@
         <div v-if="isPhone && showHintText" class="tw-flex">
           <div class="tw-w-12"></div>
           <div
-            class="tw-text-dark-gray tw-text-xs tw-mt-2"
+            class="tw-mt-2 tw-text-xs tw-text-dark-gray"
             style="min-height: 2rem"
           >
             {{ hintText.mobile }}
@@ -205,9 +205,9 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-py-4 tw-w-full sm:tw-pl-8 sm:tw-flex-none sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48"
+          class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
-          <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
+          <div class="tw-mb-2 tw-flex tw-items-center tw-font-medium">
             <div class="tw-mr-1 tw-text-lg">Responses</div>
             <div class="tw-font-normal">
               <template v-if="curRespondents.length === 0">
@@ -226,7 +226,7 @@
               </template>
             </div>
           </div>
-          <div class="tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block">
+          <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block">
             <template v-if="respondents.length === 0">
               <div class="tw-px-2 tw-text-very-dark-gray">
                 No responses yet!
@@ -236,7 +236,7 @@
               <div
                 v-for="(user, i) in respondents"
                 :key="user._id"
-                class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
+                class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
                 @mouseover="(e) => mouseOverRespondent(e, user._id)"
                 @mouseleave="mouseLeaveRespondent"
                 @click="(e) => clickRespondent(e, user._id)"
@@ -244,7 +244,7 @@
                 <UserAvatarContent
                   v-if="!isGuest(user)"
                   :user="user"
-                  class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
+                  class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
                 ></UserAvatarContent>
                 <v-icon v-else class="tw-ml-1 tw-mr-3" small
                   >mdi-account</v-icon

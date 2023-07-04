@@ -1,21 +1,21 @@
 <template>
   <v-scale-transition appear origin="center">
-    <v-btn 
+    <v-btn
       fab
       fixed
-      class="tw-bg-green tw-mx-auto tw-left-0 tw-right-0 tw-bottom-4 sm:tw-bottom-8 tw-text-white"
-      @click="e => $emit('click', e)"
+      class="tw-left-0 tw-right-0 tw-bottom-4 tw-mx-auto tw-bg-green tw-text-white sm:tw-bottom-8"
+      @click="(e) => $emit('click', e)"
       v-bind="$attrs"
     >
       <slot />
     </v-btn>
-  </v-scale-transition>  
+  </v-scale-transition>
 </template>
 
 <script>
 export default {
-  name: 'BottomFab',
+  name: "BottomFab",
 
-  emits: ['click'],
+  emits: ["click"],
 }
 </script>

@@ -1,31 +1,22 @@
 <template>
-  <v-snackbar
-    v-model="show"
-    top
-    :color="color"
-  >
-    <span class="tw-text-sm tw-mr-2">{{ text }}</span>
+  <v-snackbar v-model="show" top :color="color">
+    <span class="tw-mr-2 tw-text-sm">{{ text }}</span>
 
     <template v-slot:action="{ attrs }">
-      <v-btn
-        v-bind="attrs"
-        icon
-        @click="show = false"
-      >
+      <v-btn v-bind="attrs" icon @click="show = false">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </template>
-    
   </v-snackbar>
 </template>
 
 <script>
 export default {
-  name: 'AutoSnackbar',
-  
+  name: "AutoSnackbar",
+
   props: {
-    text: {type: String, default: ''},
-    color: {type: String, default: ''}
+    text: { type: String, default: "" },
+    color: { type: String, default: "" },
   },
 
   data() {
@@ -42,8 +33,7 @@ export default {
       handler(text) {
         if (text) {
           this.show = true
-        } else
-          this.show = false
+        } else this.show = false
       },
     },
   },
