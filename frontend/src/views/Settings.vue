@@ -15,7 +15,7 @@
             order to display your calendar events while you fill out your
             availability.
           </div>
-          <v-btn outlined class="tw-text-bright-red"
+          <v-btn outlined class="tw-text-bright-red" href="https://myaccount.google.com/connections?filters=3,4&hl=en" target="_blank"
             >Revoke calendar access</v-btn
           >
         </div>
