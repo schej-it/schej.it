@@ -156,7 +156,7 @@ export default {
       this.scrollY = window.scrollY
     },
     redirectUser(authenticated) {
-      let authRoutes = ["home"]
+      let authRoutes = ["home", "settings"]
       let noAuthRoutes = ["landing", "createEvent"]
 
       if (!authenticated) {

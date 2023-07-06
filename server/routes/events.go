@@ -36,7 +36,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime,notificationsEnabled=bool} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -283,7 +283,7 @@ func scheduleEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool} true "Object containing info about the event to update"
+// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime,notificationsEnabled=bool} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {

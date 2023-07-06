@@ -93,6 +93,9 @@ func AddUserToMailjet(email string, firstName string, lastName string, picture s
 		return
 	}
 
+	if len(result.Data) == 0 {
+		return
+	}
 	contactId := result.Data[0].ID
 
 	// Update contact metadata

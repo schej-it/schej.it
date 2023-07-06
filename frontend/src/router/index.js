@@ -16,9 +16,14 @@ const routes = [
     component: () => import("@/views/Home.vue"),
   },
   {
-    path: "/e/:eventId",
-    name: "event",
-    component: () => import("@/views/Event.vue"),
+    path: '/settings',
+    name: 'settings',
+    component: () => import('@/views/Settings.vue')
+  },
+  {
+    path: '/e/:eventId',
+    name: 'event',
+    component: () => import('@/views/Event.vue'),
     props: true,
   },
   {
