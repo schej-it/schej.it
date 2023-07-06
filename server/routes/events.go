@@ -24,7 +24,7 @@ import (
 func InitEvents(router *gin.Engine) {
 	eventRouter := router.Group("/events")
 
-	eventRouter.POST("", middleware.AuthRequired(), createEvent)
+	eventRouter.POST("", createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.POST("/:eventId/schedule", middleware.AuthRequired(), scheduleEvent)
@@ -36,7 +36,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime,notificationsEnabled=bool} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -51,8 +51,18 @@ func createEvent(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 
+	// If user logged in, set owner id to their user id, otherwise set owner id to nil
+	userIdInterface := session.Get("userId")
+	userId, signedIn := userIdInterface.(string)
+	var ownerId primitive.ObjectID
+	if signedIn {
+		ownerId = utils.StringToObjectID(userId)
+	} else {
+		ownerId = primitive.NilObjectID
+	}
+
 	event := models.Event{
-		OwnerId:              utils.GetUserId(session),
+		OwnerId:              ownerId,
 		Name:                 payload.Name,
 		Duration:             payload.Duration,
 		Dates:                payload.Dates,
@@ -67,9 +77,12 @@ func createEvent(c *gin.Context) {
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
-	userInterface, _ := c.Get("authUser")
-	user := userInterface.(*models.User)
-	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)\n**Notifications Enabled**: %v", insertedId, user.FirstName, user.LastName, user.Email, event.NotificationsEnabled))
+	if signedIn {
+		user := db.GetUserById(userId)
+		discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)\n**Notifications Enabled**: %v", insertedId, user.FirstName, user.LastName, user.Email, event.NotificationsEnabled))
+	} else {
+		discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: Guest :face_with_open_eyes_and_hand_over_mouth:\n**Notifications Enabled**: %v", insertedId, event.NotificationsEnabled))
+	}
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
 
@@ -270,7 +283,7 @@ func scheduleEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime} true "Object containing info about the event to update"
+// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime,notificationsEnabled=bool} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {

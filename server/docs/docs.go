@@ -241,6 +241,9 @@ var doc = `{
                                         },
                                         "name": {
                                             "type": "string"
+                                        },
+                                        "notificationsEnabled": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -337,6 +340,9 @@ var doc = `{
                                         },
                                         "name": {
                                             "type": "string"
+                                        },
+                                        "notificationsEnabled": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -734,30 +740,7 @@ var doc = `{
                         "in": "path",
                         "required": true
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "eventName": {
-                                            "type": "string"
-                                        },
-                                        "status": {
-                                            "$ref": "#/definitions/models.UserStatus"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
+                ]
             }
         },
         "/user": {
@@ -1130,8 +1113,8 @@ var doc = `{
                 }
             }
         },
-        "models.UserStatus": {
-            "type": "string"
+        "primitive.DateTime": {
+            "type": "integer"
         },
         "primitive.DateTime": {
             "type": "integer"

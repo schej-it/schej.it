@@ -1,19 +1,19 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Landing from '@/views/Landing'
+import Vue from "vue"
+import VueRouter from "vue-router"
+import Landing from "@/views/Landing"
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    name: 'landing',
+    path: "/",
+    name: "landing",
     component: Landing,
   },
   {
-    path: '/home',
-    name: 'home',
-    component: () => import('@/views/Home.vue')
+    path: "/home",
+    name: "home",
+    component: () => import("@/views/Home.vue"),
   },
   {
     path: '/settings',
@@ -27,21 +27,21 @@ const routes = [
     props: true,
   },
   {
-    path: '/auth',
-    name: 'auth',
-    component: () => import('@/views/Auth.vue')
+    path: "/auth",
+    name: "auth",
+    component: () => import("@/views/Auth.vue"),
   },
   {
-    path: '/privacy-policy',
-    name: 'privacy-policy',
-    component: () => import('@/views/PrivacyPolicy.vue'),
+    path: "/privacy-policy",
+    name: "privacy-policy",
+    component: () => import("@/views/PrivacyPolicy.vue"),
   },
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
-  routes
+  routes,
 })
 
 export default router

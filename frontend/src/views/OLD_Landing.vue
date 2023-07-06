@@ -1,16 +1,29 @@
 <template>
   <div>
-    <div
-      class="tw-min-h-screen tw-flex tw-flex-col tw-max-w-6xl tw-m-auto tw-relative"
-    >
-      <!-- Green background -->
-      <div
-        class="tw-bg-green tw-absolute tw-w-screen tw-left-1/2 -tw-translate-x-1/2 tw-bottom-0 tw-h-[40%] sm:tw-h-[47%]"
-      ></div>
+    <v-dialog v-model="dialog" :width="400">
+      <v-card>
+        <v-card-title>
+          <span v-if="dialogType === DIALOG_TYPES.SIGN_IN">Sign in</span>
+          <span v-else-if="dialogType === DIALOG_TYPES.SIGN_UP">Sign up</span>
+        </v-card-title>
+        <v-card-text class="tw-flex tw-flex-col tw-items-center">
+          <SignInGoogleBtn @click="signInGoogle" dark />
+          <div class="tw-text-xs tw-text-center">
+            By continuing, you agree to our
+            <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
+              >privacy policy</router-link
+            >
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
 
+    <div class="tw-min-h-screen tw-flex tw-flex-col">
       <!-- Header -->
-      <div class="tw-mb-16">
-        <div class="tw-pt-5 tw-px-5 tw-flex tw-items-center">
+      <div class="tw-mb-12">
+        <div
+          class="tw-pt-5 tw-px-5 tw-flex tw-items-center tw-max-w-6xl tw-m-auto"
+        >
           <v-img
             alt="schej Logo"
             class="shrink tw-cursor-pointer"
@@ -25,56 +38,38 @@
           <v-btn text href="#how-it-works">How it works</v-btn>
           <v-btn text @click="signIn">Sign in</v-btn>
         </div>
-      </div>
 
-      <div
-        class="tw-flex tw-justify-center lg:tw-justify-between tw-relative tw-pb-12 lg:tw-pb-24"
-      >
-        <!-- Left side -->
-        <div class="tw-flex tw-flex-col">
-          <!-- Hero -->
+        <!-- Hero -->
+        <div class="tw-flex tw-flex-col tw-items-center">
           <div
-            class="tw-max-w-[26rem] sm:tw-max-w-none tw-flex tw-flex-col tw-items-start lg:tw-mb-20 tw-mx-4"
+            class="tw-mt-16 tw-mb-4 sm:tw-mb-8 lg:tw-mb-10 tw-text-2xl sm:tw-text-5xl lg:tw-text-6xl tw-font-medium tw-text-center"
           >
-            <div
-              id="header"
-              class="tw-text-left tw-text-2xl sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl tw-font-medium tw-mb-4"
-            >
-              <div class="tw-leading-snug">Finding a time to meet,</div>
-              <div class="tw-leading-snug">made simple.</div>
-            </div>
-
-            <div
-              class="tw-text-left tw-text-sm sm:tw-text-lg md:tw-text-lg lg:tw-text-md xl:tw-text-lg tw-text-very-dark-gray tw-mb-4"
-            >
-              <b>Automatically</b> fill out your availability with Google
-              Calendar—<br v-if="!isPhone" />
-              it’s like When2Meet with Google Calendar integration!
-            </div>
+            <div class="tw-leading-tight">Finding a time to meet,</div>
+            <div class="tw-leading-snug">made simple.</div>
           </div>
-
           <v-btn
             id="lets-schej-it-btn"
-            class="tw-text-base tw-my-6 tw-self-center tw-block lg:tw-hidden tw-bg-green tw-rounded-lg tw-px-10 sm:tw-px-10 lg:tw-px-12"
+            class="tw-bg-green tw-rounded-lg tw-px-6 sm:tw-px-10 lg:tw-px-12"
             dark
-            @click="newEventDialog = true"
-            large
+            @click="$router.push({ name: 'createEvent'})"
+            :large="$vuetify.breakpoint.smAndUp"
             :x-large="$vuetify.breakpoint.mdAndUp"
           >
-            Create event
+            Let's schej it
           </v-btn>
-
-          <!-- Calendar -->
-          <LandingPageCalendar class="tw-drop-shadow-lg" />
         </div>
+      </div>
 
-        <!-- Right side -->
-        <div class="tw-ml-12 tw-mr-4 tw-hidden lg:tw-block">
-          <NewEvent
-            class="tw-drop-shadow-lg"
-            :dialog="false"
-            :allow-notifications="false"
-          />
+      <!-- Calendar -->
+      <div
+        class="tw-flex-1 md:tw-flex md:tw-justify-center tw-relative tw-pb-12"
+      >
+        <div
+          class="tw-absolute tw-bg-green tw-w-full"
+          style="top: 10rem; height: calc(100% - 10rem)"
+        ></div>
+        <div>
+          <LandingPageCalendar />
         </div>
       </div>
     </div>
@@ -102,9 +97,8 @@
                 class="tw-cursor-pointer tw-underline tw-decoration-pale-green hover:tw-decoration-green tw-decoration-4"
                 style="text-underline-position: under"
                 @click="confetti"
+                >Automatically</span
               >
-                Automatically
-              </span>
               fill out your availability with Google Calendar,
             </div>
             <div v-else v-html="step"></div>
@@ -128,13 +122,13 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-16 tw-justify-center"
+      class="tw-flex tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-12 tw-justify-center"
     >
       <div class="md:tw-h-96 sm:tw-h-80 tw-h-64 tw-max-w-3xl tw-flex-1">
         <iframe
           class="tw-w-full tw-h-full"
           src="https://www.youtube.com/embed/Wzth9Ov7bkI?fs=0&color=white&rel=0&controls=0"
-          title="schej demo"
+          title="Demo of Schej"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
@@ -159,47 +153,17 @@
     <!-- Privacy Policy -->
     <div class="tw-bg-green tw-flex tw-flex-col">
       <div
-        class="tw-flex tw-flex-col tw-gap-4 tw-items-center tw-m-2 tw-pt-6 tw-pb-6"
+        class="tw-flex tw-flex-row tw-justify-around tw-m-2 tw-py-4 tw-font-medium"
       >
-        <router-link
-          class="tw-text-white tw-font-bold"
-          :to="{ path: 'privacy-policy' }"
+        <a class="tw-text-white" href="#how-it-works">How it works</a>
+        <router-link class="tw-text-white" :to="{ path: 'privacy-policy' }"
+          >Privacy Policy</router-link
         >
-          Privacy Policy
-        </router-link>
-        <div class="tw-text-light-gray">Made with ❤️ by the schej team</div>
+        <a class="tw-text-white" @click="signIn">Sign in</a>
       </div>
     </div>
-
-    <!-- Sign in dialog -->
-    <v-dialog v-model="signInDialog" :width="400">
-      <v-card>
-        <v-card-title>Sign in</v-card-title>
-        <v-card-text class="tw-flex tw-flex-col tw-items-center">
-          <SignInGoogleBtn class="tw-mb-4" @click="signInGoogle" dark />
-          <div class="tw-text-xs tw-text-center">
-            By continuing, you agree to our
-            <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
-              >privacy policy</router-link
-            >
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-
-    <!-- New event dialog -->
-    <NewEventDialog v-model="newEventDialog" :allow-notifications="false" />
   </div>
 </template>
-
-<style scoped>
-@media screen and (min-width: 375px) and (max-width: 640px) {
-  #header {
-    font-size: 1.875rem !important; /* 30px */
-    line-height: 2.25rem !important; /* 36px */
-  }
-}
-</style>
 
 <script>
 import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
@@ -208,8 +172,6 @@ import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
-import NewEvent from "@/components/NewEvent.vue"
-import NewEventDialog from "@/components/NewEventDialog.vue"
 import { confetti } from "tsparticles-confetti"
 
 export default {
@@ -221,19 +183,26 @@ export default {
     FAQ,
     Header,
     NumberBullet,
-    NewEvent,
-    NewEventDialog,
   },
 
   data: () => ({
-    signInDialog: false,
-    newEventDialog: false,
+    dialog: false,
+    dialogType: 0,
+    DIALOG_TYPES: {
+      SIGN_IN: 0,
+      SIGN_UP: 1,
+    },
     howItWorksSteps: [
-      "Create a schej event",
-      "Automatically fill out your availability with Google Calendar",
+      "Create a schej",
+      "",
       "Share the schej and find the best time to meet!",
     ],
     faqs: [
+      {
+        question: "Do I need to sign in with Google in order to use schej?",
+        answer:
+          "Signing in with Google is required to create events, but anybody can add their availability once an event is created, whether or not they are signed in with Google!",
+      },
       {
         question: "How is schej different from lettucemeet or when2meet?",
         points: [
@@ -292,7 +261,12 @@ export default {
       signInGoogle({ state: null, selectAccount: true })
     },
     signIn() {
-      this.signInDialog = true
+      this.dialog = true
+      this.dialogType = this.DIALOG_TYPES.SIGN_IN
+    },
+    getStarted() {
+      this.dialog = true
+      this.dialogType = this.DIALOG_TYPES.SIGN_UP
     },
   },
 }

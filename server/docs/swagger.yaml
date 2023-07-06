@@ -254,6 +254,8 @@ paths:
                 type: number
               name:
                 type: string
+              notificationsEnabled:
+                type: boolean
             type: object
       produces:
       - application/json
@@ -325,6 +327,8 @@ paths:
                 type: number
               name:
                 type: string
+              notificationsEnabled:
+                type: boolean
             type: object
       produces:
       - application/json
@@ -473,18 +477,6 @@ paths:
         type: string
       produces:
       - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - type: object
-            - properties:
-                eventName:
-                  type: string
-                status:
-                  $ref: '#/definitions/models.UserStatus'
-              type: object
       summary: Returns whether the friend is free or busy
       tags:
       - friends

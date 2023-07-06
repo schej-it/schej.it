@@ -61,6 +61,20 @@ html {
   letter-spacing: unset !important;
   text-transform: unset !important;
 }
+
+.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
+  > .v-input__control
+  > .v-input__slot {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
+    drop-shadow(0 1px 1px rgb(0 0 0 / 0.06)) !important;
+  box-shadow: none !important;
+}
+
+.v-menu__content {
+  filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04))
+    drop-shadow(0 4px 3px rgb(0 0 0 / 0.1)) !important;
+  box-shadow: none !important;
+}
 </style>
 
 <script>
@@ -80,14 +94,14 @@ export default {
     htmlAttrs: {
       lang: "en-US",
     },
-    meta: [
-      { charset: "utf-8" },
-      {
-        name: "description",
-        content: `schej is a scheduling platform where users input their availability automatically via Google Calendar, generating a heatmap showing when everyone's available.`,
-      },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-    ],
+    // meta: [
+    //   { charset: "utf-8" },
+    //   {
+    //     name: "description",
+    //     content: `schej helps you quickly find the best time for your group to meet. It's like When2meet with Google Calendar integration.`,
+    //   },
+    //   { name: "viewport", content: "width=device-width, initial-scale=1" },
+    // ],
   },
 
   components: {
@@ -110,6 +124,7 @@ export default {
     },
     showHeader() {
       return (
+        this.$route.name !== "createEvent" &&
         this.$route.name !== "landing" &&
         this.$route.name !== "auth" &&
         this.$route.name !== "privacy-policy"
@@ -142,7 +157,7 @@ export default {
     },
     redirectUser(authenticated) {
       let authRoutes = ["home", "settings"]
-      let noAuthRoutes = ["landing"]
+      let noAuthRoutes = ["landing", "createEvent"]
 
       if (!authenticated) {
         if (authRoutes.includes(this.$route.name)) {
