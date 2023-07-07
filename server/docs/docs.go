@@ -233,7 +233,7 @@ var doc = `{
                                         "dates": {
                                             "type": "array",
                                             "items": {
-                                                "type": "string"
+                                                "$ref": "#/definitions/primitive.DateTime"
                                             }
                                         },
                                         "duration": {
@@ -335,7 +335,7 @@ var doc = `{
                                         "dates": {
                                             "type": "array",
                                             "items": {
-                                                "type": "string"
+                                                "$ref": "#/definitions/primitive.DateTime"
                                             }
                                         },
                                         "duration": {
@@ -749,6 +749,20 @@ var doc = `{
                 ]
             }
         },
+        "/user": {
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Deletes the currently signed in user",
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/user/calendar": {
             "get": {
                 "description": "Gets the user's calendar events between \"timeMin\" and \"timeMax\"",
@@ -1110,6 +1124,9 @@ var doc = `{
                     "type": "integer"
                 }
             }
+        },
+        "primitive.DateTime": {
+            "type": "integer"
         },
         "primitive.DateTime": {
             "type": "integer"

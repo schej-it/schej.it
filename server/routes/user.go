@@ -29,6 +29,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.GET("/calendar", getCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
 	userRouter.POST("/visibility", updateVisibility)
+	userRouter.DELETE("", deleteUser)
 }
 
 // @Summary Gets the user's profile
@@ -187,4 +188,21 @@ func searchContacts(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, contacts)
+}
+
+// @Summary Deletes the currently signed in user
+// @Tags user
+// @Produce json
+// @Success 200
+// @Router /user [delete]
+func deleteUser(c *gin.Context) {
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	_, err := db.UsersCollection.DeleteOne(context.Background(), bson.M{"_id": user.Id})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }

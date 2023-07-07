@@ -1,6 +1,6 @@
 <!-- Displays auth user's avatar, which displays a menu when clicked -->
 <template>
-  <v-menu v-if="authUser" offset-y left :close-on-content-click="false">
+  <v-menu v-if="authUser" offset-y left>
     <template v-slot:activator="{ on }">
       <v-btn id="user-menu-btn" icon :width="size" :height="size" v-on="on">
         <v-avatar :size="size">
@@ -10,18 +10,28 @@
     </template>
     <v-list class="py-0" :dense="isPhone">
       <v-list-item>
-        <v-list-item-title
-          ><strong>{{
-            `${authUser.firstName} ${authUser.lastName}`
-          }}</strong></v-list-item-title
-        >
+        <v-list-item-title>
+          <strong>{{ `${authUser.firstName} ${authUser.lastName}` }}</strong>
+        </v-list-item-title>
       </v-list-item>
       <v-list-item id="feedback-btn" @click="giveFeedback">
-        <v-list-item-title>Give feedback</v-list-item-title>
+        <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
+          <v-icon class="tw-mr-1" small color="black">mdi-message</v-icon>
+          Give feedback
+        </v-list-item-title>
+      </v-list-item>
+      <v-list-item id="settings-btn" @click="goToSettings">
+        <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
+          <v-icon class="tw-mr-1" small color="black">mdi-cog</v-icon>
+          Settings
+        </v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
       <v-list-item id="sign-out-btn" @click="signOut">
-        <v-list-item-title class="red--text">Sign Out</v-list-item-title>
+        <v-list-item-title class="red--text tw-flex tw-items-center tw-gap-1">
+          <v-icon class="tw-mr-1" small color="red">mdi-logout</v-icon>
+          Sign Out
+        </v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
@@ -58,6 +68,9 @@ export default {
       await post("/auth/sign-out")
       this.setAuthUser(null)
       location.reload()
+    },
+    goToSettings() {
+      this.$router.replace({ name: "settings" })
     },
   },
 }
