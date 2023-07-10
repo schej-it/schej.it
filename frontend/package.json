@@ -10,6 +10,7 @@
     "@gtm-support/vue2-gtm": "^2.0.0",
     "copy-image-clipboard": "^2.1.2",
     "core-js": "^3.8.3",
+    "dayjs": "^1.11.9",
     "html2canvas": "^1.4.1",
     "is-ua-webview": "^1.1.0",
     "register-service-worker": "^1.7.2",

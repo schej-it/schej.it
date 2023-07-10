@@ -131,6 +131,24 @@ export const getDateHoursOffset = (date, hoursOffset) => {
   return newDate
 }
 
+/** Returns a date representing the current day of week with a weekoffset relative to the current date */
+export const getDowWeekOffset = (dow, weekOffset) => {
+  const date = new Date()
+  // Set date time to the time of dow
+  date.setHours(dow.getHours())
+  date.setMinutes(dow.getMinutes())
+  date.setSeconds(dow.getSeconds())
+  date.setMilliseconds(dow.getMilliseconds())
+  // Set date to the Sunday of the current week
+  date.setDate(date.getDate() - date.getDay())
+  // Change date by the weekoffset
+  date.setDate(date.getDate() + 7 * weekOffset)
+  // Change date to the day of dow
+  date.setDate(date.getDate() + dow.getDay()) // TODO: check if this causes bugs where timezone differences will make saturdays not work
+
+  return date
+}
+
 /** Converts a timeNum (e.g. 13) to a timeText (e.g. "1 pm") */
 export const timeNumToTimeText = (timeNum) => {
   const hours = Math.floor(timeNum)
@@ -246,13 +264,25 @@ export const getCurrentTimezone = () => {
   Returns an array of the user's calendar events for the given event, filtering for events
   only between the time ranges of the event and clamping calendar events that extend beyond the time
   ranges
+  weekOffset specifies the amount of weeks forward or backward to display events for (only used for weekly schej's)
 */
-export const getCalendarEventsByDay = async (event) => {
-  let timeMin = new Date(event.dates[0]).toISOString()
-  let timeMax = getDateDayOffset(
-    new Date(event.dates[event.dates.length - 1]),
-    2
-  ).toISOString()
+export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
+  let timeMin, timeMax
+  if (event.type === eventTypes.SPECIFIC_DATES) {
+    timeMin = new Date(event.dates[0]).toISOString()
+    timeMax = getDateDayOffset(
+      new Date(event.dates[event.dates.length - 1]),
+      2
+    ).toISOString()
+  } else if (event.type === eventTypes.DOW) {
+    const curDateWithWeekOffset = getDateDayOffset(new Date(), weekOffset * 7)
+    const curDateDay = curDateWithWeekOffset.getDay()
+    timeMin = getDateDayOffset(
+      curDateWithWeekOffset,
+      -(curDateDay + 1)
+    ).toISOString()
+    timeMax = getDateDayOffset(timeMin, 7 + 2).toISOString()
+  }
 
   // Fetch calendar events from Google Calendar
   const calendarEvents = await get(
@@ -262,14 +292,22 @@ export const getCalendarEventsByDay = async (event) => {
   const calendarEventsByDay = processCalendarEvents(
     event.dates,
     event.duration,
-    calendarEvents
+    calendarEvents,
+    event.type,
+    weekOffset
   )
 
   return calendarEventsByDay
 }
 
 /** Takes an array of calendar events and returns a new array separated by day and with hoursOffset and hoursLength properties */
-export const processCalendarEvents = (dates, duration, calendarEvents) => {
+export const processCalendarEvents = (
+  dates,
+  duration,
+  calendarEvents,
+  eventType = eventTypes.SPECIFIC_DATES,
+  weekOffset = 0
+) => {
   // Put calendarEvents into the correct format
   calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
   calendarEvents = calendarEvents.map((e) => {
@@ -289,7 +327,12 @@ export const processCalendarEvents = (dates, duration, calendarEvents) => {
   for (const i in dates) {
     if (calendarEvents.length == 0) break
 
-    const start = new Date(dates[i])
+    let start
+    if (eventType === eventTypes.DOW) {
+      start = getDowWeekOffset(new Date(dates[i]), weekOffset)
+    } else {
+      start = new Date(dates[i])
+    }
     const end = new Date(start)
     end.setHours(start.getHours() + duration)
 

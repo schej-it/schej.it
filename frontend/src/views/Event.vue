@@ -112,6 +112,8 @@
         :event="event"
         :loadingCalendarEvents="loading"
         :calendarEventsByDay="calendarEventsByDay"
+        :calendarPermissionGranted="calendarPermissionGranted"
+        :weekOffset.sync="weekOffset"
         @refreshEvent="refreshEvent"
       />
     </div>
@@ -204,6 +206,8 @@ export default {
 
     curGuestId: "", // Id of the current guest being edited
     calendarPermissionGranted: false,
+
+    weekOffset: 0,
   }),
 
   computed: {
@@ -387,7 +391,7 @@ export default {
     }
 
     // Get user's calendar
-    getCalendarEventsByDay(this.event)
+    getCalendarEventsByDay(this.event, this.weekOffset)
       .then((events) => {
         this.calendarEventsByDay = events
         this.loading = false
@@ -436,6 +440,19 @@ export default {
           this.scheduleOverlapComponent.startEditing()
         }
       }
+    },
+    weekOffset() {
+      this.loading = true
+
+      this.calendarEventsByDay = []
+      getCalendarEventsByDay(this.event, this.weekOffset).then((events) => {
+        this.calendarEventsByDay = events
+        this.loading = false
+
+        this.$nextTick(() => {
+          this.scheduleOverlapComponent.setAvailabilityAutomatically()
+        })
+      })
     },
   },
 }

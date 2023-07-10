@@ -173,7 +173,6 @@
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
-              :is-weekly="isWeekly"
               :state="state"
               :states="states"
               :cur-timezone.sync="curTimezone"
@@ -181,6 +180,10 @@
               :show-best-times.sync="showBestTimes"
               :is-owner="isOwner"
               :cur-scheduled-event="curScheduledEvent"
+              :is-weekly="isWeekly"
+              :calendar-permission-granted="calendarPermissionGranted"
+              :week-offset="weekOffset"
+              @update:weekOffset="(val) => $emit('update:weekOffset', val)"
               @onShowBestTimesChange="onShowBestTimesChange"
               @scheduleEvent="scheduleEvent"
               @cancelScheduleEvent="cancelScheduleEvent"
@@ -272,6 +275,8 @@
         :is-owner="isOwner"
         :cur-scheduled-event="curScheduledEvent"
         :is-weekly="isWeekly"
+        :calendar-permission-granted="calendarPermissionGranted"
+        :week-offset.sync="weekOffset"
         @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
         @cancelScheduleEvent="cancelScheduleEvent"
@@ -304,6 +309,7 @@ import {
   timeNumToTimeText,
   dateCompare,
   getDateHoursOffset,
+  getDowWeekOffset,
   post,
   isBetween,
   clamp,
@@ -326,6 +332,10 @@ export default {
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
+    calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
+
+    weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly schejs
+
     alwaysShowCalendarEvents: { type: Boolean, default: false }, // Whether to show calendar events all the time
     noEventNames: { type: Boolean, default: false }, // Whether to show "busy" instead of the event name
     calendarOnly: { type: Boolean, default: false }, // Whether to only show calendar and not respondents or any other controls
@@ -432,9 +442,16 @@ export default {
         "dec",
       ]
 
-      // New date representation method
       for (let date of this.event.dates) {
         date = new Date(date)
+
+        // Perform modifications to date depending on the event type
+        if (this.event.type === eventTypes.DOW) {
+          // Apply weekOffset to date
+          date = getDowWeekOffset(date, this.weekOffset)
+        } else if (this.event.type === eventTypes.SPECIFIC_DATES) {
+          // No modifications needed
+        }
 
         days.push({
           dayText: daysOfWeek[date.getDay()],
@@ -442,6 +459,7 @@ export default {
           dateObject: date,
         })
       }
+
       return days
     },
     defaultState() {
@@ -771,6 +789,7 @@ export default {
     setAvailabilityAutomatically() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
+      this.availability = new Set()
       const tmpAvailability = new Set()
       for (const d in this.days) {
         const day = this.days[d]

@@ -32,7 +32,11 @@
           </div>
         </template>
         <template v-else-if="isWeekly && !isPhone">
-          <GCalWeekSelector />
+          <GCalWeekSelector
+            :calendar-permission-granted="calendarPermissionGranted"
+            :week-offset="weekOffset"
+            @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+          />
         </template>
       </div>
 
@@ -77,7 +81,10 @@
     <!-- GCal week selector when user is using phone view -->
     <template v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY">
       <div class="tw-h-16 tw-text-sm">
-        <GCalWeekSelector />
+        <GCalWeekSelector
+          :calendar-permission-granted="calendarPermissionGranted"
+          :week-offset.sync="weekOffset"
+        />
       </div>
     </template>
   </div>
@@ -99,6 +106,8 @@ export default {
     showBestTimes: { type: Boolean, required: true },
     isOwner: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
+    calendarPermissionGranted: { type: Boolean, required: true },
+    weekOffset: { type: Number, required: true },
   },
 
   components: {
