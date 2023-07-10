@@ -445,7 +445,12 @@ export default {
       this.loading = true
 
       this.calendarEventsByDay = []
-      getCalendarEventsByDay(this.event, this.weekOffset).then((events) => {
+      const curWeekOffset = this.weekOffset
+      getCalendarEventsByDay(this.event, curWeekOffset).then((events) => {
+        // Don't set calendar events / set availability if user has already
+        // selected a different weekoffset by the time these calendar events load
+        if (curWeekOffset !== this.weekOffset) return
+
         this.calendarEventsByDay = events
         this.loading = false
 
