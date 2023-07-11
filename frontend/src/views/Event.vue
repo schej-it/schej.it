@@ -454,9 +454,12 @@ export default {
         this.calendarEventsByDay = events
         this.loading = false
 
-        this.$nextTick(() => {
-          this.scheduleOverlapComponent.setAvailabilityAutomatically()
-        })
+        // Only autofill availability if user hasn't responded
+        if (!this.userHasResponded) {
+          this.$nextTick(() => {
+            this.scheduleOverlapComponent.setAvailabilityAutomatically()
+          })
+        }
       })
     },
   },

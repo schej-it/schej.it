@@ -298,14 +298,10 @@ export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
     timeMax = getDateDayOffset(timeMin, 7 + 2).toISOString()
   }
 
-  console.log(timeMin, timeMax)
-
   // Fetch calendar events from Google Calendar
   const calendarEvents = await get(
     `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
   )
-
-  console.log(calendarEvents)
 
   const calendarEventsByDay = processCalendarEvents(
     event.dates,
@@ -314,8 +310,6 @@ export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
     event.type,
     weekOffset
   )
-
-  console.log(calendarEventsByDay)
 
   return calendarEventsByDay
 }
