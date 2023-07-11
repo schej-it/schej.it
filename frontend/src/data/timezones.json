@@ -1,9 +1,14 @@
 [
   { "name": "AST", "offset": -240 },
+  { "name": "ADT", "offset": -180 },
   { "name": "CST", "offset": -360 },
   { "name": "EST", "offset": -300 },
+  { "name": "EDT", "offset": -240 },
   { "name": "HST", "offset": -600 },
+  { "name": "HDT", "offset": -540 },
   { "name": "MST", "offset": -420 },
+  { "name": "MDT", "offset": -360 },
   { "name": "PST", "offset": -480 },
+  { "name": "PDT", "offset": -420 },
   { "name": "EET", "offset": 120 }
 ]
