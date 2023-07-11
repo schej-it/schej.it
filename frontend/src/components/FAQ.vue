@@ -2,28 +2,36 @@
   <div
     :class="`${
       toggled ? 'tw-border-green' : 'tw-border-gray'
-    } tw-w-full tw-transition-all tw-flex tw-flex-col tw-text-left tw-border-[1px] tw-p-4 sm:tw-p-6 tw-rounded-md tw-overflow-hidden tw-cursor-pointer`"
+    } tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-overflow-hidden tw-rounded-md tw-border-[1px] tw-p-4 tw-text-left tw-transition-all sm:tw-p-6`"
     @click="() => (toggled = !toggled)"
   >
     <div
-      class="tw-flex tw-flex-row tw-justify-between tw-content-center sm:tw-text-lg"
+      class="tw-flex tw-flex-row tw-content-center tw-justify-between sm:tw-text-lg"
     >
-      <div class="tw-font-medium tw-mr-4">{{ question }}</div>
+      <div class="tw-mr-4 tw-font-medium">{{ question }}</div>
       <v-icon
         size="x-large"
         :class="`${
           toggled ? 'tw-rotate-45 tw-text-green' : 'tw-rotate-0 tw-text-gray'
         }`"
-      >mdi-plus</v-icon>
+        >mdi-plus</v-icon
+      >
     </div>
 
     <v-expand-transition>
       <div v-if="toggled">
-        <div class="sm:tw-text-lg tw-pt-4 sm:tw-pt-6">
+        <div class="tw-pt-4 sm:tw-pt-6 sm:tw-text-lg">
           <div>{{ answer }}</div>
-          <div class="tw-gap-2 tw-flex tw-flex-col">
-            <div v-for="(point, index) in points" class="tw-flex tw-items-center">
-              <div class="tw-w-5 tw-h-5 tw-mr-2 tw-shrink-0 tw-bg-green tw-text-white tw-rounded-full tw-flex tw-items-center tw-justify-center">{{ index + 1 }}</div>
+          <div class="tw-flex tw-flex-col tw-gap-2">
+            <div
+              v-for="(point, index) in points"
+              class="tw-flex tw-items-center"
+            >
+              <div
+                class="tw-mr-2 tw-flex tw-h-5 tw-w-5 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-full tw-bg-green tw-text-white"
+              >
+                {{ index + 1 }}
+              </div>
               <div>{{ point }}</div>
             </div>
           </div>

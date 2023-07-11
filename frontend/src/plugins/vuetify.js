@@ -1,8 +1,8 @@
-import Vue from 'vue';
-import Vuetify from 'vuetify/lib';
-import tailwind from '../../tailwind.config'
+import Vue from "vue"
+import Vuetify from "vuetify/lib"
+import tailwind from "../../tailwind.config"
 
-Vue.use(Vuetify);
+Vue.use(Vuetify)
 
 export default new Vuetify({
   theme: {
@@ -12,4 +12,4 @@ export default new Vuetify({
       },
     },
   },
-});
+})

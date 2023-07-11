@@ -1,8 +1,8 @@
 <template>
   <v-card
-    class="tw-py-4 tw-flex tw-flex-col tw-rounded-lg tw-relative tw-overflow-none tw-max-w-[28rem]"
+    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4"
   >
-    <v-card-title class="tw-px-4 sm:tw-px-8 tw-flex tw-mb-2">
+    <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
       <div>
         {{ editEvent ? "Edit event" : "New event" }}
       </div>
@@ -11,8 +11,8 @@
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-card-title>
-    <v-card-text class="tw-px-4 sm:tw-px-8 tw-overflow-auto tw-py-1 tw-flex-1">
-      <div class="tw-space-y-10 tw-flex tw-flex-col">
+    <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
+      <div class="tw-flex tw-flex-col tw-space-y-10">
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -25,14 +25,14 @@
         />
 
         <div>
-          <div class="tw-text-lg tw-text-black tw-mb-4">
+          <div class="tw-mb-4 tw-text-lg tw-text-black">
             What times might work?
           </div>
-          <div class="tw-flex tw-space-x-2 tw-items-baseline tw-justify-center">
+          <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
             <v-select
               v-model="startTime"
               :disabled="loading"
-              class="tw-flex-initial /*tw-w-28*/"
+              class="/*tw-w-28*/ tw-flex-initial"
               menu-props="auto"
               :items="times"
               hide-details
@@ -42,7 +42,7 @@
             <v-select
               v-model="endTime"
               :disabled="loading"
-              class="tw-flex-initial /*tw-w-28*/"
+              class="/*tw-w-28*/ tw-flex-initial"
               menu-props="auto"
               :items="times"
               hide-details
@@ -52,18 +52,18 @@
         </div>
 
         <div>
-          <div class="tw-text-lg tw-text-black tw-mb-4">
+          <div class="tw-mb-4 tw-text-lg tw-text-black">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
           </div>
-          <!-- <v-select
+          <v-select
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
             hide-details
             class="tw-mb-4"
-          /> -->
+          />
 
           <v-expand-transition>
             <v-date-picker
@@ -73,7 +73,7 @@
               multiple
               color="primary"
               :show-current="false"
-              class="tw-min-w-full sm:tw-min-w-0 tw-border-0 tw-drop-shadow"
+              class="tw-min-w-full tw-border-0 tw-drop-shadow sm:tw-min-w-0"
               :min="minCalendarDate"
               full-width
             />
@@ -104,7 +104,7 @@
         />
       </div>
     </v-card-text>
-    <v-card-actions class="tw-px-8 tw-relative">
+    <v-card-actions class="tw-relative tw-px-8">
       <v-btn
         block
         :loading="loading"
@@ -120,6 +120,7 @@
 </template>
 
 <script>
+import { eventTypes, dayIndexToDayString } from "@/constants"
 import {
   post,
   put,
@@ -157,27 +158,11 @@ export default {
     selectedDateOption: "Specific dates",
   }),
 
-  created() {
-    // Populate event fields if this.event exists
-    if (this.event) {
-      this.name = this.event.name
-      this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
-      this.endTime = (this.startTime + this.event.duration) % 24
-      this.notificationsEnabled = this.event.notificationsEnabled
-
-      const selectedDays = []
-      for (const date of this.event.dates) {
-        selectedDays.push(getISODateString(date))
-      }
-      this.selectedDays = selectedDays
-    }
-  },
-
   computed: {
     formComplete() {
       return (
         this.name.length > 0 &&
-        this.selectedDays.length > 0 &&
+        (this.selectedDays.length > 0 || this.selectedDaysOfWeek.length > 0) &&
         (this.startTime < this.endTime ||
           (this.endTime === 0 && this.startTime != 0))
       )
@@ -229,12 +214,27 @@ export default {
       let duration = this.endTime - this.startTime
       if (duration < 0) duration += 24
 
+      let dates = []
+      let type = ""
+
       // Get date objects for each selected day
       const startTimeString = timeNumToTimeString(this.startTime)
-      const dates = []
-      for (const day of this.selectedDays) {
-        const date = new Date(`${day}T${startTimeString}`)
-        dates.push(date)
+      if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+        type = eventTypes.SPECIFIC_DATES
+
+        for (const day of this.selectedDays) {
+          const date = new Date(`${day}T${startTimeString}`)
+          dates.push(date)
+        }
+      } else if (this.selectedDateOption === this.dateOptions.DOW) {
+        type = eventTypes.DOW
+
+        this.selectedDaysOfWeek.sort((a, b) => a - b)
+        for (const dayIndex of this.selectedDaysOfWeek) {
+          const day = dayIndexToDayString[dayIndex]
+          const date = new Date(`${day}T${startTimeString}`)
+          dates.push(date)
+        }
       }
 
       this.loading = true
@@ -245,6 +245,7 @@ export default {
           duration,
           dates,
           notificationsEnabled: this.notificationsEnabled,
+          type,
         }).then(({ eventId }) => {
           this.$router.push({ name: "event", params: { eventId } })
           this.loading = false
@@ -257,10 +258,50 @@ export default {
             duration,
             dates,
             notificationsEnabled: this.notificationsEnabled,
+            type,
           }).then(() => {
             window.location.reload()
           })
         }
+      }
+    },
+  },
+
+  watch: {
+    event: {
+      immediate: true,
+      handler() {
+        // Populate event fields if this.event exists
+        if (this.event) {
+          this.name = this.event.name
+          this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
+          this.endTime = (this.startTime + this.event.duration) % 24
+          this.notificationsEnabled = this.event.notificationsEnabled
+
+          if (this.event.type === eventTypes.SPECIFIC_DATES) {
+            this.selectedDateOption = this.dateOptions.SPECIFIC
+            const selectedDays = []
+            for (const date of this.event.dates) {
+              selectedDays.push(getISODateString(date))
+            }
+            this.selectedDays = selectedDays
+          } else if (this.event.type === eventTypes.DOW) {
+            this.selectedDateOption = this.dateOptions.DOW
+            const selectedDaysOfWeek = []
+            for (const date of this.event.dates) {
+              selectedDaysOfWeek.push(new Date(date).getDay())
+            }
+            this.selectedDaysOfWeek = selectedDaysOfWeek
+          }
+        }
+      },
+    },
+    selectedDateOption() {
+      // Reset the other date / day selection when date option is changed
+      if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+        this.selectedDaysOfWeek = []
+      } else if (this.selectedDateOption === this.dateOptions.DOW) {
+        this.selectedDays = []
       }
     },
   },

@@ -36,7 +36,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime,notificationsEnabled=bool} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,type=models.EventType} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -45,6 +45,7 @@ func createEvent(c *gin.Context) {
 		Duration             *float32             `json:"duration" binding:"required"`
 		Dates                []primitive.DateTime `json:"dates" binding:"required"`
 		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
+		Type                 models.EventType     `json:"type" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -67,6 +68,7 @@ func createEvent(c *gin.Context) {
 		Duration:             payload.Duration,
 		Dates:                payload.Dates,
 		NotificationsEnabled: *payload.NotificationsEnabled,
+		Type:                 payload.Type,
 		Responses:            make(map[string]*models.Response),
 	}
 
@@ -283,7 +285,7 @@ func scheduleEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]primitive.DateTime,notificationsEnabled=bool} true "Object containing info about the event to update"
+// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,type=models.EventType} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
@@ -292,6 +294,7 @@ func editEvent(c *gin.Context) {
 		Duration             *float32             `json:"duration" binding:"required"`
 		Dates                []primitive.DateTime `json:"dates" binding:"required"`
 		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
+		Type                 models.EventType     `json:"type" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -320,6 +323,7 @@ func editEvent(c *gin.Context) {
 				"duration":             payload.Duration,
 				"dates":                payload.Dates,
 				"notificationsEnabled": *payload.NotificationsEnabled,
+				"type":                 payload.Type,
 			},
 		},
 	)

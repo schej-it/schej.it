@@ -20,15 +20,15 @@
     <!-- Edit event dialog -->
     <NewEventDialog v-model="editEventDialog" :event="event" edit-event />
 
-    <div class="tw-max-w-5xl tw-mx-auto tw-mt-4">
+    <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
         <!-- Title and copy link -->
-        <div class="tw-text-black tw-flex tw-items-center">
+        <div class="tw-flex tw-items-center tw-text-black">
           <div>
             <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
             <div class="tw-flex tw-items-baseline tw-gap-1">
               <div
-                class="tw-text-sm sm:tw-text-base tw-font-normal tw-text-very-dark-gray"
+                class="tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-text-base"
               >
                 {{ dateString }}
               </div>
@@ -38,7 +38,7 @@
                 @click="editEvent"
                 icon
                 dense
-                class="tw-text-green tw-min-w-0 tw-px-2 tw-text-sm sm:tw-text-base"
+                class="tw-min-w-0 tw-px-2 tw-text-sm tw-text-green sm:tw-text-base"
               >
                 <v-icon v-if="!isPhone" small>mdi-pencil</v-icon>
                 <span v-else class="tw-underline">Edit</span>
@@ -54,7 +54,7 @@
                 class="tw-text-green"
                 @click="copyLink"
               >
-                <span v-if="!isPhone" class="tw-text-green tw-mr-2"
+                <span v-if="!isPhone" class="tw-mr-2 tw-text-green"
                   >Copy link</span
                 >
                 <v-icon class="tw-text-green" v-if="!isPhone"
@@ -68,7 +68,7 @@
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"
                   min-width="10.25rem"
-                  class="tw-text-white tw-bg-green"
+                  class="tw-bg-green tw-text-white"
                   @click="editGuestAvailability"
                 >
                   {{ `Edit ${selectedGuestRespondent}'s availability` }}
@@ -76,7 +76,7 @@
                 <v-btn
                   v-else
                   width="10.25rem"
-                  class="tw-text-white tw-bg-green"
+                  class="tw-bg-green tw-text-white"
                   :disabled="loading && !userHasResponded"
                   @click="addAvailability"
                 >
@@ -87,14 +87,14 @@
               </template>
               <template v-else>
                 <v-btn
-                  class="tw-text-red tw-mr-1 tw-w-20"
+                  class="tw-mr-1 tw-w-20 tw-text-red"
                   @click="cancelEditing"
                   outlined
                 >
                   Cancel
                 </v-btn>
                 <v-btn
-                  class="tw-text-white tw-bg-green tw-w-20"
+                  class="tw-w-20 tw-bg-green tw-text-white"
                   @click="saveChanges"
                 >
                   Save
@@ -109,10 +109,11 @@
 
       <ScheduleOverlap
         ref="scheduleOverlap"
-        :eventId="eventId"
-        v-bind="event"
+        :event="event"
         :loadingCalendarEvents="loading"
         :calendarEventsByDay="calendarEventsByDay"
+        :calendarPermissionGranted="calendarPermissionGranted"
+        :weekOffset.sync="weekOffset"
         @refreshEvent="refreshEvent"
       />
     </div>
@@ -121,14 +122,14 @@
     <!-- Bottom bar for phones -->
     <div
       v-if="isPhone"
-      class="tw-flex tw-items-center tw-fixed tw-bottom-0 tw-bg-green tw-w-full tw-px-4 tw-h-16"
+      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
     >
       <template v-if="!isEditing">
         <v-spacer />
         <v-btn
           v-if="!authUser && selectedGuestRespondent"
           outlined
-          class="tw-text-green tw-bg-white"
+          class="tw-bg-white tw-text-green"
           @click="editGuestAvailability"
         >
           {{ `Edit ${selectedGuestRespondent}'s availability` }}
@@ -136,7 +137,7 @@
         <v-btn
           v-else
           outlined
-          class="tw-text-green tw-bg-white"
+          class="tw-bg-white tw-text-green"
           :disabled="loading && !userHasResponded"
           @click="addAvailability"
         >
@@ -148,7 +149,7 @@
           Cancel
         </v-btn>
         <v-spacer />
-        <v-btn class="tw-text-green tw-bg-white" @click="saveChanges">
+        <v-btn class="tw-bg-white tw-text-green" @click="saveChanges">
           Save
         </v-btn>
       </template>
@@ -171,7 +172,7 @@ import { mapActions, mapState } from "vuex"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
-import { errors, authTypes } from "@/constants"
+import { errors, authTypes, eventTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
@@ -205,6 +206,8 @@ export default {
 
     curGuestId: "", // Id of the current guest being edited
     calendarPermissionGranted: false,
+
+    weekOffset: 0,
   }),
 
   computed: {
@@ -220,6 +223,12 @@ export default {
     },
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    isSpecificDates() {
+      return this.event?.type === eventTypes.SPECIFIC_DATES || !this.event?.type
+    },
+    isWeekly() {
+      return this.event?.type === eventTypes.DOW
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges
@@ -382,7 +391,7 @@ export default {
     }
 
     // Get user's calendar
-    getCalendarEventsByDay(this.event)
+    getCalendarEventsByDay(this.event, this.weekOffset)
       .then((events) => {
         this.calendarEventsByDay = events
         this.loading = false
@@ -431,6 +440,27 @@ export default {
           this.scheduleOverlapComponent.startEditing()
         }
       }
+    },
+    weekOffset() {
+      this.loading = true
+
+      this.calendarEventsByDay = []
+      const curWeekOffset = this.weekOffset
+      getCalendarEventsByDay(this.event, curWeekOffset).then((events) => {
+        // Don't set calendar events / set availability if user has already
+        // selected a different weekoffset by the time these calendar events load
+        if (curWeekOffset !== this.weekOffset) return
+
+        this.calendarEventsByDay = events
+        this.loading = false
+
+        // Only autofill availability if user hasn't responded
+        if (!this.userHasResponded) {
+          this.$nextTick(() => {
+            this.scheduleOverlapComponent.setAvailabilityAutomatically()
+          })
+        }
+      })
     },
   },
 }

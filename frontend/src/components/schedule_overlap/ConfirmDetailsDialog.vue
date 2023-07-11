@@ -29,17 +29,17 @@
                   to receive email auto-suggestions.
                 </span>
               </div>
-              <div class="tw-max-h-96 tw-overflow-y-auto tw-table-auto">
-                <table class="tw-text-black tw-w-full tw-text-left">
+              <div class="tw-max-h-96 tw-table-auto tw-overflow-y-auto">
+                <table class="tw-w-full tw-text-left tw-text-black">
                   <thead>
-                    <tr class="tw-font-medium tw-bg-white">
+                    <tr class="tw-bg-white tw-font-medium">
                       <th
-                        class="tw-pb-4 tw-bg-white tw-sticky tw-top-0 tw-z-10"
+                        class="tw-sticky tw-top-0 tw-z-10 tw-bg-white tw-pb-4"
                       >
                         Name
                       </th>
                       <th
-                        class="tw-pb-4 tw-bg-white tw-sticky tw-top-0 tw-z-10"
+                        class="tw-sticky tw-top-0 tw-z-10 tw-bg-white tw-pb-4"
                       >
                         Email
                       </th>
@@ -52,7 +52,7 @@
                           <UserAvatarContent
                             v-if="respondent.email.length > 0"
                             :user="respondent"
-                            class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
+                            class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
                           ></UserAvatarContent>
                           <v-icon v-else class="tw-ml-1 tw-mr-3" small>
                             mdi-account

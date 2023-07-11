@@ -1,10 +1,14 @@
 <template>
-  <div class="tw-flex">
+  <div>
     <div
-      class="tw-flex-1 tw-flex tw-items-center tw-mt-4 sm:tw-mt-0 tw-text-sm tw-justify-center sm:tw-justify-between"
+      class="tw-flex tw-min-h-[5rem] tw-flex-1 tw-items-center tw-justify-center tw-text-sm sm:tw-mt-0 sm:tw-justify-between"
     >
       <div
-        class="tw-flex tw-gap-4 sm:tw-gap-8 tw-flex-row tw-justify-between sm:tw-justify-start tw-flex-1"
+        :class="`tw-justify-${
+          state === states.EDIT_AVAILABILITY ? 'center' : 'between'
+        } 
+        `"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -13,23 +17,40 @@
           :timezones="Object.keys(timezoneMap)"
         />
 
-        <div class="tw-flex tw-justify-center tw-items-center tw-gap-1">
-          <div>Show best times</div>
-          <v-switch
-            id="show-best-times-toggle"
-            class="-tw-mb-1"
-            :input-value="showBestTimes"
-            @change="updateShowBestTimes"
-            color="#219653"
-          />
-        </div>
+        <template v-if="state !== states.EDIT_AVAILABILITY">
+          <div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
+            <div>Show best times</div>
+            <v-switch
+              id="show-best-times-toggle"
+              class="tw-mt-0 tw-py-2.5"
+              :input-value="showBestTimes"
+              @change="updateShowBestTimes"
+              color="#219653"
+              hide-details
+            />
+          </div>
+        </template>
+        <template v-else-if="isWeekly && !isPhone">
+          <v-spacer />
+          <div class="tw-min-w-fit">
+            <GCalWeekSelector
+              :calendar-permission-granted="calendarPermissionGranted"
+              :week-offset="weekOffset"
+              @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+            />
+          </div>
+        </template>
       </div>
 
-      <div v-if="isOwner" style="width: 180.16px" class="tw-hidden sm:tw-block">
+      <div
+        v-if="isOwner && state !== states.EDIT_AVAILABILITY"
+        style="width: 180.16px"
+        class="tw-hidden sm:tw-block"
+      >
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
-            class="tw-text-green tw-w-full"
+            class="tw-w-full tw-text-green"
             @click="(e) => $emit('scheduleEvent', e)"
           >
             <span class="tw-mr-2">Schedule event</span>
@@ -44,7 +65,7 @@
         <template v-else>
           <v-btn
             outlined
-            class="tw-text-red tw-mr-1"
+            class="tw-mr-1 tw-text-red"
             @click="(e) => $emit('cancelScheduleEvent', e)"
           >
             Cancel
@@ -52,18 +73,30 @@
           <v-btn
             color="primary"
             @click="(e) => $emit('confirmScheduleEvent', e)"
-            :disabled="!curScheduledEvent"
           >
             Schedule
           </v-btn>
         </template>
       </div>
     </div>
+
+    <!-- GCal week selector when user is using phone view -->
+    <template v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY">
+      <div class="tw-h-16 tw-text-sm">
+        <GCalWeekSelector
+          :calendar-permission-granted="calendarPermissionGranted"
+          :week-offset="weekOffset"
+          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+        />
+      </div>
+    </template>
   </div>
 </template>
 
 <script>
 import TimezoneSelector from "./TimezoneSelector.vue"
+import GCalWeekSelector from "./GCalWeekSelector.vue"
+import { isPhone } from "@/utils"
 
 export default {
   name: "ToolRow",
@@ -75,11 +108,20 @@ export default {
     timezoneMap: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     isOwner: { type: Boolean, required: true },
-    curScheduledEvent: { type: Object | null, required: true },
+    isWeekly: { type: Boolean, required: true },
+    calendarPermissionGranted: { type: Boolean, required: true },
+    weekOffset: { type: Number, required: true },
   },
 
   components: {
     TimezoneSelector,
+    GCalWeekSelector,
+  },
+
+  computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
   },
 
   methods: {

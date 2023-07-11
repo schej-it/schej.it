@@ -17,3 +17,18 @@ export const authTypes = Object.freeze({
   EVENT_ADD_AVAILABILITY: "event-add-availability",
   EVENT_SIGN_IN: "event-sign-in",
 })
+
+export const eventTypes = Object.freeze({
+  SPECIFIC_DATES: "specific_dates",
+  DOW: "dow",
+})
+
+export const dayIndexToDayString = Object.freeze([
+  "2018-06-17", // Sunday
+  "2018-06-18", // Monday
+  "2018-06-19", // Tuesday
+  "2018-06-20", // Wednesday
+  "2018-06-21", // Thursday
+  "2018-06-22", // Friday
+  "2018-06-23", // Saturday
+])

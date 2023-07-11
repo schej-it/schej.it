@@ -1,9 +1,9 @@
 <template>
   <v-container
     @click="$emit('click')"
-    class="tw-bg-light-gray tw-rounded-md tw-flex tw-text-black tw-justify-between tw-align-middle tw-py-2"
+    class="tw-flex tw-justify-between tw-rounded-md tw-bg-light-gray tw-py-2 tw-align-middle tw-text-black"
   >
-    <div class="tw-flex tw-mt-2">
+    <div class="tw-mt-2 tw-flex">
       <div class="tw-mr-3">
         <v-avatar>
           <img
@@ -19,56 +19,49 @@
           Currently
           <span
             v-if="this.user.status == 'free'"
-            class="tw-text-green tw-font-bold"
+            class="tw-font-bold tw-text-green"
             >free</span
           ><span v-else>
             in
-            <span class="tw-text-light-blue tw-font-bold">
+            <span class="tw-font-bold tw-text-light-blue">
               {{ this.user.status }}
             </span>
           </span>
         </div>
       </div>
-      
     </div>
 
-    <div >
-      <v-switch
-        v-model="showEventNames"
-        inset
-      ></v-switch>
+    <div>
+      <v-switch v-model="showEventNames" inset></v-switch>
     </div>
-    
   </v-container>
 </template>
 
 <script>
 export default {
-  name: 'UserItem',
+  name: "UserItem",
 
   props: {
     user: { type: Object, required: true },
   },
 
   mounted() {
-      if (localStorage.showEventNames) {
-          this.showEventNames = localStorage.showEventNames
-      }
+    if (localStorage.showEventNames) {
+      this.showEventNames = localStorage.showEventNames
+    }
   },
 
   data: () => ({
-      showEventNames: true,
+    showEventNames: true,
   }),
 
-  computed: {
-      
-  },
+  computed: {},
 
   watch: {
-      showEventNames(val) {
-          localStorage.showEventNames = val
-          this.$emit("showEventNames", val)
-      }
+    showEventNames(val) {
+      localStorage.showEventNames = val
+      this.$emit("showEventNames", val)
+    },
   },
 
   methods: {},

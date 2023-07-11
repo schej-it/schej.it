@@ -1,15 +1,15 @@
 <template>
   <span>
-    <div class="tw-p-4 tw-select-none" style="-webkit-touch-callout: none">
+    <div class="tw-select-none tw-p-4" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
-        <div class="tw-grow tw-flex tw-overflow-hidden">
+        <div class="tw-flex tw-grow tw-overflow-hidden">
           <!-- Times -->
-          <div class="tw-w-12 tw-mt-12 tw-flex-none">
+          <div class="tw-mt-12 tw-w-12 tw-flex-none">
             <div class="-tw-mt-[8px]">
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-5 tw-text-xs tw-pr-2 tw-text-right tw-uppercase tw-font-light"
+                class="tw-h-5 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
               >
                 {{ time.text }}
               </div>
@@ -17,14 +17,16 @@
           </div>
 
           <div class="tw-grow tw-overflow-hidden">
-            <div class="tw-overflow-hidden tw-relative">
+            <div class="tw-relative tw-overflow-hidden">
               <div
                 ref="calendar"
                 @scroll="onCalendarScroll"
-                class="tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden tw-relative"
+                class="tw-relative tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden"
               >
                 <!-- Days -->
-                <div class="tw-flex tw-h-12 tw-bg-white tw-z-10">
+                <div
+                  class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white"
+                >
                   <div
                     v-for="(day, i) in days"
                     :key="i"
@@ -33,7 +35,8 @@
                   >
                     <div class="tw-text-center">
                       <div
-                        class="tw-capitalize tw-font-light tw-text-xs tw-text-very-dark-gray"
+                        v-if="isSpecificDates"
+                        class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
                       >
                         {{ day.dateString }}
                       </div>
@@ -50,7 +53,7 @@
                     <div
                       id="times"
                       data-long-press-delay="500"
-                      class="tw-flex tw-relative"
+                      class="tw-relative tw-flex"
                       @mouseleave="resetCurTimeslot"
                     >
                       <!-- Loader -->
@@ -59,7 +62,7 @@
                           (alwaysShowCalendarEvents || editing) &&
                           loadingCalendarEvents
                         "
-                        class="tw-absolute tw-grid tw-place-content-center tw-w-full tw-h-full tw-z-10"
+                        class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                       >
                         <v-progress-circular
                           class="tw-text-blue"
@@ -70,7 +73,7 @@
                       <div
                         v-for="(day, d) in days"
                         :key="d"
-                        class="tw-flex-1 tw-relative"
+                        class="tw-relative tw-flex-1"
                         style="min-width: 50px"
                       >
                         <!-- Timeslots -->
@@ -80,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-5 tw-border-[#DDDDDD88] tw-border-r"
+                            class="timeslot tw-h-5 tw-border-r tw-border-[#DDDDDD88]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -95,7 +98,7 @@
                             appear
                           >
                             <div
-                              class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
                               :style="{
                                 top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
                                 height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
@@ -103,7 +106,7 @@
                               style="pointer-events: none"
                             >
                               <div
-                                class="tw-border-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
                               >
                                 <div
                                   :class="`tw-text-${
@@ -127,15 +130,15 @@
                                 curScheduledEvent &&
                                 curScheduledEvent.dayIndex === d)
                             "
-                            class="tw-absolute tw-w-full tw-p-px tw-select-none"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="scheduledEventStyle"
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-border-blue tw-bg-blue tw-border-solid tw-border tw-w-full tw-h-full tw-text-ellipsis tw-text-xs tw-rounded tw-p-px tw-overflow-hidden"
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
                             >
-                              <div class="tw-text-white tw-font-medium">
-                                {{ name }}
+                              <div class="tw-font-medium tw-text-white">
+                                {{ event.name }}
                               </div>
                             </div>
                           </div>
@@ -149,19 +152,19 @@
               <ZigZag
                 v-if="showLeftZigZag"
                 left
-                class="tw-w-3 tw-h-full tw-absolute tw-left-0 tw-top-0"
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
               />
               <ZigZag
                 v-if="showRightZigZag"
                 right
-                class="tw-w-3 tw-h-full tw-absolute tw-right-0 tw-top-0"
+                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
               />
             </div>
 
             <!-- Hint text (desktop) -->
             <div v-if="!isPhone && showHintText" class="tw-flex">
               <div
-                class="tw-text-dark-gray tw-text-sm tw-mt-2"
+                class="tw-mt-2 tw-text-sm tw-text-dark-gray"
                 style="min-height: 1.4rem"
               >
                 {{ hintText.desktop }}
@@ -177,6 +180,10 @@
               :show-best-times.sync="showBestTimes"
               :is-owner="isOwner"
               :cur-scheduled-event="curScheduledEvent"
+              :is-weekly="isWeekly"
+              :calendar-permission-granted="calendarPermissionGranted"
+              :week-offset="weekOffset"
+              @update:weekOffset="(val) => $emit('update:weekOffset', val)"
               @onShowBestTimesChange="onShowBestTimesChange"
               @scheduleEvent="scheduleEvent"
               @cancelScheduleEvent="cancelScheduleEvent"
@@ -191,7 +198,7 @@
         <div v-if="isPhone && showHintText" class="tw-flex">
           <div class="tw-w-12"></div>
           <div
-            class="tw-text-dark-gray tw-text-xs tw-mt-2"
+            class="tw-mt-2 tw-text-xs tw-text-dark-gray"
             style="min-height: 2rem"
           >
             {{ hintText.mobile }}
@@ -201,9 +208,9 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-py-4 tw-w-full sm:tw-pl-8 sm:tw-flex-none sm:tw-py-0 sm:tw-pr-0 sm:tw-pt-12 sm:tw-w-48"
+          class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
-          <div class="tw-font-medium tw-mb-2 tw-flex tw-items-center">
+          <div class="tw-mb-2 tw-flex tw-items-center tw-font-medium">
             <div class="tw-mr-1 tw-text-lg">Responses</div>
             <div class="tw-font-normal">
               <template v-if="curRespondents.length === 0">
@@ -222,31 +229,38 @@
               </template>
             </div>
           </div>
-          <div
-            class="/*tw-pl-4*/ tw-text-sm tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
-          >
-            <div
-              v-for="(user, i) in respondents"
-              :key="user._id"
-              class="tw-py-1 tw-flex tw-items-center tw-cursor-pointer"
-              @mouseover="(e) => mouseOverRespondent(e, user._id)"
-              @mouseleave="mouseLeaveRespondent"
-              @click="(e) => clickRespondent(e, user._id)"
-            >
-              <UserAvatarContent
-                v-if="!isGuest(user)"
-                :user="user"
-                class="tw-w-4 tw-h-4 -tw-ml-3 -tw-mr-1"
-              ></UserAvatarContent>
-              <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-
-              <div
-                class="tw-mr-1 tw-transition-all"
-                :class="respondentClass(user._id)"
-              >
-                {{ user.firstName + " " + user.lastName }}
+          <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block">
+            <template v-if="respondents.length === 0">
+              <div class="tw-px-2 tw-text-very-dark-gray">
+                No responses yet!
               </div>
-            </div>
+            </template>
+            <template v-else>
+              <div
+                v-for="(user, i) in respondents"
+                :key="user._id"
+                class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
+                @mouseover="(e) => mouseOverRespondent(e, user._id)"
+                @mouseleave="mouseLeaveRespondent"
+                @click="(e) => clickRespondent(e, user._id)"
+              >
+                <UserAvatarContent
+                  v-if="!isGuest(user)"
+                  :user="user"
+                  class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
+                ></UserAvatarContent>
+                <v-icon v-else class="tw-ml-1 tw-mr-3" small
+                  >mdi-account</v-icon
+                >
+
+                <div
+                  class="tw-mr-1 tw-transition-all"
+                  :class="respondentClass(user._id)"
+                >
+                  {{ user.firstName + " " + user.lastName }}
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -260,6 +274,10 @@
         :show-best-times.sync="showBestTimes"
         :is-owner="isOwner"
         :cur-scheduled-event="curScheduledEvent"
+        :is-weekly="isWeekly"
+        :calendar-permission-granted="calendarPermissionGranted"
+        :week-offset="weekOffset"
+        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
         @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
         @cancelScheduleEvent="cancelScheduleEvent"
@@ -298,6 +316,7 @@ import {
   isPhone,
   utcTimeToLocalTime,
 } from "@/utils"
+import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import ZigZag from "./ZigZag.vue"
@@ -309,17 +328,14 @@ import ToolRow from "./ToolRow.vue"
 export default {
   name: "ScheduleOverlap",
   props: {
-    eventId: { type: String, default: "" }, // ID of event
-    ownerId: { type: String, default: "" }, // ID of the owner of the event
-    name: { type: String, default: "" }, // Name of event
-    startTime: { type: Number, required: true }, // Start time of event
-    endTime: { type: Number, required: true }, // End time of event
-    duration: { type: Number, required: true }, // Duration of event
-    dates: { type: Array, required: true }, // Dates of the event
-    responses: { type: Object, default: () => ({}) }, // Map of user id to array of times they are available
+    event: { type: Object, required: true },
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
+    calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
+
+    weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly schejs
+
     alwaysShowCalendarEvents: { type: Boolean, default: false }, // Whether to show calendar events all the time
     noEventNames: { type: Boolean, default: false }, // Whether to show "busy" instead of the event name
     calendarOnly: { type: Boolean, default: false }, // Whether to only show calendar and not respondents or any other controls
@@ -426,8 +442,7 @@ export default {
         "dec",
       ]
 
-      // New date representation method
-      for (let date of this.dates) {
+      for (let date of this.event.dates) {
         date = new Date(date)
 
         days.push({
@@ -436,6 +451,7 @@ export default {
           dateObject: date,
         })
       }
+
       return days
     },
     defaultState() {
@@ -470,7 +486,13 @@ export default {
       return isPhone(this.$vuetify)
     },
     isOwner() {
-      return this.authUser?._id === this.ownerId
+      return this.authUser?._id === this.event.ownerId
+    },
+    isSpecificDates() {
+      return this.event.type === eventTypes.SPECIFIC_DATES || !this.event.type
+    },
+    isWeekly() {
+      return this.event.type === eventTypes.DOW
     },
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user)
@@ -498,13 +520,13 @@ export default {
     parsedResponses() {
       /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
       const parsed = {}
-      for (const k of Object.keys(this.responses)) {
+      for (const k of Object.keys(this.event.responses)) {
         const newUser = {
-          ...this.responses[k].user,
+          ...this.event.responses[k].user,
           _id: k,
         }
         parsed[k] = {
-          ...this.responses[k],
+          ...this.event.responses[k],
           user: newUser,
         }
       }
@@ -538,8 +560,8 @@ export default {
       /* Returns the times that are encompassed by startTime and endTime */
       const times = []
 
-      for (let i = 0; i < this.duration; ++i) {
-        const utcTimeNum = this.startTime + i
+      for (let i = 0; i < this.event.duration; ++i) {
+        const utcTimeNum = this.event.startTime + i
         const localTimeNum = utcTimeToLocalTime(utcTimeNum, this.timezoneOffset)
 
         times.push({
@@ -751,7 +773,7 @@ export default {
     },
     populateUserAvailability(id) {
       /* Populates the availability set for the auth user from the responses object stored on the server */
-      this.responses[id].availability.forEach((item) =>
+      this.event.responses[id].availability.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -759,6 +781,7 @@ export default {
     setAvailabilityAutomatically() {
       /* Constructs the availability array using calendarEvents array */
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
+      this.availability = new Set()
       const tmpAvailability = new Set()
       for (const d in this.days) {
         const day = this.days[d]
@@ -834,7 +857,7 @@ export default {
         payload.guest = true
         payload.name = name
       }
-      await post(`/events/${this.eventId}/response`, payload)
+      await post(`/events/${this.event._id}/response`, payload)
       this.$emit("refreshEvent")
       this.unsavedChanges = false
     },
@@ -1030,7 +1053,7 @@ export default {
         this.name
       )}&dates=${start}/${end}&details=${encodeURIComponent(
         "\n\nThis event was scheduled with schej: https://schej.it/e/"
-      )}${this.eventId}&add=${emailsString}`
+      )}${this.event._id}&add=${emailsString}`
 
       // Navigate to url and reset state
       window.open(url, "_blank")
@@ -1185,7 +1208,7 @@ export default {
     //#region Options
     // -----------------------------------
     getLocalTimezone() {
-      const split = new Date(this.dates[0])
+      const split = new Date(this.event.dates[0])
         .toLocaleTimeString("en-us", { timeZoneName: "short" })
         .split(" ")
       const localTimezone = split[split.length - 1]

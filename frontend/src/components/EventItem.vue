@@ -2,7 +2,7 @@
   <v-container
     @click="$emit('click')"
     v-ripple
-    class="hover:tw-drop-shadow-md tw-drop-shadow tw-transition-all tw-bg-white tw-rounded-lg tw-flex tw-text-black tw-justify-between tw-items-center tw-px-4 tw-py-2.5 sm:tw-py-3"
+    class="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
   >
     <div class="tw-ml-1">
       <div>{{ this.event.name }}</div>
@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="tw-min-w-max">
-      <v-chip small class="tw-text-very-dark-gray tw-m-0.5 tw-bg-off-white">
+      <v-chip small class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray">
         <v-icon left small> mdi-account-multiple </v-icon>
         {{ Object.keys(this.event.responses).length }}
       </v-chip>
@@ -35,7 +35,7 @@
               <v-btn
                 id="delete-event-btn"
                 text
-                class="tw-px-6 red--text"
+                class="red--text tw-px-6"
                 v-bind="attrs"
                 v-on="on"
                 block
