@@ -4,12 +4,12 @@
       class="tw-flex tw-min-h-[5rem] tw-flex-1 tw-items-center tw-justify-center tw-text-sm sm:tw-mt-0 sm:tw-justify-between"
     >
       <div
-        :class="
+        :class="`tw-justify-${
           state === states.EDIT_AVAILABILITY
-            ? 'tw-justify-center'
-            : 'tw-justify-between'
-        "
-        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
+            ? 'center'
+            : 'between'} sm:tw-justify-${isWeekly ? 'between' : 'start'}
+        `"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4  sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -32,11 +32,13 @@
           </div>
         </template>
         <template v-else-if="isWeekly && !isPhone">
-          <GCalWeekSelector
-            :calendar-permission-granted="calendarPermissionGranted"
-            :week-offset="weekOffset"
-            @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-          />
+          <div class="tw-min-w-fit">
+            <GCalWeekSelector
+              :calendar-permission-granted="calendarPermissionGranted"
+              :week-offset="weekOffset"
+              @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+            />
+          </div>
         </template>
       </div>
 
