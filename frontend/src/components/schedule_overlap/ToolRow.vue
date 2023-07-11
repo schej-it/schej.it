@@ -5,11 +5,10 @@
     >
       <div
         :class="`tw-justify-${
-          state === states.EDIT_AVAILABILITY
-            ? 'center'
-            : 'between'} sm:tw-justify-${isWeekly ? 'between' : 'start'}
+          state === states.EDIT_AVAILABILITY ? 'center' : 'between'
+        } 
         `"
-        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4  sm:tw-gap-x-8"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -32,6 +31,7 @@
           </div>
         </template>
         <template v-else-if="isWeekly && !isPhone">
+          <v-spacer />
           <div class="tw-min-w-fit">
             <GCalWeekSelector
               :calendar-permission-granted="calendarPermissionGranted"
@@ -85,7 +85,8 @@
       <div class="tw-h-16 tw-text-sm">
         <GCalWeekSelector
           :calendar-permission-granted="calendarPermissionGranted"
-          :week-offset.sync="weekOffset"
+          :week-offset="weekOffset"
+          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
         />
       </div>
     </template>
