@@ -310,7 +310,6 @@ import {
   timeNumToTimeText,
   dateCompare,
   getDateHoursOffset,
-  getDowWeekOffset,
   post,
   isBetween,
   clamp,
@@ -445,14 +444,6 @@ export default {
 
       for (let date of this.event.dates) {
         date = new Date(date)
-
-        // Perform modifications to date depending on the event type
-        if (this.event.type === eventTypes.DOW) {
-          // Apply weekOffset to date
-          date = getDowWeekOffset(date, this.weekOffset)
-        } else if (this.event.type === eventTypes.SPECIFIC_DATES) {
-          // No modifications needed
-        }
 
         days.push({
           dayText: daysOfWeek[date.getDay()],

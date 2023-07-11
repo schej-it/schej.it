@@ -131,20 +131,23 @@ export const getDateHoursOffset = (date, hoursOffset) => {
   return newDate
 }
 
-/** Returns a date representing the current day of week with a weekoffset relative to the current date */
-export const getDowWeekOffset = (dow, weekOffset) => {
-  const date = new Date()
-  // Set date time to the time of dow
-  date.setHours(dow.getHours())
-  date.setMinutes(dow.getMinutes())
-  date.setSeconds(dow.getSeconds())
-  date.setMilliseconds(dow.getMilliseconds())
-  // Set date to the Sunday of the current week
-  date.setDate(date.getDate() - date.getDay())
-  // Change date by the weekoffset
-  date.setDate(date.getDate() + 7 * weekOffset)
-  // Change date to the day of dow
-  date.setDate(date.getDate() + dow.getDay()) // TODO: check if this causes bugs where timezone differences will make saturdays not work
+/** Returns a date, transformed to be in the same week of the dows array */
+export const dateToDowDate = (dows, date, weekOffset) => {
+  // Get Sunday of the current week offset by weekOffset
+  const curSunday = new Date()
+  curSunday.setDate(curSunday.getDate() - curSunday.getDay())
+  curSunday.setDate(curSunday.getDate() + 7 * weekOffset)
+
+  // Get Sunday of the week containing the dows
+  const dowSunday = new Date(dows[0])
+  dowSunday.setDate(dowSunday.getDate() - dowSunday.getDay())
+
+  // Get the amount of days between both of the sundays
+  const dayOffset = Math.round((curSunday - dowSunday) / (1000 * 60 * 60 * 24))
+
+  // Offset date by the amount of days between the two sundays
+  date = new Date(date)
+  date.setDate(date.getDate() - dayOffset)
 
   return date
 }
@@ -269,12 +272,14 @@ export const getCurrentTimezone = () => {
 export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
   let timeMin, timeMax
   if (event.type === eventTypes.SPECIFIC_DATES) {
+    // Get all calendar events between the first date and the last date in dates
     timeMin = new Date(event.dates[0]).toISOString()
     timeMax = getDateDayOffset(
       new Date(event.dates[event.dates.length - 1]),
       2
     ).toISOString()
   } else if (event.type === eventTypes.DOW) {
+    // Get all calendar events for the current week offsetted by weekOffset
     const curDateWithWeekOffset = getDateDayOffset(new Date(), weekOffset * 7)
     const curDateDay = curDateWithWeekOffset.getDay()
     timeMin = getDateDayOffset(
@@ -284,10 +289,14 @@ export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
     timeMax = getDateDayOffset(timeMin, 7 + 2).toISOString()
   }
 
+  console.log(timeMin, timeMax)
+
   // Fetch calendar events from Google Calendar
   const calendarEvents = await get(
     `/user/calendar?timeMin=${timeMin}&timeMax=${timeMax}`
   )
+
+  console.log(calendarEvents)
 
   const calendarEventsByDay = processCalendarEvents(
     event.dates,
@@ -296,6 +305,8 @@ export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
     event.type,
     weekOffset
   )
+
+  console.log(calendarEventsByDay)
 
   return calendarEventsByDay
 }
@@ -311,8 +322,13 @@ export const processCalendarEvents = (
   // Put calendarEvents into the correct format
   calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
   calendarEvents = calendarEvents.map((e) => {
-    e.startDate = new Date(e.startDate)
-    e.endDate = new Date(e.endDate)
+    if (eventType === eventTypes.DOW) {
+      e.startDate = dateToDowDate(dates, e.startDate, weekOffset)
+      e.endDate = dateToDowDate(dates, e.endDate, weekOffset)
+    } else {
+      e.startDate = new Date(e.startDate)
+      e.endDate = new Date(e.endDate)
+    }
     return e
   })
   calendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
@@ -327,12 +343,7 @@ export const processCalendarEvents = (
   for (const i in dates) {
     if (calendarEvents.length == 0) break
 
-    let start
-    if (eventType === eventTypes.DOW) {
-      start = getDowWeekOffset(new Date(dates[i]), weekOffset)
-    } else {
-      start = new Date(dates[i])
-    }
+    const start = new Date(dates[i])
     const end = new Date(start)
     end.setHours(start.getHours() + duration)
 
