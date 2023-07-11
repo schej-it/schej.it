@@ -133,6 +133,15 @@ export const getDateHoursOffset = (date, hoursOffset) => {
 
 /** Returns a date, transformed to be in the same week of the dows array */
 export const dateToDowDate = (dows, date, weekOffset) => {
+  // Sort dows to make sure first date is not Saturday when there are multiple dates
+  // (as such is the case when an event is created in Tokyo and you're answering in Mountain View)
+  // This fixes the dayOffset calculation so that events are displayed in the correct week
+  dows = [...dows].sort((date1, date2) => {
+    const day1 = new Date(date1).getDay()
+    const day2 = new Date(date2).getDay()
+    return day1 - day2
+  })
+
   // Get Sunday of the current week offset by weekOffset
   const curSunday = new Date()
   curSunday.setDate(curSunday.getDate() - curSunday.getDay())
