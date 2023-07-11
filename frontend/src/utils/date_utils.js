@@ -49,12 +49,13 @@ export const getDateRangeStringForEvent = (event) => {
     }
     s = s.substring(0, s.length - 2)
     return s
+  } else if (event.type === eventTypes.SPECIFIC_DATES) {
+    const startDate = new Date(event.dates[0])
+    const endDate = new Date(event.dates[event.dates.length - 1])
+    return getDateRangeString(startDate, endDate)
   }
 
-  // Specific dates
-  const startDate = new Date(event.dates[0])
-  const endDate = new Date(event.dates[event.dates.length - 1])
-  return getDateRangeString(startDate, endDate)
+  return ""
 }
 
 /** Returns a new date object with the given date (e.g. 5/2/2022) and the specified time (e.g. "11:30") */
