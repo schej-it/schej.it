@@ -79,12 +79,16 @@ func createEvent(c *gin.Context) {
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
+	var creator string
 	if signedIn {
 		user := db.GetUserById(userId)
-		discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s %s (%s)\n**Notifications Enabled**: %v", insertedId, user.FirstName, user.LastName, user.Email, event.NotificationsEnabled))
+		creator = fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email)
 	} else {
-		discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: Guest :face_with_open_eyes_and_hand_over_mouth:\n**Notifications Enabled**: %v", insertedId, event.NotificationsEnabled))
+		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
+
+	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s\n**Type**: %s\n**Notifications Enabled**: %v", insertedId, creator, event.Type, event.NotificationsEnabled))
+
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
 
