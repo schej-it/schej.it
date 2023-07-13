@@ -32,7 +32,6 @@
             <v-select
               v-model="startTime"
               :disabled="loading"
-              class="/*tw-w-28*/ tw-flex-initial"
               menu-props="auto"
               :items="times"
               hide-details
@@ -42,7 +41,6 @@
             <v-select
               v-model="endTime"
               :disabled="loading"
-              class="/*tw-w-28*/ tw-flex-initial"
               menu-props="auto"
               :items="times"
               hide-details
