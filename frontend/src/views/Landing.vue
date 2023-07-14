@@ -99,9 +99,8 @@
           <div class="tw-text-base tw-font-medium md:tw-text-xl">
             <div v-if="i == 1">
               <span
-                class="tw-cursor-pointer tw-underline tw-decoration-pale-green tw-decoration-4 hover:tw-decoration-green"
+                class="tw-underline tw-decoration-pale-green tw-decoration-4"
                 style="text-underline-position: under"
-                @click="confetti"
               >
                 Automatically
               </span>
@@ -210,7 +209,6 @@ import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
 import NewEventDialog from "@/components/NewEventDialog.vue"
-import { confetti } from "tsparticles-confetti"
 
 export default {
   name: "Landing",
@@ -270,24 +268,6 @@ export default {
   },
 
   methods: {
-    confetti() {
-      confetti({
-        spread: 360,
-        ticks: 1000,
-        // count: 100,
-        shapes: ["image"],
-        scalar: 5,
-        shapeOptions: {
-          image: [
-            {
-              src: require("@/assets/schej_logo.png"),
-              width: 32,
-              height: 32,
-            },
-          ],
-        },
-      })
-    },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
     },
