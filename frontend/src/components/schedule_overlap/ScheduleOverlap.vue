@@ -231,9 +231,7 @@
           </div>
           <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block">
             <template v-if="respondents.length === 0">
-              <div class="tw-px-2 tw-text-very-dark-gray">
-                No responses yet!
-              </div>
+              <div class="tw-text-very-dark-gray">No responses yet!</div>
             </template>
             <template v-else>
               <div
