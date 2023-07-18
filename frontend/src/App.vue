@@ -24,10 +24,15 @@
 
         <v-spacer />
 
-        <AuthUserMenu v-if="authUser" />
-        <v-btn v-else id="top-right-sign-in-btn" text @click="signIn"
-          >Sign in</v-btn
-        >
+        <v-btn id="feedback-btn" text @click="giveFeedback">
+          Give feedback
+        </v-btn>
+        <div v-if="authUser" class="sm:tw-ml-4">
+          <AuthUserMenu />
+        </div>
+        <v-btn v-else id="top-right-sign-in-btn" text @click="signIn">
+          Sign in
+        </v-btn>
       </div>
     </div>
 
@@ -178,6 +183,9 @@ export default {
           selectAccount: true,
         })
       }
+    },
+    giveFeedback() {
+      window.open("https://forms.gle/9AgRy4PQfWfVuBnw8", "_blank")
     },
   },
 

@@ -14,12 +14,12 @@
           <strong>{{ `${authUser.firstName} ${authUser.lastName}` }}</strong>
         </v-list-item-title>
       </v-list-item>
-      <v-list-item id="feedback-btn" @click="giveFeedback">
+      <!-- <v-list-item id="feedback-btn" @click="giveFeedback">
         <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
           <v-icon class="tw-mr-1" small color="black">mdi-message</v-icon>
           Give feedback
         </v-list-item-title>
-      </v-list-item>
+      </v-list-item> -->
       <v-list-item id="settings-btn" @click="goToSettings">
         <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
           <v-icon class="tw-mr-1" small color="black">mdi-cog</v-icon>
