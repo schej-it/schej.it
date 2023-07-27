@@ -18,15 +18,8 @@ type User struct {
 	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
-	// Settings
-	Visibility int `json:"visibility" bson:"visibility"`
-
-	// Friends
-	FriendIds []primitive.ObjectID `json:"-" bson:"friendIds,omitempty"`
-	Friends   []UserProfile        `json:"friends" bson:",omitempty"`
-
-	// Calendars maps the calendar's id to the calendar object
-	Calendars map[string]Calendar `json:"calendars" bson:"calendars,omitempty"`
+	// CalendarAccounts contains all the additional accounts the user wants to see google calendar events for
+	CalendarAccounts []CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`
 
 	// Google OAuth stuff
 	AccessToken           string             `json:"accessToken" bson:"accessToken,omitempty"`
@@ -35,21 +28,25 @@ type User struct {
 	TokenOrigin           TokenOriginType    `json:"tokenOrigin" bson:"tokenOrigin,omitempty"`
 }
 
-// Calendar contains information about a user's calendar
-type Calendar struct {
-	Id       string `json:"id" bson:"id,omitempty"`
-	Summary  string `json:"summary" bson:"summary,omitempty"`
-	Selected bool   `json:"selected" bson:"selected,omitempty"`
+// CalendarAccount contains info about the user's other signed in calendar accounts
+type CalendarAccount struct {
+	Email   string `json:"email" bson:"email,omitempty"`
+	Picture string `json:"picture" bson:"picture,omitempty"`
+
+	AccessToken           string             `json:"-" bson:"accessToken,omitempty"`
+	AccessTokenExpireDate primitive.DateTime `json:"-" bson:"accessTokenExpireDate,omitempty"`
+	RefreshToken          string             `json:"-" bson:"refreshToken,omitempty"`
 }
 
 // User profile to return as json to frontend
 type UserProfile struct {
-	Id         primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	Email      string             `json:"email" bson:"email,omitempty"`
-	FirstName  string             `json:"firstName" bson:"firstName,omitempty"`
-	LastName   string             `json:"lastName" bson:"lastName,omitempty"`
-	Picture    string             `json:"picture" bson:"picture,omitempty"`
-	Visibility *int               `json:"visibility" bson:"visibility,omitempty"`
+	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	Email     string             `json:"email" bson:"email,omitempty"`
+	FirstName string             `json:"firstName" bson:"firstName,omitempty"`
+	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
+	Picture   string             `json:"picture" bson:"picture,omitempty"`
+
+	CalendarAccounts []CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`
 }
 
 // Get a UserProfile object from the given User object
