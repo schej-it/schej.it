@@ -198,8 +198,10 @@ func addCalendarAccount(c *gin.Context) {
 
 	// Define a new calendar account
 	calendarAccount := models.CalendarAccount{
-		Email:                 email,
-		Picture:               picture,
+		Email:   email,
+		Picture: picture,
+		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
+
 		AccessToken:           tokens.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          tokens.RefreshToken,

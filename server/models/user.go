@@ -29,6 +29,7 @@ type User struct {
 type CalendarAccount struct {
 	Email   string `json:"email" bson:"email,omitempty"`
 	Picture string `json:"picture" bson:"picture,omitempty"`
+	Enabled *bool  `json:"enabled" bson:"enabled,omitempty"`
 
 	AccessToken           string             `json:"-" bson:"accessToken,omitempty"`
 	AccessTokenExpireDate primitive.DateTime `json:"-" bson:"accessTokenExpireDate,omitempty"`
