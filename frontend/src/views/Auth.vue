@@ -22,12 +22,17 @@ export default {
     try {
       if (process.env.NODE_ENV === "development")
         console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
-      await post("/auth/sign-in", {
-        code,
-        timezoneOffset: new Date().getTimezoneOffset(),
-      })
-      const authUser = await get("/user/profile")
-      this.setAuthUser(authUser)
+
+      if (state?.type === authTypes.ADD_CALENDAR_ACCOUNT) {
+        await post("/auth/add-calendar-account", { code })
+      } else {
+        await post("/auth/sign-in", {
+          code,
+          timezoneOffset: new Date().getTimezoneOffset(),
+        })
+        const authUser = await get("/user/profile")
+        this.setAuthUser(authUser)
+      }
 
       // Redirect to the correct place based on "state", otherwise, just redirect to home
       if (state) {
@@ -42,6 +47,11 @@ export default {
             this.$router.replace({
               name: "event",
               params: { eventId: state.eventId },
+            })
+            break
+          case authTypes.ADD_CALENDAR_ACCOUNT:
+            this.$router.replace({
+              name: "settings",
             })
             break
         }

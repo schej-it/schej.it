@@ -1,21 +1,25 @@
 <template>
-  <div class="tw-max-w-6xl tw-mx-auto tw-mb-12 tw-mt-5">
-    <div class="tw-p-4 tw-flex tw-flex-col tw-gap-16">
+  <div class="tw-mx-auto tw-mb-12 tw-mt-5 tw-max-w-6xl">
+    <div class="tw-flex tw-flex-col tw-gap-16 tw-p-4">
       <!-- Calendar Access Section -->
       <div class="tw-flex tw-flex-col tw-gap-5">
         <div
-          class="tw-text-xl sm:tw-text-2xl tw-font-medium tw-text-dark-green"
+          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
         >
           Calendar Access
         </div>
-        <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-5 sm:tw-gap-28">
+        <div class="tw-flex tw-flex-col tw-gap-5 sm:tw-flex-row sm:tw-gap-28">
           <div class="tw-text-black">
             We do not store your calendar data anywhere on our servers, and we
             only fetch your calendar events for the time frame you specify in
             order to display your calendar events while you fill out your
             availability.
           </div>
-          <v-btn outlined class="tw-text-bright-red" href="https://myaccount.google.com/connections?filters=3,4&hl=en" target="_blank"
+          <v-btn
+            outlined
+            class="tw-text-bright-red"
+            href="https://myaccount.google.com/connections?filters=3,4&hl=en"
+            target="_blank"
             >Revoke calendar access</v-btn
           >
         </div>
@@ -24,19 +28,19 @@
       <!-- Permissions Section -->
       <div class="tw-flex tw-flex-col tw-gap-5">
         <div
-          class="tw-text-xl sm:tw-text-2xl tw-font-medium tw-text-dark-green"
+          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
         >
           Permissions
         </div>
         <div
-          class="tw-flex tw-flex-col tw-border-gray tw-border-t-[1px] tw-border-l-[1px]"
+          class="tw-flex tw-flex-col tw-border-t-[1px] tw-border-l-[1px] tw-border-gray"
         >
           <div
-            class="tw-flex tw-flex-row tw-w-full tw-border-gray tw-border-b-[1px]"
+            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-gray"
           >
             <div
               v-for="h in heading"
-              class="tw-w-1/3 tw-border-gray tw-border-r-[1px] tw-p-4 tw-font-bold"
+              class="tw-w-1/3 tw-border-r-[1px] tw-border-gray tw-p-4 tw-font-bold"
             >
               {{ h }}
             </div>
@@ -44,11 +48,11 @@
 
           <div
             v-for="c in content"
-            class="tw-flex tw-flex-row tw-w-full tw-border-gray tw-border-b-[1px]"
+            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-gray"
           >
             <div
               v-for="text in c"
-              class="tw-w-1/3 tw-border-gray tw-border-r-[1px] tw-p-4"
+              class="tw-w-1/3 tw-border-r-[1px] tw-border-gray tw-p-4"
             >
               {{ text }}
             </div>
@@ -59,11 +63,11 @@
       <!-- Question Section -->
       <div class="tw-flex tw-flex-col tw-gap-5">
         <div
-          class="tw-text-xl sm:tw-text-2xl tw-font-medium tw-text-dark-green"
+          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
         >
           Have a question?
         </div>
-        <div class="tw-flex tw-flex-col sm:tw-flex-row tw-gap-5 sm:tw-gap-28">
+        <div class="tw-flex tw-flex-col tw-gap-5 sm:tw-flex-row sm:tw-gap-28">
           <div class="tw-text-black">
             Email us at
             <a
@@ -77,7 +81,7 @@
       </div>
 
       <!-- Delete Account Section -->
-      <div class="tw-flex tw-flex-row tw-justify-center tw-mt-28">
+      <div class="tw-mt-28 tw-flex tw-flex-row tw-justify-center">
         <div class="tw-w-64">
           <v-dialog v-model="deleteDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
@@ -92,18 +96,18 @@
             </template>
             <v-card>
               <v-card-title>Are you sure?</v-card-title>
-              <v-card-text class="tw-text-dark-gray tw-text-sm"
+              <v-card-text class="tw-text-sm tw-text-dark-gray"
                 >Are you sure you want to delete your account? All your account
                 data will be lost.</v-card-text
               >
               <div class="tw-mx-6">
-                <div class="tw-text-dark-gray tw-text-sm">
+                <div class="tw-text-sm tw-text-dark-gray">
                   Type your email in the box below to confirm:
                 </div>
                 <v-text-field
                   v-model="deleteValidateEmail"
                   autofocus
-                  class="tw-text-white tw-flex-initial"
+                  class="tw-flex-initial tw-text-white"
                   :placeholder="authUser.email"
                 />
               </div>
@@ -122,13 +126,18 @@
           </v-dialog>
         </div>
       </div>
+
+      <div>
+        <v-btn @click="addCalendarAccount">add calendar account</v-btn>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapActions } from "vuex"
-import { _delete } from "@/utils"
+import { _delete, signInGoogle } from "@/utils"
+import { authTypes } from "@/constants"
 
 export default {
   name: "Settings",
@@ -160,6 +169,12 @@ export default {
 
   methods: {
     ...mapActions(["showError"]),
+    addCalendarAccount() {
+      signInGoogle({
+        state: { type: authTypes.ADD_CALENDAR_ACCOUNT },
+        requestCalendarPermission: true,
+      })
+    },
     deleteAccount() {
       _delete(`/user`)
         .then(() => {
