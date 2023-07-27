@@ -24,7 +24,7 @@ func InitUsers(router *gin.Engine) {
 // @Tags users
 // @Produce json
 // @Param query query string true "Search query matching users' names/emails"
-// @Success 200 {object} []models.UserProfile "An array of user profile objects"
+// @Success 200 {object} []models.User "An array of user profile objects"
 // @Router /users [get]
 func searchUsers(c *gin.Context) {
 

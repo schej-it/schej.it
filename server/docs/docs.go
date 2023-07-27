@@ -641,7 +641,7 @@ var doc = `{
                     "200": {
                         "description": "A user profile object",
                         "schema": {
-                            "$ref": "#/definitions/models.UserProfile"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 }
@@ -671,7 +671,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.UserProfile"
+                                "$ref": "#/definitions/models.User"
                             }
                         }
                     }
@@ -742,7 +742,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.UserProfile"
+                                "$ref": "#/definitions/models.User"
                             }
                         }
                     }
@@ -865,20 +865,22 @@ var doc = `{
                 },
                 "user": {
                     "type": "object",
-                    "$ref": "#/definitions/models.UserProfile"
+                    "$ref": "#/definitions/models.User"
                 },
                 "userId": {
                     "type": "string"
                 }
             }
         },
-        "models.UserProfile": {
+        "models.User": {
             "type": "object",
             "properties": {
                 "_id": {
+                    "description": "Profile info",
                     "type": "string"
                 },
                 "calendarAccounts": {
+                    "description": "CalendarAccounts contains all the additional accounts the user wants to see google calendar events for",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.CalendarAccount"
@@ -895,6 +897,9 @@ var doc = `{
                 },
                 "picture": {
                     "type": "string"
+                },
+                "timezoneOffset": {
+                    "type": "integer"
                 }
             }
         },

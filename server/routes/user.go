@@ -35,7 +35,7 @@ func InitUser(router *gin.Engine) {
 // @Summary Gets the user's profile
 // @Tags user
 // @Produce json
-// @Success 200 {object} models.UserProfile "A user profile object"
+// @Success 200 {object} models.User "A user profile object"
 // @Router /user/profile [get]
 func getProfile(c *gin.Context) {
 	userInterface, _ := c.Get("authUser")
@@ -43,7 +43,7 @@ func getProfile(c *gin.Context) {
 
 	db.UpdateDailyUserLog(user)
 
-	c.JSON(http.StatusOK, user.GetProfile())
+	c.JSON(http.StatusOK, user)
 }
 
 // @Summary Gets all the user's events
@@ -167,7 +167,7 @@ func updateVisibility(c *gin.Context) {
 // @Tags user
 // @Produce json
 // @Param query query string true "Query to search for"
-// @Success 200 {object} []models.UserProfile
+// @Success 200 {object} []models.User
 // @Router /user/searchContacts [get]
 func searchContacts(c *gin.Context) {
 	// Bind query parameters

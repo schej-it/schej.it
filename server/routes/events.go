@@ -112,11 +112,11 @@ func getEvent(c *gin.Context) {
 		user := db.GetUserById(userId)
 		if user == nil {
 			userId = response.Name
-			response.User = &models.UserProfile{
+			response.User = &models.User{
 				FirstName: response.Name,
 			}
 		} else {
-			response.User = user.GetProfile()
+			response.User = user
 		}
 		event.Responses[userId] = response
 	}

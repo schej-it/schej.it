@@ -11,7 +11,7 @@ import (
 	"schej.it/server/services"
 )
 
-func SearchContacts(user *models.User, query string) ([]models.UserProfile, *errs.GoogleAPIError) {
+func SearchContacts(user *models.User, query string) ([]models.User, *errs.GoogleAPIError) {
 	type Person struct {
 		Names []struct {
 			FamilyName string `json:"familyName"`
@@ -74,9 +74,9 @@ func SearchContacts(user *models.User, query string) ([]models.UserProfile, *err
 	}
 
 	// Format list of contacts search results
-	contacts := make([]models.UserProfile, 0)
+	contacts := make([]models.User, 0)
 	for _, result := range contactsData.Results {
-		var userProfile models.UserProfile
+		var userProfile models.User
 		userProfile.FirstName = result.Person.Names[0].GivenName
 		userProfile.LastName = result.Person.Names[0].FamilyName
 		if len(result.Person.Photos) > 0 {
@@ -89,7 +89,7 @@ func SearchContacts(user *models.User, query string) ([]models.UserProfile, *err
 		}
 	}
 	for _, person := range directoryData.People {
-		var userProfile models.UserProfile
+		var userProfile models.User
 		userProfile.FirstName = person.Names[0].GivenName
 		userProfile.LastName = person.Names[0].FamilyName
 		if len(person.Photos) > 0 {

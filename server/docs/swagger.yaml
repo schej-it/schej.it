@@ -75,16 +75,19 @@ definitions:
       name:
         type: string
       user:
-        $ref: '#/definitions/models.UserProfile'
+        $ref: '#/definitions/models.User'
         type: object
       userId:
         type: string
     type: object
-  models.UserProfile:
+  models.User:
     properties:
       _id:
+        description: Profile info
         type: string
       calendarAccounts:
+        description: CalendarAccounts contains all the additional accounts the user
+          wants to see google calendar events for
         items:
           $ref: '#/definitions/models.CalendarAccount'
         type: array
@@ -96,6 +99,8 @@ definitions:
         type: string
       picture:
         type: string
+      timezoneOffset:
+        type: integer
     type: object
   primitive.DateTime:
     type: integer
@@ -492,7 +497,7 @@ paths:
         "200":
           description: A user profile object
           schema:
-            $ref: '#/definitions/models.UserProfile'
+            $ref: '#/definitions/models.User'
       summary: Gets the user's profile
       tags:
       - user
@@ -511,7 +516,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.UserProfile'
+              $ref: '#/definitions/models.User'
             type: array
       summary: Searches the user's contacts based on the given query
       tags:
@@ -554,7 +559,7 @@ paths:
           description: An array of user profile objects
           schema:
             items:
-              $ref: '#/definitions/models.UserProfile'
+              $ref: '#/definitions/models.User'
             type: array
       summary: Returns users that match the search query
       tags:
