@@ -59,6 +59,14 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 	return calendars, nil
 }
 
+// Calls GetCalendarList but broadcasts the result to channel
+func GetCalendarListChan(c chan []models.Calendar, accessToken string) {
+	calendars, err := GetCalendarList(accessToken)
+	if err == nil {
+		c <- calendars
+	}
+}
+
 // Get the user's list of calendar events for the given calendar
 func GetCalendarEvents(c chan []models.CalendarEvent, accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
 	min, _ := timeMin.MarshalText()
@@ -126,19 +134,20 @@ func GetCalendarEvents(c chan []models.CalendarEvent, accessToken string, calend
 func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
 	db.RefreshUserTokenIfNecessary(user)
 
+	// Get primary user's calendar, throw error if gcal access not granted
 	calendars, err := GetCalendarList(user.AccessToken)
 	if err != nil {
 		return nil, err
 	}
 
-	calendarEventsChan := make(chan []models.CalendarEvent)
+	// Get secondary account calendars
 
 	// Call the google calendar API to get a list of calendar events from the user's gcal
+	calendarEventsChan := make(chan []models.CalendarEvent)
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, calendar := range calendars {
 		go GetCalendarEvents(calendarEventsChan, user.AccessToken, calendar.Id, timeMin, timeMax)
 	}
-
 	for range calendars {
 		events := <-calendarEventsChan
 		calendarEvents = append(calendarEvents, events...)

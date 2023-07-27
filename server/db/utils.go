@@ -2,11 +2,7 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/logger"
 	"schej.it/server/models"
+	"schej.it/server/services/auth"
 	"schej.it/server/utils"
 )
 
@@ -105,35 +102,10 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 	// logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
 		// Refresh token by calling google token endpoint
-		values := url.Values{
-			"client_id":     {utils.GetClientIdFromTokenOrigin(u.TokenOrigin)},
-			"grant_type":    {"refresh_token"},
-			"refresh_token": {u.RefreshToken},
-		}
-		if u.TokenOrigin == models.WEB {
-			values.Add("client_secret", os.Getenv("CLIENT_SECRET"))
-		}
+		tokenData := auth.RefreshAccessToken(u.RefreshToken)
 
-		resp, err := http.PostForm(
-			"https://oauth2.googleapis.com/token",
-			values,
-		)
-		if err != nil {
-			logger.StdErr.Panicln(err)
-		}
-		defer resp.Body.Close()
-
-		res := struct {
-			AccessToken string `json:"access_token"`
-			ExpiresIn   int    `json:"expires_in"`
-			Scope       string `json:"scope"`
-			TokenType   string `json:"token_type"`
-			Error       bson.M `json:"error"`
-		}{}
-		json.NewDecoder(resp.Body).Decode(&res)
-
-		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
-		u.AccessToken = res.AccessToken
+		accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokenData.ExpiresIn)
+		u.AccessToken = tokenData.AccessToken
 		u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
 
 		UsersCollection.FindOneAndUpdate(
