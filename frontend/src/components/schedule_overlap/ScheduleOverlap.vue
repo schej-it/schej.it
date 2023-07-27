@@ -1048,7 +1048,7 @@ export default {
 
       // Construct Google Calendar event creation template url
       const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-        this.name
+        this.event.name
       )}&dates=${start}/${end}&details=${encodeURIComponent(
         "\n\nThis event was scheduled with schej: https://schej.it/e/"
       )}${this.event._id}&add=${emailsString}`
