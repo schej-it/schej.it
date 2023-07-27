@@ -173,6 +173,7 @@ export default {
       signInGoogle({
         state: { type: authTypes.ADD_CALENDAR_ACCOUNT },
         requestCalendarPermission: true,
+        selectAccount: true,
       })
     },
     deleteAccount() {

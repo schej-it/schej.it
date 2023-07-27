@@ -13,6 +13,7 @@ import (
 
 	"github.com/brianvoe/sjwt"
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/logger"
 	"schej.it/server/models"
@@ -54,6 +55,13 @@ func StringToObjectID(s string) primitive.ObjectID {
 // Gets the user id from the current session as an ObjectID object
 func GetUserId(session sessions.Session) primitive.ObjectID {
 	return StringToObjectID(session.Get("userId").(string))
+}
+
+// Returns the currently signed in user
+func GetAuthUser(c *gin.Context) *models.User {
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	return user
 }
 
 // Gets the access token expire date from an "expiresIn" int representing the number of seconds

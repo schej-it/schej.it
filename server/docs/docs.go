@@ -68,6 +68,46 @@ var doc = `{
                 }
             }
         },
+        "/auth/add-calendar-account": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Adds a new calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the Google authorization code",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "Signs user in and sets the access token session variable",
@@ -233,7 +273,7 @@ var doc = `{
                                         "dates": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/primitive.DateTime"
+                                                "type": "string"
                                             }
                                         },
                                         "duration": {
@@ -335,7 +375,7 @@ var doc = `{
                                         "dates": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/primitive.DateTime"
+                                                "type": "string"
                                             }
                                         },
                                         "duration": {
@@ -492,261 +532,6 @@ var doc = `{
                 "responses": {
                     "200": {}
                 }
-            }
-        },
-        "/friends": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Gets all of users current friends",
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/requests": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Gets all the current incoming and outgoing friend requests",
-                "responses": {
-                    "200": {}
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Creates a new friend request",
-                "parameters": [
-                    {
-                        "description": "Object specifying the user IDs of who this request is sent from and to",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "to": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Friend request already exists from \\\"to\\\" to \\\"from\\\", and it was accepted"
-                    },
-                    "201": {
-                        "description": "Friend request created",
-                        "schema": {
-                            "$ref": "#/definitions/models.FriendRequest"
-                        }
-                    }
-                }
-            }
-        },
-        "/friends/requests/{id}": {
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Delete's a friend request created by the current user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the friend request",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/requests/{id}/accept": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Accepts an existing friend request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the friend request",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/requests/{id}/reject": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Rejects an existing friend request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the friend request",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/{id}": {
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Removes an existing friend",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of friend",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/{id}/calendar": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Returns the specified friend's schedule",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of friend",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Lower bound for event's start time to filter by",
-                        "name": "timeMin",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Upper bound for event's end time to filter by",
-                        "name": "timeMax",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.CalendarEvent"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/friends/{id}/status": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Returns whether the friend is free or busy",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of friend",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ]
             }
         },
         "/user": {
@@ -966,6 +751,17 @@ var doc = `{
         }
     },
     "definitions": {
+        "models.CalendarAccount": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CalendarEvent": {
             "type": "object",
             "properties": {
@@ -1029,32 +825,6 @@ var doc = `{
         "models.EventType": {
             "type": "string"
         },
-        "models.FriendRequest": {
-            "type": "object",
-            "properties": {
-                "_id": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
-                },
-                "from": {
-                    "type": "string"
-                },
-                "fromUser": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.UserProfile"
-                },
-                "to": {
-                    "type": "string"
-                },
-                "toUser": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.UserProfile"
-                }
-            }
-        },
         "models.Location": {
             "type": "object",
             "properties": {
@@ -1108,6 +878,12 @@ var doc = `{
                 "_id": {
                     "type": "string"
                 },
+                "calendarAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CalendarAccount"
+                    }
+                },
                 "email": {
                     "type": "string"
                 },
@@ -1119,14 +895,8 @@ var doc = `{
                 },
                 "picture": {
                     "type": "string"
-                },
-                "visibility": {
-                    "type": "integer"
                 }
             }
-        },
-        "primitive.DateTime": {
-            "type": "integer"
         },
         "primitive.DateTime": {
             "type": "integer"

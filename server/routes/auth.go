@@ -3,11 +3,8 @@ package routes
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -19,6 +16,7 @@ import (
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
+	"schej.it/server/services/auth"
 	"schej.it/server/utils"
 )
 
@@ -29,6 +27,7 @@ func InitAuth(router *gin.Engine) {
 	authRouter.POST("/sign-in-mobile", signInMobile)
 	authRouter.POST("/sign-out", signOut)
 	authRouter.GET("/status", middleware.AuthRequired(), getStatus)
+	authRouter.POST("/add-calendar-account", middleware.AuthRequired(), addCalendarAccount)
 }
 
 // @Summary Signs user in
@@ -48,47 +47,9 @@ func signIn(c *gin.Context) {
 		return
 	}
 
-	// Call Google oauth token endpoint
-	var redirectUri string
-	if utils.IsRelease() {
-		redirectUri = "https://schej.it/auth"
-	} else {
-		redirectUri = "http://localhost:8080/auth"
-	}
-	values := url.Values{
-		"client_id":     {os.Getenv("CLIENT_ID")},
-		"client_secret": {os.Getenv("CLIENT_SECRET")},
-		"code":          {payload.Code},
-		"grant_type":    {"authorization_code"},
-		"redirect_uri":  {redirectUri},
-	}
-	resp, err := http.PostForm(
-		"https://oauth2.googleapis.com/token",
-		values,
-	)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
+	tokens := auth.GetTokensFromAuthCode(payload.Code)
 
-	res := struct {
-		AccessToken      string `json:"access_token"`
-		IdToken          string `json:"id_token"`
-		ExpiresIn        int    `json:"expires_in"`
-		RefreshToken     string `json:"refresh_token"`
-		Scope            string `json:"scope"`
-		TokenType        string `json:"token_type"`
-		Error            string `json:"error"`
-		ErrorDescription string `json:"error_description"`
-	}{}
-
-	json.NewDecoder(resp.Body).Decode(&res)
-	if len(res.Error) > 0 {
-		data, _ := json.MarshalIndent(res, "", "  ")
-		logger.StdErr.Panicln(string(data))
-	}
-
-	signInHelper(c, res.AccessToken, res.IdToken, res.ExpiresIn, res.RefreshToken, payload.TimezoneOffset, models.WEB)
+	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -203,5 +164,65 @@ func signOut(c *gin.Context) {
 // @Failure 401 {object} responses.Error "Error object"
 // @Router /auth/status [get]
 func getStatus(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Adds a new calendar account
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param payload body object{code=string} true "Object containing the Google authorization code"
+// @Success 200
+// @Router /auth/add-calendar-account [post]
+func addCalendarAccount(c *gin.Context) {
+	payload := struct {
+		Code string `json:"code" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	// Get auth user
+	authUser := utils.GetAuthUser(c)
+
+	// Get tokens
+	tokens := auth.GetTokensFromAuthCode(payload.Code)
+
+	// Get user info from JWT
+	claims := utils.ParseJWT(tokens.IdToken)
+	email, _ := claims.GetStr("email")
+	picture, _ := claims.GetStr("picture")
+
+	// Get access token expire time
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
+
+	// Define a new calendar account
+	calendarAccount := models.CalendarAccount{
+		Email:                 email,
+		Picture:               picture,
+		AccessToken:           tokens.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          tokens.RefreshToken,
+	}
+
+	// Update existing calendar account or insert a new one
+	existingCalendarAccountIndex := utils.Find(authUser.CalendarAccounts, func(c models.CalendarAccount) bool {
+		return c.Email == email
+	})
+	if existingCalendarAccountIndex != -1 {
+		authUser.CalendarAccounts[existingCalendarAccountIndex] = calendarAccount
+	} else {
+		authUser.CalendarAccounts = append(authUser.CalendarAccounts, calendarAccount)
+	}
+
+	// Perform mongo update
+	db.UsersCollection.FindOneAndUpdate(
+		context.Background(),
+		bson.M{"_id": authUser.Id},
+		bson.M{"$set": bson.M{
+			"calendarAccounts": authUser.CalendarAccounts,
+		}},
+	)
+
 	c.JSON(http.StatusOK, gin.H{})
 }

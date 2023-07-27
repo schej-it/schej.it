@@ -1,4 +1,11 @@
 definitions:
+  models.CalendarAccount:
+    properties:
+      email:
+        type: string
+      picture:
+        type: string
+    type: object
   models.CalendarEvent:
     properties:
       endDate:
@@ -42,24 +49,6 @@ definitions:
     type: object
   models.EventType:
     type: string
-  models.FriendRequest:
-    properties:
-      _id:
-        type: string
-      createdAt:
-        $ref: '#/definitions/primitive.DateTime'
-        type: object
-      from:
-        type: string
-      fromUser:
-        $ref: '#/definitions/models.UserProfile'
-        type: object
-      to:
-        type: string
-      toUser:
-        $ref: '#/definitions/models.UserProfile'
-        type: object
-    type: object
   models.Location:
     properties:
       city:
@@ -95,6 +84,10 @@ definitions:
     properties:
       _id:
         type: string
+      calendarAccounts:
+        items:
+          $ref: '#/definitions/models.CalendarAccount'
+        type: array
       email:
         type: string
       firstName:
@@ -103,11 +96,7 @@ definitions:
         type: string
       picture:
         type: string
-      visibility:
-        type: integer
     type: object
-  models.UserStatus:
-    type: string
   primitive.DateTime:
     type: integer
   responses.Error:
@@ -151,6 +140,29 @@ paths:
       summary: Notifies us when poster QR code has been scanned
       tags:
       - analytics
+  /auth/add-calendar-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the Google authorization code
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              code:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Adds a new calendar account
+      tags:
+      - auth
   /auth/sign-in:
     post:
       consumes:
@@ -252,7 +264,7 @@ paths:
           - properties:
               dates:
                 items:
-                  $ref: '#/definitions/primitive.DateTime'
+                  type: string
                 type: array
               duration:
                 type: number
@@ -327,7 +339,7 @@ paths:
           - properties:
               dates:
                 items:
-                  $ref: '#/definitions/primitive.DateTime'
+                  type: string
                 type: array
               duration:
                 type: number
@@ -413,172 +425,6 @@ paths:
       summary: Schedules an event on the user's google calendar
       tags:
       - events
-  /friends:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Gets all of users current friends
-      tags:
-      - friends
-  /friends/{id}:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of friend
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Removes an existing friend
-      tags:
-      - friends
-  /friends/{id}/calendar:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of friend
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Lower bound for event's start time to filter by
-        in: query
-        name: timeMin
-        required: true
-        type: string
-      - description: Upper bound for event's end time to filter by
-        in: query
-        name: timeMax
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.CalendarEvent'
-            type: array
-      summary: Returns the specified friend's schedule
-      tags:
-      - friends
-  /friends/{id}/status:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of friend
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      summary: Returns whether the friend is free or busy
-      tags:
-      - friends
-  /friends/requests:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Gets all the current incoming and outgoing friend requests
-      tags:
-      - friends
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Object specifying the user IDs of who this request is sent from
-          and to
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              to:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Friend request already exists from \"to\" to \"from\", and
-            it was accepted
-        "201":
-          description: Friend request created
-          schema:
-            $ref: '#/definitions/models.FriendRequest'
-      summary: Creates a new friend request
-      tags:
-      - friends
-  /friends/requests/{id}:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of the friend request
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Delete's a friend request created by the current user
-      tags:
-      - friends
-  /friends/requests/{id}/accept:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of the friend request
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Accepts an existing friend request
-      tags:
-      - friends
-  /friends/requests/{id}/reject:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of the friend request
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Rejects an existing friend request
-      tags:
-      - friends
   /user:
     delete:
       produces:

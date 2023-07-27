@@ -27,3 +27,13 @@ func Contains[T comparable](arr []T, value T) bool {
 	}
 	return false
 }
+
+// Returns the index of the element found using the equals function, -1 if not found
+func Find[T any](arr []T, equals func(T) bool) int {
+	for i, v := range arr {
+		if equals(v) {
+			return i
+		}
+	}
+	return -1
+}
