@@ -60,7 +60,7 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 }
 
 // Get the user's list of calendar events for the given calendar
-func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
+func GetCalendarEvents(c chan []models.CalendarEvent, accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
 	min, _ := timeMin.MarshalText()
 	max, _ := timeMax.MarshalText()
 	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
@@ -118,6 +118,8 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 		})
 	}
 
+	c <- calendarEvents
+
 	return calendarEvents, nil
 }
 
@@ -129,15 +131,16 @@ func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.T
 		return nil, err
 	}
 
+	calendarEventsChan := make(chan []models.CalendarEvent)
+
 	// Call the google calendar API to get a list of calendar events from the user's gcal
-	// TODO: get events for all user's calendars, not just selected calendars
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, calendar := range calendars {
-		events, err := GetCalendarEvents(user.AccessToken, calendar.Id, timeMin, timeMax)
-		if err != nil {
-			return nil, err
-		}
+		go GetCalendarEvents(calendarEventsChan, user.AccessToken, calendar.Id, timeMin, timeMax)
+	}
 
+	for range calendars {
+		events := <-calendarEventsChan
 		calendarEvents = append(calendarEvents, events...)
 	}
 
