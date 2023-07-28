@@ -95,7 +95,7 @@ type RefreshAccessTokenData struct {
 	IsPrimaryAccount     bool
 }
 
-func RefreshAccessTokenAsync(refreshToken string, c chan RefreshAccessTokenData, calendarAccountIndex int, isUser bool) {
+func RefreshAccessTokenAsync(refreshToken string, calendarAccountIndex int, isUser bool, c chan RefreshAccessTokenData) {
 	tokenResponse := RefreshAccessToken(refreshToken)
 
 	c <- RefreshAccessTokenData{tokenResponse, calendarAccountIndex, isUser}

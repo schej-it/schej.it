@@ -59,12 +59,15 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 	return calendars, nil
 }
 
+type GetCalendarListData struct {
+	CalendarList []models.Calendar
+	AccessToken  string
+}
+
 // Calls GetCalendarList but broadcasts the result to channel
-func GetCalendarListAsync(accessToken string, c chan []models.Calendar) {
-	calendars, err := GetCalendarList(accessToken)
-	if err == nil {
-		c <- calendars
-	}
+func GetCalendarListAsync(accessToken string, c chan GetCalendarListData) {
+	calendars, _ := GetCalendarList(accessToken)
+	c <- GetCalendarListData{calendars, accessToken}
 }
 
 // Get the user's list of calendar events for the given calendar
@@ -106,6 +109,7 @@ func GetCalendarEventsAsync(accessToken string, calendarId string, timeMin time.
 
 	// Check if the response returned an error
 	if res.Error.Errors != nil {
+		c <- nil
 		return nil, &res.Error
 	}
 
@@ -134,23 +138,43 @@ func GetCalendarEventsAsync(accessToken string, calendarId string, timeMin time.
 func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
 	db.RefreshUserTokenIfNecessary(user)
 
+	// Map mapping access token to the calendar list associated with that access token
+	calendarListMap := make(map[string][]models.Calendar)
+
 	// Get primary user's calendar, throw error if gcal access not granted
 	calendars, err := GetCalendarList(user.AccessToken)
 	if err != nil {
 		return nil, err
 	}
+	calendarListMap[user.AccessToken] = calendars
 
 	// Get secondary account calendars
+	calendarListChan := make(chan GetCalendarListData)
+	for _, account := range user.CalendarAccounts {
+		go GetCalendarListAsync(account.AccessToken, calendarListChan)
+	}
+	for range user.CalendarAccounts {
+		calendarListData := <-calendarListChan
+		if calendarListData.CalendarList != nil {
+			calendarListMap[calendarListData.AccessToken] = calendarListData.CalendarList
+		}
+	}
 
-	// Call the google calendar API to get a list of calendar events from the user's gcal
+	// Get a list of calendar events from the each gcal account associated with a user
 	calendarEventsChan := make(chan []models.CalendarEvent)
 	calendarEvents := make([]models.CalendarEvent, 0)
-	for _, calendar := range calendars {
-		go GetCalendarEventsAsync(user.AccessToken, calendar.Id, timeMin, timeMax, calendarEventsChan)
+	for accessToken, calendarList := range calendarListMap {
+		for _, calendar := range calendarList {
+			go GetCalendarEventsAsync(accessToken, calendar.Id, timeMin, timeMax, calendarEventsChan)
+		}
 	}
-	for range calendars {
-		events := <-calendarEventsChan
-		calendarEvents = append(calendarEvents, events...)
+	for _, calendarList := range calendarListMap {
+		for range calendarList {
+			events := <-calendarEventsChan
+			if events != nil {
+				calendarEvents = append(calendarEvents, events...)
+			}
+		}
 	}
 
 	return calendarEvents, nil

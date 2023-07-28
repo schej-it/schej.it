@@ -104,14 +104,14 @@ func RefreshUserTokenIfNecessary(u *models.User) {
 
 	// Refresh primary account access token if necessary
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		go auth.RefreshAccessTokenAsync(u.RefreshToken, refreshTokenChan, -1, true)
+		go auth.RefreshAccessTokenAsync(u.RefreshToken, -1, true, refreshTokenChan)
 		numAccountsToUpdate++
 	}
 
 	// Refresh other calendar account access tokens if necessary
 	for i, account := range u.CalendarAccounts {
 		if time.Now().After(account.AccessTokenExpireDate.Time()) && len(account.RefreshToken) > 0 {
-			go auth.RefreshAccessTokenAsync(account.RefreshToken, refreshTokenChan, i, false)
+			go auth.RefreshAccessTokenAsync(account.RefreshToken, i, false, refreshTokenChan)
 			numAccountsToUpdate++
 		}
 	}
