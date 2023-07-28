@@ -88,3 +88,15 @@ func RefreshAccessToken(refreshToken string) GoogleApiAccessTokenResponse {
 
 	return res
 }
+
+type RefreshAccessTokenData struct {
+	TokenResponse        GoogleApiAccessTokenResponse
+	CalendarAccountIndex int
+	IsPrimaryAccount     bool
+}
+
+func RefreshAccessTokenAsync(refreshToken string, c chan RefreshAccessTokenData, calendarAccountIndex int, isUser bool) {
+	tokenResponse := RefreshAccessToken(refreshToken)
+
+	c <- RefreshAccessTokenData{tokenResponse, calendarAccountIndex, isUser}
+}

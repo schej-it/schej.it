@@ -97,20 +97,45 @@ func DeleteFriendRequestById(friendRequestId string) {
 	}
 }
 
-// If access token has expired, get a new token, update the user object, and save it to the database
+// If access token has expired, get a new token for the primary account as well as all other calendar accounts, update the user object, and save it to the database
 func RefreshUserTokenIfNecessary(u *models.User) {
-	// logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
+	numAccountsToUpdate := 0
+	refreshTokenChan := make(chan auth.RefreshAccessTokenData)
+
+	// Refresh primary account access token if necessary
 	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		// Refresh token by calling google token endpoint
-		tokenData := auth.RefreshAccessToken(u.RefreshToken)
+		go auth.RefreshAccessTokenAsync(u.RefreshToken, refreshTokenChan, -1, true)
+		numAccountsToUpdate++
+	}
 
-		accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokenData.ExpiresIn)
-		u.AccessToken = tokenData.AccessToken
-		u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+	// Refresh other calendar account access tokens if necessary
+	for i, account := range u.CalendarAccounts {
+		if time.Now().After(account.AccessTokenExpireDate.Time()) && len(account.RefreshToken) > 0 {
+			go auth.RefreshAccessTokenAsync(account.RefreshToken, refreshTokenChan, i, false)
+			numAccountsToUpdate++
+		}
+	}
 
+	// Update access tokens as responses are received
+	for i := 0; i < numAccountsToUpdate; i++ {
+		res := <-refreshTokenChan
+
+		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
+
+		if res.IsPrimaryAccount {
+			u.AccessToken = res.TokenResponse.AccessToken
+			u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+		} else {
+			u.CalendarAccounts[res.CalendarAccountIndex].AccessToken = res.TokenResponse.AccessToken
+			u.CalendarAccounts[res.CalendarAccountIndex].AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+		}
+	}
+
+	// Update user object if accounts were updated
+	if numAccountsToUpdate > 0 {
 		UsersCollection.FindOneAndUpdate(
 			context.Background(),
-			bson.M{"email": u.Email},
+			bson.M{"_id": u.Id},
 			bson.M{"$set": u},
 		)
 	}

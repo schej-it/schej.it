@@ -60,7 +60,7 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 }
 
 // Calls GetCalendarList but broadcasts the result to channel
-func GetCalendarListChan(c chan []models.Calendar, accessToken string) {
+func GetCalendarListAsync(accessToken string, c chan []models.Calendar) {
 	calendars, err := GetCalendarList(accessToken)
 	if err == nil {
 		c <- calendars
@@ -68,7 +68,7 @@ func GetCalendarListChan(c chan []models.Calendar, accessToken string) {
 }
 
 // Get the user's list of calendar events for the given calendar
-func GetCalendarEvents(c chan []models.CalendarEvent, accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
+func GetCalendarEventsAsync(accessToken string, calendarId string, timeMin time.Time, timeMax time.Time, c chan []models.CalendarEvent) ([]models.CalendarEvent, *errs.GoogleAPIError) {
 	min, _ := timeMin.MarshalText()
 	max, _ := timeMax.MarshalText()
 	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
@@ -146,7 +146,7 @@ func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.T
 	calendarEventsChan := make(chan []models.CalendarEvent)
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, calendar := range calendars {
-		go GetCalendarEvents(calendarEventsChan, user.AccessToken, calendar.Id, timeMin, timeMax)
+		go GetCalendarEventsAsync(user.AccessToken, calendar.Id, timeMin, timeMax, calendarEventsChan)
 	}
 	for range calendars {
 		events := <-calendarEventsChan
