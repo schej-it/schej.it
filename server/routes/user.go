@@ -209,9 +209,13 @@ func removeCalendarAccount(c *gin.Context) {
 	}
 
 	authUser := utils.GetAuthUser(c)
-	db.UsersCollection.UpdateByID(context.Background(), authUser.Id,
-		bson.M{"$pull": bson.M{"calendarAccounts": bson.M{"email": payload.Email}}},
-	)
+	db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
+		"$pull": bson.M{
+			"calendarAccounts": bson.M{
+				"email": payload.Email,
+			},
+		},
+	})
 
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -235,12 +239,11 @@ func toggleCalendar(c *gin.Context) {
 
 	// Update enabled status for the specified account
 	authUser := utils.GetAuthUser(c)
-	accountIndex := utils.Find(authUser.CalendarAccounts, func(account models.CalendarAccount) bool { return account.Email == payload.Email })
-	authUser.CalendarAccounts[accountIndex].Enabled = payload.Enabled
-
-	// Update DB
-	_, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
-		"$set": authUser,
+	_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
+		"_id":              authUser.Id,
+		"calendarAccounts": bson.M{"$elemMatch": bson.M{"email": payload.Email}},
+	}, bson.M{
+		"$set": bson.M{"calendarAccounts.$.enabled": payload.Enabled},
 	})
 	if err != nil {
 		logger.StdErr.Panicln(err)
