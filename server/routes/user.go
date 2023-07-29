@@ -27,6 +27,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.GET("/profile", getProfile)
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendar", getCalendar)
+	userRouter.POST("/toggle-calendar", toggleCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
 	userRouter.POST("/visibility", updateVisibility)
 	userRouter.DELETE("", deleteUser)
@@ -126,6 +127,40 @@ func getCalendar(c *gin.Context) {
 	c.JSON(http.StatusOK, calendarEvents)
 }
 
+// @Summary Toggles whether the specified calendar is enabled or disabled for the user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string,enabled=bool} true "Email of calendar account and whether to enable it"
+// @Success 200
+// @Router /user/toggle-calendar [post]
+func toggleCalendar(c *gin.Context) {
+	payload := struct {
+		Email   string `json:"email" binding:"required"`
+		Enabled *bool  `json:"enabled" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		logger.StdErr.Panicln(err)
+		return
+	}
+
+	// Update enabled status for the specified account
+	authUser := utils.GetAuthUser(c)
+	accountIndex := utils.Find(authUser.CalendarAccounts, func(account models.CalendarAccount) bool { return account.Email == payload.Email })
+	authUser.CalendarAccounts[accountIndex].Enabled = payload.Enabled
+
+	// Update DB
+	_, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
+		"$set": authUser,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
 // @Summary Updates the current user's visibility
 // @Tags user
 // @Accept json
@@ -158,6 +193,7 @@ func updateVisibility(c *gin.Context) {
 	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

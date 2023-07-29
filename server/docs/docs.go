@@ -678,6 +678,49 @@ var doc = `{
                 }
             }
         },
+        "/user/toggle-calendar": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Toggles whether the specified calendar is enabled or disabled for the user",
+                "parameters": [
+                    {
+                        "description": "Email of calendar account and whether to enable it",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/user/visibility": {
             "post": {
                 "consumes": [
@@ -756,6 +799,9 @@ var doc = `{
             "properties": {
                 "email": {
                     "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
                 },
                 "picture": {
                     "type": "string"

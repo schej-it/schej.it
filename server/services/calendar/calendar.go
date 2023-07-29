@@ -151,9 +151,17 @@ func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.T
 	// Get secondary account calendars
 	calendarListChan := make(chan GetCalendarListData)
 	for _, account := range user.CalendarAccounts {
+		if !*account.Enabled {
+			continue
+		}
+
 		go GetCalendarListAsync(account.AccessToken, calendarListChan)
 	}
-	for range user.CalendarAccounts {
+	for _, account := range user.CalendarAccounts {
+		if !*account.Enabled {
+			continue
+		}
+
 		calendarListData := <-calendarListChan
 		if calendarListData.CalendarList != nil {
 			calendarListMap[calendarListData.AccessToken] = calendarListData.CalendarList

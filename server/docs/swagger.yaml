@@ -3,6 +3,8 @@ definitions:
     properties:
       email:
         type: string
+      enabled:
+        type: boolean
       picture:
         type: string
     type: object
@@ -519,6 +521,32 @@ paths:
               $ref: '#/definitions/models.User'
             type: array
       summary: Searches the user's contacts based on the given query
+      tags:
+      - user
+  /user/toggle-calendar:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email of calendar account and whether to enable it
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+              enabled:
+                type: boolean
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Toggles whether the specified calendar is enabled or disabled for the
+        user
       tags:
       - user
   /user/visibility:
