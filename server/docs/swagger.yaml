@@ -147,29 +147,6 @@ paths:
       summary: Notifies us when poster QR code has been scanned
       tags:
       - analytics
-  /auth/add-calendar-account:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Object containing the Google authorization code
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              code:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Adds a new calendar account
-      tags:
-      - auth
   /auth/sign-in:
     post:
       consumes:
@@ -441,6 +418,29 @@ paths:
       summary: Deletes the currently signed in user
       tags:
       - user
+  /user/add-calendar-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the Google authorization code
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              code:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Adds a new calendar account
+      tags:
+      - user
   /user/calendar:
     get:
       description: Gets the user's calendar events between "timeMin" and "timeMax"
@@ -501,6 +501,29 @@ paths:
           schema:
             $ref: '#/definitions/models.User'
       summary: Gets the user's profile
+      tags:
+      - user
+  /user/remove-calendar-account:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the email of the calendar account to remove
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Removes an existing calendar account
       tags:
       - user
   /user/searchContacts:

@@ -9,12 +9,14 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/auth"
 	"schej.it/server/services/calendar"
 	"schej.it/server/services/contacts"
 	"schej.it/server/utils"
@@ -27,6 +29,8 @@ func InitUser(router *gin.Engine) {
 	userRouter.GET("/profile", getProfile)
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendar", getCalendar)
+	userRouter.POST("/add-calendar-account", addCalendarAccount)
+	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
 	userRouter.POST("/toggle-calendar", toggleCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
 	userRouter.POST("/visibility", updateVisibility)
@@ -125,6 +129,91 @@ func getCalendar(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, calendarEvents)
+}
+
+// @Summary Adds a new calendar account
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{code=string} true "Object containing the Google authorization code"
+// @Success 200
+// @Router /user/add-calendar-account [post]
+func addCalendarAccount(c *gin.Context) {
+	payload := struct {
+		Code string `json:"code" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	// Get auth user
+	authUser := utils.GetAuthUser(c)
+
+	// Get tokens
+	tokens := auth.GetTokensFromAuthCode(payload.Code)
+
+	// Get user info from JWT
+	claims := utils.ParseJWT(tokens.IdToken)
+	email, _ := claims.GetStr("email")
+	picture, _ := claims.GetStr("picture")
+
+	// Get access token expire time
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
+
+	// Define a new calendar account
+	calendarAccount := models.CalendarAccount{
+		Email:   email,
+		Picture: picture,
+		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
+
+		AccessToken:           tokens.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          tokens.RefreshToken,
+	}
+
+	// Update existing calendar account or insert a new one
+	existingCalendarAccountIndex := utils.Find(authUser.CalendarAccounts, func(c models.CalendarAccount) bool {
+		return c.Email == email
+	})
+	if existingCalendarAccountIndex != -1 {
+		authUser.CalendarAccounts[existingCalendarAccountIndex] = calendarAccount
+	} else {
+		authUser.CalendarAccounts = append(authUser.CalendarAccounts, calendarAccount)
+	}
+
+	// Perform mongo update
+	db.UsersCollection.FindOneAndUpdate(
+		context.Background(),
+		bson.M{"_id": authUser.Id},
+		bson.M{"$set": bson.M{
+			"calendarAccounts": authUser.CalendarAccounts,
+		}},
+	)
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Removes an existing calendar account
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string} true "Object containing the email of the calendar account to remove"
+// @Success 200
+// @Router /user/remove-calendar-account [delete]
+func removeCalendarAccount(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+	db.UsersCollection.UpdateByID(context.Background(), authUser.Id,
+		bson.M{"$pull": bson.M{"calendarAccounts": bson.M{"email": payload.Email}}},
+	)
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // @Summary Toggles whether the specified calendar is enabled or disabled for the user

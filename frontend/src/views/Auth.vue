@@ -24,7 +24,7 @@ export default {
         console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
 
       if (state?.type === authTypes.ADD_CALENDAR_ACCOUNT) {
-        await post("/auth/add-calendar-account", { code })
+        await post("/user/add-calendar-account", { code })
       } else {
         await post("/auth/sign-in", {
           code,

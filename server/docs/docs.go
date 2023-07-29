@@ -68,46 +68,6 @@ var doc = `{
                 }
             }
         },
-        "/auth/add-calendar-account": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Adds a new calendar account",
-                "parameters": [
-                    {
-                        "description": "Object containing the Google authorization code",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
         "/auth/sign-in": {
             "post": {
                 "description": "Signs user in and sets the access token session variable",
@@ -548,6 +508,46 @@ var doc = `{
                 }
             }
         },
+        "/user/add-calendar-account": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Adds a new calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the Google authorization code",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/user/calendar": {
             "get": {
                 "description": "Gets the user's calendar events between \"timeMin\" and \"timeMax\"",
@@ -644,6 +644,46 @@ var doc = `{
                             "$ref": "#/definitions/models.User"
                         }
                     }
+                }
+            }
+        },
+        "/user/remove-calendar-account": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Removes an existing calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the email of the calendar account to remove",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
                 }
             }
         },

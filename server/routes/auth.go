@@ -27,7 +27,6 @@ func InitAuth(router *gin.Engine) {
 	authRouter.POST("/sign-in-mobile", signInMobile)
 	authRouter.POST("/sign-out", signOut)
 	authRouter.GET("/status", middleware.AuthRequired(), getStatus)
-	authRouter.POST("/add-calendar-account", middleware.AuthRequired(), addCalendarAccount)
 }
 
 // @Summary Signs user in
@@ -164,67 +163,5 @@ func signOut(c *gin.Context) {
 // @Failure 401 {object} responses.Error "Error object"
 // @Router /auth/status [get]
 func getStatus(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// @Summary Adds a new calendar account
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param payload body object{code=string} true "Object containing the Google authorization code"
-// @Success 200
-// @Router /auth/add-calendar-account [post]
-func addCalendarAccount(c *gin.Context) {
-	payload := struct {
-		Code string `json:"code" binding:"required"`
-	}{}
-	if err := c.BindJSON(&payload); err != nil {
-		return
-	}
-
-	// Get auth user
-	authUser := utils.GetAuthUser(c)
-
-	// Get tokens
-	tokens := auth.GetTokensFromAuthCode(payload.Code)
-
-	// Get user info from JWT
-	claims := utils.ParseJWT(tokens.IdToken)
-	email, _ := claims.GetStr("email")
-	picture, _ := claims.GetStr("picture")
-
-	// Get access token expire time
-	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
-
-	// Define a new calendar account
-	calendarAccount := models.CalendarAccount{
-		Email:   email,
-		Picture: picture,
-		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
-
-		AccessToken:           tokens.AccessToken,
-		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-		RefreshToken:          tokens.RefreshToken,
-	}
-
-	// Update existing calendar account or insert a new one
-	existingCalendarAccountIndex := utils.Find(authUser.CalendarAccounts, func(c models.CalendarAccount) bool {
-		return c.Email == email
-	})
-	if existingCalendarAccountIndex != -1 {
-		authUser.CalendarAccounts[existingCalendarAccountIndex] = calendarAccount
-	} else {
-		authUser.CalendarAccounts = append(authUser.CalendarAccounts, calendarAccount)
-	}
-
-	// Perform mongo update
-	db.UsersCollection.FindOneAndUpdate(
-		context.Background(),
-		bson.M{"_id": authUser.Id},
-		bson.M{"$set": bson.M{
-			"calendarAccounts": authUser.CalendarAccounts,
-		}},
-	)
-
 	c.JSON(http.StatusOK, gin.H{})
 }
