@@ -1,6 +1,34 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-5 tw-max-w-6xl">
     <div class="tw-flex tw-flex-col tw-gap-16 tw-p-4">
+      <!-- Additional Accounts Section -->
+      <div class="tw-flex tw-flex-col tw-gap-5">
+        <div
+          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+        >
+          Calendar Accounts
+        </div>
+        <div class="tw-flex tw-flex-col tw-gap-5">
+          <div
+            v-for="account in authUser.calendarAccounts"
+            class="tw-text-black"
+          >
+            <v-avatar> <v-img :src="account.picture"></v-img></v-avatar>
+            {{ account.email }}
+            {{ account.enabled }}
+            <v-btn
+              @click="
+                () => toggleCalendarAccount(account.email, !account.enabled)
+              "
+              >Toggle</v-btn
+            >
+          </div>
+          <div>
+            <v-btn @click="addCalendarAccount">add calendar account</v-btn>
+          </div>
+        </div>
+      </div>
+
       <!-- Calendar Access Section -->
       <div class="tw-flex tw-flex-col tw-gap-5">
         <div
@@ -126,17 +154,13 @@
           </v-dialog>
         </div>
       </div>
-
-      <div>
-        <v-btn @click="addCalendarAccount">add calendar account</v-btn>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapActions } from "vuex"
-import { _delete, signInGoogle } from "@/utils"
+import { _delete, post, signInGoogle } from "@/utils"
 import { authTypes } from "@/constants"
 
 export default {
@@ -174,6 +198,17 @@ export default {
         state: { type: authTypes.ADD_CALENDAR_ACCOUNT },
         requestCalendarPermission: true,
         selectAccount: true,
+      })
+    },
+    toggleCalendarAccount(email, enabled) {
+      this.authUser.calendarAccounts.find(
+        (account) => account.email == email
+      ).enabled = enabled
+
+      post(`/user/toggle-calendar`, { email, enabled }).catch((err) => {
+        this.showError(
+          "There was a problem with toggling your calendar account! Please try again later."
+        )
       })
     },
     deleteAccount() {
