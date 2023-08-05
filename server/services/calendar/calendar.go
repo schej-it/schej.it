@@ -153,39 +153,42 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 	calendarListChan := make(chan GetCalendarListData)
 	calendarEventsChan := make(chan GetCalendarEventsData)
 
-	// Get primary user's calendar
+	// Get calendar lists
+	numCalendarListRequests := 0
 	if _, ok := accounts[user.Email]; ok {
+		// Get primary user's calendar
 		go GetCalendarListAsync(user.Email, user.AccessToken, calendarListChan)
+		numCalendarListRequests++
 	}
-
-	// Get secondary account calendars
 	for _, account := range user.CalendarAccounts {
+		// Get secondary account calendars
 		if _, ok := accounts[account.Email]; ok {
 			go GetCalendarListAsync(account.Email, account.AccessToken, calendarListChan)
+			numCalendarListRequests++
 		}
 	}
 
 	// After each calendar list is fetched, get the calendar events from each calendar
-	numCalendars := 0 // numCalendars keeps track of how many calendarEvents requests have been done
-	for range accounts {
+	numCalendarEventsRequests := 0
+	for i := 0; i < numCalendarListRequests; i++ {
 		calendarListData := <-calendarListChan
 
 		if calendarListData.Error != nil {
 			go func() { // needs to be async because writing to a channel is blocking
 				calendarEventsChan <- GetCalendarEventsData{Email: calendarListData.Email, Error: calendarListData.Error}
 			}()
-			numCalendars++
+			numCalendarEventsRequests++
 			continue
 		}
 
 		for _, calendar := range calendarListData.CalendarList {
 			go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, calendar.Id, timeMin, timeMax, calendarEventsChan)
-			numCalendars++
+			numCalendarEventsRequests++
 		}
 	}
 
 	// After calendar events are fetched, append to the calendarEvents array associated with the given email
-	for i := 0; i < numCalendars; i++ {
+	for i := 0; i < numCalendarEventsRequests; i++ {
 		calendarEventsData := <-calendarEventsChan
 		email := calendarEventsData.Email
 
