@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,7 +32,6 @@ func InitUser(router *gin.Engine) {
 	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
 	userRouter.POST("/toggle-calendar", toggleCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
-	userRouter.POST("/visibility", updateVisibility)
 	userRouter.DELETE("", deleteUser)
 }
 
@@ -58,10 +56,7 @@ func getProfile(c *gin.Context) {
 // @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
-	session := sessions.Default(c)
-
-	userId := utils.GetUserId(session)
-	userIdString := session.Get("userId").(string)
+	userId := utils.GetAuthUser(c).Id
 
 	// Get the events associated with the current user
 	events := make([]models.Event, 0)
@@ -69,7 +64,7 @@ func getEvents(c *gin.Context) {
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{"ownerId": userId},
-			bson.M{"responses." + userIdString: bson.M{"$exists": true}},
+			bson.M{"responses." + userId.Hex(): bson.M{"$exists": true}},
 		},
 	}, opts)
 	if err != nil {
@@ -106,13 +101,15 @@ func getEvents(c *gin.Context) {
 // @Produce json
 // @Param timeMin query string true "Lower bound for event's start time to filter by"
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
+// @Param accounts query string true "Comma separated list of accounts to fetch calendar events from"
 // @Success 200 {object} []models.CalendarEvent
 // @Router /user/calendar [get]
 func getCalendar(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
-		TimeMin time.Time `form:"timeMin" binding:"required"`
-		TimeMax time.Time `form:"timeMax" binding:"required"`
+		TimeMin  time.Time `form:"timeMin" binding:"required"`
+		TimeMax  time.Time `form:"timeMax" binding:"required"`
+		Accounts string    `form:"accounts" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -245,44 +242,6 @@ func toggleCalendar(c *gin.Context) {
 	}, bson.M{
 		"$set": bson.M{"calendarAccounts.$.enabled": payload.Enabled},
 	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// @Summary Updates the current user's visibility
-// @Tags user
-// @Accept json
-// @Produce json
-// @Param payload body object{visibility=int} true "Visibility of user from 0 to 2"
-// @Success 200
-// @Router /user/visibility [post]
-func updateVisibility(c *gin.Context) {
-
-	// Bind query parameters
-	payload := struct {
-		Visibility *int `json:"visibility" binding:"required"`
-	}{}
-	if err := c.Bind(&payload); err != nil {
-		logger.StdErr.Panicln(err)
-		return
-	}
-
-	session := sessions.Default(c)
-	userId := utils.GetUserId(session)
-
-	_, err := db.UsersCollection.UpdateByID(
-		context.Background(),
-		userId,
-		bson.M{
-			"$set": bson.M{
-				"visibility": payload.Visibility,
-			},
-		},
-	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 		return

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/brianvoe/sjwt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/logger"
@@ -50,11 +49,6 @@ func StringToObjectID(s string) primitive.ObjectID {
 	}
 
 	return objectID
-}
-
-// Gets the user id from the current session as an ObjectID object
-func GetUserId(session sessions.Session) primitive.ObjectID {
-	return StringToObjectID(session.Get("userId").(string))
 }
 
 // Returns the currently signed in user
