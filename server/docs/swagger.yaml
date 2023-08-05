@@ -1,4 +1,27 @@
 definitions:
+  calendar.CalendarEventsWithError:
+    properties:
+      calendarEvents:
+        items:
+          $ref: '#/definitions/models.CalendarEvent'
+        type: array
+      error:
+        $ref: '#/definitions/errs.GoogleAPIError'
+        type: object
+    type: object
+  errs.GoogleAPIError:
+    properties:
+      code:
+        type: integer
+      details:
+        type: object
+      errors:
+        type: object
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   models.CalendarAccount:
     properties:
       email:
@@ -11,11 +34,9 @@ definitions:
   models.CalendarEvent:
     properties:
       endDate:
-        $ref: '#/definitions/primitive.DateTime'
-        type: object
+        type: string
       startDate:
-        $ref: '#/definitions/primitive.DateTime'
-        type: object
+        type: string
       summary:
         type: string
     type: object
@@ -26,9 +47,7 @@ definitions:
       calendarEventId:
         type: string
       dates:
-        items:
-          $ref: '#/definitions/primitive.DateTime'
-        type: array
+        type: string
       duration:
         type: number
       name:
@@ -104,8 +123,6 @@ definitions:
       timezoneOffset:
         type: integer
     type: object
-  primitive.DateTime:
-    type: integer
   responses.Error:
     properties:
       error:
@@ -375,40 +392,6 @@ paths:
       summary: Updates the current user's availability
       tags:
       - events
-  /events/{eventId}/schedule:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Event ID
-        in: path
-        name: eventId
-        required: true
-        type: string
-      - description: Object containing info about the event to schedule
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              attendeeEmails:
-                items:
-                  type: string
-                type: array
-              endDate:
-                $ref: '#/definitions/primitive.DateTime'
-              startDate:
-                $ref: '#/definitions/primitive.DateTime'
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Schedules an event on the user's google calendar
-      tags:
-      - events
   /user:
     delete:
       produces:
@@ -441,7 +424,7 @@ paths:
       summary: Adds a new calendar account
       tags:
       - user
-  /user/calendar:
+  /user/calendars:
     get:
       description: Gets the user's calendar events between "timeMin" and "timeMax"
       parameters:
@@ -466,9 +449,9 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.CalendarEvent'
-            type: array
+            additionalProperties:
+              $ref: '#/definitions/calendar.CalendarEventsWithError'
+            type: object
       summary: Gets the user's calendar events
       tags:
       - user

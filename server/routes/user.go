@@ -27,7 +27,7 @@ func InitUser(router *gin.Engine) {
 
 	userRouter.GET("/profile", getProfile)
 	userRouter.GET("/events", getEvents)
-	userRouter.GET("/calendar", getCalendar)
+	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-calendar-account", addCalendarAccount)
 	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
 	userRouter.POST("/toggle-calendar", toggleCalendar)
@@ -102,9 +102,9 @@ func getEvents(c *gin.Context) {
 // @Param timeMin query string true "Lower bound for event's start time to filter by"
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
 // @Param accounts query string true "Comma separated list of accounts to fetch calendar events from"
-// @Success 200 {object} []models.CalendarEvent
-// @Router /user/calendar [get]
-func getCalendar(c *gin.Context) {
+// @Success 200 {object} map[string]calendar.CalendarEventsWithError
+// @Router /user/calendars [get]
+func getCalendars(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
 		TimeMin  time.Time `form:"timeMin" binding:"required"`
@@ -119,11 +119,7 @@ func getCalendar(c *gin.Context) {
 	accountsSet := utils.ArrayToSet(accounts)
 	user := utils.GetAuthUser(c)
 
-	calendarEvents, err := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
-	if err != nil {
-		c.JSON(err.Code, responses.Error{Error: *err})
-		return
-	}
+	calendarEvents := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
 
 	c.JSON(http.StatusOK, calendarEvents)
 }

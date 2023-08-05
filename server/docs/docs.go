@@ -438,62 +438,6 @@ var doc = `{
                 }
             }
         },
-        "/events/{eventId}/schedule": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Schedules an event on the user's google calendar",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "eventId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Object containing info about the event to schedule",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "attendeeEmails": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "endDate": {
-                                            "$ref": "#/definitions/primitive.DateTime"
-                                        },
-                                        "startDate": {
-                                            "$ref": "#/definitions/primitive.DateTime"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
         "/user": {
             "delete": {
                 "produces": [
@@ -548,7 +492,7 @@ var doc = `{
                 }
             }
         },
-        "/user/calendar": {
+        "/user/calendars": {
             "get": {
                 "description": "Gets the user's calendar events between \"timeMin\" and \"timeMax\"",
                 "produces": [
@@ -585,9 +529,9 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.CalendarEvent"
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/calendar.CalendarEventsWithError"
                             }
                         }
                     }
@@ -801,6 +745,41 @@ var doc = `{
         }
     },
     "definitions": {
+        "calendar.CalendarEventsWithError": {
+            "type": "object",
+            "properties": {
+                "calendarEvents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CalendarEvent"
+                    }
+                },
+                "error": {
+                    "type": "object",
+                    "$ref": "#/definitions/errs.GoogleAPIError"
+                }
+            }
+        },
+        "errs.GoogleAPIError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "details": {
+                    "type": "object"
+                },
+                "errors": {
+                    "type": "object"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CalendarAccount": {
             "type": "object",
             "properties": {
@@ -819,12 +798,10 @@ var doc = `{
             "type": "object",
             "properties": {
                 "endDate": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
+                    "type": "string"
                 },
                 "startDate": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
+                    "type": "string"
                 },
                 "summary": {
                     "type": "string"
@@ -841,10 +818,7 @@ var doc = `{
                     "type": "string"
                 },
                 "dates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/primitive.DateTime"
-                    }
+                    "type": "string"
                 },
                 "duration": {
                     "type": "number"
@@ -955,9 +929,6 @@ var doc = `{
                     "type": "integer"
                 }
             }
-        },
-        "primitive.DateTime": {
-            "type": "integer"
         },
         "responses.Error": {
             "type": "object",
