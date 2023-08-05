@@ -14,7 +14,7 @@ import (
 
 // Calls the given url with the given method using the user's google api access token
 func CallGoogleApi(user *models.User, method string, url string, body *bson.M) *http.Response {
-	db.RefreshUserTokenIfNecessary(user)
+	db.RefreshUserTokenIfNecessary(user, nil)
 
 	// Format body as a buffer if not nil
 	var bodyBuffer *bytes.Buffer

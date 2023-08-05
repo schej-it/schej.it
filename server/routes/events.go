@@ -17,7 +17,6 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
-	"schej.it/server/services/calendar"
 	"schej.it/server/utils"
 )
 
@@ -27,7 +26,6 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
-	eventRouter.POST("/:eventId/schedule", middleware.AuthRequired(), scheduleEvent)
 	eventRouter.PUT("/:eventId", middleware.AuthRequired(), editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 }
@@ -220,66 +218,6 @@ func updateEventResponse(c *gin.Context) {
 				"text/html",
 			)
 		}()
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// @Summary Schedules an event on the user's google calendar
-// @Tags events
-// @Accept json
-// @Produce json
-// @Param eventId path string true "Event ID"
-// @Param payload body object{startDate=primitive.DateTime,endDate=primitive.DateTime,attendeeEmails=[]string} true "Object containing info about the event to schedule"
-// @Success 200
-// @Router /events/{eventId}/schedule [post]
-func scheduleEvent(c *gin.Context) {
-	payload := struct {
-		StartDate      *primitive.DateTime `json:"startDate" binding:"required"`
-		EndDate        *primitive.DateTime `json:"endDate" binding:"required"`
-		AttendeeEmails []string            `json:"attendeeEmails" binding:"required"`
-		Location       string              `json:"location"`
-		Description    string              `json:"description"`
-	}{}
-	if err := c.Bind(&payload); err != nil {
-		return
-	}
-	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
-	userInterface, _ := c.Get("authUser")
-	user := userInterface.(*models.User)
-
-	// Only allow event owner to schedule the event
-	if user.Id != event.OwnerId {
-		c.JSON(http.StatusForbidden, gin.H{"Error": errs.UserNotEventOwner})
-		return
-	}
-
-	// Create google calendar invite
-	calendarEventId, googleApiError := calendar.ScheduleEvent(user, event.Name, eventId, event.CalendarEventId, *payload.StartDate, *payload.EndDate, payload.AttendeeEmails, payload.Location, payload.Description)
-	if googleApiError != nil {
-		c.JSON(googleApiError.Code, responses.Error{Error: *googleApiError})
-		return
-	}
-
-	scheduledEvent := models.CalendarEvent{
-		StartDate: *payload.StartDate,
-		EndDate:   *payload.EndDate,
-	}
-
-	// Update event
-	_, err := db.EventsCollection.UpdateByID(
-		context.Background(),
-		utils.StringToObjectID(eventId),
-		bson.M{
-			"$set": bson.M{
-				"scheduledEvent":  scheduledEvent,
-				"calendarEventId": calendarEventId,
-			},
-		},
-	)
-	if err != nil {
-		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

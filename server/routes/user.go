@@ -115,11 +115,11 @@ func getCalendar(c *gin.Context) {
 		return
 	}
 
-	// Refresh token if necessary
-	userInterface, _ := c.Get("authUser")
-	user := userInterface.(*models.User)
+	accounts := utils.ParseArrayQueryParam(payload.Accounts)
+	accountsSet := utils.ArrayToSet(accounts)
+	user := utils.GetAuthUser(c)
 
-	calendarEvents, err := calendar.GetUsersCalendarEvents(user, payload.TimeMin, payload.TimeMax)
+	calendarEvents, err := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
 	if err != nil {
 		c.JSON(err.Code, responses.Error{Error: *err})
 		return

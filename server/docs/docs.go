@@ -572,6 +572,13 @@ var doc = `{
                         "name": "timeMax",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma separated list of accounts to fetch calendar events from",
+                        "name": "accounts",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -749,46 +756,6 @@ var doc = `{
                                         },
                                         "enabled": {
                                             "type": "boolean"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/user/visibility": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Updates the current user's visibility",
-                "parameters": [
-                    {
-                        "description": "Visibility of user from 0 to 2",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "visibility": {
-                                            "type": "integer"
                                         }
                                     }
                                 }

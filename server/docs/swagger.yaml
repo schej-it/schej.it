@@ -455,6 +455,11 @@ paths:
         name: timeMax
         required: true
         type: string
+      - description: Comma separated list of accounts to fetch calendar events from
+        in: query
+        name: accounts
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -570,29 +575,6 @@ paths:
         "200": {}
       summary: Toggles whether the specified calendar is enabled or disabled for the
         user
-      tags:
-      - user
-  /user/visibility:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Visibility of user from 0 to 2
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              visibility:
-                type: integer
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Updates the current user's visibility
       tags:
       - user
   /users:

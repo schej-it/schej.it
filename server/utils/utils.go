@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
@@ -104,7 +103,7 @@ func GetClientIdFromTokenOrigin(tokenOrigin models.TokenOriginType) string {
 
 // Prints the http response as a string
 func PrintHttpResponse(resp *http.Response) {
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	logger.StdOut.Println(string(body))
 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 }
