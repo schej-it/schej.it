@@ -1,6 +1,6 @@
 <template>
   <div
-    class="tw-flex tw-w-fit tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-drop-shadow"
+    class="tw-flex tw-w-fit tw-min-w-[288px] tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-drop-shadow tw-transition-all"
   >
     <div
       class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-b-[1px] tw-border-off-white tw-py-1 tw-px-4 tw-align-middle"
@@ -13,7 +13,7 @@
     <div class="tw-py-2 tw-px-4">
       <div
         v-for="account in calendarAccounts"
-        class="tw-group tw-flex tw-flex-row tw-items-center tw-gap-4 tw-text-black"
+        class="tw-group tw-flex tw-flex-row tw-items-center tw-justify-between tw-text-black tw-h-10"
       >
         <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
           <v-avatar size="24"> <v-img :src="account.picture"></v-img></v-avatar>
@@ -25,7 +25,7 @@
           icon
           :class="`tw-opacity-${
             account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
-          }`"
+          } ${account.email == authUser.email ? 'tw-hidden' : ''}`"
           class="group-hover:tw-opacity-100"
           @click="() => openRemoveDialog(account.email)"
           ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
