@@ -15,10 +15,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/db"
-	"schej.it/server/discord_bot"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
+	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
 
@@ -168,7 +168,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 		userId = res.InsertedID.(primitive.ObjectID)
 
-		discord_bot.SendMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
+		slackbot.SendMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
 		utils.AddUserToMailjet(email, firstName, lastName, picture)
 	} else {
 		// User does exist, get user id

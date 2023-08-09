@@ -233,7 +233,7 @@ var doc = `{
                                         "dates": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/primitive.DateTime"
+                                                "type": "string"
                                             }
                                         },
                                         "duration": {
@@ -335,7 +335,7 @@ var doc = `{
                                         "dates": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/primitive.DateTime"
+                                                "type": "string"
                                             }
                                         },
                                         "duration": {
@@ -749,6 +749,28 @@ var doc = `{
                 ]
             }
         },
+        "/slackbot/num_users": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "slackbot"
+                ],
+                "summary": "Gets the number of signed up users",
+                "responses": {
+                    "200": {
+                        "description": "Text response",
+                        "schema": {
+                            "$ref": "#/definitions/commands.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "delete": {
                 "produces": [
@@ -966,6 +988,18 @@ var doc = `{
         }
     },
     "definitions": {
+        "commands.Response": {
+            "type": "object",
+            "properties": {
+                "response_type": {
+                    "description": "ephemeral or in_channel",
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CalendarEvent": {
             "type": "object",
             "properties": {
@@ -1124,9 +1158,6 @@ var doc = `{
                     "type": "integer"
                 }
             }
-        },
-        "primitive.DateTime": {
-            "type": "integer"
         },
         "primitive.DateTime": {
             "type": "integer"

@@ -1,4 +1,12 @@
 definitions:
+  commands.Response:
+    properties:
+      response_type:
+        description: ephemeral or in_channel
+        type: string
+      text:
+        type: string
+    type: object
   models.CalendarEvent:
     properties:
       endDate:
@@ -106,8 +114,6 @@ definitions:
       visibility:
         type: integer
     type: object
-  models.UserStatus:
-    type: string
   primitive.DateTime:
     type: integer
   responses.Error:
@@ -252,7 +258,7 @@ paths:
           - properties:
               dates:
                 items:
-                  $ref: '#/definitions/primitive.DateTime'
+                  type: string
                 type: array
               duration:
                 type: number
@@ -327,7 +333,7 @@ paths:
           - properties:
               dates:
                 items:
-                  $ref: '#/definitions/primitive.DateTime'
+                  type: string
                 type: array
               duration:
                 type: number
@@ -579,6 +585,20 @@ paths:
       summary: Rejects an existing friend request
       tags:
       - friends
+  /slackbot/num_users:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Text response
+          schema:
+            $ref: '#/definitions/commands.Response'
+      summary: Gets the number of signed up users
+      tags:
+      - slackbot
   /user:
     delete:
       produces:
