@@ -53,6 +53,8 @@ export default {
             this.$router.replace({
               name: "settings",
             })
+            const authUser = await get("/user/profile")
+            this.setAuthUser(authUser)
             break
         }
       } else {

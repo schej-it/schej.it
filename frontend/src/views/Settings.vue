@@ -1,40 +1,12 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-5 tw-max-w-6xl">
     <div class="tw-flex tw-flex-col tw-gap-16 tw-p-4">
-      <!-- Additional Accounts Section -->
-      <div class="tw-flex tw-flex-col tw-gap-5">
-        <div
-          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
-        >
-          Calendar Accounts
-        </div>
-        <div class="tw-flex tw-flex-col tw-gap-5">
-          <div
-            v-for="account in authUser.calendarAccounts"
-            class="tw-text-black"
-          >
-            <v-avatar> <v-img :src="account.picture"></v-img></v-avatar>
-            {{ account.email }}
-            {{ account.enabled }}
-            <v-btn
-              @click="
-                () => toggleCalendarAccount(account.email, !account.enabled)
-              "
-              >Toggle</v-btn
-            >
-          </div>
-          <div>
-            <v-btn @click="addCalendarAccount">add calendar account</v-btn>
-          </div>
-        </div>
-      </div>
-
       <!-- Calendar Access Section -->
       <div class="tw-flex tw-flex-col tw-gap-5">
         <div
           class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
         >
-          Calendar Access
+          Calendar access
         </div>
         <div class="tw-flex tw-flex-col tw-gap-5 sm:tw-flex-row sm:tw-gap-28">
           <div class="tw-text-black">
@@ -51,6 +23,7 @@
             >Revoke calendar access</v-btn
           >
         </div>
+        <CalendarAccounts></CalendarAccounts>
       </div>
 
       <!-- Permissions Section -->
@@ -61,26 +34,29 @@
           Permissions
         </div>
         <div
-          class="tw-flex tw-flex-col tw-border-t-[1px] tw-border-l-[1px] tw-border-gray"
+          class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-border-light-gray-stroke"
         >
           <div
-            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-gray"
+            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-light-gray-stroke"
           >
             <div
-              v-for="h in heading"
-              class="tw-w-1/3 tw-border-r-[1px] tw-border-gray tw-p-4 tw-font-bold"
+              v-for="(h, i) in heading"
+              :class="`tw-border-r-[${i == heading.length - 1 ? '0' : '1'}px]`"
+              class="tw-w-1/3 tw-border-light-gray-stroke tw-p-4 tw-font-bold"
             >
               {{ h }}
             </div>
           </div>
 
           <div
-            v-for="c in content"
-            class="tw-flex tw-w-full tw-flex-row tw-border-b-[1px] tw-border-gray"
+            v-for="(c, j) in content"
+            :class="`tw-border-b-[${j == content.length - 1 ? '0' : '1'}px]`"
+            class="tw-flex tw-w-full tw-flex-row tw-border-light-gray-stroke"
           >
             <div
-              v-for="text in c"
-              class="tw-w-1/3 tw-border-r-[1px] tw-border-gray tw-p-4"
+              v-for="(text, k) in c"
+              :class="`tw-border-r-[${k == c.length - 1 ? '0' : '1'}px]`"
+              class="tw-w-1/3 tw-border-light-gray-stroke tw-p-4"
             >
               {{ text }}
             </div>
@@ -160,13 +136,13 @@
 
 <script>
 import { mapState, mapActions } from "vuex"
-import { _delete, post, signInGoogle } from "@/utils"
-import { authTypes } from "@/constants"
+import { _delete } from "@/utils"
+import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 
 export default {
   name: "Settings",
 
-  components: {},
+  components: { CalendarAccounts },
 
   data: () => ({
     dialog: false,
@@ -193,24 +169,6 @@ export default {
 
   methods: {
     ...mapActions(["showError"]),
-    addCalendarAccount() {
-      signInGoogle({
-        state: { type: authTypes.ADD_CALENDAR_ACCOUNT },
-        requestCalendarPermission: true,
-        selectAccount: true,
-      })
-    },
-    toggleCalendarAccount(email, enabled) {
-      this.authUser.calendarAccounts.find(
-        (account) => account.email == email
-      ).enabled = enabled
-
-      post(`/user/toggle-calendar`, { email, enabled }).catch((err) => {
-        this.showError(
-          "There was a problem with toggling your calendar account! Please try again later."
-        )
-      })
-    },
     deleteAccount() {
       _delete(`/user`)
         .then(() => {
