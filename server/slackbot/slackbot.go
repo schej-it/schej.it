@@ -77,5 +77,5 @@ func execCommand(c *gin.Context) {
 
 	go command.Execute(args, payload.ResponseUrl)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.Status(http.StatusOK)
 }
