@@ -10,10 +10,13 @@ import (
 	"schej.it/server/logger"
 )
 
+// Blocks documentation: https://api.slack.com/reference/block-kit/blocks
+// Block builder: https://app.slack.com/block-kit-builder/
+
 type Response struct {
 	ResponseType string   `json:"response_type,omitempty"` // ephemeral or in_channel
 	Text         string   `json:"text,omitempty"`
-	Attachments  []bson.M `json:"attachments,omitempty"`
+	Blocks       []bson.M `json:"blocks,omitempty"`
 }
 
 type Command struct {

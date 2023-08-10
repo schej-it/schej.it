@@ -182,10 +182,13 @@ var activeUsers Command = Command{
 			encodedChart := url.PathEscape(string(jsonStr))
 			chartUrl := fmt.Sprintf(`https://quickchart.io/chart?c=%s&backgroundColor=white`, encodedChart)
 
-			SendRawMessage(&Response{ResponseType: "in_channel", Attachments: []bson.M{{
-				"text":      "Active Users",
-				"image_url": chartUrl,
-			}}}, webhookUrl)
+			SendRawMessage(&Response{ResponseType: "in_channel", Blocks: []bson.M{
+				{
+					"type":      "image",
+					"image_url": chartUrl,
+					"alt_text":  "Active users chart",
+				},
+			}}, webhookUrl)
 		}
 	},
 }

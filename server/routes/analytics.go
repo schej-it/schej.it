@@ -33,7 +33,7 @@ func scannedPoster(c *gin.Context) {
 	}
 
 	if payload.Location != nil {
-		slackbot.SendMessage(
+		slackbot.SendTextMessage(
 			fmt.Sprintf(":face_with_monocle: Poster was scanned :face_with_monocle:\n*Location:* %s, %s, %s\n*URL:* %s",
 				payload.Location.City,
 				payload.Location.State,
@@ -42,7 +42,7 @@ func scannedPoster(c *gin.Context) {
 			),
 		)
 	} else {
-		slackbot.SendMessage(
+		slackbot.SendTextMessage(
 			fmt.Sprintf(":face_with_monocle: Poster was scanned :face_with_monocle:\n*URL:* %s", payload.Url),
 		)
 	}

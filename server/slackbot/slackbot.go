@@ -12,7 +12,11 @@ import (
 	"schej.it/server/utils"
 )
 
-func SendMessage(message string) {
+func SendTextMessage(message string) {
+	SendMessage(&commands.Response{Text: message})
+}
+
+func SendMessage(message *commands.Response) {
 	var webhookUrl string
 	if utils.IsRelease() {
 		// schej-bot
@@ -22,7 +26,7 @@ func SendMessage(message string) {
 		webhookUrl = os.Getenv("SLACK_DEV_WEBHOOK_URL")
 	}
 
-	commands.SendRawMessage(&commands.Response{Text: message}, webhookUrl)
+	commands.SendRawMessage(message, webhookUrl)
 }
 
 func InitSlackbot(router *gin.Engine) {

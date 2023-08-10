@@ -168,7 +168,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 		userId = res.InsertedID.(primitive.ObjectID)
 
-		slackbot.SendMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
+		slackbot.SendTextMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
 		utils.AddUserToMailjet(email, firstName, lastName, picture)
 	} else {
 		// User does exist, get user id
