@@ -98,19 +98,16 @@ func DeleteFriendRequestById(friendRequestId string) {
 }
 
 // If access token has expired, get a new token for the primary account as well as all other calendar accounts, update the user object, and save it to the database
-// `accounts` specifies for which accounts to refresh access tokens. If `accounts` is nil, then only update token for the primary user account
+// `accounts` specifies for which accounts to refresh access tokens. If `accounts` is nil or empty, then update tokens for all accounts
 func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 	refreshTokenChan := make(chan auth.RefreshAccessTokenData)
 	numAccountsToUpdate := 0
 
-	if accounts == nil {
-		// If `accounts` is nil, then only update token for primary user account
-		accounts = make(models.Set[string])
-		accounts[u.Email] = struct{}{}
-	}
+	// If `accounts` is nil, then update tokens for all accounts
+	updateAllAccounts := len(accounts) == 0
 
 	// Refresh primary account access token if necessary
-	if _, ok := accounts[u.Email]; ok {
+	if _, ok := accounts[u.Email]; ok || updateAllAccounts {
 		if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
 			go auth.RefreshAccessTokenAsync(u.RefreshToken, -1, true, refreshTokenChan)
 			numAccountsToUpdate++
@@ -119,7 +116,7 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 	// Refresh other calendar account access tokens if necessary
 	for i, account := range u.CalendarAccounts {
-		if _, ok := accounts[account.Email]; ok {
+		if _, ok := accounts[account.Email]; ok || updateAllAccounts {
 			if time.Now().After(account.AccessTokenExpireDate.Time()) && len(account.RefreshToken) > 0 {
 				go auth.RefreshAccessTokenAsync(account.RefreshToken, i, false, refreshTokenChan)
 				numAccountsToUpdate++

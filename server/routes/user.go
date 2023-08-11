@@ -101,7 +101,7 @@ func getEvents(c *gin.Context) {
 // @Produce json
 // @Param timeMin query string true "Lower bound for event's start time to filter by"
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
-// @Param accounts query string true "Comma separated list of accounts to fetch calendar events from"
+// @Param accounts query string false "Comma separated list of accounts to fetch calendar events from"
 // @Success 200 {object} map[string]calendar.CalendarEventsWithError
 // @Router /user/calendars [get]
 func getCalendars(c *gin.Context) {
@@ -109,13 +109,18 @@ func getCalendars(c *gin.Context) {
 	payload := struct {
 		TimeMin  time.Time `form:"timeMin" binding:"required"`
 		TimeMax  time.Time `form:"timeMax" binding:"required"`
-		Accounts string    `form:"accounts" binding:"required"`
+		Accounts string    `form:"accounts"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 
-	accounts := utils.ParseArrayQueryParam(payload.Accounts)
+	var accounts []string
+	if len(payload.Accounts) == 0 {
+		accounts = make([]string, 0)
+	} else {
+		accounts = utils.ParseArrayQueryParam(payload.Accounts)
+	}
 	accountsSet := utils.ArrayToSet(accounts)
 	user := utils.GetAuthUser(c)
 

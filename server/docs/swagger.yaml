@@ -441,7 +441,6 @@ paths:
       - description: Comma separated list of accounts to fetch calendar events from
         in: query
         name: accounts
-        required: true
         type: string
       produces:
       - application/json

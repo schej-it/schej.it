@@ -521,8 +521,7 @@ var doc = `{
                         "type": "string",
                         "description": "Comma separated list of accounts to fetch calendar events from",
                         "name": "accounts",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {

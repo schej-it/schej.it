@@ -148,6 +148,8 @@ type CalendarEventsWithError struct {
 func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], timeMin time.Time, timeMax time.Time) map[string]CalendarEventsWithError {
 	db.RefreshUserTokenIfNecessary(user, accounts)
 
+	returnAllAccounts := len(accounts) == 0
+
 	calendarEventsMap := make(map[string]CalendarEventsWithError)
 
 	calendarListChan := make(chan GetCalendarListData)
@@ -155,14 +157,14 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 
 	// Get calendar lists
 	numCalendarListRequests := 0
-	if _, ok := accounts[user.Email]; ok {
+	if _, ok := accounts[user.Email]; ok || returnAllAccounts {
 		// Get primary user's calendar
 		go GetCalendarListAsync(user.Email, user.AccessToken, calendarListChan)
 		numCalendarListRequests++
 	}
 	for _, account := range user.CalendarAccounts {
 		// Get secondary account  calendars
-		if _, ok := accounts[account.Email]; ok {
+		if _, ok := accounts[account.Email]; ok || returnAllAccounts {
 			go GetCalendarListAsync(account.Email, account.AccessToken, calendarListChan)
 			numCalendarListRequests++
 		}
