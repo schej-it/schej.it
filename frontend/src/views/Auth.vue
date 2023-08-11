@@ -36,6 +36,7 @@ export default {
 
       // Redirect to the correct place based on "state", otherwise, just redirect to home
       if (state) {
+        let authUser
         switch (state.type) {
           case authTypes.EVENT_ADD_AVAILABILITY:
             this.$router.replace({
@@ -53,7 +54,15 @@ export default {
             this.$router.replace({
               name: "settings",
             })
-            const authUser = await get("/user/profile")
+            authUser = await get("/user/profile")
+            this.setAuthUser(authUser)
+            break
+          case authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT:
+            this.$router.replace({
+              name: "settings",
+              params: { eventId: state.eventId, fromSignIn: true },
+            })
+            authUser = await get("/user/profile")
             this.setAuthUser(authUser)
             break
         }
