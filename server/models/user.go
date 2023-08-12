@@ -15,14 +15,12 @@ type User struct {
 	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
-	// CalendarAccounts contains all the additional accounts the user wants to see google calendar events for
-	CalendarAccounts []CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`
+	// CalendarAccounts is a mapping from {email => CalendarAccount} that contains all the
+	// additional accounts the user wants to see google calendar events for
+	CalendarAccounts map[string]CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`
 
 	// Google OAuth stuff
-	AccessToken           string             `json:"-" bson:"accessToken,omitempty"`
-	AccessTokenExpireDate primitive.DateTime `json:"-" bson:"accessTokenExpireDate,omitempty"`
-	RefreshToken          string             `json:"-" bson:"refreshToken,omitempty"`
-	TokenOrigin           TokenOriginType    `json:"-" bson:"tokenOrigin,omitempty"`
+	TokenOrigin TokenOriginType `json:"-" bson:"tokenOrigin,omitempty"`
 }
 
 // CalendarAccount contains info about the user's other signed in calendar accounts

@@ -107,11 +107,12 @@ definitions:
         description: Profile info
         type: string
       calendarAccounts:
-        description: CalendarAccounts contains all the additional accounts the user
-          wants to see google calendar events for
-        items:
+        additionalProperties:
           $ref: '#/definitions/models.CalendarAccount'
-        type: array
+        description: |-
+          CalendarAccounts is a mapping from {email => CalendarAccount} that contains all the
+          additional accounts the user wants to see google calendar events for
+        type: object
       email:
         type: string
       firstName:

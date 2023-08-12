@@ -169,23 +169,21 @@ func addCalendarAccount(c *gin.Context) {
 		RefreshToken:          tokens.RefreshToken,
 	}
 
-	// Update existing calendar account or insert a new one
-	existingCalendarAccountIndex := utils.Find(authUser.CalendarAccounts, func(c models.CalendarAccount) bool {
-		return c.Email == email
-	})
-	if existingCalendarAccountIndex != -1 {
-		authUser.CalendarAccounts[existingCalendarAccountIndex] = calendarAccount
-	} else {
-		authUser.CalendarAccounts = append(authUser.CalendarAccounts, calendarAccount)
-	}
-
 	// Perform mongo update
 	db.UsersCollection.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"_id": authUser.Id},
-		bson.M{"$set": bson.M{
-			"calendarAccounts": authUser.CalendarAccounts,
-		}},
+		bson.A{
+			bson.M{"$set": bson.M{
+				"calendarAccounts": bson.M{
+					"$setField": bson.M{
+						"field": email,
+						"input": "$$ROOT.calendarAccounts",
+						"value": calendarAccount,
+					},
+				},
+			}},
+		},
 	)
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -207,12 +205,16 @@ func removeCalendarAccount(c *gin.Context) {
 	}
 
 	authUser := utils.GetAuthUser(c)
-	db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
-		"$pull": bson.M{
+	db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.A{
+		bson.M{"$set": bson.M{
 			"calendarAccounts": bson.M{
-				"email": payload.Email,
+				"$setField": bson.M{
+					"field": payload.Email,
+					"input": "$$ROOT.calendarAccounts",
+					"value": "$$REMOVE",
+				},
 			},
-		},
+		}},
 	})
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -237,15 +239,19 @@ func toggleCalendar(c *gin.Context) {
 
 	// Update enabled status for the specified account
 	authUser := utils.GetAuthUser(c)
-	_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
-		"_id":              authUser.Id,
-		"calendarAccounts": bson.M{"$elemMatch": bson.M{"email": payload.Email}},
-	}, bson.M{
-		"$set": bson.M{"calendarAccounts.$.enabled": payload.Enabled},
-	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-		return
+	if account, ok := authUser.CalendarAccounts[payload.Email]; ok {
+		account.Enabled = payload.Enabled
+		authUser.CalendarAccounts[payload.Email] = account
+
+		_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
+			"_id": authUser.Id,
+		}, bson.M{
+			"$set": authUser,
+		})
+		if err != nil {
+			logger.StdErr.Panicln(err)
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

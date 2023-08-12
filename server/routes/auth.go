@@ -98,19 +98,36 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		LastName:  lastName,
 		Picture:   picture,
 
+		TimezoneOffset: timezoneOffset,
+		TokenOrigin:    tokenOrigin,
+	}
+
+	calendarAccount := models.CalendarAccount{
+		Email:   email,
+		Picture: picture,
+		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
+
 		AccessToken:           accessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          refreshToken,
-
-		TimezoneOffset: timezoneOffset,
-		TokenOrigin:    tokenOrigin,
 	}
 
 	// Update user if exists
 	updateResult := db.UsersCollection.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"email": email},
-		bson.M{"$set": userData},
+		bson.A{
+			bson.M{"$set": userData},
+			bson.M{"$set": bson.M{
+				"calendarAccounts": bson.M{
+					"$setField": bson.M{
+						"field": email,
+						"input": "$$ROOT.calendarAccounts",
+						"value": calendarAccount,
+					},
+				},
+			}},
+		},
 	)
 	var userId primitive.ObjectID
 	if updateResult.Err() == mongo.ErrNoDocuments {

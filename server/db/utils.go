@@ -106,19 +106,11 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 	// If `accounts` is nil, then update tokens for all accounts
 	updateAllAccounts := len(accounts) == 0
 
-	// Refresh primary account access token if necessary
-	if _, ok := accounts[u.Email]; ok || updateAllAccounts {
-		if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-			go auth.RefreshAccessTokenAsync(u.RefreshToken, -1, true, refreshTokenChan)
-			numAccountsToUpdate++
-		}
-	}
-
-	// Refresh other calendar account access tokens if necessary
-	for i, account := range u.CalendarAccounts {
+	// Refresh calendar account access tokens if necessary
+	for _, account := range u.CalendarAccounts {
 		if _, ok := accounts[account.Email]; ok || updateAllAccounts {
 			if time.Now().After(account.AccessTokenExpireDate.Time()) && len(account.RefreshToken) > 0 {
-				go auth.RefreshAccessTokenAsync(account.RefreshToken, i, false, refreshTokenChan)
+				go auth.RefreshAccessTokenAsync(account.RefreshToken, account.Email, refreshTokenChan)
 				numAccountsToUpdate++
 			}
 		}
@@ -130,12 +122,10 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
 
-		if res.IsPrimaryAccount {
-			u.AccessToken = res.TokenResponse.AccessToken
-			u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
-		} else {
-			u.CalendarAccounts[res.CalendarAccountIndex].AccessToken = res.TokenResponse.AccessToken
-			u.CalendarAccounts[res.CalendarAccountIndex].AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+		if calendarAccount, ok := u.CalendarAccounts[res.Email]; ok {
+			calendarAccount.AccessToken = res.TokenResponse.AccessToken
+			calendarAccount.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+			u.CalendarAccounts[res.Email] = calendarAccount
 		}
 	}
 

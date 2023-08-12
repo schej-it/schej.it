@@ -906,9 +906,9 @@ var doc = `{
                     "type": "string"
                 },
                 "calendarAccounts": {
-                    "description": "CalendarAccounts contains all the additional accounts the user wants to see google calendar events for",
-                    "type": "array",
-                    "items": {
+                    "description": "CalendarAccounts is a mapping from {email =\u003e CalendarAccount} that contains all the\nadditional accounts the user wants to see google calendar events for",
+                    "type": "object",
+                    "additionalProperties": {
                         "$ref": "#/definitions/models.CalendarAccount"
                     }
                 },
