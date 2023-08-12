@@ -210,55 +210,63 @@
           v-if="!calendarOnly"
           class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
-          <div class="tw-mb-2 tw-flex tw-items-center tw-font-medium">
-            <div class="tw-mr-1 tw-text-lg">Responses</div>
-            <div class="tw-font-normal">
-              <template v-if="curRespondents.length === 0">
-                {{
-                  isCurTimeslotSelected
-                    ? `(${numUsersAvailable}/${respondents.length})`
-                    : `(${respondents.length})`
-                }}
+          <div v-if="state == states.EDIT_AVAILABILITY">
+            <CalendarAccounts :toggleState="true"></CalendarAccounts>
+          </div>
+
+          <div v-else>
+            <div class="tw-mb-2 tw-flex tw-items-center tw-font-medium">
+              <div class="tw-mr-1 tw-text-lg">Responses</div>
+              <div class="tw-font-normal">
+                <template v-if="curRespondents.length === 0">
+                  {{
+                    isCurTimeslotSelected
+                      ? `(${numUsersAvailable}/${respondents.length})`
+                      : `(${respondents.length})`
+                  }}
+                </template>
+                <template v-else>
+                  {{
+                    isCurTimeslotSelected
+                      ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
+                      : `(${curRespondents.length})`
+                  }}
+                </template>
+              </div>
+            </div>
+            <div
+              class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
+            >
+              <template v-if="respondents.length === 0">
+                <div class="tw-text-very-dark-gray">No responses yet!</div>
               </template>
               <template v-else>
-                {{
-                  isCurTimeslotSelected
-                    ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
-                    : `(${curRespondents.length})`
-                }}
+                <div
+                  v-for="(user, i) in respondents"
+                  :key="user._id"
+                  class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
+                  @mouseover="(e) => mouseOverRespondent(e, user._id)"
+                  @mouseleave="mouseLeaveRespondent"
+                  @click="(e) => clickRespondent(e, user._id)"
+                >
+                  <UserAvatarContent
+                    v-if="!isGuest(user)"
+                    :user="user"
+                    class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
+                  ></UserAvatarContent>
+                  <v-icon v-else class="tw-ml-1 tw-mr-3" small
+                    >mdi-account</v-icon
+                  >
+
+                  <div
+                    class="tw-mr-1 tw-transition-all"
+                    :class="respondentClass(user._id)"
+                  >
+                    {{ user.firstName + " " + user.lastName }}
+                  </div>
+                </div>
               </template>
             </div>
-          </div>
-          <div class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block">
-            <template v-if="respondents.length === 0">
-              <div class="tw-text-very-dark-gray">No responses yet!</div>
-            </template>
-            <template v-else>
-              <div
-                v-for="(user, i) in respondents"
-                :key="user._id"
-                class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
-                @mouseover="(e) => mouseOverRespondent(e, user._id)"
-                @mouseleave="mouseLeaveRespondent"
-                @click="(e) => clickRespondent(e, user._id)"
-              >
-                <UserAvatarContent
-                  v-if="!isGuest(user)"
-                  :user="user"
-                  class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-                ></UserAvatarContent>
-                <v-icon v-else class="tw-ml-1 tw-mr-3" small
-                  >mdi-account</v-icon
-                >
-
-                <div
-                  class="tw-mr-1 tw-transition-all"
-                  :class="respondentClass(user._id)"
-                >
-                  {{ user.firstName + " " + user.lastName }}
-                </div>
-              </div>
-            </template>
           </div>
         </div>
       </div>
@@ -317,6 +325,7 @@ import {
 import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
+import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
@@ -1296,6 +1305,7 @@ export default {
     TimezoneSelector,
     ConfirmDetailsDialog,
     ToolRow,
+    CalendarAccounts,
   },
 }
 </script>

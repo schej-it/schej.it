@@ -1,31 +1,48 @@
 <template>
   <div
-    class="tw-flex tw-w-fit tw-min-w-[288px] tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-drop-shadow tw-transition-all"
+    :class="
+      toggleState
+        ? 'tw-min-w-[175px]'
+        : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'
+    "
+    class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-transition-all"
   >
     <div
-      class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-b-[1px] tw-border-off-white tw-py-1 tw-px-4 tw-align-middle"
+      :class="toggleState ? '' : 'tw-border-b-[1px] tw-px-4 tw-pt-1'"
+      class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-off-white tw-pb-1 tw-align-middle"
     >
-      <div>My calendars</div>
+      <div class="tw-font-medium">My calendars</div>
       <v-btn @click="addCalendarAccount" icon
         ><v-icon color="#4F4F4F">mdi-plus</v-icon></v-btn
       >
     </div>
-    <div class="tw-py-2 tw-px-4">
+    <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'" class="">
       <div
         v-for="account in calendarAccounts"
-        class="tw-group tw-flex tw-flex-row tw-items-center tw-justify-between tw-text-black tw-h-10"
+        class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
       >
-        <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
-          <v-avatar size="24"> <v-img :src="account.picture"></v-img></v-avatar>
-          <div class="tw-text-sm">
+        <div class="tw-flex tw-w-full tw-flex-row tw-items-center tw-gap-2">
+          <v-checkbox
+            v-if="toggleState"
+            v-model="account.enabled"
+            @change="(changed) => toggleCalendarAccount(account.email, changed)"
+          />
+          <v-avatar v-else size="24">
+            <v-img :src="account.picture"></v-img
+          ></v-avatar>
+          <span
+            class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
+          >
             {{ account.email }}
-          </div>
+          </span>
         </div>
         <v-btn
           icon
           :class="`tw-opacity-${
             account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
-          } ${account.email == authUser.email ? 'tw-hidden' : ''}`"
+          } ${
+            account.email == authUser.email || toggleState ? 'tw-hidden' : ''
+          }`"
           class="group-hover:tw-opacity-100"
           @click="() => openRemoveDialog(account.email)"
           ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
@@ -58,20 +75,26 @@ export default {
   name: "CalendarAccounts",
 
   props: {
-    answer: { type: String },
-    points: { type: Array },
+    toggleState: { type: Boolean, default: false },
   },
 
   data: () => ({
     removeDialog: false,
     selectedRemoveEmail: "",
+    selected: [],
   }),
 
   computed: {
     ...mapState(["authUser"]),
     calendarAccounts() {
-      return [{email: this.authUser.email, picture: this.authUser.picture}].concat(this.authUser.calendarAccounts)
-    }
+      return [
+        {
+          email: this.authUser.email,
+          picture: this.authUser.picture,
+          enabled: true,
+        },
+      ].concat(this.authUser.calendarAccounts)
+    },
   },
 
   methods: {
@@ -85,15 +108,14 @@ export default {
       })
     },
     toggleCalendarAccount(email, enabled) {
-      this.authUser.calendarAccounts.find(
-        (account) => account.email == email
-      ).enabled = enabled
-
-      post(`/user/toggle-calendar`, { email, enabled }).catch((err) => {
-        this.showError(
-          "There was a problem with toggling your calendar account! Please try again later."
-        )
-      })
+      console.log(this.calendarAccounts)
+      post(`/user/toggle-calendar`, { email, enabled })
+        .then(() => console.log("SUCCESS"))
+        .catch((err) => {
+          this.showError(
+            "There was a problem with toggling your calendar account! Please try again later."
+          )
+        })
     },
     openRemoveDialog(email) {
       this.removeDialog = true
@@ -105,9 +127,10 @@ export default {
       })
         .then(async () => {
           // TODO: investigate into what the standard method is best
-          this.authUser.calendarAccounts = this.authUser.calendarAccounts.filter(
-            (account) => account.email != this.selectedRemoveEmail
-          )
+          this.authUser.calendarAccounts =
+            this.authUser.calendarAccounts.filter(
+              (account) => account.email != this.selectedRemoveEmail
+            )
           this.setAuthUser(this.authUser)
           // const newAuthUser = await get("/user/profile")
           // this.setAuthUser(newAuthUser)
