@@ -174,15 +174,7 @@ func addCalendarAccount(c *gin.Context) {
 		context.Background(),
 		bson.M{"_id": authUser.Id},
 		bson.A{
-			bson.M{"$set": bson.M{
-				"calendarAccounts": bson.M{
-					"$setField": bson.M{
-						"field": email,
-						"input": "$$ROOT.calendarAccounts",
-						"value": calendarAccount,
-					},
-				},
-			}},
+			utils.InsertCalendarAccountAggregation(calendarAccount),
 		},
 	)
 

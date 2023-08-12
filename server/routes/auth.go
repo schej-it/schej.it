@@ -118,15 +118,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		bson.M{"email": email},
 		bson.A{
 			bson.M{"$set": userData},
-			bson.M{"$set": bson.M{
-				"calendarAccounts": bson.M{
-					"$setField": bson.M{
-						"field": email,
-						"input": "$$ROOT.calendarAccounts",
-						"value": calendarAccount,
-					},
-				},
-			}},
+			utils.InsertCalendarAccountAggregation(calendarAccount),
 		},
 	)
 	var userId primitive.ObjectID
