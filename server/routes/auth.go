@@ -132,6 +132,9 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 	var userId primitive.ObjectID
 	if updateResult.Err() == mongo.ErrNoDocuments {
 		// User doesn't exist, create a new user
+		userData.CalendarAccounts = map[string]models.CalendarAccount{
+			email: calendarAccount,
+		}
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
 			logger.StdErr.Panicln(err)
