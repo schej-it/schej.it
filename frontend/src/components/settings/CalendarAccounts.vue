@@ -21,7 +21,7 @@
         v-for="account in calendarAccounts"
         class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
       >
-        <div class="tw-flex tw-w-full tw-flex-row tw-items-center tw-gap-2">
+        <div :class="`tw-gap-${toggleState ? '0' : '2'}`" class="tw-flex tw-w-full tw-flex-row tw-items-center">
           <v-checkbox
             v-if="toggleState"
             v-model="account.enabled"

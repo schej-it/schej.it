@@ -304,8 +304,6 @@ export const getCalendarEventsMap = async (event, weekOffset = 0) => {
     `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
   )
 
-  console.log(calendarEventsMap)
-
   return calendarEventsMap
 }
 
