@@ -321,6 +321,7 @@ import {
   clamp,
   isPhone,
   utcTimeToLocalTime,
+  splitCalendarEventsByDay,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
@@ -338,7 +339,7 @@ export default {
     event: { type: Object, required: true },
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
-    calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
+    calendarEventsMap: { type: Object, default: {} }, // Object of different users' calendar events
     calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
 
     weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly schejs
@@ -409,6 +410,18 @@ export default {
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
       )
+    },
+    calendarEventsByDay() {
+      let events = []
+
+      /** Adds events from calendar accounts that are enabled */
+      for (const id in this.authUser.calendarAccounts) {
+        if (this.authUser.calendarAccounts[id].enabled) {
+          events = events.concat(this.calendarEventsMap.hasOwnProperty(id) ? this.calendarEventsMap[id].calendarEvents : [])
+        }
+      }
+
+      return splitCalendarEventsByDay(this.event, events, this.weekOffset)
     },
     curRespondentsSet() {
       return new Set(this.curRespondents)
@@ -1012,7 +1025,6 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
-      // console.log("start editing!!!", this.state)
     },
     stopEditing() {
       this.state = this.defaultState
@@ -1250,11 +1262,6 @@ export default {
       if (prevState === this.states.SCHEDULE_EVENT) {
         this.curScheduledEvent = null
       }
-    },
-    calendarEvents: {
-      handler() {
-        //if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
-      },
     },
     respondents: {
       immediate: true,

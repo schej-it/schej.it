@@ -273,13 +273,14 @@ export const getCurrentTimezone = () => {
     .split(" ")[2]
 }
 
+
 /** 
-  Returns an array of the user's calendar events for the given event, filtering for events
+  Returns an object of the users' calendar events for each calendar account for the given event, filtering for events
   only between the time ranges of the event and clamping calendar events that extend beyond the time
   ranges
   weekOffset specifies the amount of weeks forward or backward to display events for (only used for weekly schej's)
 */
-export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
+export const getCalendarEventsMap = async (event, weekOffset = 0) => {
   let timeMin, timeMax
   if (event.type === eventTypes.SPECIFIC_DATES) {
     // Get all calendar events between the first date and the last date in dates
@@ -300,20 +301,26 @@ export const getCalendarEventsByDay = async (event, weekOffset = 0) => {
   }
 
   // Fetch calendar events from Google Calendar
-  const calendarEvents = await get(
+  const calendarEventsMap = await get(
     `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
   )
 
-  const calendarEventsByDay = processCalendarEvents(
+  return calendarEventsMap
+}
+
+/**
+  Returns an array of a user's calendar events split by date for a given event
+*/
+export const splitCalendarEventsByDay = (event, calendarEvents, weekOffset = 0) => {
+  return processCalendarEvents(
     event.dates,
     event.duration,
     calendarEvents,
     event.type,
     weekOffset
   )
-
-  return calendarEventsByDay
 }
+
 
 /** Takes an array of calendar events and returns a new array separated by day and with hoursOffset and hoursLength properties */
 export const processCalendarEvents = (
