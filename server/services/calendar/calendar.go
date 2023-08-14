@@ -162,6 +162,10 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 		if _, ok := accounts[account.Email]; ok || returnAllAccounts {
 			go GetCalendarListAsync(account.Email, account.AccessToken, calendarListChan)
 			numCalendarListRequests++
+
+			calendarEventsMap[account.Email] = CalendarEventsWithError{
+				CalendarEvents: make([]models.CalendarEvent, 0),
+			}
 		}
 	}
 
