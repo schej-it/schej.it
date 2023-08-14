@@ -4,7 +4,7 @@
       <ScheduleOverlap
         ref="scheduleOverlap"
         :event="event"
-        :calendarEventsByDay="calendarEventsByDay"
+        :sampleCalendarEventsByDay="calendarEventsByDay"
         calendarOnly
         :interactable="false"
         :showSnackbar="false"

@@ -211,7 +211,10 @@
           class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
           <div v-if="state == states.EDIT_AVAILABILITY">
-            <CalendarAccounts :toggleState="true"></CalendarAccounts>
+            <CalendarAccounts
+              :toggleState="true"
+              :eventId="event._id"
+            ></CalendarAccounts>
           </div>
 
           <div v-else>
@@ -321,6 +324,7 @@ import {
   clamp,
   isPhone,
   utcTimeToLocalTime,
+  splitCalendarEventsByDay,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
@@ -338,7 +342,8 @@ export default {
     event: { type: Object, required: true },
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
-    calendarEventsByDay: { type: Array, default: () => [] }, // Array of arrays of calendar events
+    calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
+    sampleCalendarEventsByDay: { type: Array, required: false }, // Sample calendar events to use for example calendars
     calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
 
     weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly schejs
@@ -409,6 +414,30 @@ export default {
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
       )
+    },
+    calendarEventsByDay() {
+      if (this.sampleCalendarEventsByDay) return this.sampleCalendarEventsByDay
+
+      let events = []
+      /** Adds events from calendar accounts that are enabled */
+      for (const id in this.authUser.calendarAccounts) {
+        if (this.authUser.calendarAccounts[id].enabled) {
+          events = events.concat(
+            this.calendarEventsMap.hasOwnProperty(id)
+              ? this.calendarEventsMap[id].calendarEvents
+              : []
+          )
+        }
+      }
+
+      const eventsCopy = JSON.parse(JSON.stringify(events))
+      const calendarEventsByDay = splitCalendarEventsByDay(
+        this.event,
+        eventsCopy,
+        this.weekOffset
+      )
+
+      return calendarEventsByDay
     },
     curRespondentsSet() {
       return new Set(this.curRespondents)
@@ -1012,7 +1041,6 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
-      // console.log("start editing!!!", this.state)
     },
     stopEditing() {
       this.state = this.defaultState
@@ -1250,11 +1278,6 @@ export default {
       if (prevState === this.states.SCHEDULE_EVENT) {
         this.curScheduledEvent = null
       }
-    },
-    calendarEvents: {
-      handler() {
-        //if (!this.userHasResponded && !this.calendarOnly) this.setAvailability()
-      },
     },
     respondents: {
       immediate: true,

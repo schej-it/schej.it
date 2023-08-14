@@ -23,7 +23,7 @@ export default {
       if (process.env.NODE_ENV === "development")
         console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
 
-      if (state?.type === authTypes.ADD_CALENDAR_ACCOUNT) {
+      if (state?.type === authTypes.ADD_CALENDAR_ACCOUNT || state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT) {
         await post("/user/add-calendar-account", { code })
       } else {
         await post("/auth/sign-in", {
@@ -59,7 +59,7 @@ export default {
             break
           case authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT:
             this.$router.replace({
-              name: "settings",
+              name: "event",
               params: { eventId: state.eventId, fromSignIn: true },
             })
             authUser = await get("/user/profile")
