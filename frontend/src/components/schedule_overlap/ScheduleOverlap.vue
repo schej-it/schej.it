@@ -211,7 +211,10 @@
           class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
           <div v-if="state == states.EDIT_AVAILABILITY">
-            <CalendarAccounts :toggleState="true" :eventId="event._id"></CalendarAccounts>
+            <CalendarAccounts
+              :toggleState="true"
+              :eventId="event._id"
+            ></CalendarAccounts>
           </div>
 
           <div v-else>
@@ -340,7 +343,7 @@ export default {
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
-    sampleCalendarEventsByDay: {type: Array, required: false}, // Sample calendar events to use for example calendars
+    sampleCalendarEventsByDay: { type: Array, required: false }, // Sample calendar events to use for example calendars
     calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
 
     weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly schejs
@@ -419,13 +422,22 @@ export default {
       /** Adds events from calendar accounts that are enabled */
       for (const id in this.authUser.calendarAccounts) {
         if (this.authUser.calendarAccounts[id].enabled) {
-          events = events.concat(this.calendarEventsMap.hasOwnProperty(id) ? this.calendarEventsMap[id].calendarEvents : [])
+          events = events.concat(
+            this.calendarEventsMap.hasOwnProperty(id)
+              ? this.calendarEventsMap[id].calendarEvents
+              : []
+          )
         }
       }
 
-      console.log(splitCalendarEventsByDay(this.event, events, this.weekOffset))
+      const eventsCopy = JSON.parse(JSON.stringify(events))
+      const calendarEventsByDay = splitCalendarEventsByDay(
+        this.event,
+        eventsCopy,
+        this.weekOffset
+      )
 
-      return splitCalendarEventsByDay(this.event, events, 0)
+      return calendarEventsByDay
     },
     curRespondentsSet() {
       return new Set(this.curRespondents)

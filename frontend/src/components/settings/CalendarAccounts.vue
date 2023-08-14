@@ -97,19 +97,22 @@ export default {
     ...mapMutations(["setAuthUser"]),
     addCalendarAccount() {
       signInGoogle({
-        state: { type: this.toggleState ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT : authTypes.ADD_CALENDAR_ACCOUNT, eventId: this.eventId },
+        state: {
+          type: this.toggleState
+            ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
+            : authTypes.ADD_CALENDAR_ACCOUNT,
+          eventId: this.eventId,
+        },
         requestCalendarPermission: true,
         selectAccount: true,
       })
     },
     toggleCalendarAccount(email, enabled) {
-      post(`/user/toggle-calendar`, { email, enabled })
-      .then(() => console.log("TOGGLED"))
-        .catch((err) => {
-          this.showError(
-            "There was a problem with toggling your calendar account! Please try again later."
-          )
-        })
+      post(`/user/toggle-calendar`, { email, enabled }).catch((err) => {
+        this.showError(
+          "There was a problem with toggling your calendar account! Please try again later."
+        )
+      })
     },
     openRemoveDialog(email) {
       this.removeDialog = true

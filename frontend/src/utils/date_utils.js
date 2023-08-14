@@ -273,7 +273,6 @@ export const getCurrentTimezone = () => {
     .split(" ")[2]
 }
 
-
 /** 
   Returns an object of the users' calendar events for each calendar account for the given event, filtering for events
   only between the time ranges of the event and clamping calendar events that extend beyond the time
@@ -305,13 +304,19 @@ export const getCalendarEventsMap = async (event, weekOffset = 0) => {
     `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
   )
 
+  console.log(calendarEventsMap)
+
   return calendarEventsMap
 }
 
 /**
   Returns an array of a user's calendar events split by date for a given event
 */
-export const splitCalendarEventsByDay = (event, calendarEvents, weekOffset = 0) => {
+export const splitCalendarEventsByDay = (
+  event,
+  calendarEvents,
+  weekOffset = 0
+) => {
   return processCalendarEvents(
     event.dates,
     event.duration,
