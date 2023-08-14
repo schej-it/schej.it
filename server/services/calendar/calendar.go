@@ -140,7 +140,7 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 }
 
 type CalendarEventsWithError struct {
-	CalendarEvents []models.CalendarEvent `json:"calendarEvents,omitempty"`
+	CalendarEvents []models.CalendarEvent `json:"calendarEvents"`
 	Error          *errs.GoogleAPIError   `json:"error,omitempty"`
 }
 
