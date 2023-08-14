@@ -76,6 +76,7 @@ export default {
 
   props: {
     toggleState: { type: Boolean, default: false },
+    eventId: { type: String, default: "" },
   },
 
   data: () => ({
@@ -87,13 +88,7 @@ export default {
   computed: {
     ...mapState(["authUser"]),
     calendarAccounts() {
-      return [
-        {
-          email: this.authUser.email,
-          picture: this.authUser.picture,
-          enabled: true,
-        },
-      ].concat(this.authUser.calendarAccounts)
+      return this.authUser.calendarAccounts
     },
   },
 
@@ -102,15 +97,14 @@ export default {
     ...mapMutations(["setAuthUser"]),
     addCalendarAccount() {
       signInGoogle({
-        state: { type: authTypes.ADD_CALENDAR_ACCOUNT },
+        state: { type: this.toggleState ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT : authTypes.ADD_CALENDAR_ACCOUNT, eventId: this.eventId },
         requestCalendarPermission: true,
         selectAccount: true,
       })
     },
     toggleCalendarAccount(email, enabled) {
-      console.log(this.calendarAccounts)
       post(`/user/toggle-calendar`, { email, enabled })
-        .then(() => console.log("SUCCESS"))
+      .then(() => console.log("TOGGLED"))
         .catch((err) => {
           this.showError(
             "There was a problem with toggling your calendar account! Please try again later."
@@ -127,16 +121,14 @@ export default {
       })
         .then(async () => {
           // TODO: investigate into what the standard method is best
-          this.authUser.calendarAccounts =
-            this.authUser.calendarAccounts.filter(
-              (account) => account.email != this.selectedRemoveEmail
-            )
+          delete this.authUser.calendarAccounts[this.selectedRemoveEmail]
           this.setAuthUser(this.authUser)
           // const newAuthUser = await get("/user/profile")
           // this.setAuthUser(newAuthUser)
           this.removeDialog = false
         })
         .catch((err) => {
+          console.log(err)
           this.showError(
             "There was a problem removing this account! Please try again later."
           )

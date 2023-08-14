@@ -321,7 +321,6 @@ export const splitCalendarEventsByDay = (event, calendarEvents, weekOffset = 0) 
   )
 }
 
-
 /** Takes an array of calendar events and returns a new array separated by day and with hoursOffset and hoursLength properties */
 export const processCalendarEvents = (
   dates,
