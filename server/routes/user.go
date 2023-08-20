@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -289,6 +290,11 @@ func deleteUser(c *gin.Context) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+
+	// Delete session
+	session := sessions.Default(c)
+	session.Delete("userId")
+	session.Save()
 
 	c.JSON(http.StatusOK, gin.H{})
 }
