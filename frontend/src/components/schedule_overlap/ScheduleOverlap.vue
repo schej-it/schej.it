@@ -877,6 +877,7 @@ export default {
                   "Your availability has been set automatically using your Google Calendar!"
                 )
               }
+              this.unsavedChanges = false
             }, 500)
           }
         }, i * msPerBlock)
@@ -1277,12 +1278,16 @@ export default {
   },
   watch: {
     availability() {
-      this.unsavedChanges = true
+      if (this.state === this.states.EDIT_AVAILABILITY) {
+        this.unsavedChanges = true
+      }
     },
     state(nextState, prevState) {
       // Reset scheduled event when exiting schedule event state
       if (prevState === this.states.SCHEDULE_EVENT) {
         this.curScheduledEvent = null
+      } else if (prevState === this.states.EDIT_AVAILABILITY) {
+        this.unsavedChanges = false
       }
     },
     respondents: {
@@ -1293,6 +1298,14 @@ export default {
           this.curTimeslotAvailability[respondent._id] = true
         }
       },
+    },
+    calendarEventsByDay() {
+      if (
+        this.state === this.states.EDIT_AVAILABILITY &&
+        !this.unsavedChanges
+      ) {
+        this.setAvailabilityAutomatically()
+      }
     },
   },
   created() {

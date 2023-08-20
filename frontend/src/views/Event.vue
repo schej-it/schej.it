@@ -364,7 +364,7 @@ export default {
     },
 
     onBeforeUnload(e) {
-      if (this.isEditing) {
+      if (this.areUnsavedChanges) {
         e.preventDefault()
         e.returnValue = ""
         return
