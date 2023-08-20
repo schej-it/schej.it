@@ -21,7 +21,11 @@
         v-for="account in calendarAccounts"
         class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
       >
-        <div :class="`tw-gap-${toggleState ? '0' : '2'}`" class="tw-flex tw-w-full tw-flex-row tw-items-center">
+        <div
+          v-if="showAccount(account)"
+          :class="`tw-gap-${toggleState ? '0' : '2'}`"
+          class="tw-flex tw-w-full tw-flex-row tw-items-center"
+        >
           <v-checkbox
             v-if="toggleState"
             v-model="account.enabled"
@@ -35,6 +39,19 @@
           >
             {{ account.email }}
           </span>
+          <v-tooltip top v-if="accountHasError(account)">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                icon
+                v-bind="attrs"
+                v-on="on"
+                @click="() => reauthenticateCalendarAccount(account)"
+              >
+                <v-icon>mdi-alert-circle</v-icon>
+              </v-btn>
+            </template>
+            <span>Sign in again</span>
+          </v-tooltip>
         </div>
         <v-btn
           icon
@@ -69,7 +86,7 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes } from "@/constants"
-import { post, _delete, signInGoogle } from "@/utils"
+import { get, post, _delete, signInGoogle } from "@/utils"
 
 export default {
   name: "CalendarAccounts",
@@ -77,12 +94,14 @@ export default {
   props: {
     toggleState: { type: Boolean, default: false },
     eventId: { type: String, default: "" },
+    calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
   },
 
   data: () => ({
     removeDialog: false,
     selectedRemoveEmail: "",
     selected: [],
+    calendarEventsMapCopy: null,
   }),
 
   computed: {
@@ -95,6 +114,16 @@ export default {
   methods: {
     ...mapActions(["showError"]),
     ...mapMutations(["setAuthUser"]),
+    accountHasError(account) {
+      return (
+        this.calendarEventsMapCopy &&
+        this.calendarEventsMapCopy[account.email]?.error
+      )
+    },
+    /** don't show account if in toggle state and account has an error */
+    showAccount(account) {
+      return !(this.toggleState && this.accountHasError(account))
+    },
     addCalendarAccount() {
       signInGoogle({
         state: {
@@ -105,6 +134,19 @@ export default {
         },
         requestCalendarPermission: true,
         selectAccount: true,
+      })
+    },
+    reauthenticateCalendarAccount(account) {
+      signInGoogle({
+        state: {
+          type: this.toggleState
+            ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
+            : authTypes.ADD_CALENDAR_ACCOUNT,
+          eventId: this.eventId,
+        },
+        requestCalendarPermission: true,
+        selectAccount: false,
+        loginHint: account.email,
       })
     },
     toggleCalendarAccount(email, enabled) {
@@ -137,6 +179,28 @@ export default {
           )
         })
     },
+  },
+
+  watch: {
+    calendarEventsMapCopy: {
+      immediate: true,
+      async handler() {
+        // Do a test request to calendarevents route to check if calendar access is allowed for each account
+        if (!this.calendarEventsMapCopy) {
+          try {
+            this.calendarEventsMapCopy = await get(
+              `/user/calendars?timeMin=${new Date().toISOString()}&timeMax=${new Date().toISOString()}`
+            )
+          } catch (err) {
+            console.error(err)
+          }
+        }
+      },
+    },
+  },
+
+  created() {
+    this.calendarEventsMapCopy = this.calendarEventsMap
   },
 }
 </script>

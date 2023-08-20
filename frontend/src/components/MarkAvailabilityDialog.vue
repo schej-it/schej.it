@@ -9,7 +9,7 @@
       <v-expand-transition>
         <div v-show="state === states.CHOICES">
           <div class="tw-text-md tw-pb-4 tw-text-center">
-            How would you like to mark <br v-if="isPhone" />
+            How would you like to add <br v-if="isPhone" />
             your availability?
           </div>
           <div class="">

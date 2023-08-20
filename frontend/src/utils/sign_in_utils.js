@@ -5,6 +5,7 @@ export const signInGoogle = ({
   state = null,
   selectAccount = false,
   requestCalendarPermission = false,
+  loginHint = "",
 }) => {
   const clientId =
     "523323684219-jfakov2bgsleeb6den4ktpohq4lcnae2.apps.googleusercontent.com"
@@ -28,7 +29,9 @@ export const signInGoogle = ({
     promptString = "&prompt=select_account+consent"
   } else {
     promptString = "&prompt=consent"
-    if (store.state.authUser) {
+    if (loginHint.length > 0) {
+      promptString += `&login_hint=${loginHint}`
+    } else if (store.state.authUser) {
       promptString += `&login_hint=${store.state.authUser.email}`
     }
   }

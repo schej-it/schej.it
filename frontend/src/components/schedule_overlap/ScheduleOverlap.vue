@@ -210,10 +210,12 @@
           v-if="!calendarOnly"
           class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
-          <div v-if="authUser && state == states.EDIT_AVAILABILITY">
+          <div v-if="state == states.EDIT_AVAILABILITY">
             <CalendarAccounts
+              v-if="calendarPermissionGranted"
               :toggleState="true"
               :eventId="event._id"
+              :calendar-events-map="calendarEventsMap"
             ></CalendarAccounts>
           </div>
 
@@ -421,7 +423,6 @@ export default {
 
       /** If the user isn't logged in */
       if (!this.authUser) return []
-      
 
       let events = []
       /** Adds events from calendar accounts that are enabled */

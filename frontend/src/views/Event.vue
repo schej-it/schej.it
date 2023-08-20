@@ -407,7 +407,10 @@ export default {
           })
         }
 
-        this.calendarPermissionGranted = true
+        // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
+        this.calendarPermissionGranted = !Object.values(
+          this.calendarEventsMap
+        ).every((c) => Boolean(c.error))
       })
       .catch((err) => {
         this.loading = false
