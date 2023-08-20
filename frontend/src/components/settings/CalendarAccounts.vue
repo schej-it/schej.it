@@ -19,10 +19,10 @@
     <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'" class="">
       <div
         v-for="account in calendarAccounts"
+        v-if="showAccount(account)"
         class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
       >
         <div
-          v-if="showAccount(account)"
           :class="`tw-gap-${toggleState ? '0' : '2'}`"
           class="tw-flex tw-w-full tw-flex-row tw-items-center"
         >
@@ -53,6 +53,8 @@
             <span>Sign in again</span>
           </v-tooltip>
         </div>
+        <!-- Needed to make sure tailwind classes compile -->
+        <span class="tw-hidden tw-opacity-100 tw-opacity-0"></span>
         <v-btn
           icon
           :class="`tw-opacity-${
