@@ -456,8 +456,8 @@ export default {
         this.calendarEventsMap = eventsMap
         this.loading = false
 
-        // Only autofill availability if user hasn't responded
-        if (!this.userHasResponded) {
+        // Only autofill availability if user hasn't responded and they don't have unsaved changes
+        if (!this.userHasResponded && !this.areUnsavedChanges) {
           this.$nextTick(() => {
             this.scheduleOverlapComponent.setAvailabilityAutomatically()
           })

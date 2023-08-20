@@ -1302,6 +1302,7 @@ export default {
     calendarEventsByDay() {
       if (
         this.state === this.states.EDIT_AVAILABILITY &&
+        !this.loadingCalendarEvents &&
         !this.unsavedChanges
       ) {
         this.setAvailabilityAutomatically()
