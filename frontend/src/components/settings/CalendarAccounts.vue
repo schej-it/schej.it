@@ -175,7 +175,7 @@ export default {
           this.removeDialog = false
         })
         .catch((err) => {
-          console.log(err)
+          console.error(err)
           this.showError(
             "There was a problem removing this account! Please try again later."
           )
