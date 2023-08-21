@@ -17,6 +17,7 @@ import (
 	"schej.it/server/discord_bot"
 	"schej.it/server/logger"
 	"schej.it/server/routes"
+	"schej.it/server/slackbot"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -106,6 +107,7 @@ func main() {
 	routes.InitEvents(router)
 	routes.InitUsers(router)
 	routes.InitAnalytics(router)
+	slackbot.InitSlackbot(router)
 
 	// Init swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

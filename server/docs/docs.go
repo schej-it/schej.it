@@ -438,6 +438,28 @@ var doc = `{
                 }
             }
         },
+        "/slackbot": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "slackbot"
+                ],
+                "summary": "Gets the number of signed up users",
+                "responses": {
+                    "200": {
+                        "description": "Text response",
+                        "schema": {
+                            "$ref": "#/definitions/commands.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "delete": {
                 "produces": [
@@ -756,6 +778,21 @@ var doc = `{
                 "error": {
                     "type": "object",
                     "$ref": "#/definitions/errs.GoogleAPIError"
+                }
+            }
+        },
+        "commands.Response": {
+            "type": "object",
+            "properties": {
+                "blocks": {
+                    "type": "string"
+                },
+                "response_type": {
+                    "description": "ephemeral or in_channel",
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
                 }
             }
         },

@@ -9,6 +9,16 @@ definitions:
         $ref: '#/definitions/errs.GoogleAPIError'
         type: object
     type: object
+  commands.Response:
+    properties:
+      blocks:
+        type: string
+      response_type:
+        description: ephemeral or in_channel
+        type: string
+      text:
+        type: string
+    type: object
   errs.GoogleAPIError:
     properties:
       code:
@@ -393,6 +403,20 @@ paths:
       summary: Updates the current user's availability
       tags:
       - events
+  /slackbot:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Text response
+          schema:
+            $ref: '#/definitions/commands.Response'
+      summary: Gets the number of signed up users
+      tags:
+      - slackbot
   /user:
     delete:
       produces:
