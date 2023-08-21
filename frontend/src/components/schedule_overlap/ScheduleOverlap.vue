@@ -1302,6 +1302,8 @@ export default {
     calendarEventsByDay() {
       if (
         this.state === this.states.EDIT_AVAILABILITY &&
+        this.authUser &&
+        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
         !this.loadingCalendarEvents &&
         !this.unsavedChanges
       ) {
