@@ -1,20 +1,52 @@
 definitions:
+  calendar.CalendarEventsWithError:
+    properties:
+      calendarEvents:
+        items:
+          $ref: '#/definitions/models.CalendarEvent'
+        type: array
+      error:
+        $ref: '#/definitions/errs.GoogleAPIError'
+        type: object
+    type: object
   commands.Response:
     properties:
+      blocks:
+        type: string
       response_type:
         description: ephemeral or in_channel
         type: string
       text:
         type: string
     type: object
+  errs.GoogleAPIError:
+    properties:
+      code:
+        type: integer
+      details:
+        type: object
+      errors:
+        type: object
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.CalendarAccount:
+    properties:
+      email:
+        type: string
+      enabled:
+        type: boolean
+      picture:
+        type: string
+    type: object
   models.CalendarEvent:
     properties:
       endDate:
-        $ref: '#/definitions/primitive.DateTime'
-        type: object
+        type: string
       startDate:
-        $ref: '#/definitions/primitive.DateTime'
-        type: object
+        type: string
       summary:
         type: string
     type: object
@@ -25,9 +57,7 @@ definitions:
       calendarEventId:
         type: string
       dates:
-        items:
-          $ref: '#/definitions/primitive.DateTime'
-        type: array
+        type: string
       duration:
         type: number
       name:
@@ -50,24 +80,6 @@ definitions:
     type: object
   models.EventType:
     type: string
-  models.FriendRequest:
-    properties:
-      _id:
-        type: string
-      createdAt:
-        $ref: '#/definitions/primitive.DateTime'
-        type: object
-      from:
-        type: string
-      fromUser:
-        $ref: '#/definitions/models.UserProfile'
-        type: object
-      to:
-        type: string
-      toUser:
-        $ref: '#/definitions/models.UserProfile'
-        type: object
-    type: object
   models.Location:
     properties:
       city:
@@ -94,15 +106,23 @@ definitions:
       name:
         type: string
       user:
-        $ref: '#/definitions/models.UserProfile'
+        $ref: '#/definitions/models.User'
         type: object
       userId:
         type: string
     type: object
-  models.UserProfile:
+  models.User:
     properties:
       _id:
+        description: Profile info
         type: string
+      calendarAccounts:
+        additionalProperties:
+          $ref: '#/definitions/models.CalendarAccount'
+        description: |-
+          CalendarAccounts is a mapping from {email => CalendarAccount} that contains all the
+          additional accounts the user wants to see google calendar events for
+        type: object
       email:
         type: string
       firstName:
@@ -111,11 +131,9 @@ definitions:
         type: string
       picture:
         type: string
-      visibility:
+      timezoneOffset:
         type: integer
     type: object
-  primitive.DateTime:
-    type: integer
   responses.Error:
     properties:
       error:
@@ -385,207 +403,7 @@ paths:
       summary: Updates the current user's availability
       tags:
       - events
-  /events/{eventId}/schedule:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Event ID
-        in: path
-        name: eventId
-        required: true
-        type: string
-      - description: Object containing info about the event to schedule
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              attendeeEmails:
-                items:
-                  type: string
-                type: array
-              endDate:
-                $ref: '#/definitions/primitive.DateTime'
-              startDate:
-                $ref: '#/definitions/primitive.DateTime'
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Schedules an event on the user's google calendar
-      tags:
-      - events
-  /friends:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Gets all of users current friends
-      tags:
-      - friends
-  /friends/{id}:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of friend
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Removes an existing friend
-      tags:
-      - friends
-  /friends/{id}/calendar:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of friend
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Lower bound for event's start time to filter by
-        in: query
-        name: timeMin
-        required: true
-        type: string
-      - description: Upper bound for event's end time to filter by
-        in: query
-        name: timeMax
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.CalendarEvent'
-            type: array
-      summary: Returns the specified friend's schedule
-      tags:
-      - friends
-  /friends/{id}/status:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of friend
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      summary: Returns whether the friend is free or busy
-      tags:
-      - friends
-  /friends/requests:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Gets all the current incoming and outgoing friend requests
-      tags:
-      - friends
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Object specifying the user IDs of who this request is sent from
-          and to
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              to:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Friend request already exists from \"to\" to \"from\", and
-            it was accepted
-        "201":
-          description: Friend request created
-          schema:
-            $ref: '#/definitions/models.FriendRequest'
-      summary: Creates a new friend request
-      tags:
-      - friends
-  /friends/requests/{id}:
-    delete:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of the friend request
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Delete's a friend request created by the current user
-      tags:
-      - friends
-  /friends/requests/{id}/accept:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of the friend request
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Accepts an existing friend request
-      tags:
-      - friends
-  /friends/requests/{id}/reject:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: ID of the friend request
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200": {}
-      summary: Rejects an existing friend request
-      tags:
-      - friends
-  /slackbot/num_users:
+  /slackbot:
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -608,7 +426,30 @@ paths:
       summary: Deletes the currently signed in user
       tags:
       - user
-  /user/calendar:
+  /user/add-calendar-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the Google authorization code
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              code:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Adds a new calendar account
+      tags:
+      - user
+  /user/calendars:
     get:
       description: Gets the user's calendar events between "timeMin" and "timeMax"
       parameters:
@@ -622,15 +463,19 @@ paths:
         name: timeMax
         required: true
         type: string
+      - description: Comma separated list of accounts to fetch calendar events from
+        in: query
+        name: accounts
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.CalendarEvent'
-            type: array
+            additionalProperties:
+              $ref: '#/definitions/calendar.CalendarEventsWithError'
+            type: object
       summary: Gets the user's calendar events
       tags:
       - user
@@ -666,8 +511,31 @@ paths:
         "200":
           description: A user profile object
           schema:
-            $ref: '#/definitions/models.UserProfile'
+            $ref: '#/definitions/models.User'
       summary: Gets the user's profile
+      tags:
+      - user
+  /user/remove-calendar-account:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the email of the calendar account to remove
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Removes an existing calendar account
       tags:
       - user
   /user/searchContacts:
@@ -685,17 +553,17 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.UserProfile'
+              $ref: '#/definitions/models.User'
             type: array
       summary: Searches the user's contacts based on the given query
       tags:
       - user
-  /user/visibility:
+  /user/toggle-calendar:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Visibility of user from 0 to 2
+      - description: Email of calendar account and whether to enable it
         in: body
         name: payload
         required: true
@@ -703,14 +571,17 @@ paths:
           allOf:
           - type: object
           - properties:
-              visibility:
-                type: integer
+              email:
+                type: string
+              enabled:
+                type: boolean
             type: object
       produces:
       - application/json
       responses:
         "200": {}
-      summary: Updates the current user's visibility
+      summary: Toggles whether the specified calendar is enabled or disabled for the
+        user
       tags:
       - user
   /users:
@@ -728,7 +599,7 @@ paths:
           description: An array of user profile objects
           schema:
             items:
-              $ref: '#/definitions/models.UserProfile'
+              $ref: '#/definitions/models.User'
             type: array
       summary: Returns users that match the search query
       tags:

@@ -3,11 +3,8 @@ package routes
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -18,6 +15,7 @@ import (
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
+	"schej.it/server/services/auth"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -48,47 +46,9 @@ func signIn(c *gin.Context) {
 		return
 	}
 
-	// Call Google oauth token endpoint
-	var redirectUri string
-	if utils.IsRelease() {
-		redirectUri = "https://schej.it/auth"
-	} else {
-		redirectUri = "http://localhost:8080/auth"
-	}
-	values := url.Values{
-		"client_id":     {os.Getenv("CLIENT_ID")},
-		"client_secret": {os.Getenv("CLIENT_SECRET")},
-		"code":          {payload.Code},
-		"grant_type":    {"authorization_code"},
-		"redirect_uri":  {redirectUri},
-	}
-	resp, err := http.PostForm(
-		"https://oauth2.googleapis.com/token",
-		values,
-	)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
+	tokens := auth.GetTokensFromAuthCode(payload.Code)
 
-	res := struct {
-		AccessToken      string `json:"access_token"`
-		IdToken          string `json:"id_token"`
-		ExpiresIn        int    `json:"expires_in"`
-		RefreshToken     string `json:"refresh_token"`
-		Scope            string `json:"scope"`
-		TokenType        string `json:"token_type"`
-		Error            string `json:"error"`
-		ErrorDescription string `json:"error_description"`
-	}{}
-
-	json.NewDecoder(resp.Body).Decode(&res)
-	if len(res.Error) > 0 {
-		data, _ := json.MarshalIndent(res, "", "  ")
-		logger.StdErr.Panicln(string(data))
-	}
-
-	signInHelper(c, res.AccessToken, res.IdToken, res.ExpiresIn, res.RefreshToken, payload.TimezoneOffset, models.WEB)
+	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -138,29 +98,35 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		LastName:  lastName,
 		Picture:   picture,
 
-		// TODO: make sure this doesn't result in bugs, make sure doesn't reset to 0 randomly
-		Visibility: 0,
+		TimezoneOffset: timezoneOffset,
+		TokenOrigin:    tokenOrigin,
+	}
 
-		// FriendIds: make([]primitive.ObjectID, 0),
-		// Calendars: make(map[string]models.Calendar),
+	calendarAccount := models.CalendarAccount{
+		Email:   email,
+		Picture: picture,
+		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
 
 		AccessToken:           accessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          refreshToken,
-
-		TimezoneOffset: timezoneOffset,
-		TokenOrigin:    tokenOrigin,
 	}
 
 	// Update user if exists
 	updateResult := db.UsersCollection.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"email": email},
-		bson.M{"$set": userData},
+		bson.A{
+			bson.M{"$set": userData},
+			utils.InsertCalendarAccountAggregation(calendarAccount),
+		},
 	)
 	var userId primitive.ObjectID
 	if updateResult.Err() == mongo.ErrNoDocuments {
 		// User doesn't exist, create a new user
+		userData.CalendarAccounts = map[string]models.CalendarAccount{
+			email: calendarAccount,
+		}
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
 			logger.StdErr.Panicln(err)

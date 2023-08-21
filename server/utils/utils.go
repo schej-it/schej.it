@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
 	"time"
 
 	"github.com/brianvoe/sjwt"
-	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/logger"
 	"schej.it/server/models"
@@ -51,9 +50,11 @@ func StringToObjectID(s string) primitive.ObjectID {
 	return objectID
 }
 
-// Gets the user id from the current session as an ObjectID object
-func GetUserId(session sessions.Session) primitive.ObjectID {
-	return StringToObjectID(session.Get("userId").(string))
+// Returns the currently signed in user
+func GetAuthUser(c *gin.Context) *models.User {
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+	return user
 }
 
 // Gets the access token expire date from an "expiresIn" int representing the number of seconds
@@ -102,7 +103,7 @@ func GetClientIdFromTokenOrigin(tokenOrigin models.TokenOriginType) string {
 
 // Prints the http response as a string
 func PrintHttpResponse(resp *http.Response) {
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	logger.StdOut.Println(string(body))
 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 }

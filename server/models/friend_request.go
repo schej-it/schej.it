@@ -6,8 +6,8 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type FriendRequest struct {
 	Id        primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
 	From      primitive.ObjectID `json:"from" bson:"from,omitempty"`
-	FromUser  *UserProfile       `json:"fromUser" bson:",omitempty"`
+	FromUser  *User              `json:"fromUser" bson:",omitempty"`
 	To        primitive.ObjectID `json:"to" bson:"to,omitempty"`
-	ToUser    *UserProfile       `json:"toUser" bson:",omitempty"`
+	ToUser    *User              `json:"toUser" bson:",omitempty"`
 	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt,omitempty"`
 }

@@ -111,7 +111,7 @@
         ref="scheduleOverlap"
         :event="event"
         :loadingCalendarEvents="loading"
-        :calendarEventsByDay="calendarEventsByDay"
+        :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
         :weekOffset.sync="weekOffset"
         @refreshEvent="refreshEvent"
@@ -160,11 +160,10 @@
 <script>
 import {
   get,
-  post,
   signInGoogle,
   isPhone,
   processEvent,
-  getCalendarEventsByDay,
+  getCalendarEventsMap,
   getDateRangeStringForEvent,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
@@ -199,7 +198,7 @@ export default {
     guestDialog: false,
     editEventDialog: false,
     loading: true,
-    calendarEventsByDay: [],
+    calendarEventsMap: {},
     event: null,
     scheduleOverlapComponent: null,
     scheduleOverlapComponentLoaded: false,
@@ -365,7 +364,7 @@ export default {
     },
 
     onBeforeUnload(e) {
-      if (this.isEditing) {
+      if (this.areUnsavedChanges) {
         e.preventDefault()
         e.returnValue = ""
         return
@@ -390,10 +389,10 @@ export default {
       }
     }
 
-    // Get user's calendar
-    getCalendarEventsByDay(this.event, this.weekOffset)
-      .then((events) => {
-        this.calendarEventsByDay = events
+    // Get all calendar accounts' events
+    getCalendarEventsMap(this.event, this.weekOffset)
+      .then((eventsMap) => {
+        this.calendarEventsMap = eventsMap
         this.loading = false
 
         // Set user availability automatically if we're in editing mode and they haven't responded
@@ -408,7 +407,10 @@ export default {
           })
         }
 
-        this.calendarPermissionGranted = true
+        // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
+        this.calendarPermissionGranted = !Object.values(
+          this.calendarEventsMap
+        ).every((c) => Boolean(c.error))
       })
       .catch((err) => {
         this.loading = false
@@ -444,18 +446,18 @@ export default {
     weekOffset() {
       this.loading = true
 
-      this.calendarEventsByDay = []
+      this.calendarEventsMap = {}
       const curWeekOffset = this.weekOffset
-      getCalendarEventsByDay(this.event, curWeekOffset).then((events) => {
+      getCalendarEventsMap(this.event, curWeekOffset).then((eventsMap) => {
         // Don't set calendar events / set availability if user has already
         // selected a different weekoffset by the time these calendar events load
         if (curWeekOffset !== this.weekOffset) return
 
-        this.calendarEventsByDay = events
+        this.calendarEventsMap = eventsMap
         this.loading = false
 
-        // Only autofill availability if user hasn't responded
-        if (!this.userHasResponded) {
+        // Only autofill availability if user hasn't responded and they don't have unsaved changes
+        if (!this.userHasResponded && !this.areUnsavedChanges) {
           this.$nextTick(() => {
             this.scheduleOverlapComponent.setAvailabilityAutomatically()
           })

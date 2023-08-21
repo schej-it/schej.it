@@ -2,11 +2,7 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/logger"
 	"schej.it/server/models"
+	"schej.it/server/services/auth"
 	"schej.it/server/utils"
 )
 
@@ -100,45 +97,43 @@ func DeleteFriendRequestById(friendRequestId string) {
 	}
 }
 
-// If access token has expired, get a new token, update the user object, and save it to the database
-func RefreshUserTokenIfNecessary(u *models.User) {
-	// logger.StdOut.Println("ACCESS TOKEN EXPIRE DATE: ", u.AccessTokenExpireDate.Time())
-	if time.Now().After(u.AccessTokenExpireDate.Time()) && len(u.RefreshToken) > 0 {
-		// Refresh token by calling google token endpoint
-		values := url.Values{
-			"client_id":     {utils.GetClientIdFromTokenOrigin(u.TokenOrigin)},
-			"grant_type":    {"refresh_token"},
-			"refresh_token": {u.RefreshToken},
+// If access token has expired, get a new token for the primary account as well as all other calendar accounts, update the user object, and save it to the database
+// `accounts` specifies for which accounts to refresh access tokens. If `accounts` is nil or empty, then update tokens for all accounts
+func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
+	refreshTokenChan := make(chan auth.RefreshAccessTokenData)
+	numAccountsToUpdate := 0
+
+	// If `accounts` is nil, then update tokens for all accounts
+	updateAllAccounts := len(accounts) == 0
+
+	// Refresh calendar account access tokens if necessary
+	for _, account := range u.CalendarAccounts {
+		if _, ok := accounts[account.Email]; ok || updateAllAccounts {
+			if time.Now().After(account.AccessTokenExpireDate.Time()) && len(account.RefreshToken) > 0 {
+				go auth.RefreshAccessTokenAsync(account.RefreshToken, account.Email, refreshTokenChan)
+				numAccountsToUpdate++
+			}
 		}
-		if u.TokenOrigin == models.WEB {
-			values.Add("client_secret", os.Getenv("CLIENT_SECRET"))
+	}
+
+	// Update access tokens as responses are received
+	for i := 0; i < numAccountsToUpdate; i++ {
+		res := <-refreshTokenChan
+
+		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
+
+		if calendarAccount, ok := u.CalendarAccounts[res.Email]; ok {
+			calendarAccount.AccessToken = res.TokenResponse.AccessToken
+			calendarAccount.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+			u.CalendarAccounts[res.Email] = calendarAccount
 		}
+	}
 
-		resp, err := http.PostForm(
-			"https://oauth2.googleapis.com/token",
-			values,
-		)
-		if err != nil {
-			logger.StdErr.Panicln(err)
-		}
-		defer resp.Body.Close()
-
-		res := struct {
-			AccessToken string `json:"access_token"`
-			ExpiresIn   int    `json:"expires_in"`
-			Scope       string `json:"scope"`
-			TokenType   string `json:"token_type"`
-			Error       bson.M `json:"error"`
-		}{}
-		json.NewDecoder(resp.Body).Decode(&res)
-
-		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.ExpiresIn)
-		u.AccessToken = res.AccessToken
-		u.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
-
+	// Update user object if accounts were updated
+	if numAccountsToUpdate > 0 {
 		UsersCollection.FindOneAndUpdate(
 			context.Background(),
-			bson.M{"email": u.Email},
+			bson.M{"_id": u.Id},
 			bson.M{"$set": u},
 		)
 	}

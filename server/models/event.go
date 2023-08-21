@@ -33,6 +33,6 @@ type Event struct {
 type Response struct {
 	Name         string             `json:"name" bson:",omitempty"`
 	UserId       primitive.ObjectID `json:"userId" bson:",omitempty"`
-	User         *UserProfile       `json:"user" bson:",omitempty"`
+	User         *User              `json:"user" bson:",omitempty"`
 	Availability []string           `json:"availability" bson:"availability"`
 }

@@ -1,6 +1,10 @@
 package utils
 
-import "errors"
+import (
+	"errors"
+
+	"schej.it/server/models"
+)
 
 // Inserts the given value at the specified index in the slice. Returns the updated slice
 func Insert[T any](arr []T, index int, value T) ([]T, error) {
@@ -26,4 +30,24 @@ func Contains[T comparable](arr []T, value T) bool {
 		}
 	}
 	return false
+}
+
+// Returns the index of the element found using the equals function, -1 if not found
+func Find[T any](arr []T, equals func(T) bool) int {
+	for i, v := range arr {
+		if equals(v) {
+			return i
+		}
+	}
+	return -1
+}
+
+func ArrayToSet[T comparable](arr []T) models.Set[T] {
+	set := make(models.Set[T])
+
+	for _, v := range arr {
+		set[v] = struct{}{}
+	}
+
+	return set
 }

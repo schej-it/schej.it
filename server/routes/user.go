@@ -9,12 +9,14 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/auth"
 	"schej.it/server/services/calendar"
 	"schej.it/server/services/contacts"
 	"schej.it/server/utils"
@@ -26,16 +28,18 @@ func InitUser(router *gin.Engine) {
 
 	userRouter.GET("/profile", getProfile)
 	userRouter.GET("/events", getEvents)
-	userRouter.GET("/calendar", getCalendar)
+	userRouter.GET("/calendars", getCalendars)
+	userRouter.POST("/add-calendar-account", addCalendarAccount)
+	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
+	userRouter.POST("/toggle-calendar", toggleCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
-	userRouter.POST("/visibility", updateVisibility)
 	userRouter.DELETE("", deleteUser)
 }
 
 // @Summary Gets the user's profile
 // @Tags user
 // @Produce json
-// @Success 200 {object} models.UserProfile "A user profile object"
+// @Success 200 {object} models.User "A user profile object"
 // @Router /user/profile [get]
 func getProfile(c *gin.Context) {
 	userInterface, _ := c.Get("authUser")
@@ -43,7 +47,7 @@ func getProfile(c *gin.Context) {
 
 	db.UpdateDailyUserLog(user)
 
-	c.JSON(http.StatusOK, user.GetProfile())
+	c.JSON(http.StatusOK, user)
 }
 
 // @Summary Gets all the user's events
@@ -53,10 +57,7 @@ func getProfile(c *gin.Context) {
 // @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
-	session := sessions.Default(c)
-
-	userId := utils.GetUserId(session)
-	userIdString := session.Get("userId").(string)
+	userId := utils.GetAuthUser(c).Id
 
 	// Get the events associated with the current user
 	events := make([]models.Event, 0)
@@ -64,7 +65,7 @@ func getEvents(c *gin.Context) {
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{"ownerId": userId},
-			bson.M{"responses." + userIdString: bson.M{"$exists": true}},
+			bson.M{"responses." + userId.Hex(): bson.M{"$exists": true}},
 		},
 	}, opts)
 	if err != nil {
@@ -101,63 +102,149 @@ func getEvents(c *gin.Context) {
 // @Produce json
 // @Param timeMin query string true "Lower bound for event's start time to filter by"
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
-// @Success 200 {object} []models.CalendarEvent
-// @Router /user/calendar [get]
-func getCalendar(c *gin.Context) {
+// @Param accounts query string false "Comma separated list of accounts to fetch calendar events from"
+// @Success 200 {object} map[string]calendar.CalendarEventsWithError
+// @Router /user/calendars [get]
+func getCalendars(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
-		TimeMin time.Time `form:"timeMin" binding:"required"`
-		TimeMax time.Time `form:"timeMax" binding:"required"`
+		TimeMin  time.Time `form:"timeMin" binding:"required"`
+		TimeMax  time.Time `form:"timeMax" binding:"required"`
+		Accounts string    `form:"accounts"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 
-	// Refresh token if necessary
-	userInterface, _ := c.Get("authUser")
-	user := userInterface.(*models.User)
-
-	calendarEvents, err := calendar.GetUsersCalendarEvents(user, payload.TimeMin, payload.TimeMax)
-	if err != nil {
-		c.JSON(err.Code, responses.Error{Error: *err})
-		return
+	var accounts []string
+	if len(payload.Accounts) == 0 {
+		accounts = make([]string, 0)
+	} else {
+		accounts = utils.ParseArrayQueryParam(payload.Accounts)
 	}
+	accountsSet := utils.ArrayToSet(accounts)
+	user := utils.GetAuthUser(c)
+
+	calendarEvents := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
 
 	c.JSON(http.StatusOK, calendarEvents)
 }
 
-// @Summary Updates the current user's visibility
+// @Summary Adds a new calendar account
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param payload body object{visibility=int} true "Visibility of user from 0 to 2"
+// @Param payload body object{code=string} true "Object containing the Google authorization code"
 // @Success 200
-// @Router /user/visibility [post]
-func updateVisibility(c *gin.Context) {
-
-	// Bind query parameters
+// @Router /user/add-calendar-account [post]
+func addCalendarAccount(c *gin.Context) {
 	payload := struct {
-		Visibility *int `json:"visibility" binding:"required"`
+		Code string `json:"code" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	// Get auth user
+	authUser := utils.GetAuthUser(c)
+
+	// Get tokens
+	tokens := auth.GetTokensFromAuthCode(payload.Code)
+
+	// Get user info from JWT
+	claims := utils.ParseJWT(tokens.IdToken)
+	email, _ := claims.GetStr("email")
+	picture, _ := claims.GetStr("picture")
+
+	// Get access token expire time
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
+
+	// Define a new calendar account
+	calendarAccount := models.CalendarAccount{
+		Email:   email,
+		Picture: picture,
+		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
+
+		AccessToken:           tokens.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          tokens.RefreshToken,
+	}
+
+	// Perform mongo update
+	db.UsersCollection.FindOneAndUpdate(
+		context.Background(),
+		bson.M{"_id": authUser.Id},
+		bson.A{
+			utils.InsertCalendarAccountAggregation(calendarAccount),
+		},
+	)
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Removes an existing calendar account
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string} true "Object containing the email of the calendar account to remove"
+// @Success 200
+// @Router /user/remove-calendar-account [delete]
+func removeCalendarAccount(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+	db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.A{
+		bson.M{"$set": bson.M{
+			"calendarAccounts": bson.M{
+				"$setField": bson.M{
+					"field": payload.Email,
+					"input": "$$ROOT.calendarAccounts",
+					"value": "$$REMOVE",
+				},
+			},
+		}},
+	})
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Toggles whether the specified calendar is enabled or disabled for the user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string,enabled=bool} true "Email of calendar account and whether to enable it"
+// @Success 200
+// @Router /user/toggle-calendar [post]
+func toggleCalendar(c *gin.Context) {
+	payload := struct {
+		Email   string `json:"email" binding:"required"`
+		Enabled *bool  `json:"enabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		logger.StdErr.Panicln(err)
 		return
 	}
 
-	session := sessions.Default(c)
-	userId := utils.GetUserId(session)
+	// Update enabled status for the specified account
+	authUser := utils.GetAuthUser(c)
+	if account, ok := authUser.CalendarAccounts[payload.Email]; ok {
+		account.Enabled = payload.Enabled
+		authUser.CalendarAccounts[payload.Email] = account
 
-	_, err := db.UsersCollection.UpdateByID(
-		context.Background(),
-		userId,
-		bson.M{
-			"$set": bson.M{
-				"visibility": payload.Visibility,
-			},
-		},
-	)
-	if err != nil {
-		logger.StdErr.Panicln(err)
+		_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
+			"_id": authUser.Id,
+		}, bson.M{
+			"$set": authUser,
+		})
+		if err != nil {
+			logger.StdErr.Panicln(err)
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
@@ -167,7 +254,7 @@ func updateVisibility(c *gin.Context) {
 // @Tags user
 // @Produce json
 // @Param query query string true "Query to search for"
-// @Success 200 {object} []models.UserProfile
+// @Success 200 {object} []models.User
 // @Router /user/searchContacts [get]
 func searchContacts(c *gin.Context) {
 	// Bind query parameters
@@ -203,6 +290,11 @@ func deleteUser(c *gin.Context) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+
+	// Delete session
+	session := sessions.Default(c)
+	session.Delete("userId")
+	session.Save()
 
 	c.JSON(http.StatusOK, gin.H{})
 }

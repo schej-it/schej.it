@@ -438,318 +438,7 @@ var doc = `{
                 }
             }
         },
-        "/events/{eventId}/schedule": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Schedules an event on the user's google calendar",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "eventId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Object containing info about the event to schedule",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "attendeeEmails": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "endDate": {
-                                            "$ref": "#/definitions/primitive.DateTime"
-                                        },
-                                        "startDate": {
-                                            "$ref": "#/definitions/primitive.DateTime"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Gets all of users current friends",
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/requests": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Gets all the current incoming and outgoing friend requests",
-                "responses": {
-                    "200": {}
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Creates a new friend request",
-                "parameters": [
-                    {
-                        "description": "Object specifying the user IDs of who this request is sent from and to",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "to": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Friend request already exists from \\\"to\\\" to \\\"from\\\", and it was accepted"
-                    },
-                    "201": {
-                        "description": "Friend request created",
-                        "schema": {
-                            "$ref": "#/definitions/models.FriendRequest"
-                        }
-                    }
-                }
-            }
-        },
-        "/friends/requests/{id}": {
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Delete's a friend request created by the current user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the friend request",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/requests/{id}/accept": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Accepts an existing friend request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the friend request",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/requests/{id}/reject": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Rejects an existing friend request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the friend request",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/{id}": {
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Removes an existing friend",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of friend",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/friends/{id}/calendar": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Returns the specified friend's schedule",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of friend",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Lower bound for event's start time to filter by",
-                        "name": "timeMin",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Upper bound for event's end time to filter by",
-                        "name": "timeMax",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.CalendarEvent"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/friends/{id}/status": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "friends"
-                ],
-                "summary": "Returns whether the friend is free or busy",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of friend",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ]
-            }
-        },
-        "/slackbot/num_users": {
+        "/slackbot": {
             "post": {
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -785,7 +474,47 @@ var doc = `{
                 }
             }
         },
-        "/user/calendar": {
+        "/user/add-calendar-account": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Adds a new calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the Google authorization code",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/user/calendars": {
             "get": {
                 "description": "Gets the user's calendar events between \"timeMin\" and \"timeMax\"",
                 "produces": [
@@ -809,15 +538,21 @@ var doc = `{
                         "name": "timeMax",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma separated list of accounts to fetch calendar events from",
+                        "name": "accounts",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.CalendarEvent"
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/calendar.CalendarEventsWithError"
                             }
                         }
                     }
@@ -878,9 +613,49 @@ var doc = `{
                     "200": {
                         "description": "A user profile object",
                         "schema": {
-                            "$ref": "#/definitions/models.UserProfile"
+                            "$ref": "#/definitions/models.User"
                         }
                     }
+                }
+            }
+        },
+        "/user/remove-calendar-account": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Removes an existing calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the email of the calendar account to remove",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
                 }
             }
         },
@@ -908,14 +683,14 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.UserProfile"
+                                "$ref": "#/definitions/models.User"
                             }
                         }
                     }
                 }
             }
         },
-        "/user/visibility": {
+        "/user/toggle-calendar": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -926,10 +701,10 @@ var doc = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Updates the current user's visibility",
+                "summary": "Toggles whether the specified calendar is enabled or disabled for the user",
                 "parameters": [
                     {
-                        "description": "Visibility of user from 0 to 2",
+                        "description": "Email of calendar account and whether to enable it",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -941,8 +716,11 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "visibility": {
-                                            "type": "integer"
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -979,7 +757,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.UserProfile"
+                                "$ref": "#/definitions/models.User"
                             }
                         }
                     }
@@ -988,9 +766,27 @@ var doc = `{
         }
     },
     "definitions": {
+        "calendar.CalendarEventsWithError": {
+            "type": "object",
+            "properties": {
+                "calendarEvents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CalendarEvent"
+                    }
+                },
+                "error": {
+                    "type": "object",
+                    "$ref": "#/definitions/errs.GoogleAPIError"
+                }
+            }
+        },
         "commands.Response": {
             "type": "object",
             "properties": {
+                "blocks": {
+                    "type": "string"
+                },
                 "response_type": {
                     "description": "ephemeral or in_channel",
                     "type": "string"
@@ -1000,16 +796,48 @@ var doc = `{
                 }
             }
         },
+        "errs.GoogleAPIError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "details": {
+                    "type": "object"
+                },
+                "errors": {
+                    "type": "object"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CalendarAccount": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "picture": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CalendarEvent": {
             "type": "object",
             "properties": {
                 "endDate": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
+                    "type": "string"
                 },
                 "startDate": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
+                    "type": "string"
                 },
                 "summary": {
                     "type": "string"
@@ -1026,10 +854,7 @@ var doc = `{
                     "type": "string"
                 },
                 "dates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/primitive.DateTime"
-                    }
+                    "type": "string"
                 },
                 "duration": {
                     "type": "number"
@@ -1062,32 +887,6 @@ var doc = `{
         },
         "models.EventType": {
             "type": "string"
-        },
-        "models.FriendRequest": {
-            "type": "object",
-            "properties": {
-                "_id": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
-                },
-                "from": {
-                    "type": "string"
-                },
-                "fromUser": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.UserProfile"
-                },
-                "to": {
-                    "type": "string"
-                },
-                "toUser": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.UserProfile"
-                }
-            }
         },
         "models.Location": {
             "type": "object",
@@ -1129,18 +928,26 @@ var doc = `{
                 },
                 "user": {
                     "type": "object",
-                    "$ref": "#/definitions/models.UserProfile"
+                    "$ref": "#/definitions/models.User"
                 },
                 "userId": {
                     "type": "string"
                 }
             }
         },
-        "models.UserProfile": {
+        "models.User": {
             "type": "object",
             "properties": {
                 "_id": {
+                    "description": "Profile info",
                     "type": "string"
+                },
+                "calendarAccounts": {
+                    "description": "CalendarAccounts is a mapping from {email =\u003e CalendarAccount} that contains all the\nadditional accounts the user wants to see google calendar events for",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.CalendarAccount"
+                    }
                 },
                 "email": {
                     "type": "string"
@@ -1154,13 +961,10 @@ var doc = `{
                 "picture": {
                     "type": "string"
                 },
-                "visibility": {
+                "timezoneOffset": {
                     "type": "integer"
                 }
             }
-        },
-        "primitive.DateTime": {
-            "type": "integer"
         },
         "responses.Error": {
             "type": "object",

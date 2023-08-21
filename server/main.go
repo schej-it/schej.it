@@ -105,7 +105,6 @@ func main() {
 	routes.InitAuth(router)
 	routes.InitUser(router)
 	routes.InitEvents(router)
-	routes.InitFriends(router)
 	routes.InitUsers(router)
 	routes.InitAnalytics(router)
 	slackbot.InitSlackbot(router)

@@ -1,14 +1,12 @@
 package calendar
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
 	"schej.it/server/errs"
@@ -59,11 +57,30 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 	return calendars, nil
 }
 
+type GetCalendarListData struct {
+	CalendarList []models.Calendar    `json:"calendarList"`
+	AccessToken  string               `json:"accessToken"`
+	Email        string               `json:"email"`
+	Error        *errs.GoogleAPIError `json:"error"`
+}
+
+// Calls GetCalendarList but broadcasts the result to channel
+func GetCalendarListAsync(email string, accessToken string, c chan GetCalendarListData) {
+	calendars, err := GetCalendarList(accessToken)
+
+	c <- GetCalendarListData{CalendarList: calendars, AccessToken: accessToken, Email: email, Error: err}
+}
+
+type GetCalendarEventsData struct {
+	CalendarEvents []models.CalendarEvent `json:"calendarEvents"`
+	Email          string                 `json:"email"`
+	Error          *errs.GoogleAPIError   `json:"error"`
+}
+
 // Get the user's list of calendar events for the given calendar
-func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
+func GetCalendarEventsAsync(email string, accessToken string, calendarId string, timeMin time.Time, timeMax time.Time, c chan GetCalendarEventsData) {
 	min, _ := timeMin.MarshalText()
 	max, _ := timeMax.MarshalText()
-	//fmt.Printf("https://www.googleapis.com/calendar/v3/calendars/%s/events?timeMin=%s&timeMax=%s&singleEvents=true\n", url.PathEscape(calendarId), min, max)
 	req, _ := http.NewRequest(
 		"GET",
 		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
@@ -77,17 +94,17 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	defer resp.Body.Close()
 
 	// Define some structs to parse the json response
-	type TimeInfo struct {
-		DateTime time.Time `json:"dateTime" binding:"required"`
-	}
-	type Item struct {
-		Summary string   `json:"summary"`
-		Start   TimeInfo `json:"start"`
-		End     TimeInfo `json:"end"`
-	}
 	type Response struct {
-		Items []Item              `json:"items"`
-		Error errs.GoogleAPIError `json:"error"`
+		Items []struct {
+			Summary string `json:"summary"`
+			Start   struct {
+				DateTime time.Time `json:"dateTime" binding:"required"`
+			} `json:"start"`
+			End struct {
+				DateTime time.Time `json:"dateTime" binding:"required"`
+			} `json:"end"`
+		} `json:"items"`
+		Error *errs.GoogleAPIError `json:"error"`
 	}
 
 	// Parse the response
@@ -97,8 +114,9 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 	}
 
 	// Check if the response returned an error
-	if res.Error.Errors != nil {
-		return nil, &res.Error
+	if res.Error != nil {
+		c <- GetCalendarEventsData{Email: email, Error: res.Error}
+		return
 	}
 
 	// Format response to return
@@ -118,125 +136,76 @@ func GetCalendarEvents(accessToken string, calendarId string, timeMin time.Time,
 		})
 	}
 
-	return calendarEvents, nil
+	c <- GetCalendarEventsData{CalendarEvents: calendarEvents, Email: email}
 }
 
-func GetUsersCalendarEvents(user *models.User, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, *errs.GoogleAPIError) {
-	db.RefreshUserTokenIfNecessary(user)
-
-	calendars, err := GetCalendarList(user.AccessToken)
-	if err != nil {
-		return nil, err
-	}
-
-	// Call the google calendar API to get a list of calendar events from the user's gcal
-	// TODO: get events for all user's calendars, not just selected calendars
-	calendarEvents := make([]models.CalendarEvent, 0)
-	for _, calendar := range calendars {
-		events, err := GetCalendarEvents(user.AccessToken, calendar.Id, timeMin, timeMax)
-		if err != nil {
-			return nil, err
-		}
-
-		calendarEvents = append(calendarEvents, events...)
-	}
-
-	return calendarEvents, nil
+type CalendarEventsWithError struct {
+	CalendarEvents []models.CalendarEvent `json:"calendarEvents"`
+	Error          *errs.GoogleAPIError   `json:"error,omitempty"`
 }
 
-func ScheduleEvent(user *models.User, eventName string, eventId string, calendarEventId string, startDate primitive.DateTime, endDate primitive.DateTime, attendeeEmails []string, location string, description string) (*string, *errs.GoogleAPIError) {
-	db.RefreshUserTokenIfNecessary(user)
+// Returns a map mapping email to the calendar events associated with that email, and an error if there was an error fetching events for that email
+func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], timeMin time.Time, timeMax time.Time) map[string]CalendarEventsWithError {
+	db.RefreshUserTokenIfNecessary(user, accounts)
 
-	attendees := make(bson.A, 0)
-	attendees = append(attendees, bson.M{"email": user.Email, "responseStatus": "accepted"})
-	for _, email := range attendeeEmails {
-		attendees = append(attendees, bson.M{"email": email, "responseStatus": "needsAction"})
-	}
+	returnAllAccounts := len(accounts) == 0
 
-	body, _ := json.Marshal(bson.M{
-		"start": bson.M{
-			"dateTime": startDate,
-		},
-		"end": bson.M{
-			"dateTime": endDate,
-		},
-		"attendees":   attendees,
-		"summary":     eventName,
-		"description": fmt.Sprintf("%s\n\nThis event was scheduled with schej: https://schej.it/e/%s", description, eventId),
-		"location":    location,
-	})
-	reqBody := bytes.NewBuffer(body)
+	calendarEventsMap := make(map[string]CalendarEventsWithError)
 
-	// Create calendar event
-	var req *http.Request
-	if len(calendarEventId) > 0 {
-		// Update existing event
-		req, _ = http.NewRequest(
-			"PUT",
-			fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events/%s?fields=id&sendUpdates=all", calendarEventId),
-			reqBody,
-		)
-	} else {
-		// Create new event
-		req, _ = http.NewRequest(
-			"POST",
-			"https://www.googleapis.com/calendar/v3/calendars/primary/events?fields=id&sendUpdates=all",
-			reqBody,
-		)
-	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
+	calendarListChan := make(chan GetCalendarListData)
+	calendarEventsChan := make(chan GetCalendarEventsData)
 
-	// Parse the response
-	response := struct {
-		Id    string              `json:"id"`
-		Error errs.GoogleAPIError `json:"error"`
-	}{}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		logger.StdErr.Panicln(err)
-	}
+	// Get calendar lists
+	numCalendarListRequests := 0
+	for _, account := range user.CalendarAccounts {
+		// Get secondary account  calendars
+		if _, ok := accounts[account.Email]; ok || returnAllAccounts {
+			go GetCalendarListAsync(account.Email, account.AccessToken, calendarListChan)
+			numCalendarListRequests++
 
-	// Check if the response returned an error
-	if response.Error.Errors != nil {
-		return nil, &response.Error
-	}
-
-	return &response.Id, nil
-}
-
-func UnscheduleEvent(user *models.User, calendarEventId string) *errs.GoogleAPIError {
-	db.RefreshUserTokenIfNecessary(user)
-
-	req, _ := http.NewRequest(
-		"DELETE",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/primary/events/%s?fields=id&sendUpdates=all", calendarEventId),
-		nil,
-	)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.AccessToken))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 204 {
-		// Parse the response
-		response := struct {
-			Error errs.GoogleAPIError `json:"error"`
-		}{}
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			logger.StdErr.Panicln(err)
-		}
-
-		// Check if the response returned an error
-		if response.Error.Errors != nil {
-			return &response.Error
+			calendarEventsMap[account.Email] = CalendarEventsWithError{
+				CalendarEvents: make([]models.CalendarEvent, 0),
+			}
 		}
 	}
 
-	return nil
+	// After each calendar list is fetched, get the calendar events from each calendar
+	numCalendarEventsRequests := 0
+	for i := 0; i < numCalendarListRequests; i++ {
+		calendarListData := <-calendarListChan
+
+		if calendarListData.Error != nil {
+			go func() { // needs to be async because writing to a channel is blocking
+				calendarEventsChan <- GetCalendarEventsData{Email: calendarListData.Email, Error: calendarListData.Error}
+			}()
+			numCalendarEventsRequests++
+			continue
+		}
+
+		for _, calendar := range calendarListData.CalendarList {
+			go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, calendar.Id, timeMin, timeMax, calendarEventsChan)
+			numCalendarEventsRequests++
+		}
+	}
+
+	// After calendar events are fetched, append to the calendarEvents array associated with the given email
+	for i := 0; i < numCalendarEventsRequests; i++ {
+		calendarEventsData := <-calendarEventsChan
+		email := calendarEventsData.Email
+
+		if _, ok := calendarEventsMap[email]; !ok {
+			calendarEventsMap[email] = CalendarEventsWithError{}
+		}
+
+		if events, ok := calendarEventsMap[email]; ok {
+			if calendarEventsData.Error != nil {
+				events.Error = calendarEventsData.Error
+			} else {
+				events.CalendarEvents = append(events.CalendarEvents, calendarEventsData.CalendarEvents...)
+			}
+			calendarEventsMap[email] = events
+		}
+	}
+
+	return calendarEventsMap
 }
