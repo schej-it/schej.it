@@ -101,7 +101,7 @@ var activeUsers Command = Command{
 				// Insert curDate into logs, with an empty users array
 				logs, err = utils.Insert(logs, i+1, models.DailyUserLog{
 					Date:  primitive.NewDateTimeFromTime(curDate),
-					Users: make([]models.UserProfile, 0),
+					Users: make([]models.User, 0),
 				})
 				if err != nil {
 					logger.StdErr.Panicln(err)
@@ -117,7 +117,7 @@ var activeUsers Command = Command{
 		for curDate.Before(time.Now()) {
 			logs, err = utils.Insert(logs, 0, models.DailyUserLog{
 				Date:  primitive.NewDateTimeFromTime(curDate),
-				Users: make([]models.UserProfile, 0),
+				Users: make([]models.User, 0),
 			})
 			if err != nil {
 				logger.StdErr.Panicln(err)
