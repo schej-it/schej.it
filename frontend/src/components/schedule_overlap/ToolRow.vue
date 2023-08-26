@@ -18,7 +18,10 @@
         />
 
         <template v-if="state !== states.EDIT_AVAILABILITY">
-          <div class="tw-flex tw-items-center tw-justify-center tw-gap-2">
+          <div
+            v-if="numResponses > 1"
+            class="tw-flex tw-items-center tw-justify-center tw-gap-2"
+          >
             <div>Show best times</div>
             <v-switch
               id="show-best-times-toggle"
@@ -111,6 +114,7 @@ export default {
     isWeekly: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
+    numResponses: { type: Number, required: true },
   },
 
   components: {
