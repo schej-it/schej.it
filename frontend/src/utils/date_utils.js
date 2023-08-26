@@ -132,8 +132,11 @@ export const getDateHoursOffset = (date, hoursOffset) => {
   return newDate
 }
 
-/** Returns a date, transformed to be in the same week of the dows array */
-export const dateToDowDate = (dows, date, weekOffset) => {
+/**
+ * Returns a date, transformed to be in the same week of the dows array.
+ * `reverse` determines whether to do the opposite calculation (dow date to date)
+ */
+export const dateToDowDate = (dows, date, weekOffset, reverse = false) => {
   // Sort dows to make sure first date is not Saturday when there are multiple dates
   // (as such is the case when an event is created in Tokyo and you're answering in Mountain View)
   // This fixes the dayOffset calculation so that events are displayed in the correct week
@@ -153,7 +156,12 @@ export const dateToDowDate = (dows, date, weekOffset) => {
   dowSunday.setDate(dowSunday.getDate() - dowSunday.getDay())
 
   // Get the amount of days between both of the sundays
-  const dayOffset = Math.round((curSunday - dowSunday) / (1000 * 60 * 60 * 24))
+  let dayOffset = Math.round((curSunday - dowSunday) / (1000 * 60 * 60 * 24))
+
+  // Reverse calculation if necessary
+  if (reverse) {
+    dayOffset *= -1
+  }
 
   // Offset date by the amount of days between the two sundays
   date = new Date(date)

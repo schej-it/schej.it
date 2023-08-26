@@ -329,6 +329,7 @@ import {
   isPhone,
   utcTimeToLocalTime,
   splitCalendarEventsByDay,
+  dateToDowDate,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
@@ -1071,11 +1072,17 @@ export default {
     confirmScheduleEvent() {
       // Get start date, and end date from the area that the user has dragged out
       const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
-      const startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)
-      const endDate = this.getDateFromDayHoursOffset(
+      let startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)
+      let endDate = this.getDateFromDayHoursOffset(
         dayIndex,
         hoursOffset + hoursLength
       )
+
+      if (this.isWeekly) {
+        // Transform startDate and endDate to be the current week offset
+        startDate = dateToDowDate(this.event.dates, startDate, 0, true)
+        endDate = dateToDowDate(this.event.dates, endDate, 0, true)
+      }
 
       // Format email string separated by commas
       const emails = this.respondents.map((r) => {
