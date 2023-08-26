@@ -104,7 +104,7 @@
               >
                 Automatically
               </span>
-              fill out your availability with Google Calendar,
+              fill out your availability with Google Calendar
             </div>
             <div v-else v-html="step"></div>
           </div>
@@ -236,7 +236,7 @@ export default {
         question: "How is schej different from lettucemeet or when2meet?",
         points: [
           "Much better UI (web and mobile)",
-          "Seemless and working calendar integration",
+          "Seamless and working calendar integration",
           "No ads :)",
         ],
       },
