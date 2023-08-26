@@ -1079,9 +1079,16 @@ export default {
       )
 
       if (this.isWeekly) {
+        // Determine offset based on current day of the week.
+        // People expect the event to be scheduled in the future, not the past, which is why this check exists
+        let offset = 0
+        if (new Date().getDay() > startDate.getDay()) {
+          offset = 1
+        }
+
         // Transform startDate and endDate to be the current week offset
-        startDate = dateToDowDate(this.event.dates, startDate, 0, true)
-        endDate = dateToDowDate(this.event.dates, endDate, 0, true)
+        startDate = dateToDowDate(this.event.dates, startDate, offset, true)
+        endDate = dateToDowDate(this.event.dates, endDate, offset, true)
       }
 
       // Format email string separated by commas
