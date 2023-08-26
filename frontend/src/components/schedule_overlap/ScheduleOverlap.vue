@@ -1000,24 +1000,38 @@ export default {
           max = this.curRespondentsMax
         }
 
+        const totalRespondents = this.respondents.length
+
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
             // Only set timeslot to green for the times that most people are available
-            const green = "#00994C"
-            s.backgroundColor = green
+            if (totalRespondents === 1) {
+              // Make single responses less saturated
+              const green = "#00994CDD"
+              s.backgroundColor = green
+            } else {
+              const green = "#00994C"
+              s.backgroundColor = green
+            }
           }
         } else if (this.defaultState === this.states.HEATMAP) {
           if (numRespondents > 0) {
-            // Determine color of timeslot based on number of people available
-            const frac = numRespondents / max
-            const green = "#00994C"
-            let alpha = (frac * (255 - 30))
-              .toString(16)
-              .toUpperCase()
-              .substring(0, 2)
-            if (frac == 1) alpha = "FF"
+            if (totalRespondents === 1) {
+              // Make single responses less saturated
+              const green = "#00994CDD"
+              s.backgroundColor = green
+            } else {
+              // Determine color of timeslot based on number of people available
+              const frac = numRespondents / max
+              const green = "#00994C"
+              let alpha = (frac * (255 - 30))
+                .toString(16)
+                .toUpperCase()
+                .substring(0, 2)
+              if (frac == 1) alpha = "FF"
 
-            s.backgroundColor = green + alpha
+              s.backgroundColor = green + alpha
+            }
           }
         }
       }
