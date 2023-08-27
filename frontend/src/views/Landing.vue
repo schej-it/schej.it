@@ -55,8 +55,7 @@
             <div
               class="lg:tw-text-md tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
             >
-              Don't use Google Calendar? <br />
-              Schej allows you to compare availabilities manually as well!
+              Don't use Google Calendar? Add your availability manually instead!
             </div>
           </div>
 
