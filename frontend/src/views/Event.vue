@@ -364,7 +364,7 @@ export default {
     },
 
     onBeforeUnload(e) {
-      if (this.isEditing) {
+      if (this.areUnsavedChanges) {
         e.preventDefault()
         e.returnValue = ""
         return
@@ -407,7 +407,10 @@ export default {
           })
         }
 
-        this.calendarPermissionGranted = true
+        // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
+        this.calendarPermissionGranted = !Object.values(
+          this.calendarEventsMap
+        ).every((c) => Boolean(c.error))
       })
       .catch((err) => {
         this.loading = false
@@ -453,8 +456,8 @@ export default {
         this.calendarEventsMap = eventsMap
         this.loading = false
 
-        // Only autofill availability if user hasn't responded
-        if (!this.userHasResponded) {
+        // Only autofill availability if user hasn't responded and they don't have unsaved changes
+        if (!this.userHasResponded && !this.areUnsavedChanges) {
           this.$nextTick(() => {
             this.scheduleOverlapComponent.setAvailabilityAutomatically()
           })

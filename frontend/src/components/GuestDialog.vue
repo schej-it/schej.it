@@ -17,6 +17,7 @@
         <v-text-field
           v-model="name"
           @keyup.enter="submit"
+          @beforeinput="restrictInput"
           :error="alreadyTaken"
           class="-tw-mt-1"
           placeholder="Enter your name..."
@@ -75,6 +76,12 @@ export default {
     submit() {
       if (!this.alreadyTaken && this.formComplete)
         this.$emit("submit", this.name)
+    },
+    /** Restricts input to only letters, numbers, and spaces */
+    restrictInput(e) {
+      if (e.data && /[^\w\s]/.test(e.data)) {
+        e.preventDefault()
+      }
     },
   },
 

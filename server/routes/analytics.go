@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"schej.it/server/discord_bot"
 	"schej.it/server/models"
+	"schej.it/server/slackbot"
 )
 
 func InitAnalytics(router *gin.Engine) {
@@ -33,8 +33,8 @@ func scannedPoster(c *gin.Context) {
 	}
 
 	if payload.Location != nil {
-		discord_bot.SendMessage(
-			fmt.Sprintf(":face_with_monocle: Poster was scanned :face_with_monocle:\n**Location:** %s, %s, %s\n**URL:** %s",
+		slackbot.SendTextMessage(
+			fmt.Sprintf(":face_with_monocle: Poster was scanned :face_with_monocle:\n*Location:* %s, %s, %s\n*URL:* %s",
 				payload.Location.City,
 				payload.Location.State,
 				payload.Location.CountryCode,
@@ -42,8 +42,8 @@ func scannedPoster(c *gin.Context) {
 			),
 		)
 	} else {
-		discord_bot.SendMessage(
-			fmt.Sprintf(":face_with_monocle: Poster was scanned :face_with_monocle:\n**URL:** %s", payload.Url),
+		slackbot.SendTextMessage(
+			fmt.Sprintf(":face_with_monocle: Poster was scanned :face_with_monocle:\n*URL:* %s", payload.Url),
 		)
 	}
 

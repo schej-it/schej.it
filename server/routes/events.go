@@ -11,12 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
-	"schej.it/server/discord_bot"
 	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
 
@@ -85,7 +85,7 @@ func createEvent(c *gin.Context) {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
 
-	discord_bot.SendMessage(fmt.Sprintf(":tada: **New event created!** :tada: \n**Event url**: https://schej.it/e/%s\n**Creator**: %s\n**Type**: %s\n**Notifications Enabled**: %v", insertedId, creator, event.Type, event.NotificationsEnabled))
+	slackbot.SendEventCreatedMessage(insertedId, creator, event)
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
