@@ -34,7 +34,7 @@
         <div class="tw-flex tw-flex-col">
           <!-- Hero -->
           <div
-            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-max-w-none lg:tw-mb-20"
+            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-max-w-none lg:tw-mb-14"
           >
             <div
               id="header"
@@ -50,6 +50,13 @@
               <b>Automatically</b> fill out your availability with Google
               Calendar—<br v-if="!isPhone" />
               it’s like When2Meet with Google Calendar integration!
+            </div>
+
+            <div
+              class="lg:tw-text-md tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
+            >
+              Don't use Google Calendar? <br />
+              Schej allows you to compare availabilities manually as well!
             </div>
           </div>
 
