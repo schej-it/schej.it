@@ -1,11 +1,14 @@
 <!-- Displays an event type (i.e. created or joined) on the home page -->
 <template>
   <div class="tw-mb-5">
-    <div class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl tw-flex tw-flex-row tw-items-center tw-justify-between">
+    <div
+      class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+    >
       {{ eventType.header }}
       <div
+        v-if="eventType.events.length > DEFAULT_NUM_EVENTS_TO_SHOW"
         @click="toggleShowAll"
-        class="tw-mt-2 tw-font-normal tw-cursor-pointer tw-text-sm tw-text-very-dark-gray sm:tw-hidden"
+        class="tw-mt-2 tw-cursor-pointer tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-hidden"
       >
         Show {{ showAll ? "less" : "more"
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
@@ -49,7 +52,7 @@
       </v-expand-transition>
       <div
         @click="toggleShowAll"
-        class="tw-mt-4 tw-cursor-pointer tw-text-sm tw-text-very-dark-gray tw-hidden sm:tw-block"
+        class="tw-mt-4 tw-hidden tw-cursor-pointer tw-text-sm tw-text-very-dark-gray sm:tw-block"
       >
         Show {{ showAll ? "less" : "more"
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
