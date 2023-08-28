@@ -209,7 +209,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-py-4 sm:tw-w-48 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
+          class="tw-w-full tw-py-4 sm:tw-w-52 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
           <div v-if="state == states.EDIT_AVAILABILITY">
             <CalendarAccounts
@@ -221,7 +221,7 @@
           </div>
 
           <div v-else>
-            <div class="tw-mb-2 tw-flex tw-items-center tw-font-medium">
+            <div class="tw-flex tw-items-center tw-font-medium">
               <div class="tw-mr-1 tw-text-lg">Responses</div>
               <div class="tw-font-normal">
                 <template v-if="curRespondents.length === 0">
@@ -241,7 +241,13 @@
               </div>
             </div>
             <div
-              class="tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
+              v-if="respondents.length > 0 && !authUser"
+              class="tw-mt-0.5 tw-text-xs tw-text-dark-gray"
+            >
+              Click name to edit availability
+            </div>
+            <div
+              class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
             >
               <template v-if="respondents.length === 0">
                 <div class="tw-text-very-dark-gray">No responses yet!</div>
