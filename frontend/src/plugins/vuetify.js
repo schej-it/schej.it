@@ -12,4 +12,9 @@ export default new Vuetify({
       },
     },
   },
+  breakpoint: {
+    thresholds: {
+      xs: 640,
+    },
+  },
 })
