@@ -46,9 +46,13 @@ func signIn(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("before get auth code")
 	tokens := auth.GetTokensFromAuthCode(payload.Code)
+	fmt.Println("after get auth code", tokens)
 
+	fmt.Println("before sign in helper")
 	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
+	fmt.Println("after sign in helper")
 
 	c.JSON(http.StatusOK, gin.H{})
 }
