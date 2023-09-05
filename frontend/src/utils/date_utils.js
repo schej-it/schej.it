@@ -146,14 +146,18 @@ export const dateToDowDate = (dows, date, weekOffset, reverse = false) => {
     return day1 - day2
   })
 
+  // Get Sunday of the week containing the dows
+  const dowSunday = new Date(dows[0])
+  dowSunday.setDate(dowSunday.getDate() - dowSunday.getDay())
+
   // Get Sunday of the current week offset by weekOffset
   const curSunday = new Date()
   curSunday.setDate(curSunday.getDate() - curSunday.getDay())
   curSunday.setDate(curSunday.getDate() + 7 * weekOffset)
-
-  // Get Sunday of the week containing the dows
-  const dowSunday = new Date(dows[0])
-  dowSunday.setDate(dowSunday.getDate() - dowSunday.getDay())
+  curSunday.setHours(dowSunday.getHours())
+  curSunday.setMinutes(dowSunday.getMinutes())
+  curSunday.setSeconds(dowSunday.getSeconds())
+  curSunday.setMilliseconds(dowSunday.getMilliseconds())
 
   // Get the amount of days between both of the sundays
   let dayOffset = Math.round((curSunday - dowSunday) / (1000 * 60 * 60 * 24))
