@@ -22,8 +22,11 @@
 
           <v-spacer />
 
-          <v-btn text href="#how-it-works">How it works</v-btn>
-          <v-btn text @click="signIn">Sign in</v-btn>
+          <LandingPageHeader>
+            <v-btn text href="#how-it-works">How it works</v-btn>
+            <v-btn text href="/blog">Blog</v-btn>
+            <v-btn text @click="signIn">Sign in</v-btn>
+          </LandingPageHeader>
         </div>
       </div>
 
@@ -207,7 +210,7 @@
 </style>
 
 <script>
-import LandingPageCalendar from "@/components/LandingPageCalendar.vue"
+import LandingPageCalendar from "@/components/landing/LandingPageCalendar.vue"
 import { isPhone, signInGoogle } from "@/utils"
 import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import FAQ from "@/components/FAQ.vue"
@@ -215,6 +218,7 @@ import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
 import NewEventDialog from "@/components/NewEventDialog.vue"
+import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
 
 export default {
   name: "Landing",
@@ -227,6 +231,7 @@ export default {
     NumberBullet,
     NewEvent,
     NewEventDialog,
+    LandingPageHeader,
   },
 
   data: () => ({
