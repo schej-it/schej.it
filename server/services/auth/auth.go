@@ -27,7 +27,7 @@ func GetTokensFromAuthCode(code string) GoogleApiTokenResponse {
 	// Call Google oauth token endpoint
 	var redirectUri string
 	if utils.IsRelease() {
-		redirectUri = "https://www.schej.it/auth"
+		redirectUri = "https://schej.it/auth"
 	} else {
 		redirectUri = "http://localhost:8080/auth"
 	}
