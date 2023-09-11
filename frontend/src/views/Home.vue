@@ -41,11 +41,11 @@ export default {
     ...mapState(["createdEvents", "joinedEvents"]),
     events() {
       return [
-        ...(this.createdWeeklyEvents.length > 0
+        ...(this.weeklyEvents.length > 0
           ? [
               {
-                header: "Weekly",
-                events: this.createdWeeklyEvents,
+                header: "Weekly events",
+                events: this.weeklyEvents,
               },
             ]
           : []),
@@ -62,8 +62,8 @@ export default {
     createdEventsWithSpecificDates() {
       return this.createdEvents.filter((e) => e.type !== eventTypes.DOW)
     },
-    createdWeeklyEvents() {
-      return this.createdEvents.filter((e) => e.type === eventTypes.DOW)
+    weeklyEvents() {
+      return this.createdEvents.filter((e) => e.type === eventTypes.DOW).concat(this.joinedEvents.filter((e) => e.type === eventTypes.DOW))
     },
   },
 
