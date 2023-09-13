@@ -934,7 +934,11 @@ export default {
       }
 
       // Border style
-      if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
+      if (
+        this.respondents.length > 0 &&
+        this.curTimeslot.dayIndex === d &&
+        this.curTimeslot.timeIndex === t
+      ) {
         // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
