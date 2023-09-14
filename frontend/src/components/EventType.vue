@@ -16,12 +16,13 @@
     </div>
 
     <div v-if="eventType.events.length === 0" class="tw-my-3">
-      No events yet!
+      {{
+        eventType.header === "Events I created"
+          ? "Create an event to get started!"
+          : "No events yet!"
+      }}
     </div>
-    <div
-      v-else
-      class="tw-gr id-cols-1 tw-my-3 tw-grid tw-gap-3 sm:tw-grid-cols-2 md:tw-grid-cols-2"
-    >
+    <div v-else class="tw-gr id-cols-1 tw-my-3 tw-grid tw-gap-3">
       <EventItem
         class="tw-cursor-pointer"
         v-for="(event, i) in sortedEvents.slice(0, DEFAULT_NUM_EVENTS_TO_SHOW)"
@@ -34,10 +35,7 @@
     <!-- TODO: might want to change for less code repeat -->
     <div v-if="eventType.events.length > DEFAULT_NUM_EVENTS_TO_SHOW">
       <v-expand-transition>
-        <div
-          v-if="showAll"
-          class="tw-gr id-cols-1 tw-grid tw-gap-2 sm:tw-grid-cols-2 sm:tw-gap-4 md:tw-grid-cols-2"
-        >
+        <div v-if="showAll" class="tw-gr id-cols-1 tw-grid tw-gap-2">
           <EventItem
             v-for="(event, i) in sortedEvents.slice(
               DEFAULT_NUM_EVENTS_TO_SHOW,
