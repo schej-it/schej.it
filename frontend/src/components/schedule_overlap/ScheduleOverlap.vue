@@ -1053,6 +1053,10 @@ export default {
       if (this.interactable) {
         return {
           click: () => this.showAvailability(d, t),
+          mousedown: () => {
+            if (this.state === this.defaultState)
+              this.highlightAvailabilityBtn()
+          },
           mouseover: () => this.showAvailability(d, t),
         }
       }
@@ -1079,6 +1083,9 @@ export default {
     stopEditing() {
       this.state = this.defaultState
       this.stopAvailabilityAnim()
+    },
+    highlightAvailabilityBtn() {
+      this.$emit("highlightAvailabilityBtn")
     },
     //#endregion
 

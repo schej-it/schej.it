@@ -68,7 +68,8 @@
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"
                   min-width="10.25rem"
-                  class="tw-bg-green tw-text-white"
+                  class="tw-bg-green tw-text-white tw-transition-opacity"
+                  :style="{ opacity: availabilityBtnOpacity }"
                   @click="editGuestAvailability"
                 >
                   {{ `Edit ${selectedGuestRespondent}'s availability` }}
@@ -76,8 +77,9 @@
                 <v-btn
                   v-else
                   width="10.25rem"
-                  class="tw-bg-green tw-text-white"
+                  class="tw-bg-green tw-text-white tw-transition-opacity"
                   :disabled="loading && !userHasResponded"
+                  :style="{ opacity: availabilityBtnOpacity }"
                   @click="addAvailability"
                 >
                   {{
@@ -115,6 +117,7 @@
         :calendarPermissionGranted="calendarPermissionGranted"
         :weekOffset.sync="weekOffset"
         @refreshEvent="refreshEvent"
+        @highlightAvailabilityBtn="highlightAvailabilityBtn"
       />
     </div>
     <div class="tw-h-16"></div>
@@ -129,7 +132,8 @@
         <v-btn
           v-if="!authUser && selectedGuestRespondent"
           outlined
-          class="tw-bg-white tw-text-green"
+          class="tw-bg-white tw-text-green tw-transition-opacity"
+          :style="{ opacity: availabilityBtnOpacity }"
           @click="editGuestAvailability"
         >
           {{ `Edit ${selectedGuestRespondent}'s availability` }}
@@ -137,8 +141,9 @@
         <v-btn
           v-else
           outlined
-          class="tw-bg-white tw-text-green"
+          class="tw-bg-white tw-text-green tw-transition-opacity"
           :disabled="loading && !userHasResponded"
+          :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
         >
           {{ userHasResponded ? "Edit availability" : "Add availability" }}
@@ -207,6 +212,8 @@ export default {
     calendarPermissionGranted: false,
 
     weekOffset: 0,
+
+    availabilityBtnOpacity: 1,
   }),
 
   computed: {
@@ -361,6 +368,20 @@ export default {
         this.scheduleOverlapComponent.stopEditing()
         this.guestDialog = false
       }
+    },
+
+    highlightAvailabilityBtn() {
+      this.availabilityBtnOpacity = 0.1
+      setTimeout(() => {
+        this.availabilityBtnOpacity = 1
+
+        setTimeout(() => {
+          this.availabilityBtnOpacity = 0.1
+          setTimeout(() => {
+            this.availabilityBtnOpacity = 1
+          }, 100)
+        }, 100)
+      }, 100)
     },
 
     onBeforeUnload(e) {
