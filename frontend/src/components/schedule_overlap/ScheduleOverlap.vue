@@ -9,7 +9,7 @@
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-3 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
+                class="tw-h-4 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
               >
                 {{ time.text }}
               </div>
@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-3 tw-border-r tw-border-[#DDDDDD88]"
+                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD88]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
