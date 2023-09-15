@@ -918,10 +918,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "availability": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
