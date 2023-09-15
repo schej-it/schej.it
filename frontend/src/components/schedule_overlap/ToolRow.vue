@@ -46,7 +46,7 @@
       </div>
 
       <div
-        v-if="isOwner && state !== states.EDIT_AVAILABILITY"
+        v-if="numResponses > 0 && state !== states.EDIT_AVAILABILITY"
         style="width: 180.16px"
         class="tw-hidden sm:tw-block"
       >
