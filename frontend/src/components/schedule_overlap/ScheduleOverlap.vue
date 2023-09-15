@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD88]"
+                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -849,7 +849,6 @@ export default {
             day.dateObject,
             time.hoursOffset + 0.25
           )
-          console.log(startDate, endDate)
           const index = this.calendarEventsByDay[d].findIndex((e) => {
             const notIntersect =
               dateCompare(endDate, e.startDate) <= 0 ||
@@ -943,8 +942,12 @@ export default {
       } else {
         // Normal border
         const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-        if (fractionalTime === 0.25) c += "tw-border-b "
-        else if (fractionalTime === 0.75) c += "tw-border-b tw-border-b-gray "
+        if (fractionalTime === 0.25) {
+          c += "tw-border-b "
+          s.borderBottomStyle = "dashed"
+        } else if (fractionalTime === 0.75) {
+          c += "tw-border-b "
+        }
 
         if (d === 0) c += "tw-border-l tw-border-l-gray "
         if (d === this.days.length - 1) c += "tw-border-r-gray "
@@ -1020,7 +1023,7 @@ export default {
             // Only set timeslot to green for the times that most people are available
             if (totalRespondents === 1) {
               // Make single responses less saturated
-              const green = "#00994CDD"
+              const green = "#00994CAA"
               s.backgroundColor = green
             } else {
               const green = "#00994C"
@@ -1031,7 +1034,7 @@ export default {
           if (numRespondents > 0) {
             if (totalRespondents === 1) {
               // Make single responses less saturated
-              const green = "#00994CDD"
+              const green = "#00994CAA"
               s.backgroundColor = green
             } else {
               // Determine color of timeslot based on number of people available
