@@ -100,8 +100,8 @@
                             <div
                               class="tw-absolute tw-w-full tw-select-none tw-p-px"
                               :style="{
-                                top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
-                                height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
+                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
+                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
                               }"
                               style="pointer-events: none"
                             >
@@ -847,17 +847,14 @@ export default {
           const startDate = getDateHoursOffset(day.dateObject, time.hoursOffset)
           const endDate = getDateHoursOffset(
             day.dateObject,
-            time.hoursOffset + 0.5
+            time.hoursOffset + 0.25
           )
+          console.log(startDate, endDate)
           const index = this.calendarEventsByDay[d].findIndex((e) => {
-            return (
-              (dateCompare(e.startDate, startDate) < 0 &&
-                dateCompare(e.endDate, startDate) > 0) ||
-              (dateCompare(e.startDate, endDate) < 0 &&
-                dateCompare(e.endDate, endDate) > 0) ||
-              (dateCompare(e.startDate, startDate) == 0 &&
-                dateCompare(e.endDate, endDate) == 0)
-            )
+            const notIntersect =
+              dateCompare(endDate, e.startDate) <= 0 ||
+              dateCompare(startDate, e.endDate) >= 0
+            return !notIntersect
           })
           if (index === -1) {
             tmpAvailability.add(startDate.getTime())
