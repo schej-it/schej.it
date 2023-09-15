@@ -9,7 +9,7 @@
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-5 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
+                class="tw-h-3 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
               >
                 {{ time.text }}
               </div>
@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-5 tw-border-r tw-border-[#DDDDDD88]"
+                            class="timeslot tw-h-3 tw-border-r tw-border-[#DDDDDD88]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -620,7 +620,13 @@ export default {
           text: timeNumToTimeText(localTimeNum),
         })
         times.push({
+          hoursOffset: i + 0.25,
+        })
+        times.push({
           hoursOffset: i + 0.5,
+        })
+        times.push({
+          hoursOffset: i + 0.75,
         })
       }
 
@@ -939,7 +945,10 @@ export default {
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
-        if (!("text" in time)) c += "tw-border-b "
+        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+        if (fractionalTime === 0.25) c += "tw-border-b "
+        else if (fractionalTime === 0.75) c += "tw-border-b tw-border-b-gray "
+
         if (d === 0) c += "tw-border-l tw-border-l-gray "
         if (d === this.days.length - 1) c += "tw-border-r-gray "
         if (t === 0) c += "tw-border-t tw-border-t-gray "
