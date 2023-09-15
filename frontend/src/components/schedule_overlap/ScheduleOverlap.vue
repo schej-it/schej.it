@@ -630,9 +630,16 @@ export default {
       return this.timezoneMap[this.curTimezone] * -1 // Multiplying by -1 because offset is flipped
     },
     timezoneMap() {
+
+      /* If in local storage, return from local storage to save time */
+      if (localStorage['timezoneMap']) return JSON.parse(localStorage['timezoneMap'])
+
+      const allTimezones = Intl.supportedValuesOf('timeZone');
+      
+      const that = this
       /* Maps timezone name to the timezone offset */
-      const map = timezoneData.reduce(function (map, obj) {
-        map[obj.name] = obj.offset
+      const map = allTimezones.reduce(function (map, timezone) {
+        map[timezone] = that.getOffset(timezone)
         return map
       }, {})
 
@@ -641,6 +648,10 @@ export default {
       if (!map.hasOwnProperty(localTimezone)) {
         map[localTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
       }
+
+      /* Save result in local storage to save compute time */
+      localStorage['timezoneMap'] = JSON.stringify(map)
+
       return map
     },
     userHasResponded() {
@@ -1285,14 +1296,17 @@ export default {
     // -----------------------------------
     //#region Options
     // -----------------------------------
+    /* Get the name of the current local timezone */
     getLocalTimezone() {
-      const split = new Date(this.event.dates[0])
-        .toLocaleTimeString("en-us", { timeZoneName: "short" })
-        .split(" ")
-      const localTimezone = split[split.length - 1]
-
-      return localTimezone
+      return Intl.DateTimeFormat().resolvedOptions().timeZone
     },
+    /* Get timezone offset in minutes */
+    getOffset(timeZone = 'UTC', date = new Date()) {
+      const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+      const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
+      return (tzDate.getTime() - utcDate.getTime()) / 6e4;
+    },
+    /* When user toggles show best times */
     onShowBestTimesChange() {
       localStorage["showBestTimes"] = this.showBestTimes
       if (
