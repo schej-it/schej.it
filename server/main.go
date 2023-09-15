@@ -14,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"schej.it/server/db"
-	"schej.it/server/discord_bot"
 	"schej.it/server/logger"
 	"schej.it/server/routes"
 	"schej.it/server/slackbot"
@@ -54,9 +53,6 @@ func main() {
 
 	// Load .env variables
 	loadDotEnv()
-
-	// Init discord bot
-	discord_bot.Init()
 
 	// Init router
 	router := gin.New()
