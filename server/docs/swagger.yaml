@@ -100,9 +100,7 @@ definitions:
   models.Response:
     properties:
       availability:
-        items:
-          type: string
-        type: array
+        type: string
       name:
         type: string
       user:
