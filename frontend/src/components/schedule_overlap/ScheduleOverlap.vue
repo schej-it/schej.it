@@ -937,7 +937,8 @@ export default {
 
       // Border style
       if (
-        this.respondents.length > 0 &&
+        (this.respondents.length > 0 ||
+          this.state === this.states.EDIT_AVAILABILITY) &&
         this.curTimeslot.dayIndex === d &&
         this.curTimeslot.timeIndex === t
       ) {
