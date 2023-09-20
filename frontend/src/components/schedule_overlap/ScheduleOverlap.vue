@@ -9,7 +9,7 @@
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-4 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
+                class="tw-h-5 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
               >
                 {{ time.text }}
               </div>
@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                            class="timeslot tw-h-5 tw-border-r tw-border-[#DDDDDD99]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -619,15 +619,15 @@ export default {
           hoursOffset: i,
           text: timeNumToTimeText(localTimeNum),
         })
-        times.push({
-          hoursOffset: i + 0.25,
-        })
+        // times.push({
+        //   hoursOffset: i + 0.25,
+        // })
         times.push({
           hoursOffset: i + 0.5,
         })
-        times.push({
-          hoursOffset: i + 0.75,
-        })
+        // times.push({
+        //   hoursOffset: i + 0.75,
+        // })
       }
 
       return times
@@ -950,7 +950,7 @@ export default {
         if (fractionalTime === 0.25) {
           c += "tw-border-b "
           s.borderBottomStyle = "dashed"
-        } else if (fractionalTime === 0.75) {
+        } else if (fractionalTime === 0.5) {
           c += "tw-border-b "
         }
 
