@@ -56,7 +56,7 @@ export default {
       }
     },
     duration() {
-      return isPhone(this.$vuetify) ? 8 : 13
+      return isPhone(this.$vuetify) ? 6 : 8
     },
     startTime() {
       return dateToTimeNum(new Date(this.dates[0]), true)
@@ -72,12 +72,12 @@ export default {
       const events = [
         {
           startDate: getDateWithTimeNum(day1, 9),
-          endDate: getDateWithTimeNum(day1, 11),
+          endDate: getDateWithTimeNum(day1, 10),
           summary: "Coffee with Jen",
         },
         {
           startDate: getDateWithTimeNum(day2, 11),
-          endDate: getDateWithTimeNum(day2, 16),
+          endDate: getDateWithTimeNum(day2, 14),
           summary: "Karaoke with friends",
         },
         {
@@ -107,6 +107,8 @@ export default {
         "62828fec1bc681fa020632f2": {
           user: { _id: "1", name: "1" },
           availability: [
+            getDateWithTimeNum(day1, 10),
+            getDateWithTimeNum(day1, 10.5),
             getDateWithTimeNum(day1, 11),
             getDateWithTimeNum(day1, 11.5),
             getDateWithTimeNum(day1, 12),
@@ -128,6 +130,10 @@ export default {
 
             getDateWithTimeNum(day2, 9),
             getDateWithTimeNum(day2, 9.5),
+            getDateWithTimeNum(day2, 14),
+            getDateWithTimeNum(day2, 14.5),
+            getDateWithTimeNum(day2, 15),
+            getDateWithTimeNum(day2, 15.5),
             getDateWithTimeNum(day2, 16),
             getDateWithTimeNum(day2, 16.5),
             getDateWithTimeNum(day2, 17),
@@ -241,6 +247,17 @@ export default {
             getDateWithTimeNum(day3, 20),
           ],
         },
+      }
+
+      for (const id of Object.keys(this.responses)) {
+        const fixedAvailability = []
+        for (const date of this.responses[id].availability) {
+          fixedAvailability.push(date)
+          const dateCopy = new Date(date)
+          dateCopy.setMinutes(date.getMinutes() + 15)
+          fixedAvailability.push(dateCopy)
+        }
+        this.responses[id].availability = fixedAvailability
       }
     },
     reset() {

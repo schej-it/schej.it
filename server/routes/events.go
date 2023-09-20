@@ -132,9 +132,9 @@ func getEvent(c *gin.Context) {
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
-		Availability []string `json:"availability" binding:"required"`
-		Guest        *bool    `json:"guest" binding:"required"`
-		Name         string   `json:"name"`
+		Availability []primitive.DateTime `json:"availability" binding:"required"`
+		Guest        *bool                `json:"guest" binding:"required"`
+		Name         string               `json:"name"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return

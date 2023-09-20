@@ -9,7 +9,7 @@
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-5 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
+                class="tw-h-4 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
               >
                 {{ time.text }}
               </div>
@@ -83,7 +83,7 @@
                           class="tw-w-full"
                         >
                           <div
-                            class="timeslot tw-h-5 tw-border-r tw-border-[#DDDDDD88]"
+                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
                             :class="timeslotClassStyle(day, time, d, t).class"
                             :style="timeslotClassStyle(day, time, d, t).style"
                             v-on="timeslotVon(d, t)"
@@ -100,8 +100,8 @@
                             <div
                               class="tw-absolute tw-w-full tw-select-none tw-p-px"
                               :style="{
-                                top: `calc(${event.hoursOffset} * 2 * 1.25rem)`,
-                                height: `calc(${event.hoursLength} * 2 * 1.25rem)`,
+                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
+                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
                               }"
                               style="pointer-events: none"
                             >
@@ -620,7 +620,13 @@ export default {
           text: timeNumToTimeText(localTimeNum),
         })
         times.push({
+          hoursOffset: i + 0.25,
+        })
+        times.push({
           hoursOffset: i + 0.5,
+        })
+        times.push({
+          hoursOffset: i + 0.75,
         })
       }
 
@@ -841,17 +847,13 @@ export default {
           const startDate = getDateHoursOffset(day.dateObject, time.hoursOffset)
           const endDate = getDateHoursOffset(
             day.dateObject,
-            time.hoursOffset + 0.5
+            time.hoursOffset + 0.25
           )
           const index = this.calendarEventsByDay[d].findIndex((e) => {
-            return (
-              (dateCompare(e.startDate, startDate) < 0 &&
-                dateCompare(e.endDate, startDate) > 0) ||
-              (dateCompare(e.startDate, endDate) < 0 &&
-                dateCompare(e.endDate, endDate) > 0) ||
-              (dateCompare(e.startDate, startDate) == 0 &&
-                dateCompare(e.endDate, endDate) == 0)
-            )
+            const notIntersect =
+              dateCompare(endDate, e.startDate) <= 0 ||
+              dateCompare(startDate, e.endDate) >= 0
+            return !notIntersect
           })
           if (index === -1) {
             tmpAvailability.add(startDate.getTime())
@@ -943,7 +945,14 @@ export default {
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
-        if (!("text" in time)) c += "tw-border-b "
+        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+        if (fractionalTime === 0.25) {
+          c += "tw-border-b "
+          s.borderBottomStyle = "dashed"
+        } else if (fractionalTime === 0.75) {
+          c += "tw-border-b "
+        }
+
         if (d === 0) c += "tw-border-l tw-border-l-gray "
         if (d === this.days.length - 1) c += "tw-border-r-gray "
         if (t === 0) c += "tw-border-t tw-border-t-gray "
@@ -1018,7 +1027,7 @@ export default {
             // Only set timeslot to green for the times that most people are available
             if (totalRespondents === 1) {
               // Make single responses less saturated
-              const green = "#00994CDD"
+              const green = "#00994CAA"
               s.backgroundColor = green
             } else {
               const green = "#00994C"
@@ -1029,7 +1038,7 @@ export default {
           if (numRespondents > 0) {
             if (totalRespondents === 1) {
               // Make single responses less saturated
-              const green = "#00994CDD"
+              const green = "#00994CAA"
               s.backgroundColor = green
             } else {
               // Determine color of timeslot based on number of people available
