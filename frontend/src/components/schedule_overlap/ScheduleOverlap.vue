@@ -936,7 +936,12 @@ export default {
       }
 
       // Border style
-      if (this.curTimeslot.dayIndex === d && this.curTimeslot.timeIndex === t) {
+      if (
+        (this.respondents.length > 0 ||
+          this.state === this.states.EDIT_AVAILABILITY) &&
+        this.curTimeslot.dayIndex === d &&
+        this.curTimeslot.timeIndex === t
+      ) {
         // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
@@ -1058,6 +1063,10 @@ export default {
       if (this.interactable) {
         return {
           click: () => this.showAvailability(d, t),
+          mousedown: () => {
+            if (this.state === this.defaultState)
+              this.highlightAvailabilityBtn()
+          },
           mouseover: () => this.showAvailability(d, t),
         }
       }
@@ -1084,6 +1093,9 @@ export default {
     stopEditing() {
       this.state = this.defaultState
       this.stopAvailabilityAnim()
+    },
+    highlightAvailabilityBtn() {
+      this.$emit("highlightAvailabilityBtn")
     },
     //#endregion
 
