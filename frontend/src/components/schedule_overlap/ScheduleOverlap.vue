@@ -561,11 +561,11 @@ export default {
         top = this.dragStart.timeIndex
         height = this.dragCur.timeIndex - this.dragStart.timeIndex + 1
       } else {
-        top = this.curScheduledEvent.hoursOffset * 2
-        height = this.curScheduledEvent.hoursLength * 2
+        top = this.curScheduledEvent.hoursOffset * 4
+        height = this.curScheduledEvent.hoursLength * 4
       }
-      style.top = `calc(${top} * 1.25rem)`
-      style.height = `calc(${height} * 1.25rem)`
+      style.top = `calc(${top} * 1rem)`
+      style.height = `calc(${height} * 1rem)`
       return style
     },
     parsedResponses() {
@@ -1230,9 +1230,9 @@ export default {
       } else if (this.state === this.states.SCHEDULE_EVENT) {
         // Update scheduled event
         const dayIndex = this.dragStart.dayIndex
-        const hoursOffset = this.dragStart.timeIndex / 2
+        const hoursOffset = this.dragStart.timeIndex / 4
         const hoursLength =
-          (this.dragCur.timeIndex - this.dragStart.timeIndex + 1) / 2
+          (this.dragCur.timeIndex - this.dragStart.timeIndex + 1) / 4
 
         if (hoursLength > 0) {
           this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
