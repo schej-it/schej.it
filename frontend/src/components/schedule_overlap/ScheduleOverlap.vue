@@ -1064,7 +1064,10 @@ export default {
         return {
           click: () => this.showAvailability(d, t),
           mousedown: () => {
-            if (this.state === this.defaultState)
+            if (
+              this.state === this.defaultState &&
+              (!this.isPhone || this.respondents.length == 0)
+            )
               this.highlightAvailabilityBtn()
           },
           mouseover: () => this.showAvailability(d, t),
