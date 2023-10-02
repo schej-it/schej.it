@@ -50,9 +50,9 @@
             <div
               class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
             >
-              <b>Autofill</b> your availability with Google Calendar to find the
-              best time to meet— it’s like When2Meet with Google Calendar
-              integration.
+              <b>Autofill</b> your availability with Google Calendar and see
+              when everyone's availabilities overlap— it’s like When2Meet with
+              Google Calendar integration.
             </div>
 
             <div
