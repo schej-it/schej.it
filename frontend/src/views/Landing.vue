@@ -37,7 +37,7 @@
         <div class="tw-flex tw-flex-col">
           <!-- Hero -->
           <div
-            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-max-w-none lg:tw-mb-14"
+            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-w-[35rem] sm:tw-max-w-none lg:tw-mb-14"
           >
             <div
               id="header"
@@ -50,9 +50,9 @@
             <div
               class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
             >
-              <b>Automatically</b> fill out your availability with Google
-              Calendar—<br v-if="!isPhone" />
-              it’s like When2Meet with Google Calendar integration!
+              <b>Autofill</b> your availability with Google Calendar to find the
+              best time to meet— it’s like When2Meet with Google Calendar
+              integration.
             </div>
 
             <div
@@ -78,7 +78,7 @@
         </div>
 
         <!-- Right side -->
-        <div class="tw-ml-12 tw-mr-4 tw-hidden lg:tw-block">
+        <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-block">
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -110,10 +110,9 @@
               <span
                 class="tw-underline tw-decoration-pale-green tw-decoration-4"
                 style="text-underline-position: under"
+                >Autofill</span
               >
-                Automatically
-              </span>
-              fill out your availability with Google Calendar
+              your availability with Google Calendar
             </div>
             <div v-else v-html="step"></div>
           </div>
@@ -175,7 +174,7 @@
         >
           Privacy Policy
         </router-link>
-        <div class="tw-text-light-gray">Made with ❤️ by the schej team</div>
+        <div class="tw-text-light-gray">Made with 💚 by the schej team</div>
       </div>
     </div>
 
@@ -239,8 +238,8 @@ export default {
     newEventDialog: false,
     howItWorksSteps: [
       "Create a schej event",
-      "Automatically fill out your availability with Google Calendar",
-      "Share the schej and find the best time to meet!",
+      "Autofill your availability with Google Calendar",
+      "Share the schej with your group and find the best time to meet!",
     ],
     faqs: [
       {
