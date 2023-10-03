@@ -95,7 +95,6 @@ export default {
   name: "App",
 
   metaInfo: {
-    title: "schej - Finding a time to meet, made simple",
     htmlAttrs: {
       lang: "en-US",
     },
