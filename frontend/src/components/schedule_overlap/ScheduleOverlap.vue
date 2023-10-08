@@ -211,13 +211,57 @@
           v-if="!calendarOnly"
           class="tw-w-full tw-py-4 sm:tw-w-52 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
-          <div v-if="state == states.EDIT_AVAILABILITY">
+          <div
+            class="tw-flex tw-flex-col tw-gap-2"
+            v-if="state == states.EDIT_AVAILABILITY"
+          >
             <CalendarAccounts
               v-if="calendarPermissionGranted"
               :toggleState="true"
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
             ></CalendarAccounts>
+            <div>
+              <div class="tw-mb-1 tw-font-medium">Options</div>
+              <v-dialog
+                v-model="deleteAvailabilityDialog"
+                width="500"
+                persistent
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <span
+                    v-bind="attrs"
+                    v-on="on"
+                    class="tw-cursor-pointer tw-text-sm tw-text-red tw-underline"
+                  >
+                    Delete Availability
+                  </span>
+                </template>
+
+                <v-card>
+                  <v-card-title>Are you sure?</v-card-title>
+                  <v-card-text class="tw-text-sm tw-text-dark-gray"
+                    >Are you sure you want to delete your availabilty from this
+                    event?</v-card-text
+                  >
+                  <v-card-actions>
+                    <v-spacer />
+                    <v-btn text @click="deleteAvailabilityDialog = false"
+                      >Cancel</v-btn
+                    >
+                    <v-btn
+                      text
+                      color="error"
+                      @click="
+                        $emit('deleteAvailability')
+                        deleteAvailabilityDialog = false
+                      "
+                      >Delete</v-btn
+                    >
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
           </div>
 
           <div v-else>
@@ -239,12 +283,6 @@
                   }}
                 </template>
               </div>
-            </div>
-            <div
-              v-if="respondents.length > 0 && !authUser"
-              class="tw-mt-0.5 tw-text-xs tw-text-dark-gray"
-            >
-              Click name to edit availability
             </div>
             <div
               class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
@@ -336,6 +374,7 @@ import {
   utcTimeToLocalTime,
   splitCalendarEventsByDay,
   dateToDowDate,
+  _delete,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
@@ -408,6 +447,7 @@ export default {
       curTimezone: this.getLocalTimezone(),
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
+      deleteAvailabilityDialog: false,
 
       /* Variables for scrolling */
       calendarScrollLeft: 0, // The current scroll position of the calendar
@@ -914,6 +954,17 @@ export default {
       await post(`/events/${this.event._id}/response`, payload)
       this.$emit("refreshEvent")
       this.unsavedChanges = false
+    },
+    async deleteAvailability(name = "") {
+      const payload = {}
+      if (this.authUser) {
+        payload.guest = false
+      } else {
+        payload.guest = true
+        payload.name = name
+      }
+      await _delete(`/events/${this.event._id}/response`, payload)
+      this.$emit("refreshEvent")
     },
     //#endregion
 
