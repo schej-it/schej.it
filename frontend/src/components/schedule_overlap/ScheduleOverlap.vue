@@ -378,7 +378,6 @@ export default {
       },
       state: "best_times",
 
-      max: 0, // The max amount of people available at any given time
       availability: new Set(), // The current user's availability
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
@@ -599,13 +598,19 @@ export default {
               formatted.get(date.getTime()).add(response.user._id)
             }
           }
-          // Update max
-          if (formatted.get(date.getTime()).size > this.max) {
-            this.max = formatted.get(date.getTime()).size
-          }
         }
       }
       return formatted
+    },
+    max() {
+      let max = 0
+      for (const [dateTime, availability] of this.responsesFormatted) {
+        if (availability.size > max) {
+          max = availability.size
+        }
+      }
+
+      return max
     },
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
