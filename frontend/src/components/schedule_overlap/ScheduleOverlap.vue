@@ -264,60 +264,17 @@
             </div>
           </div>
 
-          <div v-else>
-            <div class="tw-flex tw-items-center tw-font-medium">
-              <div class="tw-mr-1 tw-text-lg">Responses</div>
-              <div class="tw-font-normal">
-                <template v-if="curRespondents.length === 0">
-                  {{
-                    isCurTimeslotSelected
-                      ? `(${numUsersAvailable}/${respondents.length})`
-                      : `(${respondents.length})`
-                  }}
-                </template>
-                <template v-else>
-                  {{
-                    isCurTimeslotSelected
-                      ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
-                      : `(${curRespondents.length})`
-                  }}
-                </template>
-              </div>
-            </div>
-            <div
-              class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
-            >
-              <template v-if="respondents.length === 0">
-                <div class="tw-text-very-dark-gray">No responses yet!</div>
-              </template>
-              <template v-else>
-                <div
-                  v-for="(user, i) in respondents"
-                  :key="user._id"
-                  class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
-                  @mouseover="(e) => mouseOverRespondent(e, user._id)"
-                  @mouseleave="mouseLeaveRespondent"
-                  @click="(e) => clickRespondent(e, user._id)"
-                >
-                  <UserAvatarContent
-                    v-if="!isGuest(user)"
-                    :user="user"
-                    class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-                  ></UserAvatarContent>
-                  <v-icon v-else class="tw-ml-1 tw-mr-3" small
-                    >mdi-account</v-icon
-                  >
-
-                  <div
-                    class="tw-mr-1 tw-transition-all"
-                    :class="respondentClass(user._id)"
-                  >
-                    {{ user.firstName + " " + user.lastName }}
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
+          <RespondentsList
+            v-else
+            :curRespondent="curRespondent"
+            :curRespondents="curRespondents"
+            :curTimeslot="curTimeslot"
+            :curTimeslotAvailability="curTimeslotAvailability"
+            :respondents="respondents"
+            @mouseOverRespondent="mouseOverRespondent"
+            @mouseLeaveRespondent="mouseLeaveRespondent"
+            @clickRespondent="clickRespondent"
+          />
         </div>
       </div>
 
@@ -385,6 +342,7 @@ import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
+import RespondentsList from "./RespondentsList.vue"
 
 export default {
   name: "ScheduleOverlap",
@@ -694,32 +652,6 @@ export default {
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
     },
-    numCurRespondentsAvailable() {
-      this.curTimeslot
-      let numUsers = 0
-      for (const key in this.curTimeslotAvailability) {
-        if (
-          this.curTimeslotAvailability[key] &&
-          this.curRespondentsSet.has(key)
-        )
-          numUsers++
-      }
-      return numUsers
-    },
-    numUsersAvailable() {
-      this.curTimeslot
-      let numUsers = 0
-      for (const key in this.curTimeslotAvailability) {
-        if (this.curTimeslotAvailability[key]) numUsers++
-      }
-      return numUsers
-    },
-    isCurTimeslotSelected() {
-      return (
-        this.curTimeslot.dayIndex !== -1 && this.curTimeslot.timeIndex !== -1
-      )
-    },
-
     showLeftZigZag() {
       return this.calendarScrollLeft > 0
     },
@@ -801,20 +733,6 @@ export default {
       }
 
       this.curRespondents = []
-    },
-    respondentClass(id) {
-      const c = []
-      if (this.curRespondent == id || this.curRespondentsSet.has(id)) {
-        c.push("tw-font-bold")
-      } else if (this.curRespondents.length > 0) {
-        c.push("tw-text-gray")
-      }
-
-      if (!this.curTimeslotAvailability[id]) {
-        c.push("tw-line-through")
-        c.push("tw-text-gray")
-      }
-      return c
     },
 
     isGuest(user) {
@@ -1465,6 +1383,7 @@ export default {
     ConfirmDetailsDialog,
     ToolRow,
     CalendarAccounts,
+    RespondentsList,
   },
 }
 </script>
