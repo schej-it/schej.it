@@ -368,6 +368,35 @@ paths:
       tags:
       - events
   /events/{eventId}/response:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing info about the event response to delete
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              guest:
+                type: boolean
+              name:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Delete the current user's availability
+      tags:
+      - events
     post:
       consumes:
       - application/json

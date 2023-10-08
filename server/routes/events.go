@@ -26,6 +26,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", createEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
+	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.PUT("/:eventId", middleware.AuthRequired(), editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 }
@@ -218,6 +219,55 @@ func updateEventResponse(c *gin.Context) {
 				"text/html",
 			)
 		}()
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Delete the current user's availability
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{guest=bool,name=string} true "Object containing info about the event response to delete"
+// @Success 200
+// @Router /events/{eventId}/response [delete]
+func deleteEventResponse(c *gin.Context) {
+	payload := struct {
+		Guest *bool  `json:"guest" binding:"required"`
+		Name  string `json:"name"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	session := sessions.Default(c)
+	eventId := c.Param("eventId")
+
+	var userIdString string
+	if *payload.Guest {
+		userIdString = payload.Name
+	} else {
+		userIdInterface := session.Get("userId")
+		if userIdInterface == nil {
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
+			c.Abort()
+			return
+		}
+		userIdString = userIdInterface.(string)
+	}
+
+	// Update responses in mongodb
+	_, err := db.EventsCollection.UpdateByID(
+		context.Background(),
+		utils.StringToObjectID(eventId),
+		bson.M{
+			"$unset": bson.M{
+				"responses." + userIdString: "",
+			},
+		},
+	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
