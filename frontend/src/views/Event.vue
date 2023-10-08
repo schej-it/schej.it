@@ -116,6 +116,7 @@
         :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
         :weekOffset.sync="weekOffset"
+        :curGuestId="curGuestId"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"

@@ -221,7 +221,7 @@
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
             ></CalendarAccounts>
-            <div>
+            <div v-if="userHasResponded || curGuestId">
               <div class="tw-mb-1 tw-font-medium">Options</div>
               <v-dialog
                 v-model="deleteAvailabilityDialog"
@@ -405,6 +405,8 @@ export default {
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
     showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
+
+    curGuestId: { type: String, default: "" }, // Id of the current guest being edited
   },
   data() {
     return {
@@ -964,6 +966,7 @@ export default {
         payload.name = name
       }
       await _delete(`/events/${this.event._id}/response`, payload)
+      this.availability = new Set()
       this.$emit("refreshEvent")
     },
     //#endregion
