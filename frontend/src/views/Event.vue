@@ -120,6 +120,7 @@
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"
+        @setCurGuestId="(id) => (curGuestId = id)"
       />
     </div>
     <div class="tw-h-16"></div>

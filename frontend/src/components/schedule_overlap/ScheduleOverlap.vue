@@ -274,6 +274,7 @@
             @mouseOverRespondent="mouseOverRespondent"
             @mouseLeaveRespondent="mouseLeaveRespondent"
             @clickRespondent="clickRespondent"
+            @editGuestAvailability="editGuestAvailability"
           />
         </div>
       </div>
@@ -1076,6 +1077,11 @@ export default {
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
+    },
+    editGuestAvailability(id) {
+      this.populateUserAvailability(id)
+      this.$emit("setCurGuestId", id)
+      this.startEditing()
     },
     //#endregion
 

@@ -29,7 +29,7 @@
         <div
           v-for="(user, i) in respondents"
           :key="user._id"
-          class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
+          class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-py-1"
           @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
           @mouseleave="$emit('mouseLeaveRespondent')"
           @click="(e) => $emit('clickRespondent', e, user._id)"
@@ -47,6 +47,16 @@
           >
             {{ user.firstName + " " + user.lastName }}
           </div>
+
+          <v-btn
+            v-if="!authUser && isGuest(user)"
+            absolute
+            small
+            icon
+            class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+            @click="$emit('editGuestAvailability', user._id)"
+            ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
+          >
         </div>
       </template>
     </div>
@@ -55,6 +65,7 @@
 
 <script>
 import UserAvatarContent from "../UserAvatarContent.vue"
+import { mapState } from "vuex"
 
 export default {
   name: "RespondentsList",
@@ -70,6 +81,7 @@ export default {
   },
 
   computed: {
+    ...mapState(["authUser"]),
     curRespondentsSet() {
       return new Set(this.curRespondents)
     },
