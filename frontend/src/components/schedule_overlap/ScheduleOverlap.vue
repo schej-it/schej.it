@@ -211,75 +211,71 @@
           v-if="!calendarOnly"
           class="tw-w-full tw-py-4 sm:tw-w-52 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
-          <div v-if="state == states.EDIT_AVAILABILITY">
+          <div
+            class="tw-flex tw-flex-col tw-gap-2"
+            v-if="state == states.EDIT_AVAILABILITY"
+          >
             <CalendarAccounts
               v-if="calendarPermissionGranted"
               :toggleState="true"
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
             ></CalendarAccounts>
+            <div v-if="userHasResponded || curGuestId">
+              <div class="tw-mb-1 tw-font-medium">Options</div>
+              <v-dialog
+                v-model="deleteAvailabilityDialog"
+                width="500"
+                persistent
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <span
+                    v-bind="attrs"
+                    v-on="on"
+                    class="tw-cursor-pointer tw-text-sm tw-text-red tw-underline"
+                  >
+                    Delete Availability
+                  </span>
+                </template>
+
+                <v-card>
+                  <v-card-title>Are you sure?</v-card-title>
+                  <v-card-text class="tw-text-sm tw-text-dark-gray"
+                    >Are you sure you want to delete your availabilty from this
+                    event?</v-card-text
+                  >
+                  <v-card-actions>
+                    <v-spacer />
+                    <v-btn text @click="deleteAvailabilityDialog = false"
+                      >Cancel</v-btn
+                    >
+                    <v-btn
+                      text
+                      color="error"
+                      @click="
+                        $emit('deleteAvailability')
+                        deleteAvailabilityDialog = false
+                      "
+                      >Delete</v-btn
+                    >
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
           </div>
 
-          <div v-else>
-            <div class="tw-flex tw-items-center tw-font-medium">
-              <div class="tw-mr-1 tw-text-lg">Responses</div>
-              <div class="tw-font-normal">
-                <template v-if="curRespondents.length === 0">
-                  {{
-                    isCurTimeslotSelected
-                      ? `(${numUsersAvailable}/${respondents.length})`
-                      : `(${respondents.length})`
-                  }}
-                </template>
-                <template v-else>
-                  {{
-                    isCurTimeslotSelected
-                      ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
-                      : `(${curRespondents.length})`
-                  }}
-                </template>
-              </div>
-            </div>
-            <div
-              v-if="respondents.length > 0 && !authUser"
-              class="tw-mt-0.5 tw-text-xs tw-text-dark-gray"
-            >
-              Click name to edit availability
-            </div>
-            <div
-              class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
-            >
-              <template v-if="respondents.length === 0">
-                <div class="tw-text-very-dark-gray">No responses yet!</div>
-              </template>
-              <template v-else>
-                <div
-                  v-for="(user, i) in respondents"
-                  :key="user._id"
-                  class="tw-flex tw-cursor-pointer tw-items-center tw-py-1"
-                  @mouseover="(e) => mouseOverRespondent(e, user._id)"
-                  @mouseleave="mouseLeaveRespondent"
-                  @click="(e) => clickRespondent(e, user._id)"
-                >
-                  <UserAvatarContent
-                    v-if="!isGuest(user)"
-                    :user="user"
-                    class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-                  ></UserAvatarContent>
-                  <v-icon v-else class="tw-ml-1 tw-mr-3" small
-                    >mdi-account</v-icon
-                  >
-
-                  <div
-                    class="tw-mr-1 tw-transition-all"
-                    :class="respondentClass(user._id)"
-                  >
-                    {{ user.firstName + " " + user.lastName }}
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
+          <RespondentsList
+            v-else
+            :curRespondent="curRespondent"
+            :curRespondents="curRespondents"
+            :curTimeslot="curTimeslot"
+            :curTimeslotAvailability="curTimeslotAvailability"
+            :respondents="respondents"
+            @mouseOverRespondent="mouseOverRespondent"
+            @mouseLeaveRespondent="mouseLeaveRespondent"
+            @clickRespondent="clickRespondent"
+            @editGuestAvailability="editGuestAvailability"
+          />
         </div>
       </div>
 
@@ -336,6 +332,7 @@ import {
   utcTimeToLocalTime,
   splitCalendarEventsByDay,
   dateToDowDate,
+  _delete,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
@@ -346,6 +343,7 @@ import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
+import RespondentsList from "./RespondentsList.vue"
 
 export default {
   name: "ScheduleOverlap",
@@ -366,6 +364,8 @@ export default {
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
     showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
+
+    curGuestId: { type: String, default: "" }, // Id of the current guest being edited
   },
   data() {
     return {
@@ -379,7 +379,6 @@ export default {
       },
       state: "best_times",
 
-      max: 0, // The max amount of people available at any given time
       availability: new Set(), // The current user's availability
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
@@ -408,6 +407,7 @@ export default {
       curTimezone: this.getLocalTimezone(),
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
+      deleteAvailabilityDialog: false,
 
       /* Variables for scrolling */
       calendarScrollLeft: 0, // The current scroll position of the calendar
@@ -599,13 +599,19 @@ export default {
               formatted.get(date.getTime()).add(response.user._id)
             }
           }
-          // Update max
-          if (formatted.get(date.getTime()).size > this.max) {
-            this.max = formatted.get(date.getTime()).size
-          }
         }
       }
       return formatted
+    },
+    max() {
+      let max = 0
+      for (const [dateTime, availability] of this.responsesFormatted) {
+        if (availability.size > max) {
+          max = availability.size
+        }
+      }
+
+      return max
     },
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
@@ -652,32 +658,6 @@ export default {
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
     },
-    numCurRespondentsAvailable() {
-      this.curTimeslot
-      let numUsers = 0
-      for (const key in this.curTimeslotAvailability) {
-        if (
-          this.curTimeslotAvailability[key] &&
-          this.curRespondentsSet.has(key)
-        )
-          numUsers++
-      }
-      return numUsers
-    },
-    numUsersAvailable() {
-      this.curTimeslot
-      let numUsers = 0
-      for (const key in this.curTimeslotAvailability) {
-        if (this.curTimeslotAvailability[key]) numUsers++
-      }
-      return numUsers
-    },
-    isCurTimeslotSelected() {
-      return (
-        this.curTimeslot.dayIndex !== -1 && this.curTimeslot.timeIndex !== -1
-      )
-    },
-
     showLeftZigZag() {
       return this.calendarScrollLeft > 0
     },
@@ -759,20 +739,6 @@ export default {
       }
 
       this.curRespondents = []
-    },
-    respondentClass(id) {
-      const c = []
-      if (this.curRespondent == id || this.curRespondentsSet.has(id)) {
-        c.push("tw-font-bold")
-      } else if (this.curRespondents.length > 0) {
-        c.push("tw-text-gray")
-      }
-
-      if (!this.curTimeslotAvailability[id]) {
-        c.push("tw-line-through")
-        c.push("tw-text-gray")
-      }
-      return c
     },
 
     isGuest(user) {
@@ -914,6 +880,18 @@ export default {
       await post(`/events/${this.event._id}/response`, payload)
       this.$emit("refreshEvent")
       this.unsavedChanges = false
+    },
+    async deleteAvailability(name = "") {
+      const payload = {}
+      if (this.authUser) {
+        payload.guest = false
+      } else {
+        payload.guest = true
+        payload.name = name
+      }
+      await _delete(`/events/${this.event._id}/response`, payload)
+      this.availability = new Set()
+      this.$emit("refreshEvent")
     },
     //#endregion
 
@@ -1099,6 +1077,11 @@ export default {
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
+    },
+    editGuestAvailability(id) {
+      this.populateUserAvailability(id)
+      this.$emit("setCurGuestId", id)
+      this.startEditing()
     },
     //#endregion
 
@@ -1411,6 +1394,7 @@ export default {
     ConfirmDetailsDialog,
     ToolRow,
     CalendarAccounts,
+    RespondentsList,
   },
 }
 </script>

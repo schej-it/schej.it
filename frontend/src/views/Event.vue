@@ -116,8 +116,11 @@
         :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
         :weekOffset.sync="weekOffset"
+        :curGuestId="curGuestId"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
+        @deleteAvailability="deleteAvailability"
+        @setCurGuestId="(id) => (curGuestId = id)"
       />
     </div>
     <div class="tw-h-16"></div>
@@ -279,6 +282,23 @@ export default {
         `${window.location.origin}/e/${this.eventId}`
       )
       this.showInfo("Link copied to clipboard!")
+    },
+    async deleteAvailability() {
+      if (!this.scheduleOverlapComponent) return
+
+      if (!this.authUser) {
+        if (this.curGuestId) {
+          await this.scheduleOverlapComponent.deleteAvailability(
+            this.curGuestId
+          )
+          this.curGuestId = ""
+        }
+      } else {
+        await this.scheduleOverlapComponent.deleteAvailability()
+      }
+
+      this.showInfo("Availability deleted!")
+      this.scheduleOverlapComponent.stopEditing()
     },
     editEvent() {
       /* Show edit event dialog */
