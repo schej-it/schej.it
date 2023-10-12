@@ -30,7 +30,7 @@
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.8",
     "autoprefixer": "^10.4.7",
-    "postcss": "^8.4.13",
+    "postcss": "^8.4.31",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",
     "sass": "~1.32.0",
