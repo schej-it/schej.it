@@ -271,6 +271,7 @@
             :curTimeslot="curTimeslot"
             :curTimeslotAvailability="curTimeslotAvailability"
             :respondents="respondents"
+            :isOwner="isOwner"
             @mouseOverRespondent="mouseOverRespondent"
             @mouseLeaveRespondent="mouseLeaveRespondent"
             @clickRespondent="clickRespondent"

@@ -57,6 +57,15 @@
             @click="$emit('editGuestAvailability', user._id)"
             ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
           >
+          <v-btn
+            v-else-if="isOwner"
+            absolute
+            small
+            icon
+            class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+            @click=""
+            ><v-icon small color="#4F4F4F">mdi-close</v-icon></v-btn
+          >
         </div>
       </template>
     </div>
@@ -78,6 +87,7 @@ export default {
     curTimeslot: { type: Object, required: true },
     curTimeslotAvailability: { type: Object, required: true },
     respondents: { type: Array, required: true },
+    isOwner: { type: Boolean, required: true },
   },
 
   computed: {
