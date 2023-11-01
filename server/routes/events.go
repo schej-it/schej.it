@@ -176,10 +176,8 @@ func updateEventResponse(c *gin.Context) {
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
 		utils.StringToObjectID(eventId),
-		bson.M{
-			"$set": bson.M{
-				"responses." + userIdString: response,
-			},
+		bson.A{
+			utils.UpdateEventResponseAggregation(userIdString, response),
 		},
 	)
 	if err != nil {
