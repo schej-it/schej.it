@@ -79,9 +79,9 @@ export default {
     },
     /** Restricts input to only letters, numbers, and spaces */
     restrictInput(e) {
-      if (e.data && /[^\w\s]/.test(e.data)) {
-        e.preventDefault()
-      }
+      // if (e.data && /[^\w\s]/.test(e.data)) {
+      //   e.preventDefault()
+      // }
     },
   },
 
