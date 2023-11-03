@@ -63,7 +63,7 @@
             small
             icon
             class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
-            @click=""
+            @click="() => deleteAvailability(user)"
             ><v-icon small color="#4F4F4F">mdi-close</v-icon></v-btn
           >
         </div>
@@ -73,8 +73,9 @@
 </template>
 
 <script>
+import { _delete } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
-import { mapState } from "vuex"
+import { mapState, mapActions } from "vuex"
 
 export default {
   name: "RespondentsList",
@@ -86,6 +87,7 @@ export default {
     curRespondents: { type: Array, required: true },
     curTimeslot: { type: Object, required: true },
     curTimeslotAvailability: { type: Object, required: true },
+    eventId: { type: String, required: true },
     respondents: { type: Array, required: true },
     isOwner: { type: Boolean, required: true },
   },
@@ -123,6 +125,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(["showError", "showInfo"]),
     respondentClass(id) {
       const c = []
       if (this.curRespondent == id || this.curRespondentsSet.has(id)) {
@@ -139,6 +142,22 @@ export default {
     },
     isGuest(user) {
       return user._id == user.firstName
+    },
+    async deleteAvailability(user) {
+      try {
+        await _delete(`/events/${this.eventId}/response`, {
+          guest: this.isGuest(user),
+          userId: user._id,
+          name: user._id,
+        })
+        this.$emit("refreshEvent")
+        this.showInfo("Availability successfully deleted!")
+      } catch (e) {
+        console.error(e)
+        this.showError(
+          "There was an error deleting that person's availability!"
+        )
+      }
     },
   },
 }
