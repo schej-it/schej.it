@@ -389,6 +389,8 @@ paths:
                 type: boolean
               name:
                 type: string
+              userId:
+                type: string
             type: object
       produces:
       - application/json

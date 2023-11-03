@@ -266,15 +266,18 @@
 
           <RespondentsList
             v-else
+            :eventId="event._id"
             :curRespondent="curRespondent"
             :curRespondents="curRespondents"
             :curTimeslot="curTimeslot"
             :curTimeslotAvailability="curTimeslotAvailability"
             :respondents="respondents"
+            :isOwner="isOwner"
             @mouseOverRespondent="mouseOverRespondent"
             @mouseLeaveRespondent="mouseLeaveRespondent"
             @clickRespondent="clickRespondent"
             @editGuestAvailability="editGuestAvailability"
+            @refreshEvent="() => $emit('refreshEvent')"
           />
         </div>
       </div>

@@ -474,6 +474,9 @@ var doc = `{
                                         },
                                         "name": {
                                             "type": "string"
+                                        },
+                                        "userId": {
+                                            "type": "string"
                                         }
                                     }
                                 }
