@@ -227,23 +227,25 @@ func updateEventResponse(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{guest=bool,name=string} true "Object containing info about the event response to delete"
+// @Param payload body object{userId=string,guest=bool,name=string} true "Object containing info about the event response to delete"
 // @Success 200
 // @Router /events/{eventId}/response [delete]
 func deleteEventResponse(c *gin.Context) {
 	payload := struct {
-		Guest *bool  `json:"guest" binding:"required"`
-		Name  string `json:"name"`
+		UserId string `json:"userId"`
+		Guest  *bool  `json:"guest" binding:"required"`
+		Name   string `json:"name"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
 
-	var userIdString string
+	var userToDelete string
 	if *payload.Guest {
-		userIdString = payload.Name
+		userToDelete = payload.Name
 	} else {
 		userIdInterface := session.Get("userId")
 		if userIdInterface == nil {
@@ -251,17 +253,24 @@ func deleteEventResponse(c *gin.Context) {
 			c.Abort()
 			return
 		}
-		userIdString = userIdInterface.(string)
+		userIdString := userIdInterface.(string)
+
+		// Don't allow user to delete availability of other users if they aren't the owner of the event
+		if payload.UserId != userIdString && event.OwnerId.Hex() != userIdString {
+			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.UserNotEventOwner})
+			c.Abort()
+			return
+		}
+
+		userToDelete = payload.UserId
 	}
 
 	// Update responses in mongodb
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
 		utils.StringToObjectID(eventId),
-		bson.M{
-			"$unset": bson.M{
-				"responses." + userIdString: "",
-			},
+		bson.A{
+			utils.DeleteEventResponseAggregation(userToDelete),
 		},
 	)
 	if err != nil {
