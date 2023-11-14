@@ -67,7 +67,7 @@ export default {
     async signOut() {
       await post("/auth/sign-out")
       this.setAuthUser(null)
-      this.analytics.reset()
+      // this.analytics.reset()
       location.reload()
     },
     goToSettings() {
