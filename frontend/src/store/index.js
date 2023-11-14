@@ -1,6 +1,7 @@
 import Vue from "vue"
 import Vuex from "vuex"
 import { get } from "@/utils"
+import { jitsuAnalytics } from "@jitsu/js"
 
 Vue.use(Vuex)
 
@@ -13,6 +14,14 @@ export default new Vuex.Store({
 
     createdEvents: [],
     joinedEvents: [],
+
+    analytics: jitsuAnalytics({
+      host: "https://data.schej.it",
+      // Browser Write Key configured on Jitsu Site entity.
+      // If no Browser Write Key is added for Site entity, Site ID value can be used a Write Key.
+      // On Jitsu.Cloud can be omitted if Site has explicitly mapped domain name that is used in host parameter
+      writeKey: process.env.JITSU_WRITE_KEY,
+    }),
   },
   getters: {},
   mutations: {

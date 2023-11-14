@@ -50,7 +50,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "analytics"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -67,6 +67,7 @@ export default {
     async signOut() {
       await post("/auth/sign-out")
       this.setAuthUser(null)
+      // this.analytics.reset()
       location.reload()
     },
     goToSettings() {

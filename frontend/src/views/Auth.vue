@@ -2,11 +2,15 @@
 
 <script>
 import { get, post } from "@/utils"
-import { mapMutations } from "vuex"
+import { mapState, mapMutations } from "vuex"
 import { authTypes } from "@/constants"
 
 export default {
   name: "Auth",
+
+  computed: {
+    ...mapState(["analytics"]),
+  },
 
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -23,7 +27,10 @@ export default {
       if (process.env.NODE_ENV === "development")
         console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
 
-      if (state?.type === authTypes.ADD_CALENDAR_ACCOUNT || state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT) {
+      if (
+        state?.type === authTypes.ADD_CALENDAR_ACCOUNT ||
+        state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
+      ) {
         await post("/user/add-calendar-account", { code })
       } else {
         await post("/auth/sign-in", {
@@ -32,6 +39,12 @@ export default {
         })
         const authUser = await get("/user/profile")
         this.setAuthUser(authUser)
+
+        this.analytics.identify(authUser._id, {
+          email: authUser.email,
+          firstName: authUser.firstName,
+          lastName: authUser.lastName,
+        })
       }
 
       // Redirect to the correct place based on "state", otherwise, just redirect to home
