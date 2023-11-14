@@ -251,12 +251,12 @@ export default {
           this.loading = false
 
           this.analytics.track("Event created", {
-            id: eventId,
-            name: this.name,
-            duration,
-            dates,
-            notificationsEnabled: this.notificationsEnabled,
-            type,
+            eventId: eventId,
+            eventName: this.name,
+            eventDuration: duration,
+            eventDates: dates,
+            eventNotificationsEnabled: this.notificationsEnabled,
+            eventType: type,
           })
         })
       } else {
