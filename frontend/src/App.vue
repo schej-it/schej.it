@@ -114,7 +114,7 @@ export default {
   }),
 
   computed: {
-    ...mapState(["authUser", "error", "info"]),
+    ...mapState(["authUser", "error", "info", "analytics"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -144,22 +144,6 @@ export default {
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
-    redirectUser(authenticated) {
-      let authRoutes = ["home", "settings"]
-      let noAuthRoutes = ["landing", "createEvent"]
-
-      if (!authenticated) {
-        if (authRoutes.includes(this.$route.name)) {
-          this.$router.replace({ name: "landing" })
-          // console.log('redirecting to SIGN IN')
-        }
-      } else {
-        if (noAuthRoutes.includes(this.$route.name)) {
-          this.$router.replace({ name: "home" })
-          // console.log('redirecting to HOME')
-        }
-      }
-    },
     signIn() {
       if (this.$route.name === "event") {
         if (isWebview(navigator.userAgent)) {
@@ -185,6 +169,12 @@ export default {
       .then((authUser) => {
         // console.log(authUser)
         this.setAuthUser(authUser)
+
+        this.analytics.identify(authUser._id, {
+          email: authUser.email,
+          firstName: authUser.firstName,
+          lastName: authUser.lastName,
+        })
       })
       .catch(() => {
         this.setAuthUser(null)
@@ -206,28 +196,13 @@ export default {
   },
 
   watch: {
-    authUser: {
-      immediate: true,
-      handler() {
-        if (this.authUser) {
-          this.redirectUser(true)
-        } else {
-          this.redirectUser(false)
-        }
-      },
-    },
     $route: {
       immediate: true,
       async handler() {
         const originalHref = window.location.href
-
-        get("/auth/status")
-          .then((data) => {
-            this.redirectUser(true)
-          })
-          .catch((err) => {
-            this.redirectUser(false)
-          })
+        if (this.$route.name) {
+          this.analytics.page()
+        }
 
         // Check for poster query parameter
         if (this.$route.query.p) {

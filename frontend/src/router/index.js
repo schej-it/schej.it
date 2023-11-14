@@ -1,6 +1,7 @@
 import Vue from "vue"
 import VueRouter from "vue-router"
 import Landing from "@/views/Landing"
+import { get } from "@/utils"
 
 Vue.use(VueRouter)
 
@@ -16,14 +17,14 @@ const routes = [
     component: () => import("@/views/Home.vue"),
   },
   {
-    path: '/settings',
-    name: 'settings',
-    component: () => import('@/views/Settings.vue')
+    path: "/settings",
+    name: "settings",
+    component: () => import("@/views/Settings.vue"),
   },
   {
-    path: '/e/:eventId',
-    name: 'event',
-    component: () => import('@/views/Event.vue'),
+    path: "/e/:eventId",
+    name: "event",
+    component: () => import("@/views/Event.vue"),
     props: true,
   },
   {
@@ -42,6 +43,26 @@ const router = new VueRouter({
   mode: "history",
   base: process.env.BASE_URL,
   routes,
+})
+
+router.beforeEach(async (to, from, next) => {
+  const authRoutes = ["home", "settings"]
+  const noAuthRoutes = ["landing"]
+  try {
+    await get("/auth/status")
+
+    if (noAuthRoutes.includes(to.name)) {
+      next({ name: "home" })
+    } else {
+      next()
+    }
+  } catch (err) {
+    if (authRoutes.includes(to.name)) {
+      next({ name: "landing" })
+    } else {
+      next()
+    }
+  }
 })
 
 export default router
