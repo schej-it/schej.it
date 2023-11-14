@@ -418,7 +418,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "analytics"]),
     availabilityArray() {
       /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
@@ -881,6 +881,32 @@ export default {
         payload.name = name
       }
       await post(`/events/${this.event._id}/response`, payload)
+
+      // Update analytics
+      if (this.authUser) {
+        if (this.authUser._id in this.parsedResponses) {
+          this.analytics.track("Edited availability", {
+            eventId: this.event._id,
+          })
+        } else {
+          this.analytics.track("Added availability", {
+            eventId: this.event._id,
+          })
+        }
+      } else {
+        if (name in this.parsedResponses) {
+          this.analytics.track("Edited availability as guest", {
+            eventId: this.event._id,
+            name,
+          })
+        } else {
+          this.analytics.track("Added availability as guest", {
+            eventId: this.event._id,
+            name,
+          })
+        }
+      }
+
       this.$emit("refreshEvent")
       this.unsavedChanges = false
     },

@@ -127,6 +127,7 @@ import {
   getISODateString,
   isPhone,
 } from "@/utils"
+import { mapState } from "vuex"
 
 export default {
   name: "NewEvent",
@@ -157,6 +158,7 @@ export default {
   }),
 
   computed: {
+    ...mapState(["analytics"]),
     formComplete() {
       return (
         this.name.length > 0 &&
@@ -247,6 +249,15 @@ export default {
         }).then(({ eventId }) => {
           this.$router.push({ name: "event", params: { eventId } })
           this.loading = false
+
+          this.analytics.track("Event created", {
+            id: eventId,
+            name: this.name,
+            duration,
+            dates,
+            notificationsEnabled: this.notificationsEnabled,
+            type,
+          })
         })
       } else {
         // Edit event on backend
