@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gomail.v2"
@@ -153,4 +154,50 @@ func AddUserToMailjet(email string, firstName string, lastName string, picture s
 		return
 	}
 	defer resp.Body.Close()
+}
+
+func AddUserToListmonk(email string, firstName string, lastName string, picture string) {
+	// Adds the given user to the Mailjet contact list
+	url := os.Getenv("LISTMONK_URL")
+	username := os.Getenv("LISTMONK_USERNAME")
+	password := os.Getenv("LISTMONK_PASSWORD")
+	listIdString := os.Getenv("LISTMONK_LIST_ID")
+
+	listId, err := strconv.Atoi(listIdString)
+	if err != nil {
+		logger.StdErr.Println(err)
+		return
+	}
+
+	// Create new subscriber
+	body, _ := json.Marshal(bson.M{
+		"email":  email,
+		"name":   firstName + " " + lastName,
+		"status": "enabled",
+		"lists":  bson.A{listId},
+		"attribs": bson.M{
+			"firstName": firstName,
+			"lastName":  lastName,
+			"picture":   picture,
+		},
+	})
+	bodyBuffer := bytes.NewBuffer(body)
+
+	req, _ := http.NewRequest("POST", url+"/api/subscribers", bodyBuffer)
+	req.SetBasicAuth(username, password)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.StdErr.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// var result bson.M
+	// if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	// 	logger.StdErr.Println(err)
+	// 	return
+	// }
+	// fmt.Println("added user to mailjet?", result)
 }
