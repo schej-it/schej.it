@@ -914,9 +914,19 @@ export default {
       const payload = {}
       if (this.authUser) {
         payload.guest = false
+        payload.userId = this.authUser._id
+
+        this.analytics.track("Deleted availability", {
+          eventId: this.event._id,
+        })
       } else {
         payload.guest = true
         payload.name = name
+
+        this.analytics.track("Deleted availability as guest", {
+          eventId: this.event._id,
+          name,
+        })
       }
       await _delete(`/events/${this.event._id}/response`, payload)
       this.availability = new Set()
