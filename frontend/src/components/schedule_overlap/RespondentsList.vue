@@ -63,12 +63,38 @@
             small
             icon
             class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
-            @click="() => deleteAvailability(user)"
+            @click="() => showDeleteAvailabilityDialog(user)"
             ><v-icon small color="#4F4F4F">mdi-close</v-icon></v-btn
           >
         </div>
       </template>
     </div>
+
+    <v-dialog v-model="deleteAvailabilityDialog" width="500" persistent>
+      <v-card>
+        <v-card-title>Are you sure?</v-card-title>
+        <v-card-text class="tw-text-sm tw-text-dark-gray"
+          >Are you sure you want to delete
+          <strong>{{ userToDelete?.firstName }}</strong
+          >'s availability from this event?</v-card-text
+        >
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="deleteAvailabilityDialog = false">Cancel</v-btn>
+          <v-btn
+            text
+            color="error"
+            @click="
+              () => {
+                deleteAvailability(userToDelete)
+                deleteAvailabilityDialog = false
+              }
+            "
+            >Delete</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -90,6 +116,13 @@ export default {
     eventId: { type: String, required: true },
     respondents: { type: Array, required: true },
     isOwner: { type: Boolean, required: true },
+  },
+
+  data() {
+    return {
+      deleteAvailabilityDialog: false,
+      userToDelete: null,
+    }
   },
 
   computed: {
@@ -142,6 +175,10 @@ export default {
     },
     isGuest(user) {
       return user._id == user.firstName
+    },
+    showDeleteAvailabilityDialog(user) {
+      this.deleteAvailabilityDialog = true
+      this.userToDelete = user
     },
     async deleteAvailability(user) {
       try {

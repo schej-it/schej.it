@@ -241,7 +241,7 @@
                 <v-card>
                   <v-card-title>Are you sure?</v-card-title>
                   <v-card-text class="tw-text-sm tw-text-dark-gray"
-                    >Are you sure you want to delete your availabilty from this
+                    >Are you sure you want to delete your availability from this
                     event?</v-card-text
                   >
                   <v-card-actions>
