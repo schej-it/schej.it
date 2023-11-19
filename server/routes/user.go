@@ -125,7 +125,15 @@ func getCalendars(c *gin.Context) {
 	accountsSet := utils.ArrayToSet(accounts)
 	user := utils.GetAuthUser(c)
 
-	calendarEvents := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
+	calendarEvents, editedCalendarAccounts := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
+
+	if editedCalendarAccounts {
+		db.UsersCollection.FindOneAndUpdate(
+			context.Background(),
+			bson.M{"_id": user.Id},
+			bson.M{"$set": user},
+		)
+	}
 
 	c.JSON(http.StatusOK, calendarEvents)
 }

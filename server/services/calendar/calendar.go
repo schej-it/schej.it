@@ -15,7 +15,7 @@ import (
 )
 
 // Get the user's list of calendars
-func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIError) {
+func GetCalendarList(accessToken string) (map[string]models.SubCalendar, *errs.GoogleAPIError) {
 	// TODO: update user object with calendars and allow for customization of whether or not to show calendar in schedule
 	req, _ := http.NewRequest(
 		"GET",
@@ -47,10 +47,11 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 	}
 
 	// Append only the selected calendars
-	calendars := make([]models.Calendar, 0)
+	calendars := make(map[string]models.SubCalendar)
 	for _, calendar := range res.Items {
-		if calendar.Selected {
-			calendars = append(calendars, calendar)
+		calendars[calendar.Id] = models.SubCalendar{
+			Name:    calendar.Summary,
+			Enabled: &calendar.Selected,
 		}
 	}
 
@@ -58,10 +59,10 @@ func GetCalendarList(accessToken string) ([]models.Calendar, *errs.GoogleAPIErro
 }
 
 type GetCalendarListData struct {
-	CalendarList []models.Calendar    `json:"calendarList"`
-	AccessToken  string               `json:"accessToken"`
-	Email        string               `json:"email"`
-	Error        *errs.GoogleAPIError `json:"error"`
+	CalendarList map[string]models.SubCalendar `json:"calendarList"`
+	AccessToken  string                        `json:"accessToken"`
+	Email        string                        `json:"email"`
+	Error        *errs.GoogleAPIError          `json:"error"`
 }
 
 // Calls GetCalendarList but broadcasts the result to channel
@@ -145,10 +146,11 @@ type CalendarEventsWithError struct {
 }
 
 // Returns a map mapping email to the calendar events associated with that email, and an error if there was an error fetching events for that email
-func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], timeMin time.Time, timeMax time.Time) map[string]CalendarEventsWithError {
+func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], timeMin time.Time, timeMax time.Time) (map[string]CalendarEventsWithError, bool) {
 	db.RefreshUserTokenIfNecessary(user, accounts)
 
 	returnAllAccounts := len(accounts) == 0
+	editedCalendarAccounts := false
 
 	calendarEventsMap := make(map[string]CalendarEventsWithError)
 
@@ -182,9 +184,42 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 			continue
 		}
 
-		for _, calendar := range calendarListData.CalendarList {
-			go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, calendar.Id, timeMin, timeMax, calendarEventsChan)
-			numCalendarEventsRequests++
+		// Edit subcalendars map
+		account := user.CalendarAccounts[calendarListData.Email]
+		if account.SubCalendars == nil {
+			account.SubCalendars = &calendarListData.CalendarList
+			user.CalendarAccounts[calendarListData.Email] = account
+			editedCalendarAccounts = true
+		} else {
+			// Add subCalendar if it doesn't exist
+			for id, subCalendar := range calendarListData.CalendarList {
+				if _, ok := (*account.SubCalendars)[id]; !ok {
+					(*account.SubCalendars)[id] = subCalendar
+
+					if !editedCalendarAccounts {
+						editedCalendarAccounts = true
+					}
+				}
+			}
+
+			// Remove subCalendar if it no longer exists
+			for id := range *account.SubCalendars {
+				if _, ok := calendarListData.CalendarList[id]; !ok {
+					delete(*account.SubCalendars, id)
+
+					if !editedCalendarAccounts {
+						editedCalendarAccounts = true
+					}
+				}
+			}
+		}
+		user.CalendarAccounts[calendarListData.Email] = account
+
+		for id, calendar := range *account.SubCalendars {
+			if *calendar.Enabled {
+				go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, id, timeMin, timeMax, calendarEventsChan)
+				numCalendarEventsRequests++
+			}
 		}
 	}
 
@@ -207,5 +242,5 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 		}
 	}
 
-	return calendarEventsMap
+	return calendarEventsMap, editedCalendarAccounts
 }

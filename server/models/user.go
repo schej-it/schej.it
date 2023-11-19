@@ -29,9 +29,16 @@ type CalendarAccount struct {
 	Picture string `json:"picture" bson:"picture,omitempty"`
 	Enabled *bool  `json:"enabled" bson:"enabled,omitempty"`
 
+	SubCalendars *map[string]SubCalendar `json:"subCalendars" bson:"subCalendars,omitempty"`
+
 	AccessToken           string             `json:"-" bson:"accessToken,omitempty"`
 	AccessTokenExpireDate primitive.DateTime `json:"-" bson:"accessTokenExpireDate,omitempty"`
 	RefreshToken          string             `json:"-" bson:"refreshToken,omitempty"`
+}
+
+type SubCalendar struct {
+	Name    string `json:"name" bson:"name,omitempty"`
+	Enabled *bool  `json:"enabled" bson:"enabled,omitempty"`
 }
 
 // Declare the possible types of TokenOrigin
