@@ -784,6 +784,49 @@ var doc = `{
                 }
             }
         },
+        "/user/toggle-sub-calendar": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Toggles whether the specified sub-calendar is enabled or disabled for the user",
+                "parameters": [
+                    {
+                        "description": "Email of calendar account, the sub calendar id, and whether to enable it",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/users": {
             "get": {
                 "produces": [
@@ -878,6 +921,12 @@ var doc = `{
                 },
                 "picture": {
                     "type": "string"
+                },
+                "subCalendars": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.SubCalendar"
+                    }
                 }
             }
         },
@@ -979,6 +1028,17 @@ var doc = `{
                     "$ref": "#/definitions/models.User"
                 },
                 "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SubCalendar": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "name": {
                     "type": "string"
                 }
             }
