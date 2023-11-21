@@ -114,7 +114,7 @@ export default {
   }),
 
   computed: {
-    ...mapState(["authUser", "error", "info", "analytics"]),
+    ...mapState(["authUser", "error", "info"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -170,7 +170,7 @@ export default {
         // console.log(authUser)
         this.setAuthUser(authUser)
 
-        this.analytics.identify(authUser._id, {
+        this.$posthog?.identify(authUser._id, {
           email: authUser.email,
           firstName: authUser.firstName,
           lastName: authUser.lastName,
@@ -201,7 +201,7 @@ export default {
       async handler() {
         const originalHref = window.location.href
         if (this.$route.name) {
-          this.analytics.page()
+          this.$posthog?.capture("$pageview")
         }
 
         // Check for poster query parameter
