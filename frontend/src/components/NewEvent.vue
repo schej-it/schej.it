@@ -158,7 +158,6 @@ export default {
   }),
 
   computed: {
-    ...mapState(["analytics"]),
     formComplete() {
       return (
         this.name.length > 0 &&
@@ -250,7 +249,7 @@ export default {
           this.$router.push({ name: "event", params: { eventId } })
           this.loading = false
 
-          this.analytics.track("Event created", {
+          this.$posthog?.capture("Event created", {
             eventId: eventId,
             eventName: this.name,
             eventDuration: duration,

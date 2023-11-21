@@ -418,7 +418,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["authUser", "analytics"]),
+    ...mapState(["authUser"]),
     availabilityArray() {
       /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
@@ -885,22 +885,22 @@ export default {
       // Update analytics
       if (this.authUser) {
         if (this.authUser._id in this.parsedResponses) {
-          this.analytics.track("Edited availability", {
+          this.$posthog?.capture("Edited availability", {
             eventId: this.event._id,
           })
         } else {
-          this.analytics.track("Added availability", {
+          this.$posthog?.capture("Added availability", {
             eventId: this.event._id,
           })
         }
       } else {
         if (name in this.parsedResponses) {
-          this.analytics.track("Edited availability as guest", {
+          this.$posthog?.capture("Edited availability as guest", {
             eventId: this.event._id,
             name,
           })
         } else {
-          this.analytics.track("Added availability as guest", {
+          this.$posthog?.capture("Added availability as guest", {
             eventId: this.event._id,
             name,
           })
@@ -916,14 +916,14 @@ export default {
         payload.guest = false
         payload.userId = this.authUser._id
 
-        this.analytics.track("Deleted availability", {
+        this.$posthog?.capture("Deleted availability", {
           eventId: this.event._id,
         })
       } else {
         payload.guest = true
         payload.name = name
 
-        this.analytics.track("Deleted availability as guest", {
+        this.$posthog?.capture("Deleted availability as guest", {
           eventId: this.event._id,
           name,
         })
