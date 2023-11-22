@@ -30,7 +30,7 @@
                   <div
                     v-for="(day, i) in days"
                     :key="i"
-                    class="tw-flex-1 tw-bg-white"
+                    class="tw-flex-1 tw-self-stretch tw-bg-white"
                     style="min-width: 50px"
                   >
                     <div class="tw-text-center">
@@ -152,12 +152,12 @@
               <ZigZag
                 v-if="showLeftZigZag"
                 left
-                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-6"
               />
               <ZigZag
                 v-if="showRightZigZag"
                 right
-                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
+                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-6"
               />
             </div>
 
