@@ -149,13 +149,13 @@
                 </div>
               </div>
 
-              <ZigZag
-                v-if="showLeftZigZag"
+              <OverflowIndicator
+                v-if="showLeftOverflowIndicator"
                 left
                 class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-6"
               />
-              <ZigZag
-                v-if="showRightZigZag"
+              <OverflowIndicator
+                v-if="showRightOverflowIndicator"
                 right
                 class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-6"
               />
@@ -341,12 +341,12 @@ import { eventTypes } from "@/constants"
 import { mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
-import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
 import TimezoneSelector from "./TimezoneSelector.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
+import OverflowIndicator from "./OverflowIndicator.vue"
 
 export default {
   name: "ScheduleOverlap",
@@ -661,10 +661,10 @@ export default {
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
     },
-    showLeftZigZag() {
+    showLeftOverflowIndicator() {
       return this.calendarScrollLeft > 0
     },
-    showRightZigZag() {
+    showRightOverflowIndicator() {
       return Math.ceil(this.calendarScrollLeft) < this.calendarMaxScroll
     },
   },
@@ -1428,12 +1428,12 @@ export default {
   },
   components: {
     UserAvatarContent,
-    ZigZag,
     TimezoneSelector,
     ConfirmDetailsDialog,
     ToolRow,
     CalendarAccounts,
     RespondentsList,
+    OverflowIndicator,
   },
 }
 </script>
