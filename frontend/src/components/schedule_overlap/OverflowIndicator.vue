@@ -1,6 +1,6 @@
 <!-- Used to indicate that a schedule overlap component has more to scroll -->
 <template>
-  <div ref="container" class="tw-overflow-hidden">
+  <div ref="container" class="tw-pointer-events-none tw-overflow-hidden">
     <div v-if="left" class="gradient left-gradient"></div>
     <div v-else-if="right" class="gradient right-gradient"></div>
   </div>
