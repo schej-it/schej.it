@@ -985,8 +985,9 @@ export default {
     shouldRenderDayCol(d) {
       // return true
       return (
-        this.calendarScrollLeft <= (d + 1) * this.timeslot.width &&
-        d * this.timeslot.width < this.calendarScrollLeft + this.calendarWidth
+        this.calendarScrollLeft <= (d + 1 + 3) * this.timeslot.width &&
+        (d - 3) * this.timeslot.width <
+          this.calendarScrollLeft + this.calendarWidth
       )
     },
     memoizedTimeslotClassStyle(d, t) {
