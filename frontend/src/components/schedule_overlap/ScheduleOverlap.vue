@@ -989,6 +989,51 @@ export default {
         d * this.timeslot.width < this.calendarScrollLeft + this.calendarWidth
       )
     },
+    memoizedTimeslotClassStyle(d, t) {
+      if (typeof this.memoizedTimeslotClassStyle.cache === "undefined") {
+        this.memoizedTimeslotClassStyle.cache = []
+      }
+
+      const date = getDateHoursOffset(
+        this.days[d].dateObject,
+        this.times[t].hoursOffset
+      )
+      const deps = {
+        available: this.availability.has(date.getTime()),
+        respondents: JSON.stringify(this.respondents),
+        curTimeslot: JSON.stringify(this.curTimeslot),
+        inDragRange: this.inDragRange(d, t),
+        dragType: this.dragType,
+        curRespondent: this.curRespondent,
+        max: this.max,
+        curRespondentsMax: this.curRespondentsMax,
+        state: this.state,
+      }
+
+      if (!this.memoizedTimeslotClassStyle.cache[d * this.days.length + t]) {
+        this.memoizedTimeslotClassStyle.cache[d * this.days.length + t] = {
+          ...deps,
+          value: this.timeslotClassStyle(d, t),
+        }
+      } else {
+        const cachedResult =
+          this.memoizedTimeslotClassStyle.cache[d * this.days.length + t]
+        let found = false
+        for (const key in deps) {
+          if (cachedResult[key] !== deps[key]) {
+            found = true
+            this.memoizedTimeslotClassStyle.cache[d * this.days.length + t] = {
+              ...deps,
+              value: this.timeslotClassStyle(d, t),
+            }
+            break
+          }
+        }
+      }
+
+      return this.memoizedTimeslotClassStyle.cache[d * this.days.length + t]
+        .value
+    },
     /** Returns a class string and style object for the given timeslot div */
     timeslotClassStyle(d, t) {
       const day = this.days[d]
