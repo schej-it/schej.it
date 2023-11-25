@@ -27,7 +27,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
-	eventRouter.PUT("/:eventId", middleware.AuthRequired(), editEvent)
+	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 }
 
@@ -257,7 +257,7 @@ func deleteEventResponse(c *gin.Context) {
 
 		// Don't allow user to delete availability of other users if they aren't the owner of the event
 		if payload.UserId != userIdString && event.OwnerId.Hex() != userIdString {
-			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.UserNotEventOwner})
+			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
 			c.Abort()
 			return
 		}
@@ -306,15 +306,30 @@ func editEvent(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
+	event := db.GetEventById(eventId)
 
-	userInterface, _ := c.Get("authUser")
-	user := userInterface.(*models.User)
+	// If user logged in, set owner id to their user id, otherwise set owner id to nil
+	session := sessions.Default(c)
+	userIdInterface := session.Get("userId")
+	userId, signedIn := userIdInterface.(string)
+	var ownerId primitive.ObjectID
+	if signedIn {
+		ownerId = utils.StringToObjectID(userId)
+	} else {
+		ownerId = primitive.NilObjectID
+	}
+
+	if event.OwnerId != primitive.NilObjectID {
+		if event.OwnerId != ownerId {
+			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
+			return
+		}
+	}
 
 	_, err = db.EventsCollection.UpdateOne(
 		context.Background(),
 		bson.M{
-			"_id":     objectId,
-			"ownerId": user.Id,
+			"_id": objectId,
 		},
 		bson.M{
 			"$set": bson.M{
