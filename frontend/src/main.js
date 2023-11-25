@@ -4,9 +4,15 @@ import "./registerServiceWorker"
 import router from "./router"
 import store from "./store"
 import vuetify from "./plugins/vuetify"
+import posthogPlugin from "./plugins/posthog"
 import VueGtm from "@gtm-support/vue2-gtm"
 import VueMeta from "vue-meta"
 import "./index.css"
+
+// Posthog
+if (process.env.NODE_ENV !== "development") {
+  Vue.use(posthogPlugin)
+}
 
 // Google Analytics
 Vue.use(VueGtm, {

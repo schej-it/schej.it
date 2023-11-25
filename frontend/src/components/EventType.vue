@@ -27,7 +27,6 @@
         v-for="(event, i) in sortedEvents.slice(0, DEFAULT_NUM_EVENTS_TO_SHOW)"
         :key="i"
         :event="event"
-        @click="goToEvent(event._id)"
       />
     </div>
     <!-- Show more events sections -->
@@ -46,7 +45,6 @@
             :key="i"
             class="tw-cursor-pointer"
             :event="event"
-            @click="goToEvent(event._id)"
           />
         </div>
       </v-expand-transition>
@@ -95,9 +93,6 @@ export default {
   methods: {
     toggleShowAll() {
       this.showAll = !this.showAll
-    },
-    goToEvent(eventId) {
-      this.$router.push({ name: "event", params: { eventId } })
     },
   },
 }

@@ -2,15 +2,11 @@
 
 <script>
 import { get, post } from "@/utils"
-import { mapState, mapMutations } from "vuex"
+import { mapMutations } from "vuex"
 import { authTypes } from "@/constants"
 
 export default {
   name: "Auth",
-
-  computed: {
-    ...mapState(["analytics"]),
-  },
 
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -40,7 +36,7 @@ export default {
         const authUser = await get("/user/profile")
         this.setAuthUser(authUser)
 
-        this.analytics.identify(authUser._id, {
+        this.$posthog?.identify(authUser._id, {
           email: authUser.email,
           firstName: authUser.firstName,
           lastName: authUser.lastName,

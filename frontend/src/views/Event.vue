@@ -33,7 +33,7 @@
                 {{ dateString }}
               </div>
               <v-btn
-                v-if="isOwner"
+                v-if="canEdit"
                 id="edit-event-btn"
                 @click="editEvent"
                 icon
@@ -227,8 +227,10 @@ export default {
     isEditing() {
       return this.scheduleOverlapComponent?.editing
     },
-    isOwner() {
-      return this.authUser?._id === this.event.ownerId
+    canEdit() {
+      return (
+        this.event.ownerId == 0 || this.authUser?._id === this.event.ownerId
+      )
     },
     isPhone() {
       return isPhone(this.$vuetify)

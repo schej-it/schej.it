@@ -126,7 +126,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["authUser", "analytics"]),
+    ...mapState(["authUser"]),
     curRespondentsSet() {
       return new Set(this.curRespondents)
     },
@@ -190,7 +190,7 @@ export default {
         this.$emit("refreshEvent")
         this.showInfo("Availability successfully deleted!")
 
-        this.analytics.track("Deleted availability of another user", {
+        this.$posthog?.capture("Deleted availability of another user", {
           eventId: this.eventId,
           userId: user._id,
         })

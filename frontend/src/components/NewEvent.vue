@@ -127,7 +127,7 @@ import {
   getISODateString,
   isPhone,
 } from "@/utils"
-import { mapState } from "vuex"
+import { mapActions } from "vuex"
 
 export default {
   name: "NewEvent",
@@ -158,7 +158,6 @@ export default {
   }),
 
   computed: {
-    ...mapState(["analytics"]),
     formComplete() {
       return (
         this.name.length > 0 &&
@@ -198,6 +197,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(["showError"]),
     blurNameField() {
       this.$refs["name-field"].blur()
     },
@@ -246,19 +246,25 @@ export default {
           dates,
           notificationsEnabled: this.notificationsEnabled,
           type,
-        }).then(({ eventId }) => {
-          this.$router.push({ name: "event", params: { eventId } })
-          this.loading = false
-
-          this.analytics.track("Event created", {
-            eventId: eventId,
-            eventName: this.name,
-            eventDuration: duration,
-            eventDates: dates,
-            eventNotificationsEnabled: this.notificationsEnabled,
-            eventType: type,
-          })
         })
+          .then(({ eventId }) => {
+            this.$router.push({ name: "event", params: { eventId } })
+            this.loading = false
+
+            this.$posthog?.capture("Event created", {
+              eventId: eventId,
+              eventName: this.name,
+              eventDuration: duration,
+              eventDates: dates,
+              eventNotificationsEnabled: this.notificationsEnabled,
+              eventType: type,
+            })
+          })
+          .catch((err) => {
+            this.showError(
+              "There was a problem creating that event! Please try again later."
+            )
+          })
       } else {
         // Edit event on backend
         if (this.event) {
@@ -268,9 +274,24 @@ export default {
             dates,
             notificationsEnabled: this.notificationsEnabled,
             type,
-          }).then(() => {
-            window.location.reload()
           })
+            .then(() => {
+              this.$posthog?.capture("Event edited", {
+                eventId: this.event._id,
+                eventName: this.name,
+                eventDuration: duration,
+                eventDates: dates,
+                eventNotificationsEnabled: this.notificationsEnabled,
+                eventType: type,
+              })
+
+              window.location.reload()
+            })
+            .catch((err) => {
+              this.showError(
+                "There was a problem editing this event! Please try again later."
+              )
+            })
         }
       }
     },
