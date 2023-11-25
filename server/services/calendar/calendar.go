@@ -67,6 +67,13 @@ type GetCalendarListData struct {
 
 // Calls GetCalendarList but broadcasts the result to channel
 func GetCalendarListAsync(email string, accessToken string, c chan GetCalendarListData) {
+	// Recover from panics
+	defer func() {
+		if err := recover(); err != nil {
+			c <- GetCalendarListData{Error: &errs.GoogleAPIError{Message: err.(string)}}
+		}
+	}()
+
 	calendars, err := GetCalendarList(accessToken)
 
 	c <- GetCalendarListData{CalendarList: calendars, AccessToken: accessToken, Email: email, Error: err}
