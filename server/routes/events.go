@@ -319,6 +319,7 @@ func editEvent(c *gin.Context) {
 		ownerId = primitive.NilObjectID
 	}
 
+	// If event has an owner id, check if user has permissions to edit event
 	if event.OwnerId != primitive.NilObjectID {
 		if event.OwnerId != ownerId {
 			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
