@@ -92,10 +92,18 @@ func RefreshAccessToken(refreshToken string) GoogleApiAccessTokenResponse {
 type RefreshAccessTokenData struct {
 	TokenResponse GoogleApiAccessTokenResponse
 	Email         string
+	Error         *interface{}
 }
 
 func RefreshAccessTokenAsync(refreshToken string, email string, c chan RefreshAccessTokenData) {
+	// Recover from panics
+	defer func() {
+		if err := recover(); err != nil {
+			c <- RefreshAccessTokenData{Error: &err}
+		}
+	}()
+
 	tokenResponse := RefreshAccessToken(refreshToken)
 
-	c <- RefreshAccessTokenData{tokenResponse, email}
+	c <- RefreshAccessTokenData{tokenResponse, email, nil}
 }

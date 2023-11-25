@@ -120,6 +120,10 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 	for i := 0; i < numAccountsToUpdate; i++ {
 		res := <-refreshTokenChan
 
+		if res.Error != nil {
+			continue
+		}
+
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
 
 		if calendarAccount, ok := u.CalendarAccounts[res.Email]; ok {
