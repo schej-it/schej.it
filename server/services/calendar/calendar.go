@@ -12,6 +12,7 @@ import (
 	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/models"
+	"schej.it/server/utils"
 )
 
 // Get the user's list of calendars
@@ -49,9 +50,16 @@ func GetCalendarList(accessToken string) (map[string]models.SubCalendar, *errs.G
 	// Append only the selected calendars
 	calendars := make(map[string]models.SubCalendar)
 	for _, calendar := range res.Items {
+		var enabled *bool
+		if calendar.Selected {
+			enabled = utils.TruePtr()
+		} else {
+			enabled = utils.FalsePtr()
+		}
+
 		calendars[calendar.Id] = models.SubCalendar{
 			Name:    calendar.Summary,
-			Enabled: &calendar.Selected,
+			Enabled: enabled,
 		}
 	}
 
@@ -184,6 +192,7 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 		calendarListData := <-calendarListChan
 
 		if calendarListData.Error != nil {
+			// TODO: Do we even need this condition?? can't we just not add it and continue to next loop iteration
 			go func() { // needs to be async because writing to a channel is blocking
 				calendarEventsChan <- GetCalendarEventsData{Email: calendarListData.Email, Error: calendarListData.Error}
 			}()

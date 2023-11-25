@@ -107,3 +107,13 @@ func PrintHttpResponse(resp *http.Response) {
 	logger.StdOut.Println(string(body))
 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 }
+
+func TruePtr() *bool {
+	b := true
+	return &b
+}
+
+func FalsePtr() *bool {
+	b := false
+	return &b
+}
