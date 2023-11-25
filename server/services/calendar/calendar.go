@@ -192,7 +192,7 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 		calendarListData := <-calendarListChan
 
 		if calendarListData.Error != nil {
-			// TODO: Do we even need this condition?? can't we just not add it and continue to next loop iteration
+			// This is needed to be able to send an error back to user if a given calendar account's refresh token is invalid, for example
 			go func() { // needs to be async because writing to a channel is blocking
 				calendarEventsChan <- GetCalendarEventsData{Email: calendarListData.Email, Error: calendarListData.Error}
 			}()

@@ -263,7 +263,7 @@ func toggleCalendar(c *gin.Context) {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param payload body object{email=string,subCalendarId,enabled=bool} true "Email of calendar account, the sub calendar id, and whether to enable it"
+// @Param payload body object{email=string,subCalendarId=string,enabled=bool} true "Email of calendar account, the sub calendar id, and whether to enable it"
 // @Success 200
 // @Router /user/toggle-sub-calendar [post]
 func toggleSubCalendar(c *gin.Context) {

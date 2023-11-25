@@ -642,6 +642,8 @@ paths:
                 type: string
               enabled:
                 type: boolean
+              subCalendarId:
+                type: string
             type: object
       produces:
       - application/json

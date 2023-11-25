@@ -815,6 +815,9 @@ var doc = `{
                                         },
                                         "enabled": {
                                             "type": "boolean"
+                                        },
+                                        "subCalendarId": {
+                                            "type": "string"
                                         }
                                     }
                                 }
