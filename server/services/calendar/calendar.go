@@ -17,7 +17,6 @@ import (
 
 // Get the user's list of calendars
 func GetCalendarList(accessToken string) (map[string]models.SubCalendar, *errs.GoogleAPIError) {
-	// TODO: update user object with calendars and allow for customization of whether or not to show calendar in schedule
 	req, _ := http.NewRequest(
 		"GET",
 		"https://www.googleapis.com/calendar/v3/users/me/calendarList?fields=items(id,summary,selected)",
@@ -146,9 +145,10 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 
 		// Restructure event
 		calendarEvents = append(calendarEvents, models.CalendarEvent{
-			Summary:   item.Summary,
-			StartDate: primitive.NewDateTimeFromTime(item.Start.DateTime),
-			EndDate:   primitive.NewDateTimeFromTime(item.End.DateTime),
+			CalendarId: calendarId,
+			Summary:    item.Summary,
+			StartDate:  primitive.NewDateTimeFromTime(item.Start.DateTime),
+			EndDate:    primitive.NewDateTimeFromTime(item.End.DateTime),
 		})
 	}
 
