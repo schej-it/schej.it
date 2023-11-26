@@ -54,7 +54,6 @@ export default {
   data: () => ({
     removeDialog: false,
     selectedRemoveEmail: "",
-    calendarEventsMapCopy: null,
   }),
 
   computed: {
@@ -67,16 +66,6 @@ export default {
   methods: {
     ...mapActions(["showError"]),
     ...mapMutations(["setAuthUser"]),
-    accountHasError(account) {
-      return (
-        this.calendarEventsMapCopy &&
-        this.calendarEventsMapCopy[account.email]?.error
-      )
-    },
-    /** don't show account if in toggle state and account has an error */
-    showAccount(account) {
-      return !(this.toggleState && this.accountHasError(account))
-    },
     addCalendarAccount() {
       signInGoogle({
         state: {
@@ -87,26 +76,6 @@ export default {
         },
         requestCalendarPermission: true,
         selectAccount: true,
-      })
-    },
-    reauthenticateCalendarAccount(account) {
-      signInGoogle({
-        state: {
-          type: this.toggleState
-            ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
-            : authTypes.ADD_CALENDAR_ACCOUNT,
-          eventId: this.eventId,
-        },
-        requestCalendarPermission: true,
-        selectAccount: false,
-        loginHint: account.email,
-      })
-    },
-    toggleCalendarAccount(email, enabled) {
-      post(`/user/toggle-calendar`, { email, enabled }).catch((err) => {
-        this.showError(
-          "There was a problem with toggling your calendar account! Please try again later."
-        )
       })
     },
     openRemoveDialog(email) {
@@ -132,28 +101,6 @@ export default {
           )
         })
     },
-  },
-
-  watch: {
-    calendarEventsMapCopy: {
-      immediate: true,
-      async handler() {
-        // Do a test request to calendarevents route to check if calendar access is allowed for each account
-        if (!this.calendarEventsMapCopy) {
-          try {
-            this.calendarEventsMapCopy = await get(
-              `/user/calendars?timeMin=${new Date().toISOString()}&timeMax=${new Date().toISOString()}`
-            )
-          } catch (err) {
-            console.error(err)
-          }
-        }
-      },
-    },
-  },
-
-  created() {
-    this.calendarEventsMapCopy = this.calendarEventsMap
   },
 
   components: {
