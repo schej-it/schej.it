@@ -64,7 +64,9 @@
             icon
             class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
             @click="() => showDeleteAvailabilityDialog(user)"
-            ><v-icon small color="#4F4F4F">mdi-close</v-icon></v-btn
+            ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
+              >mdi-delete</v-icon
+            ></v-btn
           >
         </div>
       </template>

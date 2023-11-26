@@ -8,7 +8,7 @@
           state === states.EDIT_AVAILABILITY ? 'center' : 'between'
         } 
         `"
-        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-y-4 tw-gap-x-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -110,7 +110,6 @@ export default {
     curTimezone: { type: String, required: true },
     timezoneMap: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
-    isOwner: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
