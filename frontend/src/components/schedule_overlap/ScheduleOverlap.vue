@@ -98,7 +98,7 @@
                             appear
                           >
                             <div
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px ph-no-capture"
                               :style="{
                                 top: `calc(${event.hoursOffset} * 4 * 1rem)`,
                                 height: `calc(${event.hoursLength} * 4 * 1rem)`,
