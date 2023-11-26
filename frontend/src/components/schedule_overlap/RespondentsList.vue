@@ -29,17 +29,29 @@
         <div
           v-for="(user, i) in respondents"
           :key="user._id"
-          class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-py-1"
+          class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-overflow-visible tw-py-1"
           @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
           @mouseleave="$emit('mouseLeaveRespondent')"
           @click="(e) => $emit('clickRespondent', e, user._id)"
         >
-          <UserAvatarContent
-            v-if="!isGuest(user)"
-            :user="user"
-            class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-          ></UserAvatarContent>
-          <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+          <div class="tw-relative tw-flex tw-items-center">
+            <UserAvatarContent
+              v-if="!isGuest(user)"
+              :user="user"
+              class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
+            ></UserAvatarContent>
+            <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+
+            <v-simple-checkbox
+              @click="(e) => $emit('clickRespondent', e, user._id)"
+              color="primary"
+              :value="respondentSelected(user._id)"
+              class="tw-absolute tw-left-0 tw-top-0 -tw-translate-y-1 tw-bg-white tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+              :class="
+                respondentSelected(user._id) ? 'tw-opacity-100' : 'tw-opacity-0'
+              "
+            />
+          </div>
 
           <div
             class="tw-mr-1 tw-transition-all"
@@ -53,7 +65,7 @@
             absolute
             small
             icon
-            class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+            class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
             @click="$emit('editGuestAvailability', user._id)"
             ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
           >
@@ -62,7 +74,7 @@
             absolute
             small
             icon
-            class="tw-right-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+            class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
             @click="() => showDeleteAvailabilityDialog(user)"
             ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
               >mdi-delete</v-icon
@@ -163,8 +175,8 @@ export default {
     ...mapActions(["showError", "showInfo"]),
     respondentClass(id) {
       const c = []
-      if (this.curRespondent == id || this.curRespondentsSet.has(id)) {
-        c.push("tw-font-bold")
+      if (/*this.curRespondent == id ||*/ this.curRespondentsSet.has(id)) {
+        // c.push("tw-font-bold")
       } else if (this.curRespondents.length > 0) {
         c.push("tw-text-gray")
       }
@@ -174,6 +186,9 @@ export default {
         c.push("tw-text-gray")
       }
       return c
+    },
+    respondentSelected(id) {
+      return this.curRespondentsSet.has(id)
     },
     isGuest(user) {
       return user._id == user.firstName
