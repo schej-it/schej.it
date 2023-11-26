@@ -437,6 +437,7 @@ export default {
       if (!this.authUser) return []
 
       let events = []
+      let event
       /** Adds events from calendar accounts that are enabled */
       for (const id in this.authUser.calendarAccounts) {
         if (
@@ -444,7 +445,8 @@ export default {
           this.calendarEventsMap.hasOwnProperty(id)
         ) {
           for (const index in this.calendarEventsMap[id].calendarEvents) {
-            events.push(this.calendarEventsMap[id].calendarEvents[index])
+            event = this.calendarEventsMap[id].calendarEvents[index]
+            if (this.authUser.calendarAccounts[id].subCalendars[event.calendarId].enabled) events.push(event)
           }
         }
       }
