@@ -2,7 +2,7 @@
   <div
     :class="
       toggleState
-        ? 'tw-min-w-[175px]'
+        ? 'tw-min-w-[240px]'
         : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'
     "
     class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-transition-all"
@@ -13,7 +13,7 @@
     >
       <div class="tw-font-medium">My calendars</div>
       <v-btn @click="addCalendarAccount" icon
-        ><v-icon color="#4F4F4F">mdi-plus</v-icon></v-btn
+        ><v-icon class="tw-text-very-dark-gray">mdi-plus</v-icon></v-btn
       >
     </div>
     <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'" class="">
@@ -26,19 +26,25 @@
           :class="`tw-gap-${toggleState ? '0' : '2'}`"
           class="tw-flex tw-w-full tw-flex-row tw-items-center"
         >
-          <v-checkbox
-            v-if="toggleState"
-            v-model="account.enabled"
-            @change="(changed) => toggleCalendarAccount(account.email, changed)"
-          />
+          <div v-if="toggleState" class="tw-flex">
+            <v-checkbox
+              v-model="account.enabled"
+              @change="
+                (changed) => toggleCalendarAccount(account.email, changed)
+              "
+            />
+
+            <v-icon class="-tw-ml-2 tw-text-dark-gray">mdi-chevron-right</v-icon>
+          </div>
           <v-avatar v-else size="24">
             <v-img :src="account.picture"></v-img
           ></v-avatar>
-          <span
+          <div
+            :class="toggleState ? 'tw-w-[180px]' : ''"
             class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
           >
             {{ account.email }}
-          </span>
+            </div>
           <v-tooltip top v-if="accountHasError(account)">
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -54,7 +60,7 @@
           </v-tooltip>
         </div>
         <!-- Needed to make sure tailwind classes compile -->
-        <span class="tw-hidden tw-opacity-100 tw-opacity-0"></span>
+        <span class="tw-hidden tw-opacity-0 tw-opacity-100"></span>
         <v-btn
           icon
           :class="`tw-opacity-${
