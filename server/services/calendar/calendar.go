@@ -231,11 +231,11 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 		}
 		user.CalendarAccounts[calendarListData.Email] = account
 
-		for id, calendar := range *account.SubCalendars {
-			if *calendar.Enabled {
-				go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, id, timeMin, timeMax, calendarEventsChan)
-				numCalendarEventsRequests++
-			}
+		for id := range *account.SubCalendars {
+			// if *calendar.Enabled {
+			go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, id, timeMin, timeMax, calendarEventsChan)
+			numCalendarEventsRequests++
+			// }
 		}
 	}
 
