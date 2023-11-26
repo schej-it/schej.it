@@ -11,6 +11,7 @@
           <v-checkbox
             v-model="account.enabled"
             @change="(enabled) => toggleCalendarAccount(enabled)"
+            class="-tw-mb-[3px]"
           />
           <div
             class="-tw-ml-2 tw-h-fit tw-w-fit tw-cursor-pointer"
