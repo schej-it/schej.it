@@ -17,62 +17,7 @@
       >
     </div>
     <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'" class="">
-      <div
-        v-for="account in calendarAccounts"
-        v-if="showAccount(account)"
-        class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
-      >
-        <div
-          :class="`tw-gap-${toggleState ? '0' : '2'}`"
-          class="tw-flex tw-w-full tw-flex-row tw-items-center"
-        >
-          <div v-if="toggleState" class="tw-flex">
-            <v-checkbox
-              v-model="account.enabled"
-              @change="
-                (changed) => toggleCalendarAccount(account.email, changed)
-              "
-            />
-
-            <v-icon class="-tw-ml-2 tw-text-dark-gray">mdi-chevron-right</v-icon>
-          </div>
-          <v-avatar v-else size="24">
-            <v-img :src="account.picture"></v-img
-          ></v-avatar>
-          <div
-            :class="toggleState ? 'tw-w-[180px]' : ''"
-            class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
-          >
-            {{ account.email }}
-            </div>
-          <v-tooltip top v-if="accountHasError(account)">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                icon
-                v-bind="attrs"
-                v-on="on"
-                @click="() => reauthenticateCalendarAccount(account)"
-              >
-                <v-icon>mdi-alert-circle</v-icon>
-              </v-btn>
-            </template>
-            <span>Sign in again</span>
-          </v-tooltip>
-        </div>
-        <!-- Needed to make sure tailwind classes compile -->
-        <span class="tw-hidden tw-opacity-0 tw-opacity-100"></span>
-        <v-btn
-          icon
-          :class="`tw-opacity-${
-            account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
-          } ${
-            account.email == authUser.email || toggleState ? 'tw-hidden' : ''
-          }`"
-          class="group-hover:tw-opacity-100"
-          @click="() => openRemoveDialog(account.email)"
-          ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
-        >
-      </div>
+      <CalendarAccount v-for="account in calendarAccounts" :toggleState="toggleState" :account="account" :eventId="eventId" :openRemoveDialog="openRemoveDialog" :calendarEventsMap="calendarEventsMap" :removeDialog="removeDialog" :selectedRemoveEmail="selectedRemoveEmail"></CalendarAccount>
     </div>
     <v-dialog v-model="removeDialog" width="500" persistent>
       <v-card>
@@ -95,6 +40,7 @@
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes } from "@/constants"
 import { get, post, _delete, signInGoogle } from "@/utils"
+import CalendarAccount from "@/components/settings/CalendarAccount.vue"
 
 export default {
   name: "CalendarAccounts",
@@ -108,7 +54,6 @@ export default {
   data: () => ({
     removeDialog: false,
     selectedRemoveEmail: "",
-    selected: [],
     calendarEventsMapCopy: null,
   }),
 
@@ -209,6 +154,10 @@ export default {
 
   created() {
     this.calendarEventsMapCopy = this.calendarEventsMap
+  },
+
+  components: {
+    CalendarAccount,
   },
 }
 </script>
