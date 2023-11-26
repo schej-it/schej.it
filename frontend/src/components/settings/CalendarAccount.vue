@@ -1,59 +1,93 @@
 <template>
+  <div v-if="showAccount()" class="tw-flex tw-flex-col">
+    <div
+      class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
+    >
       <div
-        v-if="showAccount(account)"
-        class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
+        :class="`tw-gap-${toggleState ? '0' : '2'}`"
+        class="tw-flex tw-w-full tw-flex-row tw-items-center"
       >
-        <div
-          :class="`tw-gap-${toggleState ? '0' : '2'}`"
-          class="tw-flex tw-w-full tw-flex-row tw-items-center"
-        >
-          <div v-if="toggleState" class="tw-flex">
-            <v-checkbox
-              v-model="account.enabled"
-              @change="
-                (changed) => toggleCalendarAccount(account.email, changed)
-              "
-            />
-
-            <v-icon class="-tw-ml-2 tw-text-dark-gray">mdi-chevron-right</v-icon>
-          </div>
-          <v-avatar v-else size="24">
-            <v-img :src="account.picture"></v-img
-          ></v-avatar>
+        <div v-if="toggleState" class="tw-flex tw-items-center">
+          <v-checkbox
+            v-model="account.enabled"
+            @change="(enabled) => toggleCalendarAccount(enabled)"
+          />
           <div
-            :class="toggleState ? 'tw-w-[180px]' : ''"
-            class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
+            class="-tw-ml-2 tw-h-fit tw-w-fit tw-cursor-pointer"
+            @click="
+              () => {
+                showSubCalendars = !showSubCalendars
+              }
+            "
           >
-            {{ account.email }}
-            </div>
-          <v-tooltip top v-if="accountHasError(account)">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                icon
-                v-bind="attrs"
-                v-on="on"
-                @click="() => reauthenticateCalendarAccount(account)"
-              >
-                <v-icon>mdi-alert-circle</v-icon>
-              </v-btn>
-            </template>
-            <span>Sign in again</span>
-          </v-tooltip>
+            <v-icon
+              :class="`tw-rotate-${showSubCalendars ? 90 : 0}`"
+              class="tw-text-dark-gray tw-transition-all"
+              >mdi-chevron-right</v-icon
+            >
+          </div>
         </div>
-        <!-- Needed to make sure tailwind classes compile -->
-        <span class="tw-hidden tw-opacity-0 tw-opacity-100"></span>
-        <v-btn
-          icon
-          :class="`tw-opacity-${
-            account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
-          } ${
-            account.email == authUser.email || toggleState ? 'tw-hidden' : ''
-          }`"
-          class="group-hover:tw-opacity-100"
-          @click="() => openRemoveDialog(account.email)"
-          ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
+        <v-avatar v-else size="24">
+          <v-img :src="account.picture"></v-img
+        ></v-avatar>
+        <div
+          :class="toggleState ? 'tw-w-[180px]' : ''"
+          class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
         >
+          {{ account.email }}
+        </div>
+        <v-tooltip top v-if="accountHasError()">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="on"
+              @click="() => reauthenticateCalendarAccount"
+            >
+              <v-icon>mdi-alert-circle</v-icon>
+            </v-btn>
+          </template>
+          <span>Sign in again</span>
+        </v-tooltip>
       </div>
+      <!-- Needed to make sure tailwind classes compile -->
+      <span class="tw-hidden tw-opacity-0 tw-opacity-100"></span>
+
+      <!-- Delete account button -->
+      <v-btn
+        icon
+        :class="`tw-opacity-${
+          account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
+        } ${account.email == authUser.email || toggleState ? 'tw-hidden' : ''}`"
+        class="group-hover:tw-opacity-100"
+        @click="() => openRemoveDialog(account.email)"
+        ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
+      >
+    </div>
+
+    <!-- Sub-calendar accounts -->
+    
+    <v-expand-transition>
+      <div v-if="showSubCalendars" class="tw-bg-[#EBF7EF]">
+        <div
+          v-for="(subCalendar, id) in account.subCalendars"
+          :key="id"
+          class="tw-flex tw-flex-row tw-items-center"
+        >
+          <v-checkbox
+            v-model="subCalendar.enabled"
+            @change="(enabled) => toggleSubCalendarAccount(enabled, id)"
+            class="tw-h-5 tw-items-center"
+          />
+          <div
+            class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm tw-ml-8 tw-w-40"
+          >
+            {{ subCalendar.name }}
+          </div>
+        </div>
+      </div>
+    </v-expand-transition>
+  </div>
 </template>
 
 <script>
@@ -70,11 +104,12 @@ export default {
     eventId: { type: String, default: "" },
     openRemoveDialog: { type: Function },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
-    removeDialog: {type: Boolean, default: false},
-    selectedRemoveEmail: {type: String, default: ""},
+    removeDialog: { type: Boolean, default: false },
+    selectedRemoveEmail: { type: String, default: "" },
   },
 
   data: () => ({
+    showSubCalendars: false,
     calendarEventsMapCopy: null,
   }),
 
@@ -84,15 +119,15 @@ export default {
 
   methods: {
     ...mapActions(["showError"]),
-    accountHasError(account) {
+    accountHasError() {
       return (
         this.calendarEventsMapCopy &&
-        this.calendarEventsMapCopy[account.email]?.error
+        this.calendarEventsMapCopy[this.account.email]?.error
       )
     },
     /** don't show account if in toggle state and account has an error */
-    showAccount(account) {
-      return !(this.toggleState && this.accountHasError(account))
+    showAccount() {
+      return !(this.toggleState && this.accountHasError(this.account))
     },
     addCalendarAccount() {
       signInGoogle({
@@ -106,7 +141,7 @@ export default {
         selectAccount: true,
       })
     },
-    reauthenticateCalendarAccount(account) {
+    reauthenticateCalendarAccount() {
       signInGoogle({
         state: {
           type: this.toggleState
@@ -116,11 +151,26 @@ export default {
         },
         requestCalendarPermission: true,
         selectAccount: false,
-        loginHint: account.email,
+        loginHint: this.account.email,
       })
     },
-    toggleCalendarAccount(email, enabled) {
-      post(`/user/toggle-calendar`, { email, enabled }).catch((err) => {
+    toggleSubCalendarAccount(enabled, subCalendarId) {
+      post(`/user/toggle-sub-calendar`, {
+        email: this.account.email,
+        enabled,
+        subCalendarId,
+      }).catch((err) => {
+        this.showError(
+          "There was a problem with toggling your calendar account! Please try again later."
+        )
+      })
+    },
+    toggleCalendarAccount(enabled) {
+      if (!enabled) this.showSubCalendars = false;
+      post(`/user/toggle-calendar`, {
+        email: this.account.email,
+        enabled,
+      }).catch((err) => {
         this.showError(
           "There was a problem with toggling your calendar account! Please try again later."
         )
@@ -151,4 +201,3 @@ export default {
   },
 }
 </script>
-

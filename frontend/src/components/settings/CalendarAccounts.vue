@@ -17,7 +17,17 @@
       >
     </div>
     <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'" class="">
-      <CalendarAccount v-for="account in calendarAccounts" :toggleState="toggleState" :account="account" :eventId="eventId" :openRemoveDialog="openRemoveDialog" :calendarEventsMap="calendarEventsMap" :removeDialog="removeDialog" :selectedRemoveEmail="selectedRemoveEmail"></CalendarAccount>
+      <CalendarAccount
+        v-for="account in calendarAccounts"
+        :key="account.email"
+        :toggleState="toggleState"
+        :account="account"
+        :eventId="eventId"
+        :openRemoveDialog="openRemoveDialog"
+        :calendarEventsMap="calendarEventsMap"
+        :removeDialog="removeDialog"
+        :selectedRemoveEmail="selectedRemoveEmail"
+      ></CalendarAccount>
     </div>
     <v-dialog v-model="removeDialog" width="500" persistent>
       <v-card>
