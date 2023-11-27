@@ -32,6 +32,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.POST("/add-calendar-account", addCalendarAccount)
 	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
 	userRouter.POST("/toggle-calendar", toggleCalendar)
+	userRouter.POST("/toggle-sub-calendar", toggleSubCalendar)
 	userRouter.GET("/searchContacts", searchContacts)
 	userRouter.DELETE("", deleteUser)
 }
@@ -125,7 +126,15 @@ func getCalendars(c *gin.Context) {
 	accountsSet := utils.ArrayToSet(accounts)
 	user := utils.GetAuthUser(c)
 
-	calendarEvents := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
+	calendarEvents, editedCalendarAccounts := calendar.GetUsersCalendarEvents(user, accountsSet, payload.TimeMin, payload.TimeMax)
+
+	if editedCalendarAccounts {
+		db.UsersCollection.FindOneAndUpdate(
+			context.Background(),
+			bson.M{"_id": user.Id},
+			bson.M{"$set": user},
+		)
+	}
 
 	c.JSON(http.StatusOK, calendarEvents)
 }
@@ -244,6 +253,47 @@ func toggleCalendar(c *gin.Context) {
 		if err != nil {
 			logger.StdErr.Panicln(err)
 			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Toggles whether the specified sub-calendar is enabled or disabled for the user
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string,subCalendarId=string,enabled=bool} true "Email of calendar account, the sub calendar id, and whether to enable it"
+// @Success 200
+// @Router /user/toggle-sub-calendar [post]
+func toggleSubCalendar(c *gin.Context) {
+	payload := struct {
+		Email         string `json:"email" binding:"required"`
+		SubCalendarId string `json:"subCalendarId" binding:"required"`
+		Enabled       *bool  `json:"enabled" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		logger.StdErr.Panicln(err)
+		return
+	}
+
+	// Update enabled status for the specified sub calendar
+	authUser := utils.GetAuthUser(c)
+	if account, ok := authUser.CalendarAccounts[payload.Email]; ok {
+		if subCalendar, ok := (*account.SubCalendars)[payload.SubCalendarId]; ok {
+			subCalendar.Enabled = payload.Enabled
+			(*account.SubCalendars)[payload.SubCalendarId] = subCalendar
+			authUser.CalendarAccounts[payload.Email] = account
+
+			_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
+				"_id": authUser.Id,
+			}, bson.M{
+				"$set": authUser,
+			})
+			if err != nil {
+				logger.StdErr.Panicln(err)
+				return
+			}
 		}
 	}
 

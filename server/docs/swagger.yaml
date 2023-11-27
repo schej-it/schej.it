@@ -40,6 +40,10 @@ definitions:
         type: boolean
       picture:
         type: string
+      subCalendars:
+        additionalProperties:
+          $ref: '#/definitions/models.SubCalendar'
+        type: object
     type: object
   models.CalendarEvent:
     properties:
@@ -107,6 +111,13 @@ definitions:
         $ref: '#/definitions/models.User'
         type: object
       userId:
+        type: string
+    type: object
+  models.SubCalendar:
+    properties:
+      enabled:
+        type: boolean
+      name:
         type: string
     type: object
   models.User:
@@ -611,6 +622,35 @@ paths:
         "200": {}
       summary: Toggles whether the specified calendar is enabled or disabled for the
         user
+      tags:
+      - user
+  /user/toggle-sub-calendar:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Email of calendar account, the sub calendar id, and whether to
+          enable it
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+              enabled:
+                type: boolean
+              subCalendarId:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Toggles whether the specified sub-calendar is enabled or disabled for
+        the user
       tags:
       - user
   /users:

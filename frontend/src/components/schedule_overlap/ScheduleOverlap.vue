@@ -334,9 +334,10 @@ import {
   splitCalendarEventsByDay,
   dateToDowDate,
   _delete,
+  get,
 } from "@/utils"
 import { eventTypes } from "@/constants"
-import { mapActions, mapState } from "vuex"
+import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import ZigZag from "./ZigZag.vue"
@@ -413,6 +414,8 @@ export default {
       /* Variables for scrolling */
       calendarScrollLeft: 0, // The current scroll position of the calendar
       calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
+
+      hasRefreshedAuthUser: false,
     }
   },
   computed: {
@@ -435,14 +438,33 @@ export default {
       if (!this.authUser) return []
 
       let events = []
+      let event
       /** Adds events from calendar accounts that are enabled */
       for (const id in this.authUser.calendarAccounts) {
-        if (this.authUser.calendarAccounts[id].enabled) {
-          events = events.concat(
-            this.calendarEventsMap.hasOwnProperty(id)
-              ? this.calendarEventsMap[id].calendarEvents
-              : []
-          )
+        if (
+          this.authUser.calendarAccounts[id].enabled &&
+          this.calendarEventsMap.hasOwnProperty(id)
+        ) {
+          for (const index in this.calendarEventsMap[id].calendarEvents) {
+            event = this.calendarEventsMap[id].calendarEvents[index]
+
+            // Check if we need to update authUser (to get latest subcalendars)
+            const subCalendars = this.authUser.calendarAccounts[id].subCalendars
+            if (!subCalendars || !(event.calendarId in subCalendars)) {
+              // authUser doesn't contain the subCalendar, so push event to events without checking if subcalendar is enabled
+              // and queue the authUser to be refreshed
+              events.push(event)
+              if (!this.hasRefreshedAuthUser) {
+                this.refreshAuthUser()
+              }
+              continue
+            }
+
+            // Push event to events if subcalendar is enabled
+            if (subCalendars[event.calendarId].enabled) {
+              events.push(event)
+            }
+          }
         }
       }
 
@@ -667,6 +689,7 @@ export default {
     },
   },
   methods: {
+    ...mapMutations(["setAuthUser"]),
     ...mapActions(["showInfo", "showError"]),
 
     // -----------------------------------
@@ -788,6 +811,12 @@ export default {
     // -----------------------------------
     //#region Current user availability
     // -----------------------------------
+    async refreshAuthUser() {
+      this.hasRefreshedAuthUser = true
+      await get("/user/profile").then((authUser) => {
+        this.setAuthUser(authUser)
+      })
+    },
     resetCurUserAvailability() {
       /* resets cur user availability to the response stored on the server */
       this.availability = new Set()
