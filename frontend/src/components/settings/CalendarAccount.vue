@@ -21,6 +21,9 @@
               }
             "
           >
+            <!-- Make sure tailwind classes are compiled -->
+            <div class="tw-rotate-0 tw-rotate-90"></div>
+
             <v-icon
               :class="`tw-rotate-${showSubCalendars ? 90 : 0}`"
               class="tw-text-dark-gray tw-transition-all"
@@ -67,7 +70,7 @@
     </div>
 
     <!-- Sub-calendar accounts -->
-    
+
     <v-expand-transition>
       <div v-if="showSubCalendars" class="tw-bg-[#EBF7EF]">
         <div
@@ -81,7 +84,7 @@
             class="tw-h-5 tw-items-center"
           />
           <div
-            class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm tw-ml-8 tw-w-40"
+            class="tw-align-text-middle tw-ml-8 tw-inline-block tw-w-40 tw-break-words tw-text-sm"
           >
             {{ subCalendar.name }}
           </div>
@@ -167,7 +170,7 @@ export default {
       })
     },
     toggleCalendarAccount(enabled) {
-      if (!enabled) this.showSubCalendars = false;
+      if (!enabled) this.showSubCalendars = false
       post(`/user/toggle-calendar`, {
         email: this.account.email,
         enabled,
