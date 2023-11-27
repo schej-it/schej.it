@@ -98,7 +98,7 @@
                             appear
                           >
                             <div
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              class="ph-no-capture tw-absolute tw-w-full tw-select-none tw-p-px"
                               :style="{
                                 top: `calc(${event.hoursOffset} * 4 * 1rem)`,
                                 height: `calc(${event.hoursLength} * 4 * 1rem)`,
@@ -178,7 +178,6 @@
               :cur-timezone.sync="curTimezone"
               :timezone-map="timezoneMap"
               :show-best-times.sync="showBestTimes"
-              :is-owner="isOwner"
               :cur-scheduled-event="curScheduledEvent"
               :is-weekly="isWeekly"
               :calendar-permission-granted="calendarPermissionGranted"
@@ -289,7 +288,6 @@
         :cur-timezone.sync="curTimezone"
         :timezone-map="timezoneMap"
         :show-best-times.sync="showBestTimes"
-        :is-owner="isOwner"
         :cur-scheduled-event="curScheduledEvent"
         :is-weekly="isWeekly"
         :calendar-permission-granted="calendarPermissionGranted"
