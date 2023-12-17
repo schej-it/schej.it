@@ -123,6 +123,23 @@
         @setCurGuestId="(id) => (curGuestId = id)"
       />
     </div>
+
+    <template v-if="showFeedbackBtn">
+      <v-divider />
+
+      <div class="tw-flex tw-justify-center" v-if="showFeedbackBtn">
+        <v-btn
+          class="tw-h-16"
+          block
+          id="feedback-btn"
+          text
+          @click="giveFeedback"
+        >
+          Give feedback
+        </v-btn>
+      </div>
+    </template>
+
     <div class="tw-h-16"></div>
 
     <!-- Bottom bar for phones -->
@@ -249,6 +266,9 @@ export default {
     },
     selectedGuestRespondent() {
       return this.scheduleOverlapComponent?.selectedGuestRespondent
+    },
+    showFeedbackBtn() {
+      return this.isPhone
     },
   },
 
@@ -404,6 +424,9 @@ export default {
           }, 100)
         }, 100)
       }, 100)
+    },
+    giveFeedback() {
+      window.open("https://forms.gle/9AgRy4PQfWfVuBnw8", "_blank")
     },
 
     onBeforeUnload(e) {

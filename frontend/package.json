@@ -13,7 +13,7 @@
     "dayjs": "^1.11.9",
     "html2canvas": "^1.4.1",
     "is-ua-webview": "^1.1.0",
-    "posthog-js": "^1.92.0",
+    "posthog-js": "^1.96.1",
     "register-service-worker": "^1.7.2",
     "ua-parser-js": "^1.0.33",
     "vue": "^2.6.14",

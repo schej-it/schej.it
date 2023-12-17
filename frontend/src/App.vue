@@ -3,6 +3,7 @@
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <SignInNotSupportedDialog v-model="webviewDialog" />
+    <NewEventDialog v-model="newEventDialog" />
     <div
       v-if="showHeader"
       class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-bg-white sm:tw-h-16"
@@ -24,7 +25,20 @@
 
         <v-spacer />
 
-        <v-btn id="feedback-btn" text @click="giveFeedback">
+        <v-btn
+          v-if="$route.name !== 'home'"
+          id="top-right-create-btn"
+          text
+          @click="createEvent"
+        >
+          Create an event
+        </v-btn>
+        <v-btn
+          v-if="showFeedbackBtn"
+          id="feedback-btn"
+          text
+          @click="giveFeedback"
+        >
           Give feedback
         </v-btn>
         <div v-if="authUser" class="sm:tw-ml-4">
@@ -42,7 +56,7 @@
           class="tw-relative tw-flex-1 tw-overscroll-auto"
           :class="routerViewClass"
         >
-          <router-view v-if="loaded" />
+          <router-view v-if="loaded" :key="$route.fullPath" />
         </div>
       </div>
     </v-main>
@@ -90,6 +104,7 @@ import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "./components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "./components/SignInNotSupportedDialog.vue"
 import isWebview from "is-ua-webview"
+import NewEventDialog from "./components/NewEventDialog.vue"
 
 export default {
   name: "App",
@@ -104,6 +119,7 @@ export default {
     AutoSnackbar,
     AuthUserMenu,
     SignInNotSupportedDialog,
+    NewEventDialog,
   },
 
   data: () => ({
@@ -111,6 +127,7 @@ export default {
     loaded: false,
     scrollY: 0,
     webviewDialog: false,
+    newEventDialog: false,
   }),
 
   computed: {
@@ -125,6 +142,9 @@ export default {
         this.$route.name !== "auth" &&
         this.$route.name !== "privacy-policy"
       )
+    },
+    showFeedbackBtn() {
+      return !this.isPhone || this.$route.name === "home"
     },
     routerViewClass() {
       let c = ""
@@ -143,6 +163,9 @@ export default {
     ...mapMutations(["setAuthUser"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
+    },
+    createEvent() {
+      this.newEventDialog = true
     },
     signIn() {
       if (this.$route.name === "event") {

@@ -250,6 +250,8 @@ export default {
           .then(({ eventId }) => {
             this.$router.push({ name: "event", params: { eventId } })
             this.loading = false
+            this.$emit("input", false)
+            this.reset()
 
             this.$posthog?.capture("Event created", {
               eventId: eventId,
@@ -285,6 +287,8 @@ export default {
                 eventType: type,
               })
 
+              this.$emit("input", false)
+              this.reset()
               window.location.reload()
             })
             .catch((err) => {
