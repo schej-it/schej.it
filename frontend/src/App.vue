@@ -68,7 +68,7 @@
 
 html {
   overflow-y: auto !important;
-  overscroll-behavior: none;
+  /* overscroll-behavior: none; */
   scroll-behavior: smooth;
 }
 

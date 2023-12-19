@@ -1339,6 +1339,8 @@ export default {
       if (!this.allowDrag) return
       if (e.touches?.length > 1) return // If dragging with more than one finger
 
+      e.preventDefault()
+
       this.dragging = true
 
       const { dayIndex, timeIndex, date } = this.getDateFromXY(
