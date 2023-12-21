@@ -3,18 +3,21 @@
     <div class="tw-m-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
         <div class="tw-flex tw-grow">
-          <div
-            :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-            style="position: sticky; top: 100px"
-            class="-tw-ml-4 tw-mt-1.5 tw-self-start sm:-tw-mt-16 sm:tw-self-center"
-          >
-            <v-btn icon @click="prevPage"
-              ><v-icon>mdi-chevron-left</v-icon></v-btn
-            >
-          </div>
-
           <!-- Times -->
-          <div class="tw-mt-12 tw-w-12 tw-flex-none">
+          <div class="tw-w-12 tw-flex-none">
+            <div
+              class="tw-sticky tw-top-14 tw-z-10 tw-mb-1 tw-h-11 tw-bg-white sm:tw-top-16"
+            >
+              <div
+                :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                class="tw-sticky tw-top-16 -tw-ml-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
+              >
+                <v-btn icon @click="prevPage"
+                  ><v-icon>mdi-chevron-left</v-icon></v-btn
+                >
+              </div>
+            </div>
+
             <div class="-tw-mt-[8px]">
               <div
                 v-for="(time, i) in times"
@@ -27,130 +30,125 @@
           </div>
 
           <!-- Middle section -->
-          <div class="tw-grow tw-overflow-hidden">
-            <div class="tw-relative tw-overflow-hidden">
+          <div class="tw-grow">
+            <div
+              ref="calendar"
+              @scroll="onCalendarScroll"
+              class="tw-flex tw-flex-col"
+            >
+              <!-- Days -->
               <div
-                ref="calendar"
-                @scroll="onCalendarScroll"
-                class="tw-relative tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden"
+                class="tw-sticky tw-top-14 tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white sm:tw-top-16"
               >
-                <!-- Days -->
                 <div
-                  class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white"
+                  v-for="(day, i) in days"
+                  :key="i"
+                  class="tw-flex-1 tw-bg-white"
+                  style="min-width: 50px"
                 >
-                  <div
-                    v-for="(day, i) in days"
-                    :key="i"
-                    class="tw-flex-1 tw-bg-white"
-                    style="min-width: 50px"
-                  >
-                    <div class="tw-text-center">
-                      <div
-                        v-if="isSpecificDates"
-                        class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
-                      >
-                        {{ day.dateString }}
-                      </div>
-                      <div class="tw-text-lg tw-capitalize">
-                        {{ day.dayText }}
-                      </div>
+                  <div class="tw-text-center">
+                    <div
+                      v-if="isSpecificDates"
+                      class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
+                    >
+                      {{ day.dateString }}
+                    </div>
+                    <div class="tw-text-lg tw-capitalize">
+                      {{ day.dayText }}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Calendar -->
-                <div class="tw-flex tw-flex-col">
-                  <div class="tw-flex-1">
+              <!-- Calendar -->
+              <div class="tw-flex tw-flex-col">
+                <div class="tw-flex-1">
+                  <div
+                    id="times"
+                    data-long-press-delay="500"
+                    class="tw-relative tw-flex"
+                    @mouseleave="resetCurTimeslot"
+                  >
+                    <!-- Loader -->
                     <div
-                      id="times"
-                      data-long-press-delay="500"
-                      class="tw-relative tw-flex"
-                      @mouseleave="resetCurTimeslot"
+                      v-if="
+                        (alwaysShowCalendarEvents || editing) &&
+                        loadingCalendarEvents
+                      "
+                      class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                     >
-                      <!-- Loader -->
+                      <v-progress-circular class="tw-text-blue" indeterminate />
+                    </div>
+
+                    <div
+                      v-for="(day, d) in days"
+                      :key="d"
+                      class="tw-relative tw-flex-1"
+                      style="min-width: 50px"
+                    >
+                      <!-- Timeslots -->
                       <div
-                        v-if="
-                          (alwaysShowCalendarEvents || editing) &&
-                          loadingCalendarEvents
-                        "
-                        class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
+                        v-for="(time, t) in times"
+                        :key="t"
+                        class="tw-w-full"
                       >
-                        <v-progress-circular
-                          class="tw-text-blue"
-                          indeterminate
-                        />
+                        <div
+                          class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                          :class="timeslotClassStyle(day, time, d, t).class"
+                          :style="timeslotClassStyle(day, time, d, t).style"
+                          v-on="timeslotVon(d, t)"
+                        ></div>
                       </div>
 
-                      <div
-                        v-for="(day, d) in days"
-                        :key="d"
-                        class="tw-relative tw-flex-1"
-                        style="min-width: 50px"
-                      >
-                        <!-- Timeslots -->
-                        <div
-                          v-for="(time, t) in times"
-                          :key="t"
-                          class="tw-w-full"
+                      <!-- Calendar events -->
+                      <div v-if="editing || alwaysShowCalendarEvents">
+                        <v-fade-transition
+                          v-for="(event, e) in calendarEventsByDay[d]"
+                          :key="`${d}-${e}`"
+                          appear
                         >
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
-                            :class="timeslotClassStyle(day, time, d, t).class"
-                            :style="timeslotClassStyle(day, time, d, t).style"
-                            v-on="timeslotVon(d, t)"
-                          ></div>
-                        </div>
-
-                        <!-- Calendar events -->
-                        <div v-if="editing || alwaysShowCalendarEvents">
-                          <v-fade-transition
-                            v-for="(event, e) in calendarEventsByDay[d]"
-                            :key="`${d}-${e}`"
-                            appear
-                          >
-                            <div
-                              class="ph-no-capture tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="{
-                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
-                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
-                              }"
-                              style="pointer-events: none"
-                            >
-                              <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
-                              >
-                                <div
-                                  :class="`tw-text-${
-                                    noEventNames ? 'dark-gray' : 'blue'
-                                  }`"
-                                  class="tw-font-medium"
-                                >
-                                  {{ noEventNames ? "BUSY" : event.summary }}
-                                </div>
-                              </div>
-                            </div>
-                          </v-fade-transition>
-                        </div>
-
-                        <!-- Scheduled event -->
-                        <div v-if="state === states.SCHEDULE_EVENT">
-                          <div
-                            v-if="
-                              (dragStart && dragStart.dayIndex === d) ||
-                              (!dragStart &&
-                                curScheduledEvent &&
-                                curScheduledEvent.dayIndex === d)
-                            "
-                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="scheduledEventStyle"
+                            class="ph-no-capture tw-absolute tw-w-full tw-select-none tw-p-px"
+                            :style="{
+                              top: `calc(${event.hoursOffset} * 4 * 1rem)`,
+                              height: `calc(${event.hoursLength} * 4 * 1rem)`,
+                            }"
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
                             >
-                              <div class="tw-font-medium tw-text-white">
-                                {{ event.name }}
+                              <div
+                                :class="`tw-text-${
+                                  noEventNames ? 'dark-gray' : 'blue'
+                                }`"
+                                class="tw-font-medium"
+                              >
+                                {{ noEventNames ? "BUSY" : event.summary }}
                               </div>
+                            </div>
+                          </div>
+                        </v-fade-transition>
+                      </div>
+
+                      <!-- Scheduled event -->
+                      <div v-if="state === states.SCHEDULE_EVENT">
+                        <div
+                          v-if="
+                            (dragStart && dragStart.dayIndex === d) ||
+                            (!dragStart &&
+                              curScheduledEvent &&
+                              curScheduledEvent.dayIndex === d)
+                          "
+                          class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                          :style="scheduledEventStyle"
+                          style="pointer-events: none"
+                        >
+                          <div
+                            class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                          >
+                            <div class="tw-font-medium tw-text-white">
+                              {{ event.name }}
                             </div>
                           </div>
                         </div>
@@ -159,17 +157,6 @@
                   </div>
                 </div>
               </div>
-
-              <!-- <ZigZag
-                v-if="showLeftZigZag"
-                left
-                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
-              />
-              <ZigZag
-                v-if="showRightZigZag"
-                right
-                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
-              /> -->
             </div>
 
             <!-- Hint text (desktop) -->
@@ -204,8 +191,7 @@
 
           <div
             :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-            style="position: sticky; top: 100px"
-            class="-tw-mr-4 tw-mt-1.5 tw-self-start sm:-tw-mt-16 sm:tw-self-center"
+            class="tw-sticky tw-top-16 -tw-mr-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
           >
             <v-btn icon @click="nextPage"
               ><v-icon>mdi-chevron-right</v-icon></v-btn
@@ -572,7 +558,7 @@ export default {
             desktop:
               "Click and drag on the calendar to edit your availability. Green means available.",
             mobile:
-              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll. Green means available.",
+              "Tap and drag on the calendar to edit your availability. Green means available.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
