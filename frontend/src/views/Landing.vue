@@ -37,28 +37,20 @@
         <div class="tw-flex tw-flex-col">
           <!-- Hero -->
           <div
-            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-w-[35rem] sm:tw-max-w-none lg:tw-mb-14"
+            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col sm:tw-w-[35rem] sm:tw-max-w-none lg:tw-mb-14 tw-items-center sm:tw-items-start"
           >
             <div
               id="header"
-              class="tw-mb-4 tw-text-left tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
+              class="tw-mb-4 tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl tw-text-center sm:tw-text-left"
             >
-              <div class="tw-leading-snug">Finding a time to meet,</div>
-              <div class="tw-leading-snug">made simple.</div>
+              <div class="tw-bg-gradient-to-r tw-from-light-green tw-to-darkest-green tw-text-transparent tw-bg-clip-text tw-pb-1">Let's schej it!</div>
+              <div class="tw-leading-snug -tw-mt-1">Find a time to meet</div>
             </div>
 
             <div
-              class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
+              class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg tw-text-center sm:tw-text-left"
             >
-              <b>Autofill</b> your availability with Google Calendar and see
-              when everyone's availabilities overlap— it’s like When2Meet with
-              Google Calendar integration.
-            </div>
-
-            <div
-              class="lg:tw-text-md tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
-            >
-              Don't use Google Calendar? Add your availability manually instead!
+              <b>Automatically</b> fill in your availability—it’s like When2Meet with Google Calendar integration!
             </div>
           </div>
 
