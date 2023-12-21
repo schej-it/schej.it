@@ -215,7 +215,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-py-4 sm:tw-w-52 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
+          class="tw-w-full tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-2"
