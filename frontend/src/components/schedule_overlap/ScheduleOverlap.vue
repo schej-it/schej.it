@@ -1,8 +1,18 @@
 <template>
   <span>
-    <div class="tw-select-none tw-p-4" style="-webkit-touch-callout: none">
+    <div class="tw-m-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
-        <div class="tw-flex tw-grow tw-overflow-hidden">
+        <div class="tw-flex tw-grow">
+          <div
+            :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+            style="position: sticky; top: 100px"
+            class="-tw-ml-4 tw-mt-1.5 tw-self-start sm:-tw-mt-16 sm:tw-self-center"
+          >
+            <v-btn icon @click="prevPage"
+              ><v-icon>mdi-chevron-left</v-icon></v-btn
+            >
+          </div>
+
           <!-- Times -->
           <div class="tw-mt-12 tw-w-12 tw-flex-none">
             <div class="-tw-mt-[8px]">
@@ -16,6 +26,7 @@
             </div>
           </div>
 
+          <!-- Middle section -->
           <div class="tw-grow tw-overflow-hidden">
             <div class="tw-relative tw-overflow-hidden">
               <div
@@ -149,7 +160,7 @@
                 </div>
               </div>
 
-              <ZigZag
+              <!-- <ZigZag
                 v-if="showLeftZigZag"
                 left
                 class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
@@ -158,7 +169,7 @@
                 v-if="showRightZigZag"
                 right
                 class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
-              />
+              /> -->
             </div>
 
             <!-- Hint text (desktop) -->
@@ -189,6 +200,16 @@
               @cancelScheduleEvent="cancelScheduleEvent"
               @confirmScheduleEvent="confirmScheduleEvent"
             />
+          </div>
+
+          <div
+            :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+            style="position: sticky; top: 100px"
+            class="-tw-mr-4 tw-mt-1.5 tw-self-start sm:-tw-mt-16 sm:tw-self-center"
+          >
+            <v-btn icon @click="nextPage"
+              ><v-icon>mdi-chevron-right</v-icon></v-btn
+            >
           </div>
         </div>
 
@@ -415,6 +436,9 @@ export default {
       calendarScrollLeft: 0, // The current scroll position of the calendar
       calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
 
+      /* Variables for pagination */
+      page: 0,
+
       hasRefreshedAuthUser: false,
     }
   },
@@ -516,8 +540,13 @@ export default {
         "dec",
       ]
 
-      for (let date of this.event.dates) {
-        date = new Date(date)
+      for (
+        let i = this.page * this.maxDaysPerPage;
+        i < this.event.dates.length &&
+        i < (this.page + 1) * this.maxDaysPerPage;
+        ++i
+      ) {
+        const date = new Date(this.event.dates[i])
 
         days.push({
           dayText: daysOfWeek[date.getDay()],
@@ -686,6 +715,15 @@ export default {
     },
     showRightZigZag() {
       return Math.ceil(this.calendarScrollLeft) < this.calendarMaxScroll
+    },
+    maxDaysPerPage() {
+      return this.isPhone ? 3 : 7
+    },
+    hasNextPage() {
+      return this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0
+    },
+    hasPrevPage() {
+      return this.page > 0
     },
   },
   methods: {
@@ -1384,6 +1422,19 @@ export default {
     onCalendarScroll(e) {
       this.calendarMaxScroll = e.target.scrollWidth - e.target.offsetWidth
       this.calendarScrollLeft = e.target.scrollLeft
+    },
+    //#endregion
+
+    // -----------------------------------
+    //#region Pagination
+    // -----------------------------------
+    nextPage(e) {
+      e.stopImmediatePropagation()
+      this.page++
+    },
+    prevPage(e) {
+      e.stopImmediatePropagation()
+      this.page--
     },
     //#endregion
   },
