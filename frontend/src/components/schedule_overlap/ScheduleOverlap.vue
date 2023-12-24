@@ -6,11 +6,11 @@
           <!-- Times -->
           <div class="tw-w-12 tw-flex-none">
             <div
-              class="tw-sticky tw-top-14 tw-z-10 tw-mb-1 tw-h-11 tw-bg-white sm:tw-top-16"
+              class="tw-sticky tw-top-14 tw-z-10 tw-mb-2 tw-h-10 tw-bg-white sm:tw-top-16"
             >
               <div
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                class="tw-sticky tw-top-16 -tw-ml-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
+                class="tw-sticky tw-top-14 -tw-ml-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
               >
                 <v-btn icon @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
@@ -196,7 +196,7 @@
 
           <div
             :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-            class="tw-sticky tw-top-16 -tw-mr-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
+            class="tw-sticky tw-top-14 -tw-mr-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
           >
             <v-btn icon @click="nextPage"
               ><v-icon>mdi-chevron-right</v-icon></v-btn
