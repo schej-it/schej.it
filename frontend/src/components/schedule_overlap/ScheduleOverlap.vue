@@ -347,6 +347,8 @@ import {
   dateToDowDate,
   _delete,
   get,
+  getDateDayOffset,
+  isDateBetween,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -882,10 +884,15 @@ export default {
           }
         }
       }
-      this.animateAvailability(tmpAvailability)
+      const pageStartDate = getDateDayOffset(
+        new Date(this.event.dates[0]),
+        this.page * this.maxDaysPerPage
+      )
+      const pageEndDate = getDateDayOffset(pageStartDate, this.maxDaysPerPage)
+      this.animateAvailability(tmpAvailability, pageStartDate, pageEndDate)
     },
-    animateAvailability(availability) {
-      /* Animate the filling out of availability using setTimeout */
+    animateAvailability(availability, startDate, endDate) {
+      /* Animate the filling out of availability using setTimeout, between startDate and endDate */
 
       this.availabilityAnimEnabled = true
       this.availabilityAnimTimeouts = []
@@ -898,7 +905,11 @@ export default {
       ) {
         blocksPerGroup = (availability.size * msPerGroup) / this.maxAnimTime
       }
-      const availabilityArray = [...availability]
+      let availabilityArray = [...availability]
+      availabilityArray = availabilityArray.filter((a) =>
+        isDateBetween(a, startDate, endDate)
+      )
+
       for (let i = 0; i < availabilityArray.length / blocksPerGroup + 1; ++i) {
         const timeout = setTimeout(() => {
           for (const a of availabilityArray.slice(
@@ -909,8 +920,11 @@ export default {
           }
           this.availability = new Set(this.availability)
           if (i >= availabilityArray.length / blocksPerGroup) {
+            // Make sure the entire availability has been added (will not be guaranteed when only animating a portion of availability)
+            this.availability = new Set(availability)
             setTimeout(() => {
               this.availabilityAnimEnabled = false
+
               if (this.showSnackbar) {
                 this.showInfo(
                   "Your availability has been set automatically using your Google Calendar!"
