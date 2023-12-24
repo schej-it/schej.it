@@ -413,6 +413,10 @@ export default {
     },
 
     highlightAvailabilityBtn() {
+      if (!this.isPhone) {
+        window.scrollTo({ top: 0, behavior: "instant" })
+      }
+
       this.availabilityBtnOpacity = 0.1
       setTimeout(() => {
         this.availabilityBtnOpacity = 1
