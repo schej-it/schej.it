@@ -106,8 +106,10 @@
                       <!-- Calendar events -->
                       <div v-if="editing || alwaysShowCalendarEvents">
                         <v-fade-transition
-                          v-for="(event, e) in calendarEventsByDay[d]"
-                          :key="`${d}-${e}`"
+                          v-for="event in calendarEventsByDay[
+                            d + page * maxDaysPerPage
+                          ]"
+                          :key="event.id"
                           appear
                         >
                           <div
@@ -863,16 +865,13 @@ export default {
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set()
       const tmpAvailability = new Set()
-      for (const d in this.days) {
-        const day = this.days[d]
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          const endDate = getDateHoursOffset(
-            day.dateObject,
-            time.hoursOffset + 0.25
-          )
-          const index = this.calendarEventsByDay[d].findIndex((e) => {
+          const startDate = getDateHoursOffset(date, time.hoursOffset)
+          const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
+          const index = this.calendarEventsByDay[i].findIndex((e) => {
             const notIntersect =
               dateCompare(endDate, e.startDate) <= 0 ||
               dateCompare(startDate, e.endDate) >= 0

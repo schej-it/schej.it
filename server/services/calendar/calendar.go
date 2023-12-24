@@ -98,7 +98,7 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 	max, _ := timeMax.MarshalText()
 	req, _ := http.NewRequest(
 		"GET",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
 		nil,
 	)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
@@ -111,6 +111,7 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 	// Define some structs to parse the json response
 	type Response struct {
 		Items []struct {
+			Id      string `json:"id"`
 			Summary string `json:"summary"`
 			Start   struct {
 				DateTime time.Time `json:"dateTime" binding:"required"`
@@ -145,6 +146,7 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 
 		// Restructure event
 		calendarEvents = append(calendarEvents, models.CalendarEvent{
+			Id:         item.Id,
 			CalendarId: calendarId,
 			Summary:    item.Summary,
 			StartDate:  primitive.NewDateTimeFromTime(item.Start.DateTime),

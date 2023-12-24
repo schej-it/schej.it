@@ -11,6 +11,7 @@ type Calendar struct {
 
 // Simplified representation of a Google Calendar event from the calendar api
 type CalendarEvent struct {
+	Id         string             `json:"id" bson:"id,omitempty"`
 	CalendarId string             `json:"calendarId" bson:"calendarId,omitempty"`
 	Summary    string             `json:"summary" bson:"summary,omitempty"`
 	StartDate  primitive.DateTime `json:"startDate" bson:"startDate,omitempty"`
