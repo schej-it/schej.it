@@ -891,19 +891,25 @@ export default {
       this.availabilityAnimEnabled = true
       this.availabilityAnimTimeouts = []
 
-      let msPerBlock = 25
-      if (availability.size * msPerBlock > this.maxAnimTime) {
-        msPerBlock = this.maxAnimTime / availability.size
+      let msPerGroup = 25
+      let blocksPerGroup = 2
+      if (
+        (availability.size / blocksPerGroup) * msPerGroup >
+        this.maxAnimTime
+      ) {
+        blocksPerGroup = (availability.size * msPerGroup) / this.maxAnimTime
       }
-
-      let i = 0
-      for (const a of availability) {
-        const index = i
+      const availabilityArray = [...availability]
+      for (let i = 0; i < availabilityArray.length / blocksPerGroup + 1; ++i) {
         const timeout = setTimeout(() => {
-          this.availability.add(a)
+          for (const a of availabilityArray.slice(
+            i * blocksPerGroup,
+            i * blocksPerGroup + blocksPerGroup
+          )) {
+            this.availability.add(a)
+          }
           this.availability = new Set(this.availability)
-
-          if (index == availability.size - 1) {
+          if (i >= availabilityArray.length / blocksPerGroup) {
             setTimeout(() => {
               this.availabilityAnimEnabled = false
               if (this.showSnackbar) {
@@ -914,10 +920,9 @@ export default {
               this.unsavedChanges = false
             }, 500)
           }
-        }, i * msPerBlock)
+        }, i * msPerGroup)
 
         this.availabilityAnimTimeouts.push(timeout)
-        i++
       }
     },
     stopAvailabilityAnim() {
