@@ -5,7 +5,7 @@
     >
       <!-- Green background -->
       <div
-        class="tw-absolute tw-left-1/2 tw-bottom-0 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:tw-h-[47%]"
+        class="tw-absolute tw-bottom-0 tw-left-1/2 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:tw-h-[47%]"
       ></div>
 
       <!-- Header -->
@@ -37,28 +37,25 @@
         <div class="tw-flex tw-flex-col">
           <!-- Hero -->
           <div
-            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-start sm:tw-w-[35rem] sm:tw-max-w-none lg:tw-mb-14"
+            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none sm:tw-items-start lg:tw-mb-14"
           >
             <div
               id="header"
-              class="tw-mb-4 tw-text-left tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
+              class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-left sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
             >
-              <div class="tw-leading-snug">Finding a time to meet,</div>
-              <div class="tw-leading-snug">made simple.</div>
+              <div
+                class="tw-bg-gradient-to-r tw-from-light-green tw-to-darkest-green tw-bg-clip-text tw-pb-1 tw-text-transparent"
+              >
+                Let's schej it!
+              </div>
+              <div class="-tw-mt-1 tw-leading-snug">Find a time to meet</div>
             </div>
 
             <div
-              class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
+              class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-left sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
             >
-              <b>Autofill</b> your availability with Google Calendar and see
-              when everyone's availabilities overlap— it’s like When2Meet with
-              Google Calendar integration.
-            </div>
-
-            <div
-              class="lg:tw-text-md tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
-            >
-              Don't use Google Calendar? Add your availability manually instead!
+              <b>Automatically</b> fill in your availability—it’s like When2Meet
+              with Google Calendar integration!
             </div>
           </div>
 
@@ -74,11 +71,30 @@
           </v-btn>
 
           <!-- Calendar -->
-          <LandingPageCalendar class="tw-drop-shadow-lg" />
+          <div>
+            <v-img
+            alt="schej character"
+            src="@/assets/schejie_hand.png"
+            :height="150"
+            v-if="isPhone"
+            transition="fade-transition"
+            contain
+            class="-tw-mb-20"
+          />
+          <LandingPageCalendar class="tw-drop-shadow-lg" /></div>
+
         </div>
 
         <!-- Right side -->
         <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-block">
+          <v-img
+            alt="schej character"
+            src="@/assets/schejie_hand.png"
+            :height="250"
+            transition="fade-transition"
+            contain
+            class="-tw-mb-28"
+          />
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -119,7 +135,7 @@
         </div>
       </div>
       <div
-        class="tw-mt-10 tw-mb-6 tw-text-center tw-text-3xl tw-font-medium md:tw-mt-20 md:tw-mb-12 md:tw-text-6xl"
+        class="tw-mb-6 tw-mt-10 tw-text-center tw-text-3xl tw-font-medium md:tw-mb-12 md:tw-mt-20 md:tw-text-6xl"
       >
         It's that simple.
       </div>
@@ -135,7 +151,7 @@
 
     <!-- Video -->
     <div
-      class="tw-flex tw-justify-center tw-bg-green tw-px-4 tw-pt-24 tw-pb-12 md:tw-pb-16"
+      class="tw-flex tw-justify-center tw-bg-green tw-px-4 tw-pb-12 tw-pt-24 md:tw-pb-16"
     >
       <div class="tw-h-64 tw-max-w-3xl tw-flex-1 sm:tw-h-80 md:tw-h-96">
         <iframe
@@ -166,7 +182,7 @@
     <!-- Privacy Policy -->
     <div class="tw-flex tw-flex-col tw-bg-green">
       <div
-        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pt-6 tw-pb-6"
+        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pb-6 tw-pt-6"
       >
         <router-link
           class="tw-font-bold tw-text-white"
