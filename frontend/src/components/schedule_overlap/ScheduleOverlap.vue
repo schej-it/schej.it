@@ -38,7 +38,10 @@
             >
               <!-- Days -->
               <div
-                class="tw-sticky tw-top-14 tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white sm:tw-top-16"
+                :class="
+                  sampleCalendarEventsByDay ? undefined : 'tw-sticky tw-top-14'
+                "
+                class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white sm:tw-top-16"
               >
                 <div
                   v-for="(day, i) in days"
