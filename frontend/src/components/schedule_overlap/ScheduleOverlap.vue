@@ -1479,6 +1479,12 @@ export default {
         this.setAvailabilityAutomatically()
       }
     },
+    page() {
+      this.$nextTick(() => {
+        console.log("set timeslot size!")
+        this.setTimeslotSize()
+      })
+    },
   },
   created() {
     this.resetCurUserAvailability()
@@ -1495,7 +1501,7 @@ export default {
 
     // Get timeslot size
     this.setTimeslotSize()
-    window.addEventListener("resize", this.setTimeslotSize)
+    addEventListener("resize", this.setTimeslotSize)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
       if (isPhone(this.$vuetify)) {
@@ -1512,6 +1518,7 @@ export default {
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)
+    removeEventListener("resize", this.setTimeslotSize)
   },
   components: {
     UserAvatarContent,
