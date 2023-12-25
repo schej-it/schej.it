@@ -278,9 +278,10 @@
             <v-expand-transition>
               <div
                 v-if="delayedShowStickyRespondents"
-                class="tw-fixed tw-bottom-16 tw-left-0 tw-z-10 tw-w-full tw-bg-white tw-px-4 tw-pt-4"
+                class="tw-fixed tw-bottom-16 tw-left-0 tw-z-10 tw-w-full tw-bg-white"
               >
                 <RespondentsList
+                  class="tw-mx-4 tw-mt-4"
                   :max-height="100"
                   :eventId="event._id"
                   :curRespondent="curRespondent"
