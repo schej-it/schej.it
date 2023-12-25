@@ -20,7 +20,12 @@
       </div>
     </div>
     <div
-      class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-text-sm sm:tw-block"
+      class="tw-tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-pb-4 tw-text-sm sm:tw-block"
+      :style="
+        maxHeight
+          ? `max-height: ${maxHeight}px !important; overflow-y: auto !important;`
+          : ''
+      "
     >
       <template v-if="respondents.length === 0">
         <div class="tw-text-very-dark-gray">No responses yet!</div>
@@ -32,7 +37,7 @@
           class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-overflow-visible tw-py-1"
           @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
           @mouseleave="$emit('mouseLeaveRespondent')"
-          @click="(e) => $emit('clickRespondent', e, user._id)"
+          @click="(e) => clickRespondent(e, user._id)"
         >
           <div class="tw-relative tw-flex tw-items-center">
             <UserAvatarContent
@@ -130,6 +135,7 @@ export default {
     eventId: { type: String, required: true },
     respondents: { type: Array, required: true },
     isOwner: { type: Boolean, required: true },
+    maxHeight: { type: Number },
   },
 
   data() {
@@ -173,6 +179,10 @@ export default {
 
   methods: {
     ...mapActions(["showError", "showInfo"]),
+    clickRespondent(e, userId) {
+      e.stopImmediatePropagation()
+      this.$emit("clickRespondent", e, userId)
+    },
     respondentClass(id) {
       const c = []
       if (/*this.curRespondent == id ||*/ this.curRespondentsSet.has(id)) {

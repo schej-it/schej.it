@@ -274,22 +274,46 @@
               </v-dialog>
             </div>
           </div>
-
-          <RespondentsList
-            v-else
-            :eventId="event._id"
-            :curRespondent="curRespondent"
-            :curRespondents="curRespondents"
-            :curTimeslot="curTimeslot"
-            :curTimeslotAvailability="curTimeslotAvailability"
-            :respondents="respondents"
-            :isOwner="isOwner"
-            @mouseOverRespondent="mouseOverRespondent"
-            @mouseLeaveRespondent="mouseLeaveRespondent"
-            @clickRespondent="clickRespondent"
-            @editGuestAvailability="editGuestAvailability"
-            @refreshEvent="() => $emit('refreshEvent')"
-          />
+          <template v-else>
+            <v-expand-transition>
+              <div
+                v-if="delayedShowStickyRespondents"
+                class="tw-fixed tw-bottom-16 tw-left-0 tw-z-10 tw-w-full tw-bg-white tw-px-4 tw-pt-4"
+              >
+                <RespondentsList
+                  :max-height="100"
+                  :eventId="event._id"
+                  :curRespondent="curRespondent"
+                  :curRespondents="curRespondents"
+                  :curTimeslot="curTimeslot"
+                  :curTimeslotAvailability="curTimeslotAvailability"
+                  :respondents="respondents"
+                  :isOwner="isOwner"
+                  @mouseOverRespondent="mouseOverRespondent"
+                  @mouseLeaveRespondent="mouseLeaveRespondent"
+                  @clickRespondent="clickRespondent"
+                  @editGuestAvailability="editGuestAvailability"
+                  @refreshEvent="() => $emit('refreshEvent')"
+                />
+              </div>
+            </v-expand-transition>
+            <div ref="beforeRespondentsList"></div>
+            <RespondentsList
+              :eventId="event._id"
+              :curRespondent="curRespondent"
+              :curRespondents="curRespondents"
+              :curTimeslot="curTimeslot"
+              :curTimeslotAvailability="curTimeslotAvailability"
+              :respondents="respondents"
+              :isOwner="isOwner"
+              @mouseOverRespondent="mouseOverRespondent"
+              @mouseLeaveRespondent="mouseLeaveRespondent"
+              @clickRespondent="clickRespondent"
+              @editGuestAvailability="editGuestAvailability"
+              @refreshEvent="() => $emit('refreshEvent')"
+            />
+          </template>
+          <div ref="afterRespondentsList"></div>
         </div>
       </div>
 
@@ -428,6 +452,9 @@ export default {
       /* Variables for scrolling */
       calendarScrollLeft: 0, // The current scroll position of the calendar
       calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
+      scrolledToRespondents: false, // whether we have scrolled to the respondents section
+      delayedShowStickyRespondents: false, // showStickyRespondents variable but changes 100ms after the actual variable changes (to add some delay)
+      delayedShowStickyRespondentsTimeout: null, // Timeout that sets delayedShowStickyRespondents
 
       /* Variables for pagination */
       page: 0,
@@ -717,6 +744,16 @@ export default {
     },
     hasPrevPage() {
       return this.page > 0
+    },
+
+    showStickyRespondents() {
+      return (
+        this.isPhone &&
+        !this.scrolledToRespondents &&
+        (this.curTimeslot.dayIndex !== -1 ||
+          this.curRespondent.length > 0 ||
+          this.curRespondents.length > 0)
+      )
     },
   },
   methods: {
@@ -1430,6 +1467,18 @@ export default {
       this.calendarMaxScroll = e.target.scrollWidth - e.target.offsetWidth
       this.calendarScrollLeft = e.target.scrollLeft
     },
+    onScroll(e) {
+      const afterEl = this.$refs.afterRespondentsList
+      const beforeEl = this.$refs.beforeRespondentsList
+      if (afterEl && beforeEl) {
+        const { bottom: beforeBottom } = beforeEl.getBoundingClientRect()
+        const { bottom: afterBottom } = afterEl.getBoundingClientRect()
+        // 64 is height of bottom bar, 100 is max height of sticky respondents section
+        this.scrolledToRespondents =
+          beforeBottom + 100 + 64 < window.innerHeight ||
+          afterBottom + 64 < window.innerHeight
+      }
+    },
     //#endregion
 
     // -----------------------------------
@@ -1481,9 +1530,17 @@ export default {
     },
     page() {
       this.$nextTick(() => {
-        console.log("set timeslot size!")
         this.setTimeslotSize()
       })
+    },
+    showStickyRespondents: {
+      immediate: true,
+      handler(cur) {
+        clearTimeout(this.delayedShowStickyRespondentsTimeout)
+        this.delayedShowStickyRespondentsTimeout = setTimeout(() => {
+          this.delayedShowStickyRespondents = cur
+        }, 100)
+      },
     },
   },
   created() {
@@ -1502,6 +1559,7 @@ export default {
     // Get timeslot size
     this.setTimeslotSize()
     addEventListener("resize", this.setTimeslotSize)
+    addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
       if (isPhone(this.$vuetify)) {
@@ -1519,6 +1577,7 @@ export default {
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)
     removeEventListener("resize", this.setTimeslotSize)
+    removeEventListener("scroll", this.onScroll)
   },
   components: {
     UserAvatarContent,
