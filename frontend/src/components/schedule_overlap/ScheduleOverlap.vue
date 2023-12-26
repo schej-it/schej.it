@@ -10,10 +10,10 @@
             >
               <div
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                class="tw-sticky tw-top-14 -tw-ml-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
+                class="tw-sticky tw-top-14 -tw-ml-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
               >
                 <v-btn icon @click="prevPage"
-                  ><v-icon>mdi-chevron-left</v-icon></v-btn
+                  ><v-icon>mdi-arrow-left</v-icon></v-btn
                 >
               </div>
             </div>
@@ -196,10 +196,10 @@
 
           <div
             :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-            class="tw-sticky tw-top-14 -tw-mr-4 tw-self-start tw-pt-1.5 sm:tw-top-[4.4rem]"
+            class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
           >
             <v-btn icon @click="nextPage"
-              ><v-icon>mdi-chevron-right</v-icon></v-btn
+              ><v-icon>mdi-arrow-right</v-icon></v-btn
             >
           </div>
         </div>
