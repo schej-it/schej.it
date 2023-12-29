@@ -228,6 +228,14 @@ export const dateCompare = (date1, date2) => {
   return date1.getTime() - date2.getTime()
 }
 
+/** Returns whether the given date is between startDate and endDate */
+export const isDateBetween = (date, startDate, endDate) => {
+  date = new Date(date).getTime()
+  startDate = new Date(startDate).getTime()
+  endDate = new Date(endDate).getTime()
+  return date >= startDate && date <= endDate
+}
+
 /** returns -1 if a is before b, 1 if a is after b, 0 otherwise */
 export const compareDateDay = (a, b) => {
   a = new Date(a)

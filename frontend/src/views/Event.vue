@@ -133,7 +133,8 @@
           block
           id="feedback-btn"
           text
-          @click="giveFeedback"
+          href="https://forms.gle/9AgRy4PQfWfVuBnw8"
+          target="_blank"
         >
           Give feedback
         </v-btn>
@@ -413,6 +414,10 @@ export default {
     },
 
     highlightAvailabilityBtn() {
+      if (!this.isPhone) {
+        window.scrollTo({ top: 0, behavior: "instant" })
+      }
+
       this.availabilityBtnOpacity = 0.1
       setTimeout(() => {
         this.availabilityBtnOpacity = 1
@@ -424,9 +429,6 @@ export default {
           }, 100)
         }, 100)
       }, 100)
-    },
-    giveFeedback() {
-      window.open("https://forms.gle/9AgRy4PQfWfVuBnw8", "_blank")
     },
 
     onBeforeUnload(e) {

@@ -17,7 +17,8 @@
       <v-list-item
         v-if="showFeedbackBtn"
         id="feedback-btn"
-        @click="giveFeedback"
+        href="https://forms.gle/9AgRy4PQfWfVuBnw8"
+        target="_blank"
       >
         <v-list-item-title class="tw-flex tw-items-center tw-gap-1">
           <v-icon class="tw-mr-1" small color="black">mdi-message</v-icon>
@@ -68,9 +69,6 @@ export default {
 
   methods: {
     ...mapMutations(["setAuthUser"]),
-    giveFeedback() {
-      window.open("https://forms.gle/9AgRy4PQfWfVuBnw8", "_blank")
-    },
     async signOut() {
       await post("/auth/sign-out")
       this.setAuthUser(null)

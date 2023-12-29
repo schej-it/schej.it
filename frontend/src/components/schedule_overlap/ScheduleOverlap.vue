@@ -1,10 +1,23 @@
 <template>
   <span>
-    <div class="tw-select-none tw-p-4" style="-webkit-touch-callout: none">
+    <div class="tw-m-4 tw-select-none" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
-        <div class="tw-flex tw-grow tw-overflow-hidden">
+        <div class="tw-flex tw-grow">
           <!-- Times -->
-          <div class="tw-mt-12 tw-w-12 tw-flex-none">
+          <div class="tw-w-12 tw-flex-none">
+            <div
+              class="tw-sticky tw-top-14 tw-z-10 tw-mb-2 tw-h-10 tw-bg-white sm:tw-top-16"
+            >
+              <div
+                :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                class="tw-sticky tw-top-14 -tw-ml-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+              >
+                <v-btn class="tw-border-gray" outlined icon @click="prevPage"
+                  ><v-icon>mdi-chevron-left</v-icon></v-btn
+                >
+              </div>
+            </div>
+
             <div class="-tw-mt-[8px]">
               <div
                 v-for="(time, i) in times"
@@ -16,130 +29,131 @@
             </div>
           </div>
 
-          <div class="tw-grow tw-overflow-hidden">
-            <div class="tw-relative tw-overflow-hidden">
+          <!-- Middle section -->
+          <div class="tw-grow">
+            <div
+              ref="calendar"
+              @scroll="onCalendarScroll"
+              class="tw-flex tw-flex-col"
+            >
+              <!-- Days -->
               <div
-                ref="calendar"
-                @scroll="onCalendarScroll"
-                class="tw-relative tw-flex tw-flex-col tw-overflow-x-auto tw-overflow-y-hidden"
+                :class="
+                  sampleCalendarEventsByDay ? undefined : 'tw-sticky tw-top-14'
+                "
+                class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white sm:tw-top-16"
               >
-                <!-- Days -->
                 <div
-                  class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white"
+                  v-for="(day, i) in days"
+                  :key="i"
+                  class="tw-flex-1 tw-bg-white"
+                  style="min-width: 50px"
                 >
-                  <div
-                    v-for="(day, i) in days"
-                    :key="i"
-                    class="tw-flex-1 tw-bg-white"
-                    style="min-width: 50px"
-                  >
-                    <div class="tw-text-center">
-                      <div
-                        v-if="isSpecificDates"
-                        class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
-                      >
-                        {{ day.dateString }}
-                      </div>
-                      <div class="tw-text-lg tw-capitalize">
-                        {{ day.dayText }}
-                      </div>
+                  <div class="tw-text-center">
+                    <div
+                      v-if="isSpecificDates"
+                      class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
+                    >
+                      {{ day.dateString }}
+                    </div>
+                    <div class="tw-text-lg tw-capitalize">
+                      {{ day.dayText }}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Calendar -->
-                <div class="tw-flex tw-flex-col">
-                  <div class="tw-flex-1">
+              <!-- Calendar -->
+              <div class="tw-flex tw-flex-col">
+                <div class="tw-flex-1">
+                  <div
+                    id="times"
+                    data-long-press-delay="500"
+                    class="tw-relative tw-flex"
+                    @mouseleave="resetCurTimeslot"
+                  >
+                    <!-- Loader -->
                     <div
-                      id="times"
-                      data-long-press-delay="500"
-                      class="tw-relative tw-flex"
-                      @mouseleave="resetCurTimeslot"
+                      v-if="
+                        (alwaysShowCalendarEvents || editing) &&
+                        loadingCalendarEvents
+                      "
+                      class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                     >
-                      <!-- Loader -->
+                      <v-progress-circular class="tw-text-blue" indeterminate />
+                    </div>
+
+                    <div
+                      v-for="(day, d) in days"
+                      :key="d"
+                      class="tw-relative tw-flex-1"
+                      style="min-width: 50px"
+                    >
+                      <!-- Timeslots -->
                       <div
-                        v-if="
-                          (alwaysShowCalendarEvents || editing) &&
-                          loadingCalendarEvents
-                        "
-                        class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
+                        v-for="(time, t) in times"
+                        :key="t"
+                        class="tw-w-full"
                       >
-                        <v-progress-circular
-                          class="tw-text-blue"
-                          indeterminate
-                        />
+                        <div
+                          class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                          :class="timeslotClassStyle(day, time, d, t).class"
+                          :style="timeslotClassStyle(day, time, d, t).style"
+                          v-on="timeslotVon(d, t)"
+                        ></div>
                       </div>
 
-                      <div
-                        v-for="(day, d) in days"
-                        :key="d"
-                        class="tw-relative tw-flex-1"
-                        style="min-width: 50px"
-                      >
-                        <!-- Timeslots -->
-                        <div
-                          v-for="(time, t) in times"
-                          :key="t"
-                          class="tw-w-full"
+                      <!-- Calendar events -->
+                      <div v-if="editing || alwaysShowCalendarEvents">
+                        <v-fade-transition
+                          v-for="event in calendarEventsByDay[
+                            d + page * maxDaysPerPage
+                          ]"
+                          :key="event.id"
+                          appear
                         >
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
-                            :class="timeslotClassStyle(day, time, d, t).class"
-                            :style="timeslotClassStyle(day, time, d, t).style"
-                            v-on="timeslotVon(d, t)"
-                          ></div>
-                        </div>
-
-                        <!-- Calendar events -->
-                        <div v-if="editing || alwaysShowCalendarEvents">
-                          <v-fade-transition
-                            v-for="(event, e) in calendarEventsByDay[d]"
-                            :key="`${d}-${e}`"
-                            appear
-                          >
-                            <div
-                              class="ph-no-capture tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="{
-                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
-                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
-                              }"
-                              style="pointer-events: none"
-                            >
-                              <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
-                              >
-                                <div
-                                  :class="`tw-text-${
-                                    noEventNames ? 'dark-gray' : 'blue'
-                                  }`"
-                                  class="tw-font-medium"
-                                >
-                                  {{ noEventNames ? "BUSY" : event.summary }}
-                                </div>
-                              </div>
-                            </div>
-                          </v-fade-transition>
-                        </div>
-
-                        <!-- Scheduled event -->
-                        <div v-if="state === states.SCHEDULE_EVENT">
-                          <div
-                            v-if="
-                              (dragStart && dragStart.dayIndex === d) ||
-                              (!dragStart &&
-                                curScheduledEvent &&
-                                curScheduledEvent.dayIndex === d)
-                            "
-                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="scheduledEventStyle"
+                            class="ph-no-capture tw-absolute tw-w-full tw-select-none tw-p-px"
+                            :style="{
+                              top: `calc(${event.hoursOffset} * 4 * 1rem)`,
+                              height: `calc(${event.hoursLength} * 4 * 1rem)`,
+                            }"
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
                             >
-                              <div class="tw-font-medium tw-text-white">
-                                {{ event.name }}
+                              <div
+                                :class="`tw-text-${
+                                  noEventNames ? 'dark-gray' : 'blue'
+                                }`"
+                                class="tw-font-medium"
+                              >
+                                {{ noEventNames ? "BUSY" : event.summary }}
                               </div>
+                            </div>
+                          </div>
+                        </v-fade-transition>
+                      </div>
+
+                      <!-- Scheduled event -->
+                      <div v-if="state === states.SCHEDULE_EVENT">
+                        <div
+                          v-if="
+                            (dragStart && dragStart.dayIndex === d) ||
+                            (!dragStart &&
+                              curScheduledEvent &&
+                              curScheduledEvent.dayIndex === d)
+                          "
+                          class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                          :style="scheduledEventStyle"
+                          style="pointer-events: none"
+                        >
+                          <div
+                            class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                          >
+                            <div class="tw-font-medium tw-text-white">
+                              {{ event.name }}
                             </div>
                           </div>
                         </div>
@@ -148,17 +162,6 @@
                   </div>
                 </div>
               </div>
-
-              <ZigZag
-                v-if="showLeftZigZag"
-                left
-                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
-              />
-              <ZigZag
-                v-if="showRightZigZag"
-                right
-                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
-              />
             </div>
 
             <!-- Hint text (desktop) -->
@@ -190,6 +193,15 @@
               @confirmScheduleEvent="confirmScheduleEvent"
             />
           </div>
+
+          <div
+            :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+            class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+          >
+            <v-btn class="tw-border-gray" outlined icon @click="nextPage"
+              ><v-icon>mdi-chevron-right</v-icon></v-btn
+            >
+          </div>
         </div>
 
         <div class="break" v-if="isPhone"></div>
@@ -208,7 +220,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-py-4 sm:tw-w-52 sm:tw-flex-none sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
+          class="tw-w-full tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-8 sm:tw-pr-0 sm:tw-pt-12"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-2"
@@ -262,22 +274,47 @@
               </v-dialog>
             </div>
           </div>
-
-          <RespondentsList
-            v-else
-            :eventId="event._id"
-            :curRespondent="curRespondent"
-            :curRespondents="curRespondents"
-            :curTimeslot="curTimeslot"
-            :curTimeslotAvailability="curTimeslotAvailability"
-            :respondents="respondents"
-            :isOwner="isOwner"
-            @mouseOverRespondent="mouseOverRespondent"
-            @mouseLeaveRespondent="mouseLeaveRespondent"
-            @clickRespondent="clickRespondent"
-            @editGuestAvailability="editGuestAvailability"
-            @refreshEvent="() => $emit('refreshEvent')"
-          />
+          <template v-else>
+            <v-expand-transition>
+              <div
+                v-if="delayedShowStickyRespondents"
+                class="tw-fixed tw-bottom-16 tw-left-0 tw-z-10 tw-w-full tw-bg-white"
+              >
+                <RespondentsList
+                  class="tw-mx-4 tw-mt-4"
+                  :max-height="100"
+                  :eventId="event._id"
+                  :curRespondent="curRespondent"
+                  :curRespondents="curRespondents"
+                  :curTimeslot="curTimeslot"
+                  :curTimeslotAvailability="curTimeslotAvailability"
+                  :respondents="respondents"
+                  :isOwner="isOwner"
+                  @mouseOverRespondent="mouseOverRespondent"
+                  @mouseLeaveRespondent="mouseLeaveRespondent"
+                  @clickRespondent="clickRespondent"
+                  @editGuestAvailability="editGuestAvailability"
+                  @refreshEvent="() => $emit('refreshEvent')"
+                />
+              </div>
+            </v-expand-transition>
+            <div ref="beforeRespondentsList"></div>
+            <RespondentsList
+              :eventId="event._id"
+              :curRespondent="curRespondent"
+              :curRespondents="curRespondents"
+              :curTimeslot="curTimeslot"
+              :curTimeslotAvailability="curTimeslotAvailability"
+              :respondents="respondents"
+              :isOwner="isOwner"
+              @mouseOverRespondent="mouseOverRespondent"
+              @mouseLeaveRespondent="mouseLeaveRespondent"
+              @clickRespondent="clickRespondent"
+              @editGuestAvailability="editGuestAvailability"
+              @refreshEvent="() => $emit('refreshEvent')"
+            />
+          </template>
+          <div ref="afterRespondentsList"></div>
         </div>
       </div>
 
@@ -335,6 +372,8 @@ import {
   dateToDowDate,
   _delete,
   get,
+  getDateDayOffset,
+  isDateBetween,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -414,6 +453,12 @@ export default {
       /* Variables for scrolling */
       calendarScrollLeft: 0, // The current scroll position of the calendar
       calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
+      scrolledToRespondents: false, // whether we have scrolled to the respondents section
+      delayedShowStickyRespondents: false, // showStickyRespondents variable but changes 100ms after the actual variable changes (to add some delay)
+      delayedShowStickyRespondentsTimeout: null, // Timeout that sets delayedShowStickyRespondents
+
+      /* Variables for pagination */
+      page: 0,
 
       hasRefreshedAuthUser: false,
     }
@@ -520,14 +565,21 @@ export default {
         "dec",
       ]
 
-      for (let date of this.event.dates) {
-        date = new Date(date)
-        const offsetDate = new Date(date);
+      for (
+        let i = this.page * this.maxDaysPerPage;
+        i < this.event.dates.length &&
+        i < (this.page + 1) * this.maxDaysPerPage;
+        ++i
+      ) {
+        const date = new Date(this.event.dates[i])
+        const offsetDate = new Date(date)
         offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
         days.push({
           dayText: daysOfWeek[offsetDate.getDay()],
-          dateString: `${months[offsetDate.getMonth()]} ${offsetDate.getDate()}`,
+          dateString: `${
+            months[offsetDate.getMonth()]
+          } ${offsetDate.getDate()}`,
           dateObject: date,
         })
       }
@@ -549,7 +601,7 @@ export default {
             desktop:
               "Click and drag on the calendar to edit your availability. Green means available.",
             mobile:
-              "Tap and drag on the calendar to edit your availability. Drag the dates at the top to scroll. Green means available.",
+              "Tap and drag on the calendar to edit your availability. Green means available.",
           }
         case this.states.SCHEDULE_EVENT:
           return {
@@ -692,6 +744,25 @@ export default {
     },
     showRightZigZag() {
       return Math.ceil(this.calendarScrollLeft) < this.calendarMaxScroll
+    },
+    maxDaysPerPage() {
+      return this.isPhone ? 3 : 7
+    },
+    hasNextPage() {
+      return this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0
+    },
+    hasPrevPage() {
+      return this.page > 0
+    },
+
+    showStickyRespondents() {
+      return (
+        this.isPhone &&
+        !this.scrolledToRespondents &&
+        (this.curTimeslot.dayIndex !== -1 ||
+          this.curRespondent.length > 0 ||
+          this.curRespondents.length > 0)
+      )
     },
   },
   methods: {
@@ -842,16 +913,13 @@ export default {
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set()
       const tmpAvailability = new Set()
-      for (const d in this.days) {
-        const day = this.days[d]
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          const endDate = getDateHoursOffset(
-            day.dateObject,
-            time.hoursOffset + 0.25
-          )
-          const index = this.calendarEventsByDay[d].findIndex((e) => {
+          const startDate = getDateHoursOffset(date, time.hoursOffset)
+          const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
+          const index = this.calendarEventsByDay[i].findIndex((e) => {
             const notIntersect =
               dateCompare(endDate, e.startDate) <= 0 ||
               dateCompare(startDate, e.endDate) >= 0
@@ -862,29 +930,47 @@ export default {
           }
         }
       }
-      this.animateAvailability(tmpAvailability)
+      const pageStartDate = getDateDayOffset(
+        new Date(this.event.dates[0]),
+        this.page * this.maxDaysPerPage
+      )
+      const pageEndDate = getDateDayOffset(pageStartDate, this.maxDaysPerPage)
+      this.animateAvailability(tmpAvailability, pageStartDate, pageEndDate)
     },
-    animateAvailability(availability) {
-      /* Animate the filling out of availability using setTimeout */
+    animateAvailability(availability, startDate, endDate) {
+      /* Animate the filling out of availability using setTimeout, between startDate and endDate */
 
       this.availabilityAnimEnabled = true
       this.availabilityAnimTimeouts = []
 
-      let msPerBlock = 25
-      if (availability.size * msPerBlock > this.maxAnimTime) {
-        msPerBlock = this.maxAnimTime / availability.size
+      let msPerGroup = 25
+      let blocksPerGroup = 2
+      if (
+        (availability.size / blocksPerGroup) * msPerGroup >
+        this.maxAnimTime
+      ) {
+        blocksPerGroup = (availability.size * msPerGroup) / this.maxAnimTime
       }
+      let availabilityArray = [...availability]
+      availabilityArray = availabilityArray.filter((a) =>
+        isDateBetween(a, startDate, endDate)
+      )
 
-      let i = 0
-      for (const a of availability) {
-        const index = i
+      for (let i = 0; i < availabilityArray.length / blocksPerGroup + 1; ++i) {
         const timeout = setTimeout(() => {
-          this.availability.add(a)
+          for (const a of availabilityArray.slice(
+            i * blocksPerGroup,
+            i * blocksPerGroup + blocksPerGroup
+          )) {
+            this.availability.add(a)
+          }
           this.availability = new Set(this.availability)
-
-          if (index == availability.size - 1) {
+          if (i >= availabilityArray.length / blocksPerGroup) {
+            // Make sure the entire availability has been added (will not be guaranteed when only animating a portion of availability)
+            this.availability = new Set(availability)
             setTimeout(() => {
               this.availabilityAnimEnabled = false
+
               if (this.showSnackbar) {
                 this.showInfo(
                   "Your availability has been set automatically using your Google Calendar!"
@@ -893,10 +979,9 @@ export default {
               this.unsavedChanges = false
             }, 500)
           }
-        }, i * msPerBlock)
+        }, i * msPerGroup)
 
         this.availabilityAnimTimeouts.push(timeout)
-        i++
       }
     },
     stopAvailabilityAnim() {
@@ -1391,6 +1476,31 @@ export default {
       this.calendarMaxScroll = e.target.scrollWidth - e.target.offsetWidth
       this.calendarScrollLeft = e.target.scrollLeft
     },
+    onScroll(e) {
+      const afterEl = this.$refs.afterRespondentsList
+      const beforeEl = this.$refs.beforeRespondentsList
+      if (afterEl && beforeEl) {
+        const { bottom: beforeBottom } = beforeEl.getBoundingClientRect()
+        const { bottom: afterBottom } = afterEl.getBoundingClientRect()
+        // 64 is height of bottom bar, 100 is max height of sticky respondents section
+        this.scrolledToRespondents =
+          beforeBottom + 100 + 64 < window.innerHeight ||
+          afterBottom + 64 < window.innerHeight
+      }
+    },
+    //#endregion
+
+    // -----------------------------------
+    //#region Pagination
+    // -----------------------------------
+    nextPage(e) {
+      e.stopImmediatePropagation()
+      this.page++
+    },
+    prevPage(e) {
+      e.stopImmediatePropagation()
+      this.page--
+    },
     //#endregion
   },
   watch: {
@@ -1427,6 +1537,20 @@ export default {
         this.setAvailabilityAutomatically()
       }
     },
+    page() {
+      this.$nextTick(() => {
+        this.setTimeslotSize()
+      })
+    },
+    showStickyRespondents: {
+      immediate: true,
+      handler(cur) {
+        clearTimeout(this.delayedShowStickyRespondentsTimeout)
+        this.delayedShowStickyRespondentsTimeout = setTimeout(() => {
+          this.delayedShowStickyRespondents = cur
+        }, 100)
+      },
+    },
   },
   created() {
     this.resetCurUserAvailability()
@@ -1443,7 +1567,8 @@ export default {
 
     // Get timeslot size
     this.setTimeslotSize()
-    window.addEventListener("resize", this.setTimeslotSize)
+    addEventListener("resize", this.setTimeslotSize)
+    addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
       if (isPhone(this.$vuetify)) {
@@ -1460,6 +1585,8 @@ export default {
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)
+    removeEventListener("resize", this.setTimeslotSize)
+    removeEventListener("scroll", this.onScroll)
   },
   components: {
     UserAvatarContent,
