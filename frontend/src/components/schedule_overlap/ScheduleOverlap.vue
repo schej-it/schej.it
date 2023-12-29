@@ -542,6 +542,10 @@ export default {
       }
       return max
     },
+    /** Returns the day offset caused by the timezone offset. If the timezone offset changes the date, dayOffset != 0 */
+    dayOffset() {
+      return Math.floor((this.event.startTime - this.timezoneOffset / 60) / 24)
+    },
     days() {
       /* Return the days that are encompassed by startDate and endDate */
       const days = []
@@ -568,10 +572,14 @@ export default {
         ++i
       ) {
         const date = new Date(this.event.dates[i])
+        const offsetDate = new Date(date)
+        offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
         days.push({
-          dayText: daysOfWeek[date.getDay()],
-          dateString: `${months[date.getMonth()]} ${date.getDate()}`,
+          dayText: daysOfWeek[offsetDate.getDay()],
+          dateString: `${
+            months[offsetDate.getMonth()]
+          } ${offsetDate.getDate()}`,
           dateObject: date,
         })
       }
