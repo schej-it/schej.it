@@ -73,16 +73,15 @@
           <!-- Calendar -->
           <div>
             <v-img
-            alt="schej character"
-            src="@/assets/schejie_hand.png"
-            :height="150"
-            v-if="isPhone"
-            transition="fade-transition"
-            contain
-            class="-tw-mb-20"
-          />
-          <LandingPageCalendar class="tw-drop-shadow-lg" /></div>
-
+              alt="schej character"
+              src="@/assets/schejie_hand.png"
+              :height="isPhone ? 150 : 190"
+              transition="fade-transition"
+              contain
+              class="mt-2 -tw-mb-20 tw-block sm:-tw-mb-24 sm:tw-mt-6 lg:tw-hidden"
+            />
+            <LandingPageCalendar class="tw-drop-shadow-lg" />
+          </div>
         </div>
 
         <!-- Right side -->
