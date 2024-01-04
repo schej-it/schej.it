@@ -18,7 +18,22 @@
       hide-details
       item-text="label"
       return-object
-    ></v-select>
+    >
+      <template v-slot:item="{ item, on, attrs }">
+        <v-list-item v-bind="attrs" v-on="on">
+          <v-list-item-content>
+            <v-list-item-title>
+              {{ item.gmtString }} {{ item.label }}
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+      <template v-slot:selection="{ item }">
+        <div class="v-select__selection v-select__selection--comma">
+          {{ item.gmtString }} {{ item.label }}
+        </div>
+      </template>
+    </v-select>
   </div>
 </template>
 
@@ -61,13 +76,13 @@ export default {
             const hr = `${(min / 60) ^ 0}:${
               min % 60 === 0 ? "00" : Math.abs(min % 60)
             }`
-            const prefix = `${zone[1]} (GMT${hr.includes("-") ? hr : `+${hr}`})`
-
-            let label = prefix
+            const gmtString = `(GMT${hr.includes("-") ? hr : `+${hr}`})`
+            const label = `${zone[1]}`
 
             return {
               value: tz.name,
               label: label,
+              gmtString: gmtString,
               offset: tz.current.offset * 60,
             }
           } catch (e) {
