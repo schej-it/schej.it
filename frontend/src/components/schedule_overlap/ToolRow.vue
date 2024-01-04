@@ -14,7 +14,6 @@
         <TimezoneSelector
           :value="curTimezone"
           @input="(val) => $emit('update:curTimezone', val)"
-          :timezones="Object.keys(timezoneMap)"
         />
 
         <template v-if="state !== states.EDIT_AVAILABILITY">
@@ -107,8 +106,7 @@ export default {
   props: {
     state: { type: String, required: true },
     states: { type: Object, required: true },
-    curTimezone: { type: String, required: true },
-    timezoneMap: { type: Object, required: true },
+    curTimezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },

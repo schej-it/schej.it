@@ -4,28 +4,96 @@
     class="tw-flex tw-items-center tw-justify-center"
     id="timezone-select-container"
   >
-    <div class="tw-mt-px tw-mr-2">Shown in</div>
+    <div class="tw-mr-2 tw-mt-px">Shown in</div>
     <v-select
       id="timezone-select"
       :value="value"
       @input="$emit('input', $event)"
-      class="-tw-mt-px tw-min-w-min tw-max-w-xl tw-flex-none tw-text-sm"
       :items="timezones"
+      :menu-props="{ auto: true }"
+      class="-tw-mt-px tw-w-52 tw-text-sm"
       dense
       color="#219653"
       item-color="green"
       hide-details
-    ></v-select>
+      item-text="label"
+      return-object
+    >
+      <template v-slot:item="{ item, on, attrs }">
+        <v-list-item v-bind="attrs" v-on="on">
+          <v-list-item-content>
+            <v-list-item-title>
+              {{ item.gmtString }} {{ item.label }}
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+      <template v-slot:selection="{ item }">
+        <div class="v-select__selection v-select__selection--comma">
+          {{ item.gmtString }} {{ item.label }}
+        </div>
+      </template>
+    </v-select>
   </div>
 </template>
 
 <script>
+import { allTimezones } from "@/constants"
+import spacetime from "spacetime"
+
 export default {
   name: "TimezoneSelector",
 
   props: {
-    value: { type: String, required: true },
-    timezones: { type: Array, default: () => [] },
+    value: { type: Object, required: true },
+  },
+
+  created() {
+    const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    let timezoneObject = this.timezones.find((t) => t.value === localTimezone)
+
+    if (!timezoneObject) {
+      const offset = spacetime.now(localTimezone).timezone().current.offset * 60
+      timezoneObject = this.timezones.find((t) => t.offset === offset)
+    }
+
+    this.$emit("input", timezoneObject)
+  },
+
+  computed: {
+    timezones() {
+      // ===============================================================================
+      // Source: https://github.com/ndom91/react-timezone-select/blob/main/src/index.tsx
+      // ===============================================================================
+
+      const t = Object.entries(allTimezones)
+        .map((zone) => {
+          try {
+            const now = spacetime.now(zone[0])
+            const tz = now.timezone()
+
+            const min = tz.current.offset * 60
+            const hr = `${(min / 60) ^ 0}:${
+              min % 60 === 0 ? "00" : Math.abs(min % 60)
+            }`
+            const gmtString = `(GMT${hr.includes("-") ? hr : `+${hr}`})`
+            const label = `${zone[1]}`
+
+            return {
+              value: tz.name,
+              label: label,
+              gmtString: gmtString,
+              offset: tz.current.offset * 60,
+            }
+          } catch (e) {
+            console.error(e)
+            return null
+          }
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.offset - b.offset)
+      return t
+    },
   },
 }
 </script>
