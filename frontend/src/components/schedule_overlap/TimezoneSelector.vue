@@ -11,7 +11,7 @@
       @input="$emit('input', $event)"
       :items="timezones"
       :menu-props="{ auto: true }"
-      class="-tw-mt-px tw-text-sm"
+      class="-tw-mt-px tw-w-52 tw-text-sm"
       dense
       color="#219653"
       item-color="green"
