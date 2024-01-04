@@ -47,7 +47,7 @@ export const allTimezones = Object.freeze({
   "America/Regina": "Saskatchewan",
   "America/Mexico_City": "Guadalajara, Mexico City, Monterrey",
   "America/Belize": "Central America",
-  "America/Detroit": "Eastern Time",
+  "America/New_York": "Eastern Time",
   "America/Bogota": "Bogota, Lima, Quito",
   "America/Caracas": "Caracas, La Paz",
   "America/Santiago": "Santiago",

@@ -1279,7 +1279,7 @@ export default {
         this.event.name
       )}&dates=${start}/${end}&details=${encodeURIComponent(
         "\n\nThis event was scheduled with schej: https://schej.it/e/"
-      )}${this.event._id}&add=${emailsString}`
+      )}${this.event._id}&ctz=${this.curTimezone.value}&add=${emailsString}`
 
       // Navigate to url and reset state
       window.open(url, "_blank")
