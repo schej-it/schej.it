@@ -179,7 +179,6 @@
               :state="state"
               :states="states"
               :cur-timezone.sync="curTimezone"
-              :timezone-map="timezoneMap"
               :show-best-times.sync="showBestTimes"
               :cur-scheduled-event="curScheduledEvent"
               :is-weekly="isWeekly"
@@ -323,7 +322,6 @@
         :state="state"
         :states="states"
         :cur-timezone.sync="curTimezone"
-        :timezone-map="timezoneMap"
         :show-best-times.sync="showBestTimes"
         :cur-scheduled-event="curScheduledEvent"
         :is-weekly="isWeekly"
@@ -445,7 +443,7 @@ export default {
       dragCur: null,
 
       /* Variables for options */
-      curTimezone: this.getLocalTimezone(),
+      curTimezone: {},
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
       deleteAvailabilityDialog: false,
@@ -720,21 +718,7 @@ export default {
       return times
     },
     timezoneOffset() {
-      return this.timezoneMap[this.curTimezone] * -1 // Multiplying by -1 because offset is flipped
-    },
-    timezoneMap() {
-      /* Maps timezone name to the timezone offset */
-      const map = timezoneData.reduce(function (map, obj) {
-        map[obj.name] = obj.offset
-        return map
-      }, {})
-
-      /* Adds current timezone to map if not in map */
-      const localTimezone = this.getLocalTimezone()
-      if (!map.hasOwnProperty(localTimezone)) {
-        map[localTimezone] = new Date().getTimezoneOffset() * -1 // Multiplying by -1 because offset is flipped
-      }
-      return map
+      return this.curTimezone.offset * -1 // Multiplying by -1 because offset is flipped
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
