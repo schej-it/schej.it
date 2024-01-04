@@ -75,10 +75,10 @@
             <v-img
               alt="schej character"
               src="@/assets/schejie_hand.png"
-              :height="isPhone ? 150 : 190"
+              :height="isPhone ? 70 : 80"
               transition="fade-transition"
               contain
-              class="mt-2 -tw-mb-24 tw-block sm:-tw-mb-[7.3rem] sm:tw-mt-6 lg:tw-hidden"
+              class="-tw-mb-4 tw-mt-2 tw-block sm:tw-mt-6 lg:tw-hidden"
             />
             <LandingPageCalendar class="tw-drop-shadow-lg" />
           </div>
@@ -89,10 +89,10 @@
           <v-img
             alt="schej character"
             src="@/assets/schejie_hand.png"
-            :height="250"
+            :height="90"
             transition="fade-transition"
             contain
-            class="-tw-mb-[8.5rem]"
+            class=""
           />
           <NewEvent
             class="tw-drop-shadow-lg"
