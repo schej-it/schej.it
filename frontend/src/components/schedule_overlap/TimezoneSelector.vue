@@ -61,7 +61,7 @@ export default {
             const hr = `${(min / 60) ^ 0}:${
               min % 60 === 0 ? "00" : Math.abs(min % 60)
             }`
-            const prefix = `(GMT${hr.includes("-") ? hr : `+${hr}`}) ${zone[1]}`
+            const prefix = `${zone[1]} (GMT${hr.includes("-") ? hr : `+${hr}`})`
 
             let label = prefix
 
