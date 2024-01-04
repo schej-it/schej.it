@@ -78,7 +78,7 @@
               :height="isPhone ? 150 : 190"
               transition="fade-transition"
               contain
-              class="mt-2 -tw-mb-20 tw-block sm:-tw-mb-24 sm:tw-mt-6 lg:tw-hidden"
+              class="mt-2 -tw-mb-24 tw-block sm:-tw-mb-[7.3rem] sm:tw-mt-6 lg:tw-hidden"
             />
             <LandingPageCalendar class="tw-drop-shadow-lg" />
           </div>
@@ -92,7 +92,7 @@
             :height="250"
             transition="fade-transition"
             contain
-            class="-tw-mb-28"
+            class="-tw-mb-[8.5rem]"
           />
           <NewEvent
             class="tw-drop-shadow-lg"
