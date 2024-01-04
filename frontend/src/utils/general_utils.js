@@ -2,7 +2,8 @@
   General utils
 */
 
-import { dateToTimeNum } from "./date_utils"
+import { eventTypes } from "@/constants"
+import { dateToDowDate, dateToTimeNum } from "./date_utils"
 
 var timeoutId
 /** Calls callback() on long press */
@@ -88,7 +89,12 @@ export const dataURItoBlob = (dataURI) => {
 
 /** Reformats the given event object to the format we want */
 export const processEvent = (event) => {
-  event.startTime = dateToTimeNum(new Date(event.dates[0]), true)
+  let startDate = event.dates[0]
+  if (event.type === eventTypes.DOW) {
+    startDate = dateToDowDate(event.dates, startDate, 0, true)
+  }
+
+  event.startTime = dateToTimeNum(new Date(startDate), true)
   event.endTime = (event.startTime + event.duration) % 24
 }
 
