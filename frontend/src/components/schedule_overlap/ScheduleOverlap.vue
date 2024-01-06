@@ -6,6 +6,7 @@
           <!-- Times -->
           <div class="tw-w-12 tw-flex-none">
             <div
+              :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
               class="tw-sticky tw-top-14 tw-z-10 tw-mb-2 tw-h-10 tw-bg-white sm:tw-top-16"
             >
               <div
