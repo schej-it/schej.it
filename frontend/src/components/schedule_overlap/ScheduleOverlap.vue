@@ -34,7 +34,7 @@
             <div
               ref="calendar"
               @scroll="onCalendarScroll"
-              class="tw-flex tw-flex-col"
+              class="tw-relative tw-flex tw-flex-col"
             >
               <!-- Days -->
               <div
@@ -162,6 +162,17 @@
                   </div>
                 </div>
               </div>
+
+              <ZigZag
+                v-if="hasPrevPage"
+                left
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
+              />
+              <ZigZag
+                v-if="hasNextPage"
+                right
+                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
+              />
             </div>
 
             <!-- Hint text (desktop) -->
