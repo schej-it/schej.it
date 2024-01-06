@@ -729,6 +729,9 @@ export default {
       return times
     },
     timezoneOffset() {
+      if (!("offset" in this.curTimezone)) {
+        return new Date().getTimezoneOffset()
+      }
       return this.curTimezone.offset * -1 // Multiplying by -1 because offset is flipped
     },
     userHasResponded() {
