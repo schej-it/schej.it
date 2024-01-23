@@ -2,13 +2,14 @@
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl sm:tw-mt-7">
     <!-- Dialog -->
     <NewEventDialog v-model="dialog" />
-    <div class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8">
-      <EventType
-        v-for="(eventType, t) in events"
-        :key="t"
-        :eventType="eventType"
-      ></EventType>
-    </div>
+    <v-fade-transition>
+      <div class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8" v-if="!loading">
+        <EventType
+          v-for="(eventType, t) in events"
+          :key="t"
+          :eventType="eventType"
+        ></EventType></div
+    ></v-fade-transition>
 
     <!-- FAB -->
     <BottomFab id="create-event-btn" @click="dialog = true">
@@ -35,6 +36,7 @@ export default {
 
   data: () => ({
     dialog: false,
+    loading: true,
   }),
 
   computed: {
@@ -63,7 +65,9 @@ export default {
       return this.createdEvents.filter((e) => e.type !== eventTypes.DOW)
     },
     weeklyEvents() {
-      return this.createdEvents.filter((e) => e.type === eventTypes.DOW).concat(this.joinedEvents.filter((e) => e.type === eventTypes.DOW))
+      return this.createdEvents
+        .filter((e) => e.type === eventTypes.DOW)
+        .concat(this.joinedEvents.filter((e) => e.type === eventTypes.DOW))
     },
   },
 
@@ -72,7 +76,9 @@ export default {
   },
 
   created() {
-    this.getEvents()
+    this.getEvents().then(() => {
+      this.loading = false
+    })
   },
 }
 </script>
