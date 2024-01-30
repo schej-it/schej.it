@@ -586,10 +586,10 @@ export default {
         offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
         days.push({
-          dayText: daysOfWeek[offsetDate.getDay()],
+          dayText: daysOfWeek[offsetDate.getUTCDay()],
           dateString: `${
-            months[offsetDate.getMonth()]
-          } ${offsetDate.getDate()}`,
+            months[offsetDate.getUTCMonth()]
+          } ${offsetDate.getUTCDate()}`,
           dateObject: date,
         })
       }
