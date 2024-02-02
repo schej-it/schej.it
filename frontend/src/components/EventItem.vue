@@ -32,6 +32,54 @@
           </template>
 
           <v-list justify="center" class="tw-py-1">
+            <v-dialog v-model="duplicateDialog" width="400" persistent>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  id="duplicate-event-btn"
+                  text
+                  class="tw-px-6"
+                  v-bind="attrs"
+                  v-on="on"
+                  block
+                  >Duplicate</v-btn
+                >
+              </template>
+              <v-card>
+                <v-card-title>Duplicate event</v-card-title>
+                <v-card-text>
+                  <v-text-field
+                    v-model="duplicateDialogOptions.name"
+                    placeholder="Name your event..."
+                    :disabled="duplicateDialogOptions.loading"
+                    hide-details
+                    solo
+                  />
+                  <v-checkbox
+                    v-model="duplicateDialogOptions.copyAvailability"
+                    label="Copy responses"
+                    :disabled="duplicateDialogOptions.loading"
+                    hide-details
+                    class="tw-mt-2"
+                  />
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn
+                    text
+                    @click="duplicateDialog = false"
+                    :disabled="duplicateDialogOptions.loading"
+                    >Cancel</v-btn
+                  >
+                  <v-btn
+                    text
+                    color="primary"
+                    @click="duplicateEvent"
+                    :loading="duplicateDialogOptions.loading"
+                    >Confirm</v-btn
+                  >
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
             <v-dialog v-model="removeDialog" width="400" persistent>
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
@@ -52,7 +100,7 @@
                 <v-card-actions>
                   <v-spacer />
                   <v-btn text @click="removeDialog = false">Cancel</v-btn>
-                  <v-btn text color="error" @click="removeEvent()"
+                  <v-btn text color="error" @click="removeEvent"
                     >I'm sure</v-btn
                   >
                 </v-card-actions>
@@ -67,7 +115,7 @@
 </template>
 
 <script>
-import { getDateRangeStringForEvent, _delete, isPhone } from "@/utils"
+import { getDateRangeStringForEvent, _delete, isPhone, post } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
 export default {
@@ -78,6 +126,12 @@ export default {
   },
 
   data: () => ({
+    duplicateDialog: false,
+    duplicateDialogOptions: {
+      name: "",
+      copyAvailability: false,
+      loading: false,
+    },
     removeDialog: false,
   }),
 
@@ -101,12 +155,61 @@ export default {
         .then(() => {
           this.getEvents()
           this.$refs.menu.save() // NOTE: Not sure why but without this line, the menu persists to the next event.
+
+          this.$posthog?.capture("Event removed", {
+            eventId: this.event._id,
+            eventName: this.event.name,
+            eventDuration: this.event.duration,
+            eventDates: this.event.dates,
+            eventNotificationsEnabled: this.event.notificationsEnabled,
+            eventType: this.event.type,
+          })
         })
         .catch((err) => {
           this.showError(
             "There was a problem removing that event! Please try again later."
           )
         })
+    },
+    duplicateEvent() {
+      this.duplicateDialogOptions.loading = true
+      post(`/events/${this.event._id}/duplicate`, {
+        eventName: this.duplicateDialogOptions.name,
+        copyAvailability: this.duplicateDialogOptions.copyAvailability,
+      })
+        .then(({ eventId }) => {
+          this.getEvents()
+          this.$refs.menu.save() // NOTE: Not sure why but without this line, the menu persists to the next event.
+
+          this.$posthog?.capture("Event duplicated", {
+            eventId: eventId,
+            eventName: this.duplicateDialogOptions.name,
+            eventDuration: this.event.duration,
+            eventDates: this.event.dates,
+            eventNotificationsEnabled: this.event.notificationsEnabled,
+            eventType: this.event.type,
+            copyAvailability: this.duplicateDialogOptions.copyAvailability,
+          })
+        })
+        .catch((err) => {
+          this.showError(
+            "There was a problem duplicating that event! Please try again later."
+          )
+        })
+        .finally(() => {
+          this.duplicateDialogOptions.loading = false
+        })
+    },
+  },
+
+  watch: {
+    duplicateDialog: {
+      immediate: true,
+      handler(val) {
+        if (val) {
+          this.duplicateDialogOptions.name = `Copy of ${this.event.name}`
+        }
+      },
     },
   },
 }
