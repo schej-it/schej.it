@@ -382,6 +382,53 @@ var doc = `{
                 }
             }
         },
+        "/events/{eventId}/duplicate": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Duplicate event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Object containing options for the duplicated event",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "copyAvailability": {
+                                            "type": "boolean"
+                                        },
+                                        "eventName": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/events/{eventId}/response": {
             "post": {
                 "consumes": [
@@ -936,7 +983,13 @@ var doc = `{
         "models.CalendarEvent": {
             "type": "object",
             "properties": {
+                "calendarId": {
+                    "type": "string"
+                },
                 "endDate": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "startDate": {
