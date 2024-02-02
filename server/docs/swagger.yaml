@@ -47,7 +47,11 @@ definitions:
     type: object
   models.CalendarEvent:
     properties:
+      calendarId:
+        type: string
       endDate:
+        type: string
+      id:
         type: string
       startDate:
         type: string
@@ -376,6 +380,34 @@ paths:
       responses:
         "200": {}
       summary: Edits an event based on its id
+      tags:
+      - events
+  /events/{eventId}/duplicate:
+    post:
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing options for the duplicated event
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              copyAvailability:
+                type: boolean
+              eventName:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Duplicate event
       tags:
       - events
   /events/{eventId}/response:

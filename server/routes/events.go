@@ -29,6 +29,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
+	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
 
 // @Summary Creates a new event
@@ -378,4 +379,54 @@ func deleteEvent(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+// @Summary Duplicate event
+// @Tags events
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{eventName=string,copyAvailability=bool} true "Object containing options for the duplicated event"
+// @Success 200
+// @Router /events/{eventId}/duplicate [post]
+func duplicateEvent(c *gin.Context) {
+	payload := struct {
+		EventName        string `json:"eventName" binding:"required"`
+		CopyAvailability *bool  `json:"copyAvailability" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	eventId := c.Param("eventId")
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	// Get event
+	event := db.GetEventById(eventId)
+	if event == nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	// Make sure user has permission to duplicate this event
+	if event.OwnerId != user.Id {
+		c.Status(http.StatusForbidden)
+		return
+	}
+
+	// Update event
+	event.Id = primitive.NilObjectID
+	event.Name = payload.EventName
+	if !*payload.CopyAvailability {
+		event.Responses = make(map[string]*models.Response)
+	}
+
+	// Insert new event
+	result, err := db.EventsCollection.InsertOne(context.Background(), event)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
