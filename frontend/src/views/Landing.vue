@@ -72,28 +72,36 @@
 
           <!-- Calendar -->
           <div>
-            <v-img
+            <!-- <v-img
               alt="schej character"
               src="@/assets/schejie_hand.png"
               :height="isPhone ? 70 : 80"
               transition="fade-transition"
               contain
               class="-tw-mb-4 tw-mt-2 tw-block sm:tw-mt-6 lg:tw-hidden"
-            />
+            /> -->
             <LandingPageCalendar class="tw-drop-shadow-lg" />
           </div>
         </div>
 
         <!-- Right side -->
-        <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-block">
-          <v-img
+        <div
+          class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col lg:tw-overflow-hidden"
+        >
+          <!-- <v-img
             alt="schej character"
             src="@/assets/schejie_hand.png"
             :height="90"
             transition="fade-transition"
             contain
             class=""
-          />
+          /> -->
+          <canvas
+            id="canvas"
+            width="350"
+            height="350"
+            class="-tw-mb-36 -tw-mt-24 tw-self-center tw-overflow-hidden"
+          ></canvas>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -233,6 +241,7 @@ import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
+import { Rive } from "@rive-app/canvas"
 
 export default {
   name: "Landing",
@@ -293,12 +302,27 @@ export default {
   },
 
   methods: {
+    loadRiveAnimation() {
+      const r = new Rive({
+        src: "/rive/schej.riv",
+        canvas: document.getElementById("canvas"),
+        autoplay: true,
+        stateMachines: "wave",
+        onLoad: () => {
+          r.resizeDrawingSurfaceToCanvas()
+        },
+      })
+    },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
     },
     signIn() {
       this.signInDialog = true
     },
+  },
+
+  mounted() {
+    this.loadRiveAnimation()
   },
 }
 </script>
