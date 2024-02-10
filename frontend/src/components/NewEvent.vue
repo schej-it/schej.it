@@ -112,7 +112,7 @@
             }}</v-icon></v-btn
           >
           <v-expand-transition>
-            <div v-if="showAdvancedOptions">
+            <div v-show="showAdvancedOptions">
               <div class="tw-my-2">
                 <TimezoneSelector
                   class="tw-mb-2"
@@ -152,6 +152,11 @@ import {
 } from "@/utils"
 import { mapActions } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
+import dayjs from "dayjs"
+import utcPlugin from "dayjs/plugin/utc"
+import timezonePlugin from "dayjs/plugin/timezone"
+dayjs.extend(utcPlugin)
+dayjs.extend(timezonePlugin)
 
 export default {
   name: "NewEvent",
@@ -256,8 +261,11 @@ export default {
         type = eventTypes.SPECIFIC_DATES
 
         for (const day of this.selectedDays) {
-          const date = new Date(`${day}T${startTimeString}`)
-          dates.push(date)
+          const date = dayjs.tz(
+            `${day} ${startTimeString}`,
+            this.timezone.value
+          )
+          dates.push(date.toDate())
         }
       } else if (this.selectedDateOption === this.dateOptions.DOW) {
         type = eventTypes.DOW
@@ -265,8 +273,11 @@ export default {
         this.selectedDaysOfWeek.sort((a, b) => a - b)
         for (const dayIndex of this.selectedDaysOfWeek) {
           const day = dayIndexToDayString[dayIndex]
-          const date = new Date(`${day}T${startTimeString}`)
-          dates.push(date)
+          const date = dayjs.tz(
+            `${day} ${startTimeString}`,
+            this.timezone.value
+          )
+          dates.push(date.toDate())
         }
       }
 
