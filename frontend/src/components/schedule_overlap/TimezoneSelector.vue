@@ -4,7 +4,7 @@
     class="tw-flex tw-items-center tw-justify-center"
     id="timezone-select-container"
   >
-    <div class="tw-mr-2 tw-mt-px">Shown in</div>
+    <div class="tw-mr-2 tw-mt-px">{{ label }}</div>
     <v-select
       id="timezone-select"
       :value="value"
@@ -46,6 +46,7 @@ export default {
 
   props: {
     value: { type: Object, required: true },
+    label: { type: String, default: "Shown in" },
   },
 
   created() {

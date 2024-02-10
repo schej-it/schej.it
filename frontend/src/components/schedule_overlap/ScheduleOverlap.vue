@@ -391,7 +391,6 @@ import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import ZigZag from "./ZigZag.vue"
 import timezoneData from "@/data/timezones.json"
-import TimezoneSelector from "./TimezoneSelector.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
@@ -1590,7 +1589,6 @@ export default {
   components: {
     UserAvatarContent,
     ZigZag,
-    TimezoneSelector,
     ConfirmDetailsDialog,
     ToolRow,
     CalendarAccounts,

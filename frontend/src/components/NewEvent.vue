@@ -12,7 +12,7 @@
       </v-btn>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
-      <div class="tw-flex tw-flex-col tw-space-y-10">
+      <div class="tw-flex tw-flex-col tw-space-y-6">
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -25,7 +25,7 @@
         />
 
         <div>
-          <div class="tw-mb-4 tw-text-lg tw-text-black">
+          <div class="tw-mb-2 tw-text-lg tw-text-black">
             What times might work?
           </div>
           <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
@@ -50,7 +50,7 @@
         </div>
 
         <div>
-          <div class="tw-mb-4 tw-text-lg tw-text-black">
+          <div class="tw-mb-2 tw-text-lg tw-text-black">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
@@ -100,6 +100,29 @@
           hide-details
           class="tw-mt-2"
         />
+        <div>
+          <v-btn
+            class="tw-justify-start tw-pl-0"
+            block
+            text
+            @click="showAdvancedOptions = !showAdvancedOptions"
+            ><span class="tw-mr-1">Advanced options</span>
+            <v-icon>{{
+              showAdvancedOptions ? "mdi-chevron-up" : "mdi-chevron-down"
+            }}</v-icon></v-btn
+          >
+          <v-expand-transition>
+            <div v-if="showAdvancedOptions">
+              <div class="tw-my-2">
+                <TimezoneSelector
+                  class="tw-mb-2"
+                  v-model="timezone"
+                  label="Timezone"
+                />
+              </div>
+            </div>
+          </v-expand-transition>
+        </div>
       </div>
     </v-card-text>
     <v-card-actions class="tw-relative tw-px-8">
@@ -128,6 +151,7 @@ import {
   isPhone,
 } from "@/utils"
 import { mapActions } from "vuex"
+import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 
 export default {
   name: "NewEvent",
@@ -141,6 +165,10 @@ export default {
     allowNotifications: { type: Boolean, default: true },
   },
 
+  components: {
+    TimezoneSelector,
+  },
+
   data: () => ({
     name: "",
     startTime: 9,
@@ -150,11 +178,16 @@ export default {
     selectedDaysOfWeek: [],
     notificationsEnabled: false,
 
+    // Date options
     dateOptions: Object.freeze({
       SPECIFIC: "Specific dates",
       DOW: "Days of the week",
     }),
     selectedDateOption: "Specific dates",
+
+    // Advanced options
+    showAdvancedOptions: false,
+    timezone: {},
   }),
 
   computed: {
