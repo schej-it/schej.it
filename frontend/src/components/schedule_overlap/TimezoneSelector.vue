@@ -4,7 +4,7 @@
     class="tw-flex tw-items-center tw-justify-center"
     id="timezone-select-container"
   >
-    <div class="tw-mr-2 tw-mt-px">Shown in</div>
+    <div class="tw-mr-2 tw-mt-px">{{ label }}</div>
     <v-select
       id="timezone-select"
       :value="value"
@@ -46,9 +46,13 @@ export default {
 
   props: {
     value: { type: Object, required: true },
+    label: { type: String, default: "Shown in" },
   },
 
   created() {
+    if (this.value.value) return // Timezone has already been set
+
+    // Set timezone to local timezone if timezone not already set
     const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
     let timezoneObject = this.timezones.find((t) => t.value === localTimezone)
 

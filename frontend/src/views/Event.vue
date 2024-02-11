@@ -117,6 +117,7 @@
         :calendarPermissionGranted="calendarPermissionGranted"
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
+        :initial-timezone="initialTimezone"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"
@@ -208,6 +209,7 @@ export default {
   props: {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
+    initialTimezone: { type: Object, default: () => ({}) },
   },
 
   components: {
