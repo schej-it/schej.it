@@ -292,7 +292,10 @@ export default {
           type,
         })
           .then(({ eventId }) => {
-            this.$router.push({ name: "event", params: { eventId } })
+            this.$router.push({
+              name: "event",
+              params: { eventId, initialTimezone: this.timezone },
+            })
             this.loading = false
             this.$emit("input", false)
             this.reset()

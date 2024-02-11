@@ -390,7 +390,6 @@ import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import ZigZag from "./ZigZag.vue"
-import timezoneData from "@/data/timezones.json"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
@@ -416,6 +415,8 @@ export default {
     showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
 
     curGuestId: { type: String, default: "" }, // Id of the current guest being edited
+
+    initialTimezone: { type: Object, default: () => ({}) },
   },
   data() {
     return {
@@ -454,7 +455,7 @@ export default {
       dragCur: null,
 
       /* Variables for options */
-      curTimezone: {},
+      curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
       deleteAvailabilityDialog: false,

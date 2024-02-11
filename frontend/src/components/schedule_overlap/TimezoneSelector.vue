@@ -50,6 +50,9 @@ export default {
   },
 
   created() {
+    if (this.value.value) return // Timezone has already been set
+
+    // Set timezone to local timezone if timezone not already set
     const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
     let timezoneObject = this.timezones.find((t) => t.value === localTimezone)
 
