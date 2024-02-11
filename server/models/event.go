@@ -7,6 +7,7 @@ type EventType string
 const (
 	SPECIFIC_DATES EventType = "specific_dates"
 	DOW            EventType = "dow"
+	GROUP          EventType = "group"
 )
 
 // Representation of an Event in the mongoDB database
@@ -31,8 +32,9 @@ type Event struct {
 
 // A response object containing an array of times that the given user is available
 type Response struct {
-	Name         string               `json:"name" bson:",omitempty"`
-	UserId       primitive.ObjectID   `json:"userId" bson:",omitempty"`
-	User         *User                `json:"user" bson:",omitempty"`
-	Availability []primitive.DateTime `json:"availability" bson:"availability"`
+	Name                    string               `json:"name" bson:",omitempty"`
+	UserId                  primitive.ObjectID   `json:"userId" bson:",omitempty"`
+	User                    *User                `json:"user" bson:",omitempty"`
+	Availability            []primitive.DateTime `json:"availability" bson:"availability"`
+	UseCalendarAvailability *bool                `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
 }
