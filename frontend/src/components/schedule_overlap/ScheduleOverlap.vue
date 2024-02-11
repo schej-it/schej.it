@@ -1056,9 +1056,11 @@ export default {
     // -----------------------------------
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
-      ;({ width: this.timeslot.width, height: this.timeslot.height } = document
-        .querySelector(".timeslot")
-        .getBoundingClientRect())
+      const timeslotEl = document.querySelector(".timeslot")
+      if (timeslotEl) {
+        ;({ width: this.timeslot.width, height: this.timeslot.height } =
+          timeslotEl.getBoundingClientRect())
+      }
     },
     timeslotClassStyle(day, time, d, t) {
       /* Returns a class string and style object for the given timeslot div */
@@ -1501,6 +1503,15 @@ export default {
       this.page--
     },
     //#endregion
+
+    // -----------------------------------
+    //#region Resize
+    // -----------------------------------
+    onResize() {
+      this.setTimeslotSize()
+      this.page = 0
+    },
+    //#endregion
   },
   watch: {
     availability() {
@@ -1566,7 +1577,7 @@ export default {
 
     // Get timeslot size
     this.setTimeslotSize()
-    addEventListener("resize", this.setTimeslotSize)
+    addEventListener("resize", this.onResize)
     addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
@@ -1584,7 +1595,7 @@ export default {
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)
-    removeEventListener("resize", this.setTimeslotSize)
+    removeEventListener("resize", this.onResize)
     removeEventListener("scroll", this.onScroll)
   },
   components: {
