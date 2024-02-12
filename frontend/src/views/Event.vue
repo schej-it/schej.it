@@ -147,7 +147,7 @@
     <!-- Bottom bar for phones -->
     <div
       v-if="isPhone"
-      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
+      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4 tw-z-20"
     >
       <template v-if="!isEditing">
         <v-spacer />

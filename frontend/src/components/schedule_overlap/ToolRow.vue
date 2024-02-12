@@ -92,6 +92,25 @@
         />
       </div>
     </template>
+
+    <!-- Instructions when user is using phone view -->
+    <v-slide-y-reverse-transition>
+      <template v-if="isPhone && hintText != '' && showHintText">
+        <div
+          :class="`tw-fixed tw-left-0 tw-bottom-${
+            isWeekly && calendarPermissionGranted ? 32 : 16
+          } tw-z-10 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-py-2 tw-bg-light-gray tw-px-2 tw-text-sm tw-text-dark-gray`"
+        >
+          <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
+            <v-icon small>mdi-information-outline</v-icon>
+            <div>
+            {{ hintText }}
+          </div>
+          </div>
+          <v-icon small @click="closeHint">mdi-close</v-icon>
+        </div>
+      </template>
+    </v-slide-y-reverse-transition>
   </div>
 </template>
 
@@ -119,10 +138,27 @@ export default {
     GCalWeekSelector,
   },
 
+  data: () => ({
+    hintTextState: true,
+  }),
+
   computed: {
     isPhone() {
       return isPhone(this.$vuetify)
     },
+    showHintText() {
+      return this.hintTextState && !localStorage[`closedHintText${this.state}`]
+    },
+    hintText() {
+      switch(this.state) {
+        case this.states.EDIT_AVAILABILITY:
+          return "Tap and drag to add your available times in green."
+        case this.states.SCHEDULE_EVENT:
+          return "Tap and drag on the calendar to schedule a Google Calendar event during those times"
+        default:
+          return ""
+      }
+    }
   },
 
   methods: {
@@ -130,6 +166,10 @@ export default {
       this.$emit("update:showBestTimes", !!val)
       this.$emit("onShowBestTimesChange", !!val)
     },
+    closeHint() {
+      this.hintTextState = false
+      localStorage[`closedHintText${this.state}`] = true
+    }
   },
 }
 </script>

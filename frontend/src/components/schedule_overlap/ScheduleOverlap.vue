@@ -177,12 +177,12 @@
             </div>
 
             <!-- Hint text (desktop) -->
-            <div v-if="!isPhone && showHintText" class="tw-flex">
+            <div v-if="!isPhone && showHintText && hintText != ''" class="tw-flex">
               <div
-                class="tw-mt-2 tw-text-sm tw-text-dark-gray"
-                style="min-height: 1.4rem"
+                class="tw-mt-2 tw-flex tw-items-center tw-justify-center tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-[7px] tw-text-sm tw-text-dark-gray"
               >
-                {{ hintText.desktop }}
+                <v-icon small>mdi-information-outline</v-icon>
+                {{ hintText }}
               </div>
             </div>
 
@@ -216,17 +216,6 @@
         </div>
 
         <div class="break" v-if="isPhone"></div>
-
-        <!-- Hint text (mobile) -->
-        <div v-if="isPhone && showHintText" class="tw-flex">
-          <div class="tw-w-12"></div>
-          <div
-            class="tw-mt-2 tw-text-xs tw-text-dark-gray"
-            style="min-height: 2rem"
-          >
-            {{ hintText.mobile }}
-          </div>
-        </div>
 
         <!-- Respondents -->
         <div
@@ -607,21 +596,11 @@ export default {
     hintText() {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
-          return {
-            desktop:
-              "Click and drag on the calendar to edit your availability. Green means available.",
-            mobile:
-              "Tap and drag on the calendar to edit your availability. Green means available.",
-          }
+          return  "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
-          return {
-            desktop:
-              "Click and drag on the calendar to schedule a Google Calendar event during those times",
-            mobile:
-              "Tap and drag on the calendar to schedule a Google Calendar event during those times",
-          }
+          return "Click and drag on the calendar to schedule a Google Calendar event during those times"
         default:
-          return { desktop: "", mobile: "" }
+          return ""
       }
     },
     isPhone() {
