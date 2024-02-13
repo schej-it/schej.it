@@ -63,7 +63,7 @@
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
-            <div v-if="!isPhone">
+            <div v-if="!isPhone" class="tw-w-40 tw-flex">
               <template v-if="!isEditing">
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"

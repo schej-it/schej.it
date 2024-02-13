@@ -177,14 +177,23 @@
             </div>
 
             <!-- Hint text (desktop) -->
-            <div v-if="!isPhone && showHintText && hintText != ''" class="tw-flex">
+            <v-expand-transition>
+            <div
+              v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
+              class="tw-flex"
+            >
               <div
-                class="tw-mt-2 tw-flex tw-items-center tw-justify-center tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-[7px] tw-text-sm tw-text-dark-gray"
+                class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray"
               >
-                <v-icon small>mdi-information-outline</v-icon>
-                {{ hintText }}
+                <div class="tw-flex tw-items-center tw-gap-1">
+                  <v-icon small>mdi-information-outline</v-icon>
+                  {{ hintText }}
+                </div>
+                <v-btn icon @click="closeHint">
+                  <v-icon small>mdi-close</v-icon></v-btn
+                >
               </div>
-            </div>
+            </div></v-expand-transition>
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
@@ -460,6 +469,9 @@ export default {
       page: 0,
 
       hasRefreshedAuthUser: false,
+
+      /* Variables for hint */
+      hintState: true,
     }
   },
   computed: {
@@ -596,7 +608,7 @@ export default {
     hintText() {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
-          return  "Click and drag to add your available times in green."
+          return "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times"
         default:
@@ -741,6 +753,12 @@ export default {
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
       )
+    },
+    hintClosed() {
+      console.log(this.hintState)
+      console.log(localStorage[`closedHint${this.state}`])
+      console.log(this.state)
+      return !this.hintState || localStorage[`closedHint${this.state}`]
     },
   },
   methods: {
@@ -1489,6 +1507,15 @@ export default {
     onResize() {
       this.setTimeslotSize()
       this.page = 0
+    },
+    //#endregion
+
+    // -----------------------------------
+    //#region hint
+    // -----------------------------------
+    closeHint() {
+      this.hintState = false
+      localStorage[`closedHint${this.state}`] = true
     },
     //#endregion
   },
