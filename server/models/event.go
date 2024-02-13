@@ -27,12 +27,16 @@ type Event struct {
 	// Scheduled event
 	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
 	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
+
+	// Attendees
+	Attendees []string `json:"attendees" bson:"attendees,omitempty"`
 }
 
 // A response object containing an array of times that the given user is available
 type Response struct {
-	Name         string               `json:"name" bson:",omitempty"`
-	UserId       primitive.ObjectID   `json:"userId" bson:",omitempty"`
-	User         *User                `json:"user" bson:",omitempty"`
-	Availability []primitive.DateTime `json:"availability" bson:"availability"`
+	Name          string               `json:"name" bson:",omitempty"`
+	UserId        primitive.ObjectID   `json:"userId" bson:",omitempty"`
+	User          *User                `json:"user" bson:",omitempty"`
+	AttendeeEmail string               `json:"attendeeEmail" bson:"attendeeEmail,omitempty"` // Used to keep track of which attendee in the list of attendees this response is for
+	Availability  []primitive.DateTime `json:"availability" bson:"availability"`
 }

@@ -62,6 +62,11 @@ definitions:
     properties:
       _id:
         type: string
+      attendees:
+        description: Attendees
+        items:
+          type: string
+        type: array
       calendarEventId:
         type: string
       dates:
@@ -107,6 +112,10 @@ definitions:
     type: object
   models.Response:
     properties:
+      attendeeEmail:
+        description: Used to keep track of which attendee in the list of attendees
+          this response is for
+        type: string
       availability:
         type: string
       name:
@@ -380,6 +389,61 @@ paths:
       responses:
         "200": {}
       summary: Edits an event based on its id
+      tags:
+      - events
+  /events/{eventId}/attendee:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing info about the attendee to remove
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Removes an attendee from the event's list of attendees
+      tags:
+      - events
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing info about the attendee to add
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Adds an attendee to the event's list of attendees
       tags:
       - events
   /events/{eventId}/duplicate:

@@ -27,6 +27,8 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
+	eventRouter.POST("/:eventId/attendee", middleware.AuthRequired(), addAttendee)
+	eventRouter.DELETE("/:eventId/attendee", middleware.AuthRequired(), removeAttendee)
 	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
@@ -274,6 +276,90 @@ func deleteEventResponse(c *gin.Context) {
 			utils.DeleteEventResponseAggregation(userToDelete),
 		},
 	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Adds an attendee to the event's list of attendees
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing info about the attendee to add"
+// @Success 200
+// @Router /events/{eventId}/attendee [post]
+func addAttendee(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	session := sessions.Default(c)
+	eventIdString := c.Param("eventId")
+	eventId, err := primitive.ObjectIDFromHex(eventIdString)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	userIdInterface := session.Get("userId")
+	userIdString := userIdInterface.(string)
+	userId, err := primitive.ObjectIDFromHex(userIdString)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
+		"_id":     eventId,
+		"ownerId": userId,
+	}, bson.M{
+		"$addToSet": bson.M{"attendees": payload.Email},
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Removes an attendee from the event's list of attendees
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing info about the attendee to remove"
+// @Success 200
+// @Router /events/{eventId}/attendee [delete]
+func removeAttendee(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	session := sessions.Default(c)
+	eventIdString := c.Param("eventId")
+	eventId, err := primitive.ObjectIDFromHex(eventIdString)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	userIdInterface := session.Get("userId")
+	userIdString := userIdInterface.(string)
+	userId, err := primitive.ObjectIDFromHex(userIdString)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
+		"_id":     eventId,
+		"ownerId": userId,
+	}, bson.M{
+		"$pull": bson.M{"attendees": payload.Email},
+	})
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
