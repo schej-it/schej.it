@@ -523,6 +523,8 @@ paths:
           allOf:
           - type: object
           - properties:
+              attendeeEmail:
+                type: string
               availability:
                 items:
                   type: string

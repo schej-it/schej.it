@@ -554,6 +554,9 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "attendeeEmail": {
+                                            "type": "string"
+                                        },
                                         "availability": {
                                             "type": "array",
                                             "items": {

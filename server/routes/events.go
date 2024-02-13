@@ -131,14 +131,15 @@ func getEvent(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,guest=bool,name=string} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,guest=bool,name=string,attendeeEmail=string} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
-		Availability []primitive.DateTime `json:"availability" binding:"required"`
-		Guest        *bool                `json:"guest" binding:"required"`
-		Name         string               `json:"name"`
+		Availability  []primitive.DateTime `json:"availability" binding:"required"`
+		Guest         *bool                `json:"guest" binding:"required"`
+		Name          string               `json:"name"`
+		AttendeeEmail string               `json:"attendeeEmail"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -154,8 +155,9 @@ func updateEventResponse(c *gin.Context) {
 		userIdString = payload.Name
 
 		response = models.Response{
-			Name:         payload.Name,
-			Availability: payload.Availability,
+			Name:          payload.Name,
+			AttendeeEmail: payload.AttendeeEmail,
+			Availability:  payload.Availability,
 		}
 	} else {
 		userIdInterface := session.Get("userId")
@@ -167,8 +169,9 @@ func updateEventResponse(c *gin.Context) {
 		userIdString = userIdInterface.(string)
 
 		response = models.Response{
-			UserId:       utils.StringToObjectID(userIdString),
-			Availability: payload.Availability,
+			UserId:        utils.StringToObjectID(userIdString),
+			AttendeeEmail: payload.AttendeeEmail,
+			Availability:  payload.Availability,
 		}
 	}
 
