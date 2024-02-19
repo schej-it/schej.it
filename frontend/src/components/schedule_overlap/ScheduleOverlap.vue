@@ -178,22 +178,23 @@
 
             <!-- Hint text (desktop) -->
             <v-expand-transition>
-            <div
-              v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
-              class="tw-flex"
-            >
               <div
-                class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray"
+                v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
+                class="tw-flex"
               >
-                <div class="tw-flex tw-items-center tw-gap-1">
-                  <v-icon small>mdi-information-outline</v-icon>
-                  {{ hintText }}
-                </div>
-                <v-btn icon @click="closeHint">
-                  <v-icon small>mdi-close</v-icon></v-btn
+                <div
+                  class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray"
                 >
-              </div>
-            </div></v-expand-transition>
+                  <div class="tw-flex tw-items-center tw-gap-1">
+                    <v-icon small>mdi-information-outline</v-icon>
+                    {{ hintText }}
+                  </div>
+                  <v-btn icon @click="closeHint">
+                    <v-icon small>mdi-close</v-icon></v-btn
+                  >
+                </div>
+              </div></v-expand-transition
+            >
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
@@ -755,9 +756,6 @@ export default {
       )
     },
     hintClosed() {
-      console.log(this.hintState)
-      console.log(localStorage[`closedHint${this.state}`])
-      console.log(this.state)
       return !this.hintState || localStorage[`closedHint${this.state}`]
     },
   },
