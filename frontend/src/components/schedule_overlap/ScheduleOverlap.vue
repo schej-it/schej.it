@@ -1504,7 +1504,6 @@ export default {
     // -----------------------------------
     onResize() {
       this.setTimeslotSize()
-      this.page = 0
     },
     //#endregion
 
@@ -1564,6 +1563,13 @@ export default {
           this.delayedShowStickyRespondents = cur
         }, 100)
       },
+    },
+    maxDaysPerPage() {
+      // Set page to 0 if user switches from portrait to landscape orientation and we're on an invalid page number,
+      // i.e. we're on a page that displays 0 days
+      if (this.page * this.maxDaysPerPage >= this.event.dates.length) {
+        this.page = 0
+      }
     },
   },
   created() {
