@@ -7,6 +7,8 @@
       @setAvailabilityManually="setAvailabilityManually"
     />
 
+    <EmailRemindersDialog v-model="remindersDialog"></EmailRemindersDialog>
+
     <!-- Google sign in not supported dialog -->
     <SignInNotSupportedDialog v-model="webviewDialog" />
 
@@ -202,6 +204,7 @@ import { errors, authTypes, eventTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
+import EmailRemindersDialog from "@/components/event/EmailRemindersDialog.vue"
 
 export default {
   name: "Event",
@@ -218,10 +221,12 @@ export default {
     NewEventDialog,
     SignInNotSupportedDialog,
     MarkAvailabilityDialog,
+    EmailRemindersDialog,
   },
 
   data: () => ({
     choiceDialog: false,
+    remindersDialog: true,
     webviewDialog: false,
     guestDialog: false,
     editEventDialog: false,
