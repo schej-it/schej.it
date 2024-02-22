@@ -98,7 +98,7 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 	max, _ := timeMax.MarshalText()
 	req, _ := http.NewRequest(
 		"GET",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true", url.PathEscape(calendarId), min, max),
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true&eventTypes=default", url.PathEscape(calendarId), min, max),
 		nil,
 	)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))

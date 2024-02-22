@@ -12,7 +12,7 @@
       </v-btn>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
-      <div class="tw-flex tw-flex-col tw-space-y-10">
+      <div class="tw-flex tw-flex-col tw-space-y-6">
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -25,7 +25,7 @@
         />
 
         <div>
-          <div class="tw-mb-4 tw-text-lg tw-text-black">
+          <div class="tw-mb-2 tw-text-lg tw-text-black">
             What times might work?
           </div>
           <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
@@ -50,7 +50,7 @@
         </div>
 
         <div>
-          <div class="tw-mb-4 tw-text-lg tw-text-black">
+          <div class="tw-mb-2 tw-text-lg tw-text-black">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
@@ -100,6 +100,29 @@
           hide-details
           class="tw-mt-2"
         />
+        <div>
+          <v-btn
+            class="tw-justify-start tw-pl-0"
+            block
+            text
+            @click="showAdvancedOptions = !showAdvancedOptions"
+            ><span class="tw-mr-1">Advanced options</span>
+            <v-icon>{{
+              showAdvancedOptions ? "mdi-chevron-up" : "mdi-chevron-down"
+            }}</v-icon></v-btn
+          >
+          <v-expand-transition>
+            <div v-show="showAdvancedOptions">
+              <div class="tw-my-2">
+                <TimezoneSelector
+                  class="tw-mb-2"
+                  v-model="timezone"
+                  label="Timezone"
+                />
+              </div>
+            </div>
+          </v-expand-transition>
+        </div>
       </div>
     </v-card-text>
     <v-card-actions class="tw-relative tw-px-8">
@@ -128,6 +151,12 @@ import {
   isPhone,
 } from "@/utils"
 import { mapActions } from "vuex"
+import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
+import dayjs from "dayjs"
+import utcPlugin from "dayjs/plugin/utc"
+import timezonePlugin from "dayjs/plugin/timezone"
+dayjs.extend(utcPlugin)
+dayjs.extend(timezonePlugin)
 
 export default {
   name: "NewEvent",
@@ -141,6 +170,10 @@ export default {
     allowNotifications: { type: Boolean, default: true },
   },
 
+  components: {
+    TimezoneSelector,
+  },
+
   data: () => ({
     name: "",
     startTime: 9,
@@ -150,11 +183,16 @@ export default {
     selectedDaysOfWeek: [],
     notificationsEnabled: false,
 
+    // Date options
     dateOptions: Object.freeze({
       SPECIFIC: "Specific dates",
       DOW: "Days of the week",
     }),
     selectedDateOption: "Specific dates",
+
+    // Advanced options
+    showAdvancedOptions: false,
+    timezone: {},
   }),
 
   computed: {
@@ -223,8 +261,11 @@ export default {
         type = eventTypes.SPECIFIC_DATES
 
         for (const day of this.selectedDays) {
-          const date = new Date(`${day}T${startTimeString}`)
-          dates.push(date)
+          const date = dayjs.tz(
+            `${day} ${startTimeString}`,
+            this.timezone.value
+          )
+          dates.push(date.toDate())
         }
       } else if (this.selectedDateOption === this.dateOptions.DOW) {
         type = eventTypes.DOW
@@ -232,33 +273,41 @@ export default {
         this.selectedDaysOfWeek.sort((a, b) => a - b)
         for (const dayIndex of this.selectedDaysOfWeek) {
           const day = dayIndexToDayString[dayIndex]
-          const date = new Date(`${day}T${startTimeString}`)
-          dates.push(date)
+          const date = dayjs.tz(
+            `${day} ${startTimeString}`,
+            this.timezone.value
+          )
+          dates.push(date.toDate())
         }
       }
 
       this.loading = true
       if (!this.editEvent) {
         // Create new event on backend
+        const name = this.name
+        const notificationsEnabled = this.notificationsEnabled
         post("/events", {
-          name: this.name,
+          name,
           duration,
           dates,
-          notificationsEnabled: this.notificationsEnabled,
+          notificationsEnabled,
           type,
         })
           .then(({ eventId }) => {
-            this.$router.push({ name: "event", params: { eventId } })
+            this.$router.push({
+              name: "event",
+              params: { eventId, initialTimezone: this.timezone },
+            })
             this.loading = false
             this.$emit("input", false)
             this.reset()
 
             this.$posthog?.capture("Event created", {
               eventId: eventId,
-              eventName: this.name,
+              eventName: name,
               eventDuration: duration,
               eventDates: dates,
-              eventNotificationsEnabled: this.notificationsEnabled,
+              eventNotificationsEnabled: notificationsEnabled,
               eventType: type,
             })
           })
