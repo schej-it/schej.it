@@ -290,6 +290,7 @@ export default {
           'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
       },
     ],
+    rive: null,
   }),
 
   computed: {
@@ -303,21 +304,22 @@ export default {
 
   methods: {
     loadRiveAnimation() {
-      const r = new Rive({
-        src: "/rive/schej.riv",
-        canvas: document.querySelector("canvas"),
-        autoplay: false,
-        stateMachines: "wave",
-        onLoad: () => {
-          r.resizeDrawingSurfaceToCanvas()
-        },
-      })
-      setTimeout(() => {
-        r.play("wave")
+      if (!this.rive) {
+        this.rive = new Rive({
+          src: "/rive/schej.riv",
+          canvas: document.querySelector("canvas"),
+          autoplay: false,
+          stateMachines: "wave",
+          onLoad: () => {
+            // r.resizeDrawingSurfaceToCanvas()
+          },
+        })
         setTimeout(() => {
-          r.cleanup()
-        }, 10000)
-      }, 3000)
+          this.rive.play("wave")
+        }, 3000)
+      } else {
+        this.rive.play("wave")
+      }
     },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
@@ -327,7 +329,9 @@ export default {
     },
   },
 
-  mounted() {},
+  beforeDestroy() {
+    this.rive?.cleanup()
+  },
 
   watch: {
     [`$vuetify.breakpoint.name`]: {
