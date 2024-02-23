@@ -100,7 +100,7 @@
             id="canvas"
             class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
           ></div>
-          <v-slide-y-reverse-transition>
+          <v-fade-transition>
             <div v-show="showSchejy" class="tw-self-center tw-overflow-hidden">
               <canvas
                 id="canvas"
@@ -109,7 +109,7 @@
                 class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
               ></canvas>
             </div>
-          </v-slide-y-reverse-transition>
+          </v-fade-transition>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
