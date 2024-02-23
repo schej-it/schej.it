@@ -85,9 +85,7 @@
         </div>
 
         <!-- Right side -->
-        <div
-          class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col lg:tw-overflow-hidden"
-        >
+        <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col">
           <!-- <v-img
             alt="schej character"
             src="@/assets/schejie_hand.png"
@@ -96,12 +94,14 @@
             contain
             class=""
           /> -->
-          <canvas
-            id="canvas"
-            width="350"
-            height="350"
-            class="-tw-mb-36 -tw-mt-24 tw-self-center tw-overflow-hidden"
-          ></canvas>
+          <div class="tw-self-center tw-overflow-hidden">
+            <canvas
+              id="canvas"
+              width="350"
+              height="350"
+              class="-tw-mb-36 -tw-mt-24 tw-overflow-hidden"
+            ></canvas>
+          </div>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -306,12 +306,18 @@ export default {
       const r = new Rive({
         src: "/rive/schej.riv",
         canvas: document.getElementById("canvas"),
-        autoplay: true,
+        autoplay: false,
         stateMachines: "wave",
         onLoad: () => {
           r.resizeDrawingSurfaceToCanvas()
         },
       })
+      setTimeout(() => {
+        r.play("wave")
+        setTimeout(() => {
+          r.cleanup()
+        }, 10000)
+      }, 3000)
     },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
