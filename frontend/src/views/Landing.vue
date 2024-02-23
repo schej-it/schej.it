@@ -100,7 +100,7 @@
             id="canvas"
             class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
           ></div>
-          <v-fade-transition>
+          <v-slide-y-reverse-transition>
             <div v-show="showSchejy" class="tw-self-center tw-overflow-hidden">
               <canvas
                 id="canvas"
@@ -109,7 +109,7 @@
                 class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
               ></canvas>
             </div>
-          </v-fade-transition>
+          </v-slide-y-reverse-transition>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -321,11 +321,13 @@ export default {
           stateMachines: "wave",
           onLoad: () => {
             // r.resizeDrawingSurfaceToCanvas()
-            this.showSchejy = true
           },
         })
         setTimeout(() => {
-          this.rive.play("wave")
+          this.showSchejy = true
+          setTimeout(() => {
+            this.rive.play("wave")
+          }, 1000)
         }, 4000)
       } else {
         this.rive.play("wave")
