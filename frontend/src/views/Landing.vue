@@ -72,14 +72,14 @@
 
           <!-- Calendar -->
           <div>
-            <!-- <v-img
+            <v-img
               alt="schej character"
               src="@/assets/schejie_hand.png"
               :height="isPhone ? 70 : 80"
               transition="fade-transition"
               contain
               class="-tw-mb-4 tw-mt-2 tw-block sm:tw-mt-6 lg:tw-hidden"
-            /> -->
+            />
             <LandingPageCalendar class="tw-drop-shadow-lg" />
           </div>
         </div>
@@ -305,7 +305,7 @@ export default {
     loadRiveAnimation() {
       const r = new Rive({
         src: "/rive/schej.riv",
-        canvas: document.getElementById("canvas"),
+        canvas: document.querySelector("canvas"),
         autoplay: false,
         stateMachines: "wave",
         onLoad: () => {
@@ -327,8 +327,19 @@ export default {
     },
   },
 
-  mounted() {
-    this.loadRiveAnimation()
+  mounted() {},
+
+  watch: {
+    [`$vuetify.breakpoint.name`]: {
+      immediate: true,
+      handler() {
+        if (this.$vuetify.breakpoint.mdAndUp) {
+          setTimeout(() => {
+            this.loadRiveAnimation()
+          }, 0)
+        }
+      },
+    },
   },
 }
 </script>
