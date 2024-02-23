@@ -94,14 +94,22 @@
             contain
             class=""
           /> -->
-          <div class="tw-self-center tw-overflow-hidden">
-            <canvas
-              id="canvas"
-              width="700"
-              height="700"
-              class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
-            ></canvas>
-          </div>
+          <!-- Placeholder when schejy is not shown -->
+          <div
+            v-if="!showSchejy"
+            id="canvas"
+            class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
+          ></div>
+          <v-slide-y-reverse-transition>
+            <div v-show="showSchejy" class="tw-self-center tw-overflow-hidden">
+              <canvas
+                id="canvas"
+                width="700"
+                height="700"
+                class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
+              ></canvas>
+            </div>
+          </v-slide-y-reverse-transition>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -291,6 +299,7 @@ export default {
       },
     ],
     rive: null,
+    showSchejy: false,
   }),
 
   computed: {
@@ -312,6 +321,7 @@ export default {
           stateMachines: "wave",
           onLoad: () => {
             // r.resizeDrawingSurfaceToCanvas()
+            this.showSchejy = true
           },
         })
         setTimeout(() => {
