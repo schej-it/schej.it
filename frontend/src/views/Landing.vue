@@ -316,7 +316,7 @@ export default {
         })
         setTimeout(() => {
           this.rive.play("wave")
-        }, 3000)
+        }, 4000)
       } else {
         this.rive.play("wave")
       }
