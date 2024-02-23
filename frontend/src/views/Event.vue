@@ -63,7 +63,7 @@
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
-            <div v-if="!isPhone">
+            <div v-if="!isPhone" class="tw-w-40 tw-flex">
               <template v-if="!isEditing">
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"
@@ -147,7 +147,7 @@
     <!-- Bottom bar for phones -->
     <div
       v-if="isPhone"
-      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
+      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4 tw-z-20"
     >
       <template v-if="!isEditing">
         <v-spacer />

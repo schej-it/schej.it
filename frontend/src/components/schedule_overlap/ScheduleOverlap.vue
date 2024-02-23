@@ -177,14 +177,24 @@
             </div>
 
             <!-- Hint text (desktop) -->
-            <div v-if="!isPhone && showHintText" class="tw-flex">
+            <v-expand-transition>
               <div
-                class="tw-mt-2 tw-text-sm tw-text-dark-gray"
-                style="min-height: 1.4rem"
+                v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
+                class="tw-flex"
               >
-                {{ hintText.desktop }}
-              </div>
-            </div>
+                <div
+                  class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray"
+                >
+                  <div class="tw-flex tw-items-center tw-gap-1">
+                    <v-icon small>mdi-information-outline</v-icon>
+                    {{ hintText }}
+                  </div>
+                  <v-btn icon @click="closeHint">
+                    <v-icon small>mdi-close</v-icon></v-btn
+                  >
+                </div>
+              </div></v-expand-transition
+            >
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
@@ -216,17 +226,6 @@
         </div>
 
         <div class="break" v-if="isPhone"></div>
-
-        <!-- Hint text (mobile) -->
-        <div v-if="isPhone && showHintText" class="tw-flex">
-          <div class="tw-w-12"></div>
-          <div
-            class="tw-mt-2 tw-text-xs tw-text-dark-gray"
-            style="min-height: 2rem"
-          >
-            {{ hintText.mobile }}
-          </div>
-        </div>
 
         <!-- Respondents -->
         <div
@@ -471,6 +470,9 @@ export default {
       page: 0,
 
       hasRefreshedAuthUser: false,
+
+      /* Variables for hint */
+      hintState: true,
     }
   },
   computed: {
@@ -607,21 +609,11 @@ export default {
     hintText() {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
-          return {
-            desktop:
-              "Click and drag on the calendar to edit your availability. Green means available.",
-            mobile:
-              "Tap and drag on the calendar to edit your availability. Green means available.",
-          }
+          return "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
-          return {
-            desktop:
-              "Click and drag on the calendar to schedule a Google Calendar event during those times",
-            mobile:
-              "Tap and drag on the calendar to schedule a Google Calendar event during those times",
-          }
+          return "Click and drag on the calendar to schedule a Google Calendar event during those times"
         default:
-          return { desktop: "", mobile: "" }
+          return ""
       }
     },
     isPhone() {
@@ -762,6 +754,9 @@ export default {
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
       )
+    },
+    hintClosed() {
+      return !this.hintState || localStorage[`closedHint${this.state}`]
     },
   },
   methods: {
@@ -1056,9 +1051,11 @@ export default {
     // -----------------------------------
     setTimeslotSize() {
       /* Gets the dimensions of each timeslot and assigns it to the timeslot variable */
-      ;({ width: this.timeslot.width, height: this.timeslot.height } = document
-        .querySelector(".timeslot")
-        .getBoundingClientRect())
+      const timeslotEl = document.querySelector(".timeslot")
+      if (timeslotEl) {
+        ;({ width: this.timeslot.width, height: this.timeslot.height } =
+          timeslotEl.getBoundingClientRect())
+      }
     },
     timeslotClassStyle(day, time, d, t) {
       /* Returns a class string and style object for the given timeslot div */
@@ -1501,6 +1498,23 @@ export default {
       this.page--
     },
     //#endregion
+
+    // -----------------------------------
+    //#region Resize
+    // -----------------------------------
+    onResize() {
+      this.setTimeslotSize()
+    },
+    //#endregion
+
+    // -----------------------------------
+    //#region hint
+    // -----------------------------------
+    closeHint() {
+      this.hintState = false
+      localStorage[`closedHint${this.state}`] = true
+    },
+    //#endregion
   },
   watch: {
     availability() {
@@ -1550,6 +1564,13 @@ export default {
         }, 100)
       },
     },
+    maxDaysPerPage() {
+      // Set page to 0 if user switches from portrait to landscape orientation and we're on an invalid page number,
+      // i.e. we're on a page that displays 0 days
+      if (this.page * this.maxDaysPerPage >= this.event.dates.length) {
+        this.page = 0
+      }
+    },
   },
   created() {
     this.resetCurUserAvailability()
@@ -1566,7 +1587,7 @@ export default {
 
     // Get timeslot size
     this.setTimeslotSize()
-    addEventListener("resize", this.setTimeslotSize)
+    addEventListener("resize", this.onResize)
     addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
@@ -1584,7 +1605,7 @@ export default {
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)
-    removeEventListener("resize", this.setTimeslotSize)
+    removeEventListener("resize", this.onResize)
     removeEventListener("scroll", this.onScroll)
   },
   components: {

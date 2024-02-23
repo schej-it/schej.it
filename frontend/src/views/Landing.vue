@@ -85,15 +85,23 @@
         </div>
 
         <!-- Right side -->
-        <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-block">
-          <v-img
+        <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col">
+          <!-- <v-img
             alt="schej character"
             src="@/assets/schejie_hand.png"
             :height="90"
             transition="fade-transition"
             contain
             class=""
-          />
+          /> -->
+          <div class="tw-self-center tw-overflow-hidden">
+            <canvas
+              id="canvas"
+              width="350"
+              height="350"
+              class="-tw-mb-36 -tw-mt-24 tw-overflow-hidden"
+            ></canvas>
+          </div>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -233,6 +241,7 @@ import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
+import { Rive } from "@rive-app/canvas"
 
 export default {
   name: "Landing",
@@ -293,11 +302,43 @@ export default {
   },
 
   methods: {
+    loadRiveAnimation() {
+      const r = new Rive({
+        src: "/rive/schej.riv",
+        canvas: document.querySelector("canvas"),
+        autoplay: false,
+        stateMachines: "wave",
+        onLoad: () => {
+          r.resizeDrawingSurfaceToCanvas()
+        },
+      })
+      setTimeout(() => {
+        r.play("wave")
+        setTimeout(() => {
+          r.cleanup()
+        }, 10000)
+      }, 3000)
+    },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
     },
     signIn() {
       this.signInDialog = true
+    },
+  },
+
+  mounted() {},
+
+  watch: {
+    [`$vuetify.breakpoint.name`]: {
+      immediate: true,
+      handler() {
+        if (this.$vuetify.breakpoint.mdAndUp) {
+          setTimeout(() => {
+            this.loadRiveAnimation()
+          }, 0)
+        }
+      },
     },
   },
 }
