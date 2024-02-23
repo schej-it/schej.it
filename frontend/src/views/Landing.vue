@@ -97,9 +97,9 @@
           <div class="tw-self-center tw-overflow-hidden">
             <canvas
               id="canvas"
-              width="350"
-              height="350"
-              class="-tw-mb-36 -tw-mt-24 tw-overflow-hidden"
+              width="700"
+              height="700"
+              class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
             ></canvas>
           </div>
           <NewEvent
