@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@gtm-support/vue2-gtm": "^2.0.0",
+    "@rive-app/canvas": "^2.10.0",
     "copy-image-clipboard": "^2.1.2",
     "core-js": "^3.35.1",
     "dayjs": "^1.11.10",
