@@ -137,6 +137,13 @@ func updateEventResponse(c *gin.Context) {
 		Availability []primitive.DateTime `json:"availability" binding:"required"`
 		Guest        *bool                `json:"guest" binding:"required"`
 		Name         string               `json:"name"`
+
+		// Calendar availability variables for Availability Groups feature
+		UseCalendarAvailability *bool `json:"useCalendarAvailability"`
+		EnabledCalendars        []struct {
+			Email      string `json:"email" bson:"email,omitempty"`
+			CalendarId string `json:"calendarId" bson:"email,omitempty"`
+		} `json:"enabledCalendars"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -148,7 +155,7 @@ func updateEventResponse(c *gin.Context) {
 	var response models.Response
 	var userIdString string
 	// Populate response differently if guest vs signed in user
-	if *payload.Guest {
+	if *payload.Guest && !*payload.UseCalendarAvailability {
 		userIdString = payload.Name
 
 		response = models.Response{
@@ -165,8 +172,10 @@ func updateEventResponse(c *gin.Context) {
 		userIdString = userIdInterface.(string)
 
 		response = models.Response{
-			UserId:       utils.StringToObjectID(userIdString),
-			Availability: payload.Availability,
+			UserId:                  utils.StringToObjectID(userIdString),
+			Availability:            payload.Availability,
+			UseCalendarAvailability: payload.UseCalendarAvailability,
+			EnabledCalendars:        payload.EnabledCalendars,
 		}
 	}
 

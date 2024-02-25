@@ -32,9 +32,15 @@ type Event struct {
 
 // A response object containing an array of times that the given user is available
 type Response struct {
-	Name                    string               `json:"name" bson:",omitempty"`
-	UserId                  primitive.ObjectID   `json:"userId" bson:",omitempty"`
-	User                    *User                `json:"user" bson:",omitempty"`
-	Availability            []primitive.DateTime `json:"availability" bson:"availability"`
-	UseCalendarAvailability *bool                `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
+	Name         string               `json:"name" bson:",omitempty"`
+	UserId       primitive.ObjectID   `json:"userId" bson:",omitempty"`
+	User         *User                `json:"user" bson:",omitempty"`
+	Availability []primitive.DateTime `json:"availability" bson:"availability"`
+
+	// Calendar availability variables for Availability Groups feature
+	UseCalendarAvailability *bool `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
+	EnabledCalendars        []struct {
+		Email      string `json:"email" bson:"email,omitempty"`
+		CalendarId string `json:"calendarId" bson:"email,omitempty"`
+	} `json:"enabledCalendars" bson:"enabledCalendars,omitempty"`
 }
