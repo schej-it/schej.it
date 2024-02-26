@@ -13,6 +13,7 @@
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
       <div class="tw-flex tw-flex-col tw-space-y-6">
+        <div ref="advancedCloseScrollTo"></div>
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -105,14 +106,14 @@
             class="tw-justify-start tw-pl-0"
             block
             text
-            @click="showAdvancedOptions = !showAdvancedOptions"
+            @click="toggleAdvancedOptions"
             ><span class="tw-mr-1">Advanced options</span>
             <v-icon>{{
               showAdvancedOptions ? "mdi-chevron-up" : "mdi-chevron-down"
             }}</v-icon></v-btn
           >
           <v-expand-transition>
-            <div v-show="showAdvancedOptions">
+            <div v-show="showAdvancedOptions" >
               <div class="tw-my-2">
                 <TimezoneSelector
                   class="tw-mb-2"
@@ -122,6 +123,7 @@
               </div>
             </div>
           </v-expand-transition>
+          <div class="tw-mt-16 tw-bg-red" ref="advancedOpenScrollTo"></div>
         </div>
       </div>
     </v-card-text>
@@ -346,6 +348,19 @@ export default {
         }
       }
     },
+    toggleAdvancedOptions() {
+      this.showAdvancedOptions = !this.showAdvancedOptions
+
+      const openScrollEl = this.$refs.advancedOpenScrollTo;
+      const closeScrollEl = this.$refs.advancedCloseScrollTo;
+
+      if (openScrollEl && this.showAdvancedOptions) {
+        openScrollEl.scrollIntoView({behavior: 'smooth'});
+      } else if (closeScrollEl && !this.showAdvancedOptions) {
+        console.log(closeScrollEl)
+        closeScrollEl.scrollIntoView({behavior: 'smooth'});
+      }
+    }
   },
 
   watch: {
