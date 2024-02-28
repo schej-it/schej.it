@@ -393,6 +393,12 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 
+import dayjs from "dayjs"
+import utcPlugin from "dayjs/plugin/utc"
+import timezonePlugin from "dayjs/plugin/timezone"
+dayjs.extend(utcPlugin)
+dayjs.extend(timezonePlugin)
+
 export default {
   name: "ScheduleOverlap",
   props: {
@@ -725,7 +731,17 @@ export default {
       if (!("offset" in this.curTimezone)) {
         return new Date().getTimezoneOffset()
       }
-      return this.curTimezone.offset * -1 // Multiplying by -1 because offset is flipped
+
+      if (this.event.type === eventTypes.DOW) {
+        return this.curTimezone.offset * -1
+      }
+
+      // Can't just get the offset directly from curTimezone because it doesn't account for dates in the future
+      // when daylight savings might be in or out of effect, so instead, we get the timezone for the first date
+      // of the event
+      return (
+        dayjs(this.event.dates[0]).tz(this.curTimezone.value).utcOffset() * -1 // Multiply by -1 because offset is flipped
+      )
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses

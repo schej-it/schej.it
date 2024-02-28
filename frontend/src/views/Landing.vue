@@ -94,14 +94,22 @@
             contain
             class=""
           /> -->
-          <div class="tw-self-center tw-overflow-hidden">
-            <canvas
-              id="canvas"
-              width="350"
-              height="350"
-              class="-tw-mb-36 -tw-mt-24 tw-overflow-hidden"
-            ></canvas>
-          </div>
+          <!-- Placeholder when schejy is not shown -->
+          <div
+            v-if="!showSchejy"
+            id="canvas"
+            class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
+          ></div>
+          <v-slide-y-reverse-transition>
+            <div v-show="showSchejy" class="tw-self-center tw-overflow-hidden">
+              <canvas
+                id="canvas"
+                width="700"
+                height="700"
+                class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
+              ></canvas>
+            </div>
+          </v-slide-y-reverse-transition>
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -290,6 +298,8 @@ export default {
           'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
       },
     ],
+    rive: null,
+    showSchejy: false,
   }),
 
   computed: {
@@ -303,21 +313,25 @@ export default {
 
   methods: {
     loadRiveAnimation() {
-      const r = new Rive({
-        src: "/rive/schej.riv",
-        canvas: document.querySelector("canvas"),
-        autoplay: false,
-        stateMachines: "wave",
-        onLoad: () => {
-          r.resizeDrawingSurfaceToCanvas()
-        },
-      })
-      setTimeout(() => {
-        r.play("wave")
+      if (!this.rive) {
+        this.rive = new Rive({
+          src: "/rive/schej.riv",
+          canvas: document.querySelector("canvas"),
+          autoplay: false,
+          stateMachines: "wave",
+          onLoad: () => {
+            // r.resizeDrawingSurfaceToCanvas()
+          },
+        })
         setTimeout(() => {
-          r.cleanup()
-        }, 10000)
-      }, 3000)
+          this.showSchejy = true
+          setTimeout(() => {
+            this.rive.play("wave")
+          }, 1000)
+        }, 4000)
+      } else {
+        this.rive.play("wave")
+      }
     },
     signInGoogle() {
       signInGoogle({ state: null, selectAccount: true })
@@ -327,7 +341,9 @@ export default {
     },
   },
 
-  mounted() {},
+  beforeDestroy() {
+    this.rive?.cleanup()
+  },
 
   watch: {
     [`$vuetify.breakpoint.name`]: {
