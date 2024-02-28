@@ -732,6 +732,10 @@ export default {
         return new Date().getTimezoneOffset()
       }
 
+      if (this.event.type === eventTypes.DOW) {
+        return this.curTimezone.offset * -1
+      }
+
       // Can't just get the offset directly from curTimezone because it doesn't account for dates in the future
       // when daylight savings might be in or out of effect, so instead, we get the timezone for the first date
       // of the event
