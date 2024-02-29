@@ -5,6 +5,7 @@ export const signInGoogle = ({
   state = null,
   selectAccount = false,
   requestCalendarPermission = false,
+  requestContactsPermission = false,  
   loginHint = "",
 }) => {
   const clientId =
@@ -15,6 +16,10 @@ export const signInGoogle = ({
   if (requestCalendarPermission) {
     scope +=
       "https://www.googleapis.com/auth/calendar.calendarlist.readonly https://www.googleapis.com/auth/calendar.events.readonly "
+  }
+  if (requestContactsPermission) {
+    scope +=
+      "https://www.googleapis.com/auth/contacts.readonly https://www.googleapis.com/auth/directory.readonly "
   }
   scope = encodeURIComponent(scope)
 

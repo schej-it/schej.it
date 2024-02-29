@@ -41,7 +41,7 @@ export default {
           firstName: authUser.firstName,
           lastName: authUser.lastName,
         })
-      }
+    }
 
       // Redirect to the correct place based on "state", otherwise, just redirect to home
       if (state) {
@@ -73,6 +73,15 @@ export default {
             })
             authUser = await get("/user/profile")
             this.setAuthUser(authUser)
+            break
+          case authTypes.EVENT_CONTACTS:
+            this.$router.replace({
+              name: "event",
+              params: {
+                eventId: state.eventId,
+                contactsPayload: state.payload,
+              },
+            })
             break
         }
       } else {

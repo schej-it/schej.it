@@ -13,7 +13,6 @@
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
       <div class="tw-flex tw-flex-col tw-space-y-6">
-        <div ref="advancedCloseScrollTo"></div>
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -108,22 +107,25 @@
             text
             @click="toggleAdvancedOptions"
             ><span class="tw-mr-1">Advanced options</span>
-            <v-icon>{{
-              showAdvancedOptions ? "mdi-chevron-up" : "mdi-chevron-down"
-            }}</v-icon></v-btn
+            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`">mdi-chevron-down</v-icon></v-btn
           >
           <v-expand-transition>
-            <div v-show="showAdvancedOptions" >
+            <div v-show="showAdvancedOptions">
               <div class="tw-my-2">
+                <EmailReminders
+                  ref="emailReminders"
+                  @requestContactsAccess="requestContactsAccess"
+                  labelColor="tw-text-very-dark-gray"
+                ></EmailReminders>
                 <TimezoneSelector
-                  class="tw-mb-2"
                   v-model="timezone"
                   label="Timezone"
                 />
+
               </div>
             </div>
           </v-expand-transition>
-          <div class="tw-mt-16 tw-bg-red" ref="advancedOpenScrollTo"></div>
+          <div class="tw-bg-red" ref="advancedOpenScrollTo"></div>
         </div>
       </div>
     </v-card-text>
@@ -154,6 +156,7 @@ import {
 } from "@/utils"
 import { mapActions } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
+import EmailReminders from "./event/EmailReminders.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -174,6 +177,7 @@ export default {
 
   components: {
     TimezoneSelector,
+    EmailReminders,
   },
 
   data: () => ({
@@ -351,16 +355,33 @@ export default {
     toggleAdvancedOptions() {
       this.showAdvancedOptions = !this.showAdvancedOptions
 
-      const openScrollEl = this.$refs.advancedOpenScrollTo;
-      const closeScrollEl = this.$refs.advancedCloseScrollTo;
+      const openScrollEl = this.$refs.advancedOpenScrollTo
 
       if (openScrollEl && this.showAdvancedOptions) {
-        openScrollEl.scrollIntoView({behavior: 'smooth'});
-      } else if (closeScrollEl && !this.showAdvancedOptions) {
-        console.log(closeScrollEl)
-        closeScrollEl.scrollIntoView({behavior: 'smooth'});
+        setTimeout(() => openScrollEl.scrollIntoView({ behavior: "smooth" }), 200)
+      } 
+    },
+
+    /** Redirects user to oauth page requesting access to the user's contacts */
+    requestContactsAccess({ emails }) {
+      const payload = {
+        emails,
       }
-    }
+      signInGoogle({
+        state: {
+          type: authTypes.EVENT_CONTACTS,
+          eventId: this.eventId,
+          payload,
+        },
+        requestContactsPermission: true,
+      })
+    },
+    /** Update state based on the contactsPayload after granting contacts access */
+    contactsAccessGranted({ curScheduledEvent, ...data }) {
+      this.curScheduledEvent = curScheduledEvent
+      this.$refs.confirmDetailsDialog?.setData(data)
+      this.confirmDetailsDialog = true
+    },
   },
 
   watch: {
