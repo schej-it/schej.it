@@ -245,6 +245,12 @@ var doc = `{
                                         "notificationsEnabled": {
                                             "type": "boolean"
                                         },
+                                        "remindees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
                                         }
@@ -347,6 +353,12 @@ var doc = `{
                                         "notificationsEnabled": {
                                             "type": "boolean"
                                         },
+                                        "remindees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
                                         }
@@ -375,98 +387,6 @@ var doc = `{
                         "name": "eventId",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/events/{eventId}/attendee": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Adds an attendee to the event's list of attendees",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "eventId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Object containing info about the attendee to add",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "email": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {}
-                }
-            },
-            "delete": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Removes an attendee from the event's list of attendees",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Event ID",
-                        "name": "eventId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Object containing info about the attendee to remove",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "email": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
                     }
                 ],
                 "responses": {
@@ -1101,13 +1021,6 @@ var doc = `{
                 "_id": {
                     "type": "string"
                 },
-                "attendees": {
-                    "description": "Attendees",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "calendarEventId": {
                     "type": "string"
                 },
@@ -1125,6 +1038,13 @@ var doc = `{
                 },
                 "ownerId": {
                     "type": "string"
+                },
+                "remindees": {
+                    "description": "Remindees",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "responses": {
                     "description": "Availability responses",
@@ -1175,10 +1095,6 @@ var doc = `{
         "models.Response": {
             "type": "object",
             "properties": {
-                "attendeeEmail": {
-                    "description": "Used to keep track of which attendee in the list of attendees this response is for",
-                    "type": "string"
-                },
                 "availability": {
                     "type": "string"
                 },

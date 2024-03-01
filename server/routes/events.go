@@ -24,12 +24,12 @@ func InitEvents(router *gin.Engine) {
 	eventRouter := router.Group("/events")
 
 	eventRouter.POST("", createEvent)
+	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
-	eventRouter.POST("/:eventId/attendee", middleware.AuthRequired(), addAttendee)
-	eventRouter.DELETE("/:eventId/attendee", middleware.AuthRequired(), removeAttendee)
-	eventRouter.PUT("/:eventId", editEvent)
+	// eventRouter.POST("/:eventId/attendee", middleware.AuthRequired(), addAttendee)
+	// eventRouter.DELETE("/:eventId/attendee", middleware.AuthRequired(), removeAttendee)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
@@ -38,7 +38,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,type=models.EventType} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,remindees=[]string,type=models.EventType} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -47,6 +47,7 @@ func createEvent(c *gin.Context) {
 		Duration             *float32             `json:"duration" binding:"required"`
 		Dates                []primitive.DateTime `json:"dates" binding:"required"`
 		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
+		Remindees            []string             `json:"remindees" binding:"required"`
 		Type                 models.EventType     `json:"type" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
@@ -71,6 +72,7 @@ func createEvent(c *gin.Context) {
 		Dates:                payload.Dates,
 		NotificationsEnabled: *payload.NotificationsEnabled,
 		Type:                 payload.Type,
+		Remindees:            payload.Remindees,
 		Responses:            make(map[string]*models.Response),
 	}
 
@@ -92,6 +94,78 @@ func createEvent(c *gin.Context) {
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+}
+
+// @Summary Edits an event based on its id
+// @Tags events
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,remindees=[]string,type=models.EventType} true "Object containing info about the event to update"
+// @Success 200
+// @Router /events/{eventId} [put]
+func editEvent(c *gin.Context) {
+	payload := struct {
+		Name                 string               `json:"name" binding:"required"`
+		Duration             *float32             `json:"duration" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
+		Remindees            []string             `json:"remindees" binding:"required"`
+		Type                 models.EventType     `json:"type" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	eventId := c.Param("eventId")
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	event := db.GetEventById(eventId)
+
+	// If user logged in, set owner id to their user id, otherwise set owner id to nil
+	session := sessions.Default(c)
+	userIdInterface := session.Get("userId")
+	userId, signedIn := userIdInterface.(string)
+	var ownerId primitive.ObjectID
+	if signedIn {
+		ownerId = utils.StringToObjectID(userId)
+	} else {
+		ownerId = primitive.NilObjectID
+	}
+
+	// If event has an owner id, check if user has permissions to edit event
+	if event.OwnerId != primitive.NilObjectID {
+		if event.OwnerId != ownerId {
+			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
+			return
+		}
+	}
+
+	_, err = db.EventsCollection.UpdateOne(
+		context.Background(),
+		bson.M{
+			"_id": objectId,
+		},
+		bson.M{
+			"$set": bson.M{
+				"name":                 payload.Name,
+				"duration":             payload.Duration,
+				"dates":                payload.Dates,
+				"notificationsEnabled": *payload.NotificationsEnabled,
+				"remindees":            payload.Remindees,
+				"type":                 payload.Type,
+			},
+		},
+	)
+
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.Status(http.StatusOK)
 }
 
 // @Summary Gets an event based on its id
@@ -136,10 +210,9 @@ func getEvent(c *gin.Context) {
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
-		Availability  []primitive.DateTime `json:"availability" binding:"required"`
-		Guest         *bool                `json:"guest" binding:"required"`
-		Name          string               `json:"name"`
-		AttendeeEmail string               `json:"attendeeEmail"`
+		Availability []primitive.DateTime `json:"availability" binding:"required"`
+		Guest        *bool                `json:"guest" binding:"required"`
+		Name         string               `json:"name"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -155,9 +228,8 @@ func updateEventResponse(c *gin.Context) {
 		userIdString = payload.Name
 
 		response = models.Response{
-			Name:          payload.Name,
-			AttendeeEmail: payload.AttendeeEmail,
-			Availability:  payload.Availability,
+			Name:         payload.Name,
+			Availability: payload.Availability,
 		}
 	} else {
 		userIdInterface := session.Get("userId")
@@ -169,9 +241,8 @@ func updateEventResponse(c *gin.Context) {
 		userIdString = userIdInterface.(string)
 
 		response = models.Response{
-			UserId:        utils.StringToObjectID(userIdString),
-			AttendeeEmail: payload.AttendeeEmail,
-			Availability:  payload.Availability,
+			UserId:       utils.StringToObjectID(userIdString),
+			Availability: payload.Availability,
 		}
 	}
 
@@ -286,160 +357,6 @@ func deleteEventResponse(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// @Summary Adds an attendee to the event's list of attendees
-// @Tags events
-// @Accept json
-// @Produce json
-// @Param eventId path string true "Event ID"
-// @Param payload body object{email=string} true "Object containing info about the attendee to add"
-// @Success 200
-// @Router /events/{eventId}/attendee [post]
-func addAttendee(c *gin.Context) {
-	payload := struct {
-		Email string `json:"email" binding:"required"`
-	}{}
-	if err := c.Bind(&payload); err != nil {
-		return
-	}
-	session := sessions.Default(c)
-	eventIdString := c.Param("eventId")
-	eventId, err := primitive.ObjectIDFromHex(eventIdString)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	userIdInterface := session.Get("userId")
-	userIdString := userIdInterface.(string)
-	userId, err := primitive.ObjectIDFromHex(userIdString)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
-		"_id":     eventId,
-		"ownerId": userId,
-	}, bson.M{
-		"$addToSet": bson.M{"attendees": payload.Email},
-	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// @Summary Removes an attendee from the event's list of attendees
-// @Tags events
-// @Accept json
-// @Produce json
-// @Param eventId path string true "Event ID"
-// @Param payload body object{email=string} true "Object containing info about the attendee to remove"
-// @Success 200
-// @Router /events/{eventId}/attendee [delete]
-func removeAttendee(c *gin.Context) {
-	payload := struct {
-		Email string `json:"email" binding:"required"`
-	}{}
-	if err := c.Bind(&payload); err != nil {
-		return
-	}
-	session := sessions.Default(c)
-	eventIdString := c.Param("eventId")
-	eventId, err := primitive.ObjectIDFromHex(eventIdString)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	userIdInterface := session.Get("userId")
-	userIdString := userIdInterface.(string)
-	userId, err := primitive.ObjectIDFromHex(userIdString)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
-		"_id":     eventId,
-		"ownerId": userId,
-	}, bson.M{
-		"$pull": bson.M{"attendees": payload.Email},
-	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
-}
-
-// @Summary Edits an event based on its id
-// @Tags events
-// @Produce json
-// @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,type=models.EventType} true "Object containing info about the event to update"
-// @Success 200
-// @Router /events/{eventId} [put]
-func editEvent(c *gin.Context) {
-	payload := struct {
-		Name                 string               `json:"name" binding:"required"`
-		Duration             *float32             `json:"duration" binding:"required"`
-		Dates                []primitive.DateTime `json:"dates" binding:"required"`
-		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
-		Type                 models.EventType     `json:"type" binding:"required"`
-	}{}
-	if err := c.Bind(&payload); err != nil {
-		return
-	}
-
-	eventId := c.Param("eventId")
-	objectId, err := primitive.ObjectIDFromHex(eventId)
-	if err != nil {
-		// eventId is malformatted
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	event := db.GetEventById(eventId)
-
-	// If user logged in, set owner id to their user id, otherwise set owner id to nil
-	session := sessions.Default(c)
-	userIdInterface := session.Get("userId")
-	userId, signedIn := userIdInterface.(string)
-	var ownerId primitive.ObjectID
-	if signedIn {
-		ownerId = utils.StringToObjectID(userId)
-	} else {
-		ownerId = primitive.NilObjectID
-	}
-
-	// If event has an owner id, check if user has permissions to edit event
-	if event.OwnerId != primitive.NilObjectID {
-		if event.OwnerId != ownerId {
-			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
-			return
-		}
-	}
-
-	_, err = db.EventsCollection.UpdateOne(
-		context.Background(),
-		bson.M{
-			"_id": objectId,
-		},
-		bson.M{
-			"$set": bson.M{
-				"name":                 payload.Name,
-				"duration":             payload.Duration,
-				"dates":                payload.Dates,
-				"notificationsEnabled": *payload.NotificationsEnabled,
-				"type":                 payload.Type,
-			},
-		},
-	)
-
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	c.Status(http.StatusOK)
-}
-
 // @Summary Deletes an event based on its id
 // @Tags events
 // @Produce json
@@ -519,3 +436,89 @@ func duplicateEvent(c *gin.Context) {
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
+
+// @Summary [UNUSED] Adds an attendee to the event's list of attendees
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing info about the attendee to add"
+// @Success 200
+// @Router /events/{eventId}/attendee [post]
+// func addAttendee(c *gin.Context) {
+// 	// UNUSED
+// 	payload := struct {
+// 		Email string `json:"email" binding:"required"`
+// 	}{}
+// 	if err := c.Bind(&payload); err != nil {
+// 		return
+// 	}
+// 	session := sessions.Default(c)
+// 	eventIdString := c.Param("eventId")
+// 	eventId, err := primitive.ObjectIDFromHex(eventIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	userIdInterface := session.Get("userId")
+// 	userIdString := userIdInterface.(string)
+// 	userId, err := primitive.ObjectIDFromHex(userIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
+// 		"_id":     eventId,
+// 		"ownerId": userId,
+// 	}, bson.M{
+// 		"$addToSet": bson.M{"attendees": payload.Email},
+// 	})
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{})
+// }
+
+// @Summary [UNUSED] Removes an attendee from the event's list of attendees
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing info about the attendee to remove"
+// @Success 200
+// @Router /events/{eventId}/attendee [delete]
+// func removeAttendee(c *gin.Context) {
+// 	// UNUSED
+// 	payload := struct {
+// 		Email string `json:"email" binding:"required"`
+// 	}{}
+// 	if err := c.Bind(&payload); err != nil {
+// 		return
+// 	}
+// 	session := sessions.Default(c)
+// 	eventIdString := c.Param("eventId")
+// 	eventId, err := primitive.ObjectIDFromHex(eventIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	userIdInterface := session.Get("userId")
+// 	userIdString := userIdInterface.(string)
+// 	userId, err := primitive.ObjectIDFromHex(userIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
+// 		"_id":     eventId,
+// 		"ownerId": userId,
+// 	}, bson.M{
+// 		"$pull": bson.M{"attendees": payload.Email},
+// 	})
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{})
+// }
