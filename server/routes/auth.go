@@ -112,17 +112,9 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		RefreshToken:          refreshToken,
 	}
 
-	// Update user if exists
-	updateResult := db.UsersCollection.FindOneAndUpdate(
-		context.Background(),
-		bson.M{"email": email},
-		bson.A{
-			bson.M{"$set": userData},
-			utils.InsertCalendarAccountAggregation(calendarAccount),
-		},
-	)
 	var userId primitive.ObjectID
-	if updateResult.Err() == mongo.ErrNoDocuments {
+	findResult := db.UsersCollection.FindOne(context.Background(), bson.M{"email": email})
+	if findResult.Err() == mongo.ErrNoDocuments {
 		// User doesn't exist, create a new user
 		userData.CalendarAccounts = map[string]models.CalendarAccount{
 			email: calendarAccount,
@@ -137,13 +129,30 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		slackbot.SendTextMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
 		utils.AddUserToListmonk(email, firstName, lastName, picture)
 	} else {
-		// User does exist, get user id
 		var user models.User
-		if err := updateResult.Decode(&user); err != nil {
+		if err := findResult.Decode(&user); err != nil {
 			logger.StdErr.Panicln(err)
 		}
-
 		userId = user.Id
+
+		// If user has custom name, do not override first name and last name
+		if user.HasCustomName != nil && *user.HasCustomName {
+			userData.FirstName = ""
+			userData.LastName = ""
+		}
+
+		// Update user if exists
+		_, err := db.UsersCollection.UpdateByID(
+			context.Background(),
+			userId,
+			bson.A{
+				bson.M{"$set": userData},
+				utils.InsertCalendarAccountAggregation(calendarAccount),
+			},
+		)
+		if err != nil {
+			logger.StdErr.Panicln(err)
+		}
 	}
 
 	// Set session variables

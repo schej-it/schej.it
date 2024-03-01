@@ -1,6 +1,46 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-5 tw-max-w-6xl">
     <div class="tw-flex tw-flex-col tw-gap-16 tw-p-4">
+      <!-- Name change section -->
+      <div class="tw-flex tw-flex-col tw-gap-5">
+        <div
+          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+        >
+          Profile
+        </div>
+        <div>
+          <div class="tw-mb-1 tw-font-medium">Name</div>
+          <div class="tw-flex tw-max-w-lg tw-items-center tw-gap-2">
+            <v-text-field
+              v-model="firstName"
+              hide-details
+              outlined
+              placeholder="First name"
+              :dense="isPhone"
+            />
+            <v-text-field
+              v-model="lastName"
+              hide-details
+              outlined
+              placeholder="Last name"
+              :dense="isPhone"
+            />
+            <v-btn
+              @click="saveName"
+              :disabled="!nameUnsavedChanges"
+              :class="{
+                'tw-opacity-0': !nameUnsavedChanges,
+                'tw-opacity-1': nameUnsavedChanges,
+              }"
+              color="primary"
+              icon
+              :small="isPhone"
+              ><v-icon>mdi-content-save</v-icon></v-btn
+            >
+          </div>
+        </div>
+      </div>
+
       <!-- Calendar Access Section -->
       <div class="tw-flex tw-flex-col tw-gap-5">
         <div
@@ -136,7 +176,7 @@
 
 <script>
 import { mapState, mapActions } from "vuex"
-import { _delete } from "@/utils"
+import { _delete, patch, isPhone } from "@/utils"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 
 export default {
@@ -161,10 +201,23 @@ export default {
         "User tries to input availability automatically with Google Calendar",
       ],
     ],
+
+    // Profile settings
+    firstName: "",
+    lastName: "",
   }),
 
   computed: {
     ...mapState(["authUser"]),
+    nameUnsavedChanges() {
+      return (
+        this.firstName !== this.authUser.firstName ||
+        this.lastName !== this.authUser.lastName
+      )
+    },
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
   },
 
   methods: {
@@ -180,8 +233,25 @@ export default {
           )
         })
     },
+    saveName() {
+      patch(`/user/name`, {
+        firstName: this.firstName,
+        lastName: this.lastName,
+      })
+        .then(() => {
+          window.location.reload()
+        })
+        .catch((err) => {
+          this.showError(
+            "There was a problem updating your name! Please try again later."
+          )
+        })
+    },
   },
 
-  created() {},
+  created() {
+    this.firstName = this.authUser.firstName
+    this.lastName = this.authUser.lastName
+  },
 }
 </script>
