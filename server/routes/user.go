@@ -27,6 +27,7 @@ func InitUser(router *gin.Engine) {
 	userRouter.Use(middleware.AuthRequired())
 
 	userRouter.GET("/profile", getProfile)
+	userRouter.PATCH("/name", updateName)
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-calendar-account", addCalendarAccount)
@@ -49,6 +50,34 @@ func getProfile(c *gin.Context) {
 	db.UpdateDailyUserLog(user)
 
 	c.JSON(http.StatusOK, user)
+}
+
+// @Summary Updates the user's name
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{firstName=string,lastName=string} true "Object containing the updated name"
+// @Success 200
+// @Router /user/name [patch]
+func updateName(c *gin.Context) {
+	payload := struct {
+		FirstName string `json:"firstName" binding:"required"`
+		LastName  string `json:"lastName" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+
+	_, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
+		"$set": bson.M{"firstName": payload.FirstName, "lastName": payload.LastName, "hasCustomName": true},
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // @Summary Gets all the user's events

@@ -140,6 +140,10 @@ definitions:
         type: string
       firstName:
         type: string
+      hasCustomName:
+        description: Whether the user has set a custom name for themselves, i.e. don't
+          change their name when they sign in
+        type: boolean
       lastName:
         type: string
       picture:
@@ -573,6 +577,31 @@ paths:
                   type: array
               type: object
       summary: Gets all the user's events
+      tags:
+      - user
+  /user/name:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the updated name
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              firstName:
+                type: string
+              lastName:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Updates the user's name
       tags:
       - user
   /user/profile:

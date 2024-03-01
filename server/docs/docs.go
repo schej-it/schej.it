@@ -698,6 +698,49 @@ var doc = `{
                 }
             }
         },
+        "/user/name": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Updates the user's name",
+                "parameters": [
+                    {
+                        "description": "Object containing the updated name",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "produces": [
@@ -1118,6 +1161,10 @@ var doc = `{
                 },
                 "firstName": {
                     "type": "string"
+                },
+                "hasCustomName": {
+                    "description": "Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in",
+                    "type": "boolean"
                 },
                 "lastName": {
                     "type": "string"
