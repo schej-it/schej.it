@@ -23,6 +23,7 @@ export const authTypes = Object.freeze({
 export const eventTypes = Object.freeze({
   SPECIFIC_DATES: "specific_dates",
   DOW: "dow",
+  GROUP: "group",
 })
 
 export const dayIndexToDayString = Object.freeze([

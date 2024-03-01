@@ -1,20 +1,36 @@
 <template>
-  <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl sm:tw-mt-7">
+  <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
     <!-- Dialog -->
-    <NewEventDialog v-model="dialog" />
     <v-fade-transition>
-      <div class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8" v-if="!loading && events">
-        <EventType
-          v-for="(eventType, t) in events"
-          :key="t"
-          :eventType="eventType"
-        ></EventType></div
-    ></v-fade-transition>
+      <div
+        v-if="!loading && availabilityGroups.events.length > 0"
+        class="tw-rounded-md tw-p-4 sm:tw-mx-4 sm:tw-bg-light-gray"
+      >
+        <EventType :eventType="availabilityGroups" />
+      </div>
+    </v-fade-transition>
+    <v-fade-transition>
+      <div
+        class="tw-rounded-md tw-p-4 sm:tw-mx-4 sm:tw-bg-light-gray"
+        v-if="!loading && events"
+      >
+        <div class="tw-grid tw-gap-4 sm:tw-gap-8">
+          <EventType
+            v-for="(eventType, t) in events"
+            :key="t"
+            :eventType="eventType"
+          ></EventType>
+        </div>
+      </div>
+    </v-fade-transition>
+
+    <NewEventDialog v-model="dialog" />
 
     <!-- FAB -->
     <BottomFab id="create-event-btn" @click="dialog = true">
       <v-icon>mdi-plus</v-icon>
     </BottomFab>
+    <!-- <CreateSpeedDial /> -->
   </div>
 </template>
 
@@ -22,6 +38,7 @@
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
+import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
 import { mapState, mapActions } from "vuex"
 import { eventTypes } from "@/constants"
 
@@ -32,6 +49,7 @@ export default {
     NewEventDialog,
     EventType,
     BottomFab,
+    CreateSpeedDial,
   },
 
   data: () => ({
@@ -62,12 +80,22 @@ export default {
       ]
     },
     createdEventsWithSpecificDates() {
-      return this.createdEvents.filter((e) => e.type !== eventTypes.DOW)
+      return this.createdEvents.filter(
+        (e) => e.type !== eventTypes.DOW && e.type !== eventTypes.GROUP
+      )
     },
     weeklyEvents() {
       return this.createdEvents
         .filter((e) => e.type === eventTypes.DOW)
         .concat(this.joinedEvents.filter((e) => e.type === eventTypes.DOW))
+    },
+    availabilityGroups() {
+      return {
+        header: "Availability groups",
+        events: this.createdEvents
+          .filter((e) => e.type === eventTypes.GROUP)
+          .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP)),
+      }
     },
   },
 
