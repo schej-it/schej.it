@@ -2,21 +2,39 @@
   <v-card
     class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4"
   >
-    <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
-      <div>
-        {{ editEvent ? "Edit event" : "New event" }}
-      </div>
+    <div
+      v-if="dialog && !editEvent"
+      class="-tw-mt-4 tw-flex tw-rounded sm:tw-px-8"
+    >
+      <v-tabs v-model="tab">
+        <v-tab v-for="t in tabs" :key="t.type">{{ t.title }}</v-tab>
+      </v-tabs>
       <v-spacer />
-      <v-btn v-if="dialog" @click="$emit('input', false)" icon>
+      <v-btn
+        absolute
+        @click="$emit('input', false)"
+        icon
+        class="tw-right-0 tw-mr-2 tw-self-center"
+      >
         <v-icon>mdi-close</v-icon>
       </v-btn>
+    </div>
+    <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
+      <div>
+        {{ editEvent ? text.editTitle : text.title }}
+      </div>
+      <v-spacer />
+      <v-btn v-if="dialog" icon @click="helpDialog = true">
+        <v-icon>mdi-help-circle</v-icon>
+      </v-btn>
+      <HelpDialog v-model="helpDialog" :text="text.help" />
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
       <div class="tw-flex tw-flex-col tw-space-y-6">
         <v-text-field
           ref="name-field"
           v-model="name"
-          placeholder="Name your event..."
+          :placeholder="text.namePlaceholder"
           autofocus
           :disabled="loading"
           hide-details
@@ -26,7 +44,7 @@
 
         <div>
           <div class="tw-mb-2 tw-text-lg tw-text-black">
-            What times might work?
+            {{ text.times }}
           </div>
           <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
             <v-select
@@ -152,6 +170,7 @@ import {
 } from "@/utils"
 import { mapActions } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
+import HelpDialog from "./HelpDialog.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -172,6 +191,7 @@ export default {
 
   components: {
     TimezoneSelector,
+    HelpDialog,
   },
 
   data: () => ({
@@ -193,6 +213,35 @@ export default {
     // Advanced options
     showAdvancedOptions: false,
     timezone: {},
+
+    helpDialog: false,
+
+    // Tabs
+    tab: 0,
+    tabs: [
+      { title: "Event", type: "event" },
+      { title: "Availability group", type: "group" },
+    ],
+    TAB_TYPES: {
+      EVENT: "event",
+      GROUP: "group",
+    },
+    EVENT_TEXT: {
+      title: "New event",
+      editTitle: "Edit event",
+      help: "Use events to poll people for their availabilities on certain days",
+      namePlaceholder: "Name your event...",
+      times: "What times might work?",
+      dates: "What dates might work?",
+    },
+    GROUP_TEXT: {
+      title: "New group",
+      editTitle: "Edit group",
+      help: "Use groups to see people's calendar availabilities each week",
+      namePlaceholder: "Name your group...",
+      times: "Time range",
+      dates: "Day range",
+    },
   }),
 
   computed: {
@@ -231,6 +280,27 @@ export default {
     },
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+
+    // Tabs
+    createEvent() {
+      return this.tabs[this.tab].type === this.TABS.EVENT
+    },
+    createGroup() {
+      return this.tabs[this.tab].type === this.TABS.GROUP
+    },
+    text() {
+      let textObject
+      switch (this.tabs[this.tab].type) {
+        case this.TAB_TYPES.EVENT:
+          textObject = this.EVENT_TEXT
+          break
+        case this.TAB_TYPES.GROUP:
+          textObject = this.GROUP_TEXT
+          break
+      }
+
+      return textObject
     },
   },
 
