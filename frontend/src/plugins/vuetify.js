@@ -15,6 +15,10 @@ export default new Vuetify({
   breakpoint: {
     thresholds: {
       xs: 640,
+      sm: 768,
+      md: 1024,
+      lg: 1280,
     },
+    scrollBarWidth: 0,
   },
 })

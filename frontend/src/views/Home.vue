@@ -4,14 +4,14 @@
     <v-fade-transition>
       <div
         v-if="!loading && availabilityGroups.events.length > 0"
-        class="tw-rounded-md tw-p-4 sm:tw-mx-4 sm:tw-bg-light-gray"
+        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
       >
         <EventType :eventType="availabilityGroups" />
       </div>
     </v-fade-transition>
     <v-fade-transition>
       <div
-        class="tw-rounded-md tw-p-4 sm:tw-mx-4 sm:tw-bg-light-gray"
+        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
         v-if="!loading && events"
       >
         <div class="tw-grid tw-gap-4 sm:tw-gap-8">
