@@ -3,10 +3,13 @@
     <!-- Dialog -->
     <v-fade-transition>
       <div
-        v-if="!loading && availabilityGroups.events.length > 0"
+        v-if="!loading"
         class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
       >
-        <EventType :eventType="availabilityGroups" />
+        <EventType
+          :eventType="availabilityGroups"
+          emptyText="You are not part of any availability groups!"
+        />
       </div>
     </v-fade-transition>
     <v-fade-transition>

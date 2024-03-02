@@ -237,7 +237,7 @@ export default {
     GROUP_TEXT: {
       title: "New group",
       editTitle: "Edit group",
-      help: "Use groups to see people's calendar availabilities each week",
+      help: "Use availability groups to see people's calendar availabilities each week",
       namePlaceholder: "Name your group...",
       times: "Time range",
       dates: "Day range",

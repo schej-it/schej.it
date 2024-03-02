@@ -16,7 +16,7 @@
     </div>
 
     <div v-if="eventType.events.length === 0" class="tw-my-3">
-      No events yet!
+      {{ emptyText.length > 0 ? emptyText : "No events yet!" }}
     </div>
     <div
       v-else
@@ -71,6 +71,7 @@ export default {
 
   props: {
     eventType: { type: Object, required: true },
+    emptyText: { type: String, default: "" },
   },
 
   data: () => ({
