@@ -2,18 +2,28 @@
   <v-dialog
     :value="value"
     @input="(e) => $emit('input', e)"
-    :fullscreen="isPhone"
-    :hide-overlay="isPhone"
-    content-class="tw-max-w-[28rem]"
-    scrollable
-    :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
+    content-class="tw-max-w-[28rem] tw-m-0 tw-max-h-full"
   >
-    <NewEvent
-      :event="event"
-      :editEvent="editEvent"
-      :allow-notifications="allowNotifications"
-      @input="$emit('input', false)"
-    ></NewEvent>
+    <v-expand-transition>
+      <v-card v-if="state == states.TYPE" class="tw-p-4 sm:tw-p-6">
+        <div class="tw-text-md tw-pb-4 tw-text-center">
+          What would you like to create?
+        </div>
+        <v-btn block class="tw-mb-2" @click="state = states.CREATE_EVENT"
+          >Event</v-btn
+        >
+        <v-btn block @click="state = states.CREATE_GROUP"
+          >Availability group</v-btn
+        >
+      </v-card>
+      <NewEvent
+        v-else-if="state == states.CREATE_EVENT"
+        :event="event"
+        :editEvent="editEvent"
+        :allow-notifications="allowNotifications"
+        @input="$emit('input', false)"
+      />
+    </v-expand-transition>
   </v-dialog>
 </template>
 
@@ -37,7 +47,14 @@ export default {
     NewEvent,
   },
 
-  data: () => ({}),
+  data: () => ({
+    states: {
+      TYPE: "type", // Let user choose whether to create a group or event
+      CREATE_EVENT: "create_event", // Event creation screen
+      CREATE_GROUP: "create_group", // Group creation screen
+    },
+    state: "type",
+  }),
 
   created() {},
 
@@ -48,5 +65,15 @@ export default {
   },
 
   methods: {},
+
+  watch: {
+    value() {
+      if (!this.value) {
+        setTimeout(() => {
+          this.state = this.states.TYPE
+        }, 300)
+      }
+    },
+  },
 }
 </script>
