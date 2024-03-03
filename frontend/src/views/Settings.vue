@@ -25,19 +25,21 @@
               placeholder="Last name"
               :dense="isPhone"
             />
-            <v-btn
-              @click="saveName"
-              :disabled="!nameUnsavedChanges"
-              :class="{
-                'tw-opacity-0': !nameUnsavedChanges,
-                'tw-opacity-1': nameUnsavedChanges,
-              }"
-              color="primary"
-              icon
-              :small="isPhone"
-              ><v-icon>mdi-content-save</v-icon></v-btn
-            >
           </div>
+          <v-expand-transition>
+            <div v-if="profileUnsavedChanges">
+              <div class="tw-mt-2">
+                <v-btn
+                  @click="resetProfileChanges"
+                  color="primary"
+                  outlined
+                  class="tw-mr-2"
+                  >Cancel</v-btn
+                >
+                <v-btn @click="saveName" color="primary">Save changes</v-btn>
+              </div>
+            </div>
+          </v-expand-transition>
         </div>
       </div>
 
@@ -215,6 +217,9 @@ export default {
         this.lastName !== this.authUser.lastName
       )
     },
+    profileUnsavedChanges() {
+      return this.nameUnsavedChanges
+    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -232,6 +237,10 @@ export default {
             "There was a problem deleting your account! Please try again later."
           )
         })
+    },
+    resetProfileChanges() {
+      this.firstName = this.authUser.firstName
+      this.lastName = this.authUser.lastName
     },
     saveName() {
       patch(`/user/name`, {
