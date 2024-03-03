@@ -28,7 +28,7 @@
           </div>
           <v-expand-transition>
             <div v-if="profileUnsavedChanges">
-              <div class="tw-mt-2">
+              <div class="tw-mt-4">
                 <v-btn
                   @click="resetProfileChanges"
                   color="primary"
