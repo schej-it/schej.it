@@ -1,6 +1,6 @@
 <template>
   <v-card
-    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4"
+    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4 tw-transition-all"
   >
     <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
       <div>
@@ -107,7 +107,9 @@
             text
             @click="toggleAdvancedOptions"
             ><span class="tw-mr-1">Advanced options</span>
-            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`">mdi-chevron-down</v-icon></v-btn
+            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
+              >mdi-chevron-down</v-icon
+            ></v-btn
           >
           <v-expand-transition>
             <div v-show="showAdvancedOptions">
@@ -116,12 +118,10 @@
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
+                  :addedEmails="event && event.attendees ? event.attendees : []"
+                  @update:emails="(newEmails) => (emails = newEmails)"
                 ></EmailReminders>
-                <TimezoneSelector
-                  v-model="timezone"
-                  label="Timezone"
-                />
-
+                <TimezoneSelector v-model="timezone" label="Timezone" />
               </div>
             </div>
           </v-expand-transition>
@@ -145,7 +145,7 @@
 </template>
 
 <script>
-import { eventTypes, dayIndexToDayString } from "@/constants"
+import { eventTypes, dayIndexToDayString, authTypes } from "@/constants"
 import {
   post,
   put,
@@ -153,6 +153,8 @@ import {
   dateToTimeNum,
   getISODateString,
   isPhone,
+  validateEmail,
+  signInGoogle,
 } from "@/utils"
 import { mapActions } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
@@ -199,13 +201,24 @@ export default {
     // Advanced options
     showAdvancedOptions: false,
     timezone: {},
+    emails: [], // For email reminders
   }),
 
   computed: {
     formComplete() {
+      let emailsValid = true
+
+      for (const email of this.emails) {
+        if (!validateEmail(email)) {
+          emailsValid = false
+          break
+        }
+      }
+
       return (
         this.name.length > 0 &&
-        (this.selectedDays.length > 0 || this.selectedDaysOfWeek.length > 0) //&&
+        (this.selectedDays.length > 0 || this.selectedDaysOfWeek.length > 0) &&
+        emailsValid //&&
         // (this.startTime < this.endTime ||
         //   (this.endTime === 0 && this.startTime != 0))
       )
@@ -302,6 +315,13 @@ export default {
               name: "event",
               params: { eventId, initialTimezone: this.timezone },
             })
+
+            for (const email of this.emails) {
+              post(`/events/${eventId}/attendee`, {
+                email,
+              })
+            }
+
             this.loading = false
             this.$emit("input", false)
             this.reset()
@@ -358,8 +378,11 @@ export default {
       const openScrollEl = this.$refs.advancedOpenScrollTo
 
       if (openScrollEl && this.showAdvancedOptions) {
-        setTimeout(() => openScrollEl.scrollIntoView({ behavior: "smooth" }), 200)
-      } 
+        setTimeout(
+          () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
+          200
+        )
+      }
     },
 
     /** Redirects user to oauth page requesting access to the user's contacts */
@@ -370,7 +393,7 @@ export default {
       signInGoogle({
         state: {
           type: authTypes.EVENT_CONTACTS,
-          eventId: this.eventId,
+          eventId: this.event ? this.event._id : "",
           payload,
         },
         requestContactsPermission: true,

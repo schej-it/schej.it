@@ -1,8 +1,7 @@
 <template>
   <div>
     <div class="tw-flex tw-gap-1">
-      <div class="tw-text-very-dark-gray">
-      Set up email reminders</div>
+      <div class="tw-text-very-dark-gray">Set up email reminders</div>
 
       <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
@@ -10,53 +9,58 @@
             >mdi-information-outline
           </v-icon>
         </template>
-        <div>Reminder emails will be sent the day of event creation,<br>one day after, and three days after.</div>
+        <div>
+          Reminder emails will be sent the day of event creation,<br />one day
+          after, and three days after.
+        </div>
       </v-tooltip>
     </div>
-    <div class="tw-mt-1 tw-text-dark-gray tw-text-xs" v-if="!hasContactsAccess">
-        <a class="tw-underline" @click="requestContactsAccess"
-          >Enable contacts access</a
-        >
-        for email auto-suggestions.
+    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="true">
+      <a class="tw-underline" @click="requestContactsAccess"
+        >Enable contacts access</a
+      >
+      for email auto-suggestions.
     </div>
 
+    <!-- {{ this.searchedContacts }} -->
+
     <v-combobox
-      v-model="emails"
-      class="tw-text-sm tw-mt-2"
-      placeholder="Enter an email address.."
-      dense
+      v-model="remindees"
+      :search-input.sync="query"
+      :items="searchedContacts"
+      item-text="email"
+      item-value="email"
+      class="tw-mt-2 tw-text-sm"
+      placeholder="Enter an email address..."
       multiple
       append-icon=""
       solo
+      return-object
       :rules="[rules.validEmails]"
     >
-      <template v-slot:selection="data">
+      <template v-slot:selection="data, parent">
         <v-chip
-          :key="data.item"
+          :key="isContact(data.item) ? data.item.email : data.item"
           size="x-small"
           class="tw-flex tw-items-center tw-bg-light-gray tw-text-very-dark-gray"
         >
-          <!-- <template v-slot:prepend>
-            <v-avatar class="bg-accent text-uppercase" start
+            <v-avatar class="bg-accent text-uppercase tw-mr-2" start
               ><img
-                v-if="data.item.picture.length > 0"
+                v-if="typeof data.item === 'object' && data.item.picture.length > 0"
                 :src="data.item.picture"
                 referrerpolicy="no-referrer"
+                width="10px"
               />
               <v-icon v-else>mdi-account</v-icon></v-avatar
             >
-          </template> -->
-          {{ data.item }}
+          {{ isContact(data.item) ? data.item.email : data.item }}
 
-          <v-icon
-            small
-            @click="() => removeEmail(data.item)"
-            class="tw-ml-1"
+          <v-icon small @click="() => removeEmail(data.item)" class="tw-ml-1"
             >mdi-close</v-icon
           >
         </v-chip>
       </template>
-      <!-- <template v-slot:item="{ item }">
+      <template v-slot:item="{ item }">
         <v-list-item-avatar>
           <img
             v-if="item.picture.length > 0"
@@ -71,7 +75,7 @@
           ></v-list-item-title>
           <v-list-item-subtitle v-text="item.email"></v-list-item-subtitle>
         </v-list-item-content>
-      </template> -->
+      </template>
     </v-combobox>
   </div>
 </template>
@@ -91,10 +95,13 @@ export default {
   },
 
   data: () => ({
-    emails: [], // Currently displayed emails
+    remindees: [], // Currently displayed emails
     searchedContacts: [], // Contacts that match the search query
+    timeout: null, // Timeout for search debouncing
 
     hasContactsAccess: true,
+    query: "",
+
     rules: {
       validEmails: (emails) => {
         for (const email of emails) {
@@ -117,37 +124,48 @@ export default {
       }
     })
 
-    this.emails = this.addedEmails;
+    this.remindees = this.addedEmails
+    console.log(this.remindees)
   },
 
   methods: {
     requestContactsAccess() {
       this.$emit("requestContactsAccess", {
-        // https://github.com/schej-it/schej.it/commit/8ff5aef2d2301478e44022651831b95015160d86
-        emails: this.emails,
+        emails: this.remindees,
       })
     },
-    searchContacts(emailsIndex, query) {
+    searchContacts() {
       // Searches the user's contacts using the google contacts API
       if (this.hasContactsAccess) {
-        get(`/user/searchContacts?query=${query}`).then((results) => {
-          this.searchedContacts = results
-        })
+        if (this.timeout) clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          get(`/user/searchContacts?query=${this.query}`).then((results) => {
+            this.searchedContacts = results
+            console.log(this.searchedContacts)
+          })
+        }, 500)
       }
     },
     removeEmail(email) {
-      this.emails.splice(this.emails.indexOf(email), 1)
-      _delete(`/events/${this.eventId}/attendee`, { email })
-    }
+      this.remindees.splice(this.remindees.indexOf(email), 1)
+    },
+    isContact(contact) {
+      return typeof contact === 'object'
+    },
   },
 
   watch: {
-    emails() {
-      if (this.rules.validEmails(this.emails)) {
-
+    remindees() {
+      this.$emit("update:emails", this.remindees)
+    },
+    query() {
+      if (this.query && this.query.length > 0) {
+        this.searchContacts()
+      } else {
+        this.searchedContacts = []
       }
-    }
-  },  
+    },
+  },
 
   components: { UserAvatarContent },
 }

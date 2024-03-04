@@ -210,6 +210,7 @@ export default {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
     initialTimezone: { type: Object, default: () => ({}) },
+    contactsPayload: {type: Object, default: () => ({})},
   },
 
   components: {
