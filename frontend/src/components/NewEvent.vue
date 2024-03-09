@@ -118,7 +118,7 @@
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
-                  :addedEmails="event && event.attendees ? event.attendees : []"
+                  :addedEmails="event && event.remindees ? event.remindees : []"
                   @update:emails="(newEmails) => (emails = newEmails)"
                 ></EmailReminders>
                 <TimezoneSelector v-model="timezone" label="Timezone" />
@@ -308,6 +308,7 @@ export default {
           duration,
           dates,
           notificationsEnabled: this.notificationsEnabled,
+          remindees: this.emails,
           type,
         })
           .then(({ eventId }) => {
@@ -315,12 +316,6 @@ export default {
               name: "event",
               params: { eventId, initialTimezone: this.timezone },
             })
-
-            for (const email of this.emails) {
-              post(`/events/${eventId}/attendee`, {
-                email,
-              })
-            }
 
             this.loading = false
             this.$emit("input", false)
@@ -348,6 +343,7 @@ export default {
             duration,
             dates,
             notificationsEnabled: this.notificationsEnabled,
+            remindees: this.emails,
             type,
           })
             .then(() => {
