@@ -22,8 +22,6 @@
       for email auto-suggestions.
     </div>
 
-    <!-- {{ this.searchedContacts }} -->
-
     <v-combobox
       v-model="remindees"
       :search-input.sync="query"
@@ -126,8 +124,6 @@ export default {
     })
 
     this.remindees = this.addedEmails
-    console.log("PREVIOUSLY ADDED\n")
-    console.log(this.remindees)
   },
 
   methods: {
@@ -181,10 +177,10 @@ export default {
       this.$emit("update:emails", this.remindees.map((r) => this.isContact(r) ? r.email : r))
     },
     query() {
-      console.log(this.query)
       if (this.query && this.query.length > 0) {
         this.searchContacts()
       } else {
+        clearTimeout(this.timeout)
         this.searchedContacts = []
       }
     },
