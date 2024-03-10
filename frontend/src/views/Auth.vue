@@ -78,6 +78,9 @@ export default {
             if (state.eventId == "") {
               this.$router.replace({
                 name: "home",
+                params: {
+                  contactsPayload: state.payload,
+                }
               })
             } else {
               this.$router.replace({

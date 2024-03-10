@@ -105,7 +105,7 @@
             class="tw-justify-start tw-pl-0"
             block
             text
-            @click="toggleAdvancedOptions"
+            @click="() => toggleAdvancedOptions()"
             ><span class="tw-mr-1">Advanced options</span>
             <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
               >mdi-chevron-down</v-icon
@@ -118,7 +118,7 @@
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
-                  :addedEmails="event && event.remindees ? event.remindees : []"
+                  :addedEmails="addedEmails"
                   @update:emails="(newEmails) => (emails = newEmails)"
                 ></EmailReminders>
                 <TimezoneSelector v-model="timezone" label="Timezone" />
@@ -175,6 +175,7 @@ export default {
     editEvent: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
+    contactsPayload: { type: Object, default: () => ({}) },
   },
 
   components: {
@@ -204,6 +205,10 @@ export default {
     emails: [], // For email reminders
   }),
 
+  mounted() {
+    if (Object.keys(this.contactsPayload).length > 0) this.toggleAdvancedOptions(true)
+  },
+
   computed: {
     formComplete() {
       let emailsValid = true
@@ -222,6 +227,11 @@ export default {
         // (this.startTime < this.endTime ||
         //   (this.endTime === 0 && this.startTime != 0))
       )
+    },
+    addedEmails() {
+      if (Object.keys(this.contactsPayload).length > 0)
+        return this.contactsPayload.emails
+      return this.event && this.event.remindees ? this.event.remindees : []
     },
     times() {
       const times = []
@@ -368,7 +378,7 @@ export default {
         }
       }
     },
-    toggleAdvancedOptions() {
+    toggleAdvancedOptions(delayed = false) {
       this.showAdvancedOptions = !this.showAdvancedOptions
 
       const openScrollEl = this.$refs.advancedOpenScrollTo
@@ -376,7 +386,7 @@ export default {
       if (openScrollEl && this.showAdvancedOptions) {
         setTimeout(
           () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
-          200
+          delayed ? 500 : 200
         )
       }
     },
