@@ -16,6 +16,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/services/auth"
+	"schej.it/server/services/listmonk"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -135,7 +136,6 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		userId = res.InsertedID.(primitive.ObjectID)
 
 		slackbot.SendTextMessage(fmt.Sprintf(":wave: %s %s (%s) has joined schej.it!", firstName, lastName, email))
-		utils.AddUserToListmonk(email, firstName, lastName, picture)
 	} else {
 		// User does exist, get user id
 		var user models.User
@@ -144,6 +144,12 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		}
 
 		userId = user.Id
+	}
+
+	if exists, userId := listmonk.DoesUserExist(email); exists {
+		listmonk.AddUserToListmonk(email, firstName, lastName, picture, userId)
+	} else {
+		listmonk.AddUserToListmonk(email, firstName, lastName, picture, nil)
 	}
 
 	// Set session variables
