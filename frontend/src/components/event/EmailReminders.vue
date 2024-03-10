@@ -15,27 +15,24 @@
         </div>
       </v-tooltip>
     </div>
-    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="true">
+    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="!hasContactsAccess">
       <a class="tw-underline" @click="requestContactsAccess"
         >Enable contacts access</a
       >
       for email auto-suggestions.
     </div>
 
-    <!-- {{ this.searchedContacts }} -->
-
     <v-combobox
       v-model="remindees"
       :search-input.sync="query"
       :items="searchedContacts"
-      item-text="email"
-      item-value="email"
+      item-text="queryString"
+      item-value="queryString"
       class="tw-mt-2 tw-text-sm"
       placeholder="Enter an email address..."
       multiple
       append-icon=""
       solo
-      return-object
       :rules="[rules.validEmails]"
     >
       <template v-slot:selection="data, parent">
@@ -44,15 +41,17 @@
           size="x-small"
           class="tw-flex tw-items-center tw-bg-light-gray tw-text-very-dark-gray"
         >
-            <v-avatar class="bg-accent text-uppercase tw-mr-2" start
-              ><img
-                v-if="typeof data.item === 'object' && data.item.picture.length > 0"
-                :src="data.item.picture"
-                referrerpolicy="no-referrer"
-                width="10px"
-              />
-              <v-icon v-else>mdi-account</v-icon></v-avatar
-            >
+          <v-avatar class="bg-accent text-uppercase tw-mr-2" start
+            ><img
+              v-if="
+                isContact(data.item) && data.item.picture.length > 0
+              "
+              :src="data.item.picture"
+              referrerpolicy="no-referrer"
+              width="10px"
+            />
+            <v-icon v-else>mdi-account</v-icon></v-avatar
+          >
           {{ isContact(data.item) ? data.item.email : data.item }}
 
           <v-icon small @click="() => removeEmail(data.item)" class="tw-ml-1"
@@ -98,6 +97,7 @@ export default {
     remindees: [], // Currently displayed emails
     searchedContacts: [], // Contacts that match the search query
     timeout: null, // Timeout for search debouncing
+    searchDebounceTime: 250,
 
     hasContactsAccess: true,
     query: "",
@@ -118,50 +118,69 @@ export default {
     // Send a warmup request to update cache and check if contacts permissions are enabled
     get(`/user/searchContacts?query=`).catch((err) => {
       // User has not granted contacts permissions
-      console.log("ENCOUNTERED ERROR")
       if (err.error?.code === 403) {
         this.hasContactsAccess = false
       }
     })
 
     this.remindees = this.addedEmails
-    console.log(this.remindees)
   },
 
   methods: {
+    /**
+     * Requests access to contacts.
+     */
     requestContactsAccess() {
       this.$emit("requestContactsAccess", {
         emails: this.remindees,
       })
     },
+    /**
+     * Searches contacts based on the query string if the user has access to contacts.
+     */
     searchContacts() {
-      // Searches the user's contacts using the google contacts API
       if (this.hasContactsAccess) {
         if (this.timeout) clearTimeout(this.timeout)
         this.timeout = setTimeout(() => {
           get(`/user/searchContacts?query=${this.query}`).then((results) => {
             this.searchedContacts = results
-            console.log(this.searchedContacts)
+            this.searchedContacts.map((contact) => {
+              contact["queryString"] = this.contactToQueryString(contact)
+            })
           })
-        }, 500)
+        }, this.searchDebounceTime)
       }
     },
+    /**
+     * Removes the specified email from the remindees list.
+     */
     removeEmail(email) {
       this.remindees.splice(this.remindees.indexOf(email), 1)
     },
+    /**
+     * Check if the contact is an object and not a user inputed string.
+     */
     isContact(contact) {
-      return typeof contact === 'object'
+      return typeof contact === "object"
     },
+    /**
+     * Takes a contact object and converts it to a query string.
+     */
+    contactToQueryString(contact) {
+      // Need to split first name to get rid of middle name
+      return `${contact["firstName"].split(" ")[0]} ${contact["lastName"]} ${contact["email"]}`
+    }
   },
 
   watch: {
     remindees() {
-      this.$emit("update:emails", this.remindees)
+      this.$emit("update:emails", this.remindees.map((r) => this.isContact(r) ? r.email : r))
     },
     query() {
       if (this.query && this.query.length > 0) {
         this.searchContacts()
       } else {
+        clearTimeout(this.timeout)
         this.searchedContacts = []
       }
     },

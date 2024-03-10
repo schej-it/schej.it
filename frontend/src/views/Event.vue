@@ -18,7 +18,7 @@
     />
 
     <!-- Edit event dialog -->
-    <NewEventDialog v-model="editEventDialog" :event="event" edit-event />
+    <NewEventDialog v-model="editEventDialog" :event="event" :contactsPayload="contactsPayload" edit-event />
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
@@ -239,6 +239,11 @@ export default {
 
     availabilityBtnOpacity: 1,
   }),
+  
+  mounted() {
+    // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
+    this.editEventDialog = Object.keys(this.contactsPayload).length > 0;
+  },
 
   computed: {
     ...mapState(["authUser", "events"]),

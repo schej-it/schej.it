@@ -105,7 +105,7 @@
             class="tw-justify-start tw-pl-0"
             block
             text
-            @click="toggleAdvancedOptions"
+            @click="() => toggleAdvancedOptions()"
             ><span class="tw-mr-1">Advanced options</span>
             <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
               >mdi-chevron-down</v-icon
@@ -115,10 +115,11 @@
             <div v-show="showAdvancedOptions">
               <div class="tw-my-2">
                 <EmailReminders
+                  v-show="authUser"
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
-                  :addedEmails="event && event.attendees ? event.attendees : []"
+                  :addedEmails="addedEmails"
                   @update:emails="(newEmails) => (emails = newEmails)"
                 ></EmailReminders>
                 <TimezoneSelector v-model="timezone" label="Timezone" />
@@ -156,7 +157,7 @@ import {
   validateEmail,
   signInGoogle,
 } from "@/utils"
-import { mapActions } from "vuex"
+import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import EmailReminders from "./event/EmailReminders.vue"
 import dayjs from "dayjs"
@@ -175,6 +176,8 @@ export default {
     editEvent: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
+    contactsPayload: { type: Object, default: () => ({}) },
+    inDialog: { type: Boolean, default: true },
   },
 
   components: {
@@ -204,7 +207,13 @@ export default {
     emails: [], // For email reminders
   }),
 
+  mounted() {
+    if (Object.keys(this.contactsPayload).length > 0)
+      this.toggleAdvancedOptions(true)
+  },
+
   computed: {
+    ...mapState(["authUser"]),
     formComplete() {
       let emailsValid = true
 
@@ -222,6 +231,11 @@ export default {
         // (this.startTime < this.endTime ||
         //   (this.endTime === 0 && this.startTime != 0))
       )
+    },
+    addedEmails() {
+      if (Object.keys(this.contactsPayload).length > 0)
+        return this.contactsPayload.emails
+      return this.event && this.event.remindees ? this.event.remindees : []
     },
     times() {
       const times = []
@@ -308,6 +322,7 @@ export default {
           duration,
           dates,
           notificationsEnabled: this.notificationsEnabled,
+          remindees: this.emails,
           type,
         })
           .then(({ eventId }) => {
@@ -315,12 +330,6 @@ export default {
               name: "event",
               params: { eventId, initialTimezone: this.timezone },
             })
-
-            for (const email of this.emails) {
-              post(`/events/${eventId}/attendee`, {
-                email,
-              })
-            }
 
             this.loading = false
             this.$emit("input", false)
@@ -348,6 +357,7 @@ export default {
             duration,
             dates,
             notificationsEnabled: this.notificationsEnabled,
+            remindees: this.emails,
             type,
           })
             .then(() => {
@@ -372,15 +382,15 @@ export default {
         }
       }
     },
-    toggleAdvancedOptions() {
+    toggleAdvancedOptions(delayed = false) {
       this.showAdvancedOptions = !this.showAdvancedOptions
 
       const openScrollEl = this.$refs.advancedOpenScrollTo
 
-      if (openScrollEl && this.showAdvancedOptions) {
+      if (this.inDialog && openScrollEl && this.showAdvancedOptions) {
         setTimeout(
           () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
-          200
+          delayed ? 500 : 200
         )
       }
     },
