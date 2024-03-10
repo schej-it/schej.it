@@ -15,7 +15,7 @@
         </div>
       </v-tooltip>
     </div>
-    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="true">
+    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="!hasContactsAccess">
       <a class="tw-underline" @click="requestContactsAccess"
         >Enable contacts access</a
       >
@@ -97,7 +97,7 @@ export default {
     remindees: [], // Currently displayed emails
     searchedContacts: [], // Contacts that match the search query
     timeout: null, // Timeout for search debouncing
-    searchDebounceTime: 300,
+    searchDebounceTime: 250,
 
     hasContactsAccess: true,
     query: "",

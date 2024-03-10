@@ -115,6 +115,7 @@
             <div v-show="showAdvancedOptions">
               <div class="tw-my-2">
                 <EmailReminders
+                  v-show="authUser"
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
@@ -156,7 +157,7 @@ import {
   validateEmail,
   signInGoogle,
 } from "@/utils"
-import { mapActions } from "vuex"
+import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import EmailReminders from "./event/EmailReminders.vue"
 import dayjs from "dayjs"
@@ -176,6 +177,7 @@ export default {
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
+    inDialog: { type: Boolean, default: true },
   },
 
   components: {
@@ -206,10 +208,12 @@ export default {
   }),
 
   mounted() {
-    if (Object.keys(this.contactsPayload).length > 0) this.toggleAdvancedOptions(true)
+    if (Object.keys(this.contactsPayload).length > 0)
+      this.toggleAdvancedOptions(true)
   },
 
   computed: {
+    ...mapState(["authUser"]),
     formComplete() {
       let emailsValid = true
 
@@ -383,7 +387,7 @@ export default {
 
       const openScrollEl = this.$refs.advancedOpenScrollTo
 
-      if (openScrollEl && this.showAdvancedOptions) {
+      if (this.inDialog && openScrollEl && this.showAdvancedOptions) {
         setTimeout(
           () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
           delayed ? 500 : 200

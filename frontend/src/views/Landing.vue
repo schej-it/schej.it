@@ -96,6 +96,7 @@
           />
           <NewEvent
             class="tw-drop-shadow-lg"
+            :inDialog="false"
             :dialog="false"
             :allow-notifications="false"
           />
