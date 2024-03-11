@@ -118,3 +118,14 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 
 	fmt.Println("TASK NAME: ", task.Name)
 }
+
+func DeleteEmailTask(taskId string) {
+	err := TasksClient.DeleteTask(context.Background(), &cloudtaskspb.DeleteTaskRequest{
+		Name: taskId,
+	})
+
+	if err != nil {
+		logger.StdErr.Println(err)
+		return
+	}
+}
