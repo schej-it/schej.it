@@ -38,7 +38,7 @@ func InitTasks() func() {
 	}
 }
 
-func CreateEmailTask(email string, ownerName string, eventName string, eventId string) {
+func CreateEmailTask(email string, ownerName string, eventName string, eventId string) []string {
 	// Get listmonk url env vars
 	listmonkUrl := os.Getenv("LISTMONK_URL")
 	listmonkUsername := os.Getenv("LISTMONK_USERNAME")
@@ -58,14 +58,20 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-	// secondEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_SECOND_EMAIL_REMINDER_ID"))
-	// if err != nil {
-	// 	logger.StdErr.Panicln(err)
-	// }
-	// finalEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_FINAL_EMAIL_REMINDER_ID"))
-	// if err != nil {
-	// 	logger.StdErr.Panicln(err)
-	// }
+	secondEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_SECOND_EMAIL_REMINDER_ID"))
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	finalEmailReminderId, err := strconv.Atoi(os.Getenv("LISTMONK_FINAL_EMAIL_REMINDER_ID"))
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	// Create map of emails to iterate through
+	tasksToCreate := make(map[int]*timestamppb.Timestamp)
+	tasksToCreate[initialEmailReminderId] = timestamppb.Now()
+	tasksToCreate[secondEmailReminderId] = timestamppb.New(time.Now().Add(24 * time.Hour))
+	tasksToCreate[finalEmailReminderId] = timestamppb.New(time.Now().Add(3 * 24 * time.Hour))
 
 	// Construct URLs
 	var baseUrl string
@@ -77,46 +83,52 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 	eventUrl := fmt.Sprintf("%s/e/%s", baseUrl, eventId)
 	finishedUrl := fmt.Sprintf("%s/e/%s/responded", baseUrl, eventId)
 
-	// Create JSON object
-	body, err := json.Marshal(bson.M{
-		"subscriber_email": email,
-		"template_id":      initialEmailReminderId,
-		"data": bson.M{
-			"ownerName":   ownerName,
-			"eventName":   eventName,
-			"eventUrl":    eventUrl,
-			"finishedUrl": finishedUrl,
-		},
-		"content_type": "html",
-	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
+	taskIds := make([]string, 0)
 
-	task, err := TasksClient.CreateTask(context.Background(), &cloudtaskspb.CreateTaskRequest{
-		Parent: "projects/schej-it/locations/us-central1/queues/SendReminderEmail",
-		Task: &cloudtaskspb.Task{
-			ScheduleTime: timestamppb.New(time.Now().Add(30 * time.Second)),
-			// ScheduleTime: timestamppb.Now(),
-			PayloadType: &cloudtaskspb.Task_HttpRequest{
-				HttpRequest: &cloudtaskspb.HttpRequest{
-					Url:        fmt.Sprintf("%s/api/tx", listmonkUrl),
-					HttpMethod: cloudtaskspb.HttpMethod_POST,
-					Headers: map[string]string{
-						"Authorization": fmt.Sprintf("Basic %s", basicAuthString),
-						"Content-Type":  "application/json",
+	for templateId, scheduleTime := range tasksToCreate {
+		// Create JSON object
+		body, err := json.Marshal(bson.M{
+			"subscriber_email": email,
+			"template_id":      templateId,
+			"data": bson.M{
+				"ownerName":   ownerName,
+				"eventName":   eventName,
+				"eventUrl":    eventUrl,
+				"finishedUrl": finishedUrl,
+			},
+			"content_type": "html",
+		})
+		if err != nil {
+			logger.StdErr.Panicln(err)
+		}
+
+		// Create task
+		task, err := TasksClient.CreateTask(context.Background(), &cloudtaskspb.CreateTaskRequest{
+			Parent: "projects/schej-it/locations/us-central1/queues/SendReminderEmail",
+			Task: &cloudtaskspb.Task{
+				ScheduleTime: scheduleTime,
+				PayloadType: &cloudtaskspb.Task_HttpRequest{
+					HttpRequest: &cloudtaskspb.HttpRequest{
+						Url:        fmt.Sprintf("%s/api/tx", listmonkUrl),
+						HttpMethod: cloudtaskspb.HttpMethod_POST,
+						Headers: map[string]string{
+							"Authorization": fmt.Sprintf("Basic %s", basicAuthString),
+							"Content-Type":  "application/json",
+						},
+						Body: body,
 					},
-					Body: body,
 				},
 			},
-		},
-	})
+		})
 
-	if err != nil {
-		logger.StdErr.Panicln(err)
+		if err != nil {
+			logger.StdErr.Panicln(err)
+		}
+
+		taskIds = append(taskIds, task.Name)
 	}
 
-	fmt.Println("TASK NAME: ", task.Name)
+	return taskIds
 }
 
 func DeleteEmailTask(taskId string) {

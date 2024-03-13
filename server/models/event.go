@@ -29,7 +29,7 @@ type Event struct {
 	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
 
 	// Remindees
-	Remindees []string `json:"remindees" bson:"remindees,omitempty"`
+	Remindees []Remindee `json:"remindees" bson:"remindees,omitempty"`
 }
 
 // A response object containing an array of times that the given user is available
@@ -38,4 +38,11 @@ type Response struct {
 	UserId       primitive.ObjectID   `json:"userId" bson:",omitempty"`
 	User         *User                `json:"user" bson:",omitempty"`
 	Availability []primitive.DateTime `json:"availability" bson:"availability"`
+}
+
+// Object containing the remindee's email and task ids associated with the
+// email reminder task
+type Remindee struct {
+	Email   string   `json:"email" bson:"email,omitempty"`
+	TaskIds []string `json:"-" bson:"taskIds,omitempty"`
 }

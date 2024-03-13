@@ -16,6 +16,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/gcloud"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -72,7 +73,6 @@ func createEvent(c *gin.Context) {
 		Dates:                payload.Dates,
 		NotificationsEnabled: *payload.NotificationsEnabled,
 		Type:                 payload.Type,
-		Remindees:            payload.Remindees,
 		Responses:            make(map[string]*models.Response),
 	}
 
@@ -84,14 +84,54 @@ func createEvent(c *gin.Context) {
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
 	var creator string
+	var user *models.User
 	if signedIn {
-		user := db.GetUserById(userId)
+		user = db.GetUserById(userId)
 		creator = fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email)
 	} else {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
 
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
+
+	// Schedule reminder emails if remindees array is not empty
+	if len(payload.Remindees) > 0 {
+		// Determine owner name
+		var ownerName string
+		if user != nil {
+			ownerName = user.FirstName
+		} else {
+			ownerName = "Somebody"
+		}
+
+		// Schedule email reminders for each of the remindees' emails
+		remindees := make([]models.Remindee, 0)
+		for _, email := range payload.Remindees {
+			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, insertedId)
+			remindees = append(remindees, models.Remindee{
+				Email:   email,
+				TaskIds: taskIds,
+			})
+		}
+
+		// Update event object in DB
+		objectId, _ := primitive.ObjectIDFromHex(insertedId)
+		_, err = db.EventsCollection.UpdateOne(
+			context.Background(),
+			bson.M{
+				"_id": objectId,
+			},
+			bson.M{
+				"$set": bson.M{
+					"remindees": remindees,
+				},
+			},
+		)
+
+		if err != nil {
+			logger.StdErr.Panicln(err)
+		}
+	}
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
