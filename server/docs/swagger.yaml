@@ -77,7 +77,7 @@ definitions:
       remindees:
         description: Remindees
         items:
-          type: string
+          $ref: '#/definitions/models.Remindee'
         type: array
       responses:
         additionalProperties:
@@ -109,6 +109,13 @@ definitions:
         type: string
       state:
         type: string
+    type: object
+  models.Remindee:
+    properties:
+      email:
+        type: string
+      responded:
+        type: boolean
     type: object
   models.Response:
     properties:
@@ -421,6 +428,34 @@ paths:
       responses:
         "200": {}
       summary: Duplicate event
+      tags:
+      - events
+  /events/{eventId}/responded:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing the user's email
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Mark the user as having responded to this event
       tags:
       - events
   /events/{eventId}/response:
