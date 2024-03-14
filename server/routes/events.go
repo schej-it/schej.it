@@ -17,6 +17,7 @@ import (
 	"schej.it/server/models"
 	"schej.it/server/responses"
 	"schej.it/server/services/gcloud"
+	"schej.it/server/services/listmonk"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -434,7 +435,7 @@ func userResponded(c *gin.Context) {
 		"$set": event,
 	})
 
-	// TODO: Email owner of event if all remindees have responded
+	// Email owner of event if all remindees have responded
 	everyoneResponded := true
 	for _, remindee := range event.Remindees {
 		if !*remindee.Responded {
@@ -443,7 +444,24 @@ func userResponded(c *gin.Context) {
 		}
 	}
 	if everyoneResponded {
-		// TODO
+		// Get owner
+		owner := db.GetUserById(event.OwnerId.Hex())
+
+		// Get event url
+		var baseUrl string
+		if utils.IsRelease() {
+			baseUrl = "https://schej.it"
+		} else {
+			baseUrl = "http://localhost:8080"
+		}
+		eventUrl := fmt.Sprintf("%s/e/%s", baseUrl, eventId)
+
+		// Send email
+		everyoneRespondedEmailTemplateId := 8
+		listmonk.SendEmail(owner.Email, everyoneRespondedEmailTemplateId, bson.M{
+			"eventName": event.Name,
+			"eventUrl":  eventUrl,
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
