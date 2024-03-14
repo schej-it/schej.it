@@ -11,7 +11,8 @@
         </template>
         <div>
           Reminder emails will be sent the day of event creation,<br />one day
-          after, and three days after.
+          after, and three days after. You will also receive <br />an email when
+          everybody has filled out the Schej.
         </div>
       </v-tooltip>
     </div>
@@ -43,9 +44,7 @@
         >
           <v-avatar class="bg-accent text-uppercase tw-mr-2" start
             ><img
-              v-if="
-                isContact(data.item) && data.item.picture.length > 0
-              "
+              v-if="isContact(data.item) && data.item.picture.length > 0"
               :src="data.item.picture"
               referrerpolicy="no-referrer"
               width="10px"
@@ -168,13 +167,18 @@ export default {
      */
     contactToQueryString(contact) {
       // Need to split first name to get rid of middle name
-      return `${contact["firstName"].split(" ")[0]} ${contact["lastName"]} ${contact["email"]}`
-    }
+      return `${contact["firstName"].split(" ")[0]} ${contact["lastName"]} ${
+        contact["email"]
+      }`
+    },
   },
 
   watch: {
     remindees() {
-      this.$emit("update:emails", this.remindees.map((r) => this.isContact(r) ? r.email : r))
+      this.$emit(
+        "update:emails",
+        this.remindees.map((r) => (this.isContact(r) ? r.email : r))
+      )
     },
     query() {
       if (this.query && this.query.length > 0) {

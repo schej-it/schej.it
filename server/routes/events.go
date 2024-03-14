@@ -430,6 +430,11 @@ func userResponded(c *gin.Context) {
 	}
 	event.Remindees[index].Responded = utils.TruePtr()
 
+	// Delete the reminder email tasks
+	for _, taskId := range event.Remindees[index].TaskIds {
+		gcloud.DeleteEmailTask(taskId)
+	}
+
 	// Update event in database
 	db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{
 		"$set": event,
