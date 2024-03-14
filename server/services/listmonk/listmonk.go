@@ -96,3 +96,34 @@ func DoesUserExist(email string) (bool, *int) {
 		return false, nil
 	}
 }
+
+// Send a transactional email using the specified template and data
+func SendEmail(email string, templateId int, data bson.M) {
+	// Get listmonk url env vars
+	listmonkUrl := os.Getenv("LISTMONK_URL")
+	listmonkUsername := os.Getenv("LISTMONK_USERNAME")
+	listmonkPassword := os.Getenv("LISTMONK_PASSWORD")
+
+	// Construct body
+	body, err := json.Marshal(bson.M{
+		"subscriber_email": email,
+		"template_id":      templateId,
+		"data":             data,
+		"content_type":     "html",
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	// Construct request
+	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/api/tx", listmonkUrl), bytes.NewBuffer(body))
+	req.SetBasicAuth(listmonkUsername, listmonkPassword)
+	req.Header.Set("Content-Type", "application/json")
+
+	// Execute request
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer response.Body.Close()
+}
