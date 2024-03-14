@@ -81,7 +81,7 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 		baseUrl = "http://localhost:8080"
 	}
 	eventUrl := fmt.Sprintf("%s/e/%s", baseUrl, eventId)
-	finishedUrl := fmt.Sprintf("%s/e/%s/responded", baseUrl, eventId)
+	finishedUrl := fmt.Sprintf("%s/e/%s/responded?email=%s", baseUrl, eventId, email)
 
 	taskIds := make([]string, 0)
 

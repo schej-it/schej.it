@@ -29,6 +29,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
+	eventRouter.POST("/:eventId/responded", userResponded)
 	// eventRouter.POST("/:eventId/attendee", middleware.AuthRequired(), addAttendee)
 	// eventRouter.DELETE("/:eventId/attendee", middleware.AuthRequired(), removeAttendee)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
@@ -109,8 +110,9 @@ func createEvent(c *gin.Context) {
 		for _, email := range payload.Remindees {
 			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, insertedId)
 			remindees = append(remindees, models.Remindee{
-				Email:   email,
-				TaskIds: taskIds,
+				Email:     email,
+				TaskIds:   taskIds,
+				Responded: utils.FalsePtr(),
 			})
 		}
 
@@ -392,6 +394,56 @@ func deleteEventResponse(c *gin.Context) {
 	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Mark the user as having responded to this event
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing the user's email"
+// @Success 200
+// @Router /events/{eventId}/responded [post]
+func userResponded(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	// Fetch event
+	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
+
+	// Update responded boolean for the given email
+	index := utils.Find(event.Remindees, func(r models.Remindee) bool {
+		return r.Email == payload.Email
+	})
+	if index == -1 {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.RemindeeEmailNotFound})
+		return
+	}
+	event.Remindees[index].Responded = utils.TruePtr()
+
+	// Update event in database
+	db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{
+		"$set": event,
+	})
+
+	// TODO: Email owner of event if all remindees have responded
+	everyoneResponded := true
+	for _, remindee := range event.Remindees {
+		if !*remindee.Responded {
+			everyoneResponded = false
+			break
+		}
+	}
+	if everyoneResponded {
+		// TODO
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

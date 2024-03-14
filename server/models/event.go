@@ -40,9 +40,9 @@ type Response struct {
 	Availability []primitive.DateTime `json:"availability" bson:"availability"`
 }
 
-// Object containing the remindee's email and task ids associated with the
-// email reminder task
+// Object containing information associated with the remindee
 type Remindee struct {
-	Email   string   `json:"email" bson:"email,omitempty"`
-	TaskIds []string `json:"-" bson:"taskIds,omitempty"`
+	Email     string   `json:"email" bson:"email,omitempty"`
+	TaskIds   []string `json:"-" bson:"taskIds,omitempty"` // Task IDs of the scheduled emails
+	Responded *bool    `json:"responded" bson:"responded,omitempty"`
 }
