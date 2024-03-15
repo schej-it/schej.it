@@ -428,6 +428,11 @@ func userResponded(c *gin.Context) {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.RemindeeEmailNotFound})
 		return
 	}
+	if *event.Remindees[index].Responded {
+		// If remindee has already responded, just return and don't update db
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
 	event.Remindees[index].Responded = utils.TruePtr()
 
 	// Delete the reminder email tasks

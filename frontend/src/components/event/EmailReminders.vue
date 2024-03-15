@@ -117,7 +117,7 @@ export default {
     // Send a warmup request to update cache and check if contacts permissions are enabled
     get(`/user/searchContacts?query=`).catch((err) => {
       // User has not granted contacts permissions
-      if (err.error?.code === 403) {
+      if (err.error?.code === 403 || err.error?.code === 401) {
         this.hasContactsAccess = false
       }
     })
