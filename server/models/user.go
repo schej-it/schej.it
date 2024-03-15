@@ -15,6 +15,9 @@ type User struct {
 	LastName  string             `json:"lastName" bson:"lastName,omitempty"`
 	Picture   string             `json:"picture" bson:"picture,omitempty"`
 
+	// Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in
+	HasCustomName *bool `json:"hasCustomName" bson:"hasCustomName,omitempty"`
+
 	// CalendarAccounts is a mapping from {email => CalendarAccount} that contains all the
 	// additional accounts the user wants to see google calendar events for
 	CalendarAccounts map[string]CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`

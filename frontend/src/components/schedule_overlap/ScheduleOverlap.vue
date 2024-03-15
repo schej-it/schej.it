@@ -177,14 +177,24 @@
             </div>
 
             <!-- Hint text (desktop) -->
-            <div v-if="!isPhone && showHintText && hintText != ''" class="tw-flex">
+            <v-expand-transition>
               <div
-                class="tw-mt-2 tw-flex tw-items-center tw-justify-center tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-[7px] tw-text-sm tw-text-dark-gray"
+                v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
+                class="tw-flex"
               >
-                <v-icon small>mdi-information-outline</v-icon>
-                {{ hintText }}
-              </div>
-            </div>
+                <div
+                  class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray"
+                >
+                  <div class="tw-flex tw-items-center tw-gap-1">
+                    <v-icon small>mdi-information-outline</v-icon>
+                    {{ hintText }}
+                  </div>
+                  <v-btn icon @click="closeHint">
+                    <v-icon small>mdi-close</v-icon></v-btn
+                  >
+                </div>
+              </div></v-expand-transition
+            >
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
@@ -383,6 +393,12 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 
+import dayjs from "dayjs"
+import utcPlugin from "dayjs/plugin/utc"
+import timezonePlugin from "dayjs/plugin/timezone"
+dayjs.extend(utcPlugin)
+dayjs.extend(timezonePlugin)
+
 export default {
   name: "ScheduleOverlap",
   props: {
@@ -460,6 +476,9 @@ export default {
       page: 0,
 
       hasRefreshedAuthUser: false,
+
+      /* Variables for hint */
+      hintState: true,
     }
   },
   computed: {
@@ -596,7 +615,7 @@ export default {
     hintText() {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
-          return  "Click and drag to add your available times in green."
+          return "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times"
         default:
@@ -712,7 +731,17 @@ export default {
       if (!("offset" in this.curTimezone)) {
         return new Date().getTimezoneOffset()
       }
-      return this.curTimezone.offset * -1 // Multiplying by -1 because offset is flipped
+
+      if (this.event.type === eventTypes.DOW) {
+        return this.curTimezone.offset * -1
+      }
+
+      // Can't just get the offset directly from curTimezone because it doesn't account for dates in the future
+      // when daylight savings might be in or out of effect, so instead, we get the timezone for the first date
+      // of the event
+      return (
+        dayjs(this.event.dates[0]).tz(this.curTimezone.value).utcOffset() * -1 // Multiply by -1 because offset is flipped
+      )
     },
     userHasResponded() {
       return this.authUser && this.authUser._id in this.parsedResponses
@@ -741,6 +770,9 @@ export default {
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
       )
+    },
+    hintClosed() {
+      return !this.hintState || localStorage[`closedHint${this.state}`]
     },
   },
   methods: {
@@ -1488,7 +1520,15 @@ export default {
     // -----------------------------------
     onResize() {
       this.setTimeslotSize()
-      this.page = 0
+    },
+    //#endregion
+
+    // -----------------------------------
+    //#region hint
+    // -----------------------------------
+    closeHint() {
+      this.hintState = false
+      localStorage[`closedHint${this.state}`] = true
     },
     //#endregion
   },
@@ -1539,6 +1579,13 @@ export default {
           this.delayedShowStickyRespondents = cur
         }, 100)
       },
+    },
+    maxDaysPerPage() {
+      // Set page to 0 if user switches from portrait to landscape orientation and we're on an invalid page number,
+      // i.e. we're on a page that displays 0 days
+      if (this.page * this.maxDaysPerPage >= this.event.dates.length) {
+        this.page = 0
+      }
     },
   },
   created() {

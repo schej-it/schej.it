@@ -319,11 +319,13 @@ export default {
       this.loading = true
       if (!this.editEvent) {
         // Create new event on backend
+        const name = this.name
+        const notificationsEnabled = this.notificationsEnabled
         post("/events", {
-          name: this.name,
+          name,
           duration,
           dates,
-          notificationsEnabled: this.notificationsEnabled,
+          notificationsEnabled,
           remindees: this.emails,
           type,
         })
@@ -339,10 +341,10 @@ export default {
 
             this.$posthog?.capture("Event created", {
               eventId: eventId,
-              eventName: this.name,
+              eventName: name,
               eventDuration: duration,
               eventDates: dates,
-              eventNotificationsEnabled: this.notificationsEnabled,
+              eventNotificationsEnabled: notificationsEnabled,
               eventType: type,
             })
           })
