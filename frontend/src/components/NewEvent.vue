@@ -345,7 +345,7 @@ export default {
               eventId: eventId,
               eventName: name,
               eventDuration: duration,
-              eventDates: dates,
+              eventDates: JSON.stringify(dates),
               eventNotificationsEnabled: notificationsEnabled,
               eventRemindees: remindees,
               eventType: type,
@@ -372,12 +372,11 @@ export default {
                 eventId: this.event._id,
                 eventName: name,
                 eventDuration: duration,
-                eventDates: dates,
+                eventDates: JSON.stringify(dates),
                 eventNotificationsEnabled: notificationsEnabled,
                 eventRemindees: remindees,
                 eventType: type,
               })
-
               this.$emit("input", false)
               this.reset()
               window.location.reload()
