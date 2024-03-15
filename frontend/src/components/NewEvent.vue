@@ -317,16 +317,18 @@ export default {
       }
 
       this.loading = true
+
+      const name = this.name
+      const notificationsEnabled = this.notificationsEnabled
+      const remindees = this.emails
       if (!this.editEvent) {
         // Create new event on backend
-        const name = this.name
-        const notificationsEnabled = this.notificationsEnabled
         post("/events", {
           name,
           duration,
           dates,
           notificationsEnabled,
-          remindees: this.emails,
+          remindees,
           type,
         })
           .then(({ eventId }) => {
@@ -345,6 +347,7 @@ export default {
               eventDuration: duration,
               eventDates: dates,
               eventNotificationsEnabled: notificationsEnabled,
+              eventRemindees: remindees,
               eventType: type,
             })
           })
@@ -357,20 +360,21 @@ export default {
         // Edit event on backend
         if (this.event) {
           put(`/events/${this.event._id}`, {
-            name: this.name,
+            name,
             duration,
             dates,
-            notificationsEnabled: this.notificationsEnabled,
-            remindees: this.emails,
+            notificationsEnabled,
+            remindees,
             type,
           })
             .then(() => {
               this.$posthog?.capture("Event edited", {
                 eventId: this.event._id,
-                eventName: this.name,
+                eventName: name,
                 eventDuration: duration,
                 eventDates: dates,
-                eventNotificationsEnabled: this.notificationsEnabled,
+                eventNotificationsEnabled: notificationsEnabled,
+                eventRemindees: remindees,
                 eventType: type,
               })
 
