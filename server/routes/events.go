@@ -187,20 +187,83 @@ func editEvent(c *gin.Context) {
 		}
 	}
 
+	// Update event
+	event.Name = payload.Name
+	event.Duration = payload.Duration
+	event.Dates = payload.Dates
+	event.NotificationsEnabled = *payload.NotificationsEnabled
+	event.Type = payload.Type
+
+	//
+	// Update remindees
+	//
+	updatedRemindees := make([]models.Remindee, 0)
+
+	// Find remindees to delete
+	for i, remindee := range event.Remindees {
+		found := false
+		for _, email := range payload.Remindees {
+			if email == remindee.Email {
+				found = true
+				break
+			}
+		}
+
+		if found {
+			// If remindee is found in updated remindees array, add to updatedRemindees
+			updatedRemindees = append(updatedRemindees, event.Remindees[i])
+		} else {
+			// If remindee not found in the updated remindees array, delete remindee
+
+			// Delete email tasks
+			for _, taskId := range event.Remindees[i].TaskIds {
+				gcloud.DeleteEmailTask(taskId)
+			}
+		}
+	}
+
+	// Find remindees to add
+	for _, email := range payload.Remindees {
+		found := false
+		for _, remindee := range updatedRemindees {
+			if email == remindee.Email {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			// Update remindees array contains a new remindee, so add a new remindee
+
+			// Determine owner name
+			var ownerName string
+			if event.OwnerId != primitive.NilObjectID {
+				owner := db.GetUserById(event.OwnerId.Hex())
+				ownerName = owner.FirstName
+			} else {
+				ownerName = "Somebody"
+			}
+
+			// Schedule email tasks
+			taskIds := gcloud.CreateEmailTask(email, ownerName, event.Name, event.Id.Hex())
+			updatedRemindees = append(updatedRemindees, models.Remindee{
+				Email:     email,
+				TaskIds:   taskIds,
+				Responded: utils.FalsePtr(),
+			})
+		}
+	}
+
+	event.Remindees = updatedRemindees
+
+	// Update event object
 	_, err = db.EventsCollection.UpdateOne(
 		context.Background(),
 		bson.M{
 			"_id": objectId,
 		},
 		bson.M{
-			"$set": bson.M{
-				"name":                 payload.Name,
-				"duration":             payload.Duration,
-				"dates":                payload.Dates,
-				"notificationsEnabled": *payload.NotificationsEnabled,
-				"remindees":            payload.Remindees,
-				"type":                 payload.Type,
-			},
+			"$set": event,
 		},
 	)
 
