@@ -1,9 +1,12 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl sm:tw-mt-7">
     <!-- Dialog -->
-    <NewEventDialog v-model="dialog" />
+    <NewEventDialog v-model="dialog" :contactsPayload="contactsPayload" />
     <v-fade-transition>
-      <div class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8" v-if="!loading && events">
+      <div
+        class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8"
+        v-if="!loading && events"
+      >
         <EventType
           v-for="(eventType, t) in events"
           :key="t"
@@ -34,10 +37,22 @@ export default {
     BottomFab,
   },
 
+  props: {
+    contactsPayload: {
+      type: Object,
+      default: () => ({}),
+    },
+  },
+
   data: () => ({
     dialog: false,
     loading: true,
   }),
+
+  mounted() {
+    // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
+    this.dialog = Object.keys(this.contactsPayload).length > 0
+  },
 
   computed: {
     ...mapState(["createdEvents", "joinedEvents"]),

@@ -1,6 +1,6 @@
 <template>
   <v-card
-    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4"
+    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4 tw-transition-all"
   >
     <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
       <div>
@@ -105,23 +105,28 @@
             class="tw-justify-start tw-pl-0"
             block
             text
-            @click="showAdvancedOptions = !showAdvancedOptions"
+            @click="() => toggleAdvancedOptions()"
             ><span class="tw-mr-1">Advanced options</span>
-            <v-icon>{{
-              showAdvancedOptions ? "mdi-chevron-up" : "mdi-chevron-down"
-            }}</v-icon></v-btn
+            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
+              >mdi-chevron-down</v-icon
+            ></v-btn
           >
           <v-expand-transition>
             <div v-show="showAdvancedOptions">
               <div class="tw-my-2">
-                <TimezoneSelector
-                  class="tw-mb-2"
-                  v-model="timezone"
-                  label="Timezone"
-                />
+                <EmailReminders
+                  v-show="authUser"
+                  ref="emailReminders"
+                  @requestContactsAccess="requestContactsAccess"
+                  labelColor="tw-text-very-dark-gray"
+                  :addedEmails="addedEmails"
+                  @update:emails="(newEmails) => (emails = newEmails)"
+                ></EmailReminders>
+                <TimezoneSelector v-model="timezone" label="Timezone" />
               </div>
             </div>
           </v-expand-transition>
+          <div class="tw-bg-red" ref="advancedOpenScrollTo"></div>
         </div>
       </div>
     </v-card-text>
@@ -141,7 +146,7 @@
 </template>
 
 <script>
-import { eventTypes, dayIndexToDayString } from "@/constants"
+import { eventTypes, dayIndexToDayString, authTypes } from "@/constants"
 import {
   post,
   put,
@@ -149,9 +154,12 @@ import {
   dateToTimeNum,
   getISODateString,
   isPhone,
+  validateEmail,
+  signInGoogle,
 } from "@/utils"
-import { mapActions } from "vuex"
+import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
+import EmailReminders from "./event/EmailReminders.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -168,10 +176,13 @@ export default {
     editEvent: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
+    contactsPayload: { type: Object, default: () => ({}) },
+    inDialog: { type: Boolean, default: true },
   },
 
   components: {
     TimezoneSelector,
+    EmailReminders,
   },
 
   data: () => ({
@@ -193,16 +204,40 @@ export default {
     // Advanced options
     showAdvancedOptions: false,
     timezone: {},
+    emails: [], // For email reminders
   }),
 
+  mounted() {
+    if (Object.keys(this.contactsPayload).length > 0)
+      this.toggleAdvancedOptions(true)
+  },
+
   computed: {
+    ...mapState(["authUser"]),
     formComplete() {
+      let emailsValid = true
+
+      for (const email of this.emails) {
+        if (!validateEmail(email)) {
+          emailsValid = false
+          break
+        }
+      }
+
       return (
         this.name.length > 0 &&
-        (this.selectedDays.length > 0 || this.selectedDaysOfWeek.length > 0) //&&
+        (this.selectedDays.length > 0 || this.selectedDaysOfWeek.length > 0) &&
+        emailsValid //&&
         // (this.startTime < this.endTime ||
         //   (this.endTime === 0 && this.startTime != 0))
       )
+    },
+    addedEmails() {
+      if (Object.keys(this.contactsPayload).length > 0)
+        return this.contactsPayload.emails
+      return this.event && this.event.remindees
+        ? this.event.remindees.map((r) => r.email)
+        : []
     },
     times() {
       const times = []
@@ -282,15 +317,18 @@ export default {
       }
 
       this.loading = true
+
+      const name = this.name
+      const notificationsEnabled = this.notificationsEnabled
+      const remindees = this.emails
       if (!this.editEvent) {
         // Create new event on backend
-        const name = this.name
-        const notificationsEnabled = this.notificationsEnabled
         post("/events", {
           name,
           duration,
           dates,
           notificationsEnabled,
+          remindees,
           type,
         })
           .then(({ eventId }) => {
@@ -298,6 +336,7 @@ export default {
               name: "event",
               params: { eventId, initialTimezone: this.timezone },
             })
+
             this.loading = false
             this.$emit("input", false)
             this.reset()
@@ -306,8 +345,9 @@ export default {
               eventId: eventId,
               eventName: name,
               eventDuration: duration,
-              eventDates: dates,
+              eventDates: JSON.stringify(dates),
               eventNotificationsEnabled: notificationsEnabled,
+              eventRemindees: remindees,
               eventType: type,
             })
           })
@@ -320,22 +360,23 @@ export default {
         // Edit event on backend
         if (this.event) {
           put(`/events/${this.event._id}`, {
-            name: this.name,
+            name,
             duration,
             dates,
-            notificationsEnabled: this.notificationsEnabled,
+            notificationsEnabled,
+            remindees,
             type,
           })
             .then(() => {
               this.$posthog?.capture("Event edited", {
                 eventId: this.event._id,
-                eventName: this.name,
+                eventName: name,
                 eventDuration: duration,
-                eventDates: dates,
-                eventNotificationsEnabled: this.notificationsEnabled,
+                eventDates: JSON.stringify(dates),
+                eventNotificationsEnabled: notificationsEnabled,
+                eventRemindees: remindees,
                 eventType: type,
               })
-
               this.$emit("input", false)
               this.reset()
               window.location.reload()
@@ -347,6 +388,39 @@ export default {
             })
         }
       }
+    },
+    toggleAdvancedOptions(delayed = false) {
+      this.showAdvancedOptions = !this.showAdvancedOptions
+
+      const openScrollEl = this.$refs.advancedOpenScrollTo
+
+      if (this.inDialog && openScrollEl && this.showAdvancedOptions) {
+        setTimeout(
+          () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
+          delayed ? 500 : 200
+        )
+      }
+    },
+
+    /** Redirects user to oauth page requesting access to the user's contacts */
+    requestContactsAccess({ emails }) {
+      const payload = {
+        emails,
+      }
+      signInGoogle({
+        state: {
+          type: authTypes.EVENT_CONTACTS,
+          eventId: this.event ? this.event._id : "",
+          payload,
+        },
+        requestContactsPermission: true,
+      })
+    },
+    /** Update state based on the contactsPayload after granting contacts access */
+    contactsAccessGranted({ curScheduledEvent, ...data }) {
+      this.curScheduledEvent = curScheduledEvent
+      this.$refs.confirmDetailsDialog?.setData(data)
+      this.confirmDetailsDialog = true
     },
   },
 

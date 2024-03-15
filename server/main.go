@@ -16,6 +16,7 @@ import (
 	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/routes"
+	"schej.it/server/services/gcloud"
 	"schej.it/server/slackbot"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -92,6 +93,10 @@ func main() {
 	// Init database
 	closeConnection := db.Init()
 	defer closeConnection()
+
+	// Init google cloud stuff
+	closeTasks := gcloud.InitTasks()
+	defer closeTasks()
 
 	// Session
 	store := cookie.NewStore([]byte("secret"))

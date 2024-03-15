@@ -14,6 +14,7 @@ const (
 	FriendRequestNotFound string = "friend-request-not-found"
 	UserNotFriends        string = "user-not-friends"
 	UserNotEventOwner     string = "user-not-event-owner"
+	RemindeeEmailNotFound string = "remindee-email-not-found"
 )
 
 type GoogleAPIError struct {

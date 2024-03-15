@@ -15,6 +15,7 @@ const routes = [
     path: "/home",
     name: "home",
     component: () => import("@/views/Home.vue"),
+    props: true,
   },
   {
     path: "/settings",
@@ -25,6 +26,12 @@ const routes = [
     path: "/e/:eventId",
     name: "event",
     component: () => import("@/views/Event.vue"),
+    props: true,
+  },
+  {
+    path: "/e/:eventId/responded",
+    name: "responded",
+    component: () => import("@/views/Responded.vue"),
     props: true,
   },
   {

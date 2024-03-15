@@ -22,7 +22,20 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 			"type": "section",
 			"text": bson.M{
 				"type": "mrkdwn",
-				"text": fmt.Sprintf("*Event url*: https://schej.it/e/%s\n*Creator*: %s\n*Type*: %s\n*Notifications Enabled*: %v", insertedId, creator, event.Type, event.NotificationsEnabled),
+				"text": fmt.Sprintf(
+					"*Event url*: https://schej.it/e/%s\n"+
+						"*Creator*: %s\n"+
+						"*Num days*: %v\n"+
+						"*Type*: %s\n"+
+						"*Notifications Enabled*: %v\n"+
+						"*Num remindees*: %v",
+					insertedId,
+					creator,
+					len(event.Dates),
+					event.Type,
+					event.NotificationsEnabled,
+					len(event.Remindees),
+				),
 			},
 		},
 	}}
