@@ -978,16 +978,18 @@ export default {
           if (i >= availabilityArray.length / blocksPerGroup) {
             // Make sure the entire availability has been added (will not be guaranteed when only animating a portion of availability)
             this.availability = new Set(availability)
-            setTimeout(() => {
-              this.availabilityAnimEnabled = false
+            this.availabilityAnimTimeouts.push(
+              setTimeout(() => {
+                this.availabilityAnimEnabled = false
 
-              if (this.showSnackbar) {
-                this.showInfo(
-                  "Your availability has been set automatically using your Google Calendar!"
-                )
-              }
-              this.unsavedChanges = false
-            }, 500)
+                if (this.showSnackbar) {
+                  this.showInfo(
+                    "Your availability has been set automatically using your Google Calendar!"
+                  )
+                }
+                this.unsavedChanges = false
+              }, 500)
+            )
           }
         }, i * msPerGroup)
 
@@ -1556,13 +1558,17 @@ export default {
       },
     },
     calendarEventsByDay() {
+      console.log("calendareventsbyday changed")
       if (
         this.state === this.states.EDIT_AVAILABILITY &&
         this.authUser &&
         !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
         !this.loadingCalendarEvents &&
-        !this.unsavedChanges
+        (!this.unsavedChanges || this.availabilityAnimEnabled)
       ) {
+        for (const timeout of this.availabilityAnimTimeouts) {
+          clearTimeout(timeout)
+        }
         this.setAvailabilityAutomatically()
       }
     },
