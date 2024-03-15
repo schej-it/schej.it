@@ -61,14 +61,17 @@ func createEvent(c *gin.Context) {
 	// If user logged in, set owner id to their user id, otherwise set owner id to nil
 	userIdInterface := session.Get("userId")
 	userId, signedIn := userIdInterface.(string)
+	var user *models.User
 	var ownerId primitive.ObjectID
 	if signedIn {
 		ownerId = utils.StringToObjectID(userId)
+		user = db.GetUserById(userId)
 	} else {
 		ownerId = primitive.NilObjectID
 	}
 
 	event := models.Event{
+		Id:                   primitive.NewObjectID(),
 		OwnerId:              ownerId,
 		Name:                 payload.Name,
 		Duration:             payload.Duration,
@@ -76,6 +79,30 @@ func createEvent(c *gin.Context) {
 		NotificationsEnabled: *payload.NotificationsEnabled,
 		Type:                 payload.Type,
 		Responses:            make(map[string]*models.Response),
+	}
+
+	// Schedule reminder emails if remindees array is not empty
+	if len(payload.Remindees) > 0 {
+		// Determine owner name
+		var ownerName string
+		if signedIn {
+			ownerName = user.FirstName
+		} else {
+			ownerName = "Somebody"
+		}
+
+		// Schedule email reminders for each of the remindees' emails
+		remindees := make([]models.Remindee, 0)
+		for _, email := range payload.Remindees {
+			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, event.Id.Hex())
+			remindees = append(remindees, models.Remindee{
+				Email:     email,
+				TaskIds:   taskIds,
+				Responded: utils.FalsePtr(),
+			})
+		}
+
+		event.Remindees = remindees
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -86,55 +113,13 @@ func createEvent(c *gin.Context) {
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
 	var creator string
-	var user *models.User
 	if signedIn {
-		user = db.GetUserById(userId)
 		creator = fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email)
 	} else {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
 
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
-
-	// Schedule reminder emails if remindees array is not empty
-	if len(payload.Remindees) > 0 {
-		// Determine owner name
-		var ownerName string
-		if user != nil {
-			ownerName = user.FirstName
-		} else {
-			ownerName = "Somebody"
-		}
-
-		// Schedule email reminders for each of the remindees' emails
-		remindees := make([]models.Remindee, 0)
-		for _, email := range payload.Remindees {
-			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, insertedId)
-			remindees = append(remindees, models.Remindee{
-				Email:     email,
-				TaskIds:   taskIds,
-				Responded: utils.FalsePtr(),
-			})
-		}
-
-		// Update event object in DB
-		objectId, _ := primitive.ObjectIDFromHex(insertedId)
-		_, err = db.EventsCollection.UpdateOne(
-			context.Background(),
-			bson.M{
-				"_id": objectId,
-			},
-			bson.M{
-				"$set": bson.M{
-					"remindees": remindees,
-				},
-			},
-		)
-
-		if err != nil {
-			logger.StdErr.Panicln(err)
-		}
-	}
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }

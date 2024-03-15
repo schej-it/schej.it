@@ -235,7 +235,9 @@ export default {
     addedEmails() {
       if (Object.keys(this.contactsPayload).length > 0)
         return this.contactsPayload.emails
-      return this.event && this.event.remindees ? this.event.remindees : []
+      return this.event && this.event.remindees
+        ? this.event.remindees.map((r) => r.email)
+        : []
     },
     times() {
       const times = []
