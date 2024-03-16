@@ -1,10 +1,12 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
     <!-- Dialog -->
+    <NewEventDialog v-model="dialog" :contactsPayload="contactsPayload" />
+
     <v-fade-transition>
       <div
-        v-if="!loading"
         class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
+        v-if="!loading && events"
       >
         <EventType
           :eventType="availabilityGroups"
@@ -26,8 +28,6 @@
         </div>
       </div>
     </v-fade-transition>
-
-    <NewEventDialog v-model="dialog" />
 
     <!-- FAB -->
     <BottomFab id="create-event-btn" @click="dialog = true">
@@ -55,10 +55,22 @@ export default {
     CreateSpeedDial,
   },
 
+  props: {
+    contactsPayload: {
+      type: Object,
+      default: () => ({}),
+    },
+  },
+
   data: () => ({
     dialog: false,
     loading: true,
   }),
+
+  mounted() {
+    // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
+    this.dialog = Object.keys(this.contactsPayload).length > 0
+  },
 
   computed: {
     ...mapState(["createdEvents", "joinedEvents"]),

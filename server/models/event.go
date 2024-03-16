@@ -28,6 +28,9 @@ type Event struct {
 	// Scheduled event
 	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
 	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
+
+	// Remindees
+	Remindees []Remindee `json:"remindees" bson:"remindees,omitempty"`
 }
 
 // A response object containing an array of times that the given user is available
@@ -43,4 +46,11 @@ type Response struct {
 		Email      string `json:"email" bson:"email,omitempty"`
 		CalendarId string `json:"calendarId" bson:"email,omitempty"`
 	} `json:"enabledCalendars" bson:"enabledCalendars,omitempty"`
+}
+
+// Object containing information associated with the remindee
+type Remindee struct {
+	Email     string   `json:"email" bson:"email,omitempty"`
+	TaskIds   []string `json:"-" bson:"taskIds,omitempty"` // Task IDs of the scheduled emails
+	Responded *bool    `json:"responded" bson:"responded,omitempty"`
 }

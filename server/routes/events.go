@@ -16,6 +16,8 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/gcloud"
+	"schej.it/server/services/listmonk"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -24,10 +26,13 @@ func InitEvents(router *gin.Engine) {
 	eventRouter := router.Group("/events")
 
 	eventRouter.POST("", createEvent)
+	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.GET("/:eventId", getEvent)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
-	eventRouter.PUT("/:eventId", editEvent)
+	eventRouter.POST("/:eventId/responded", userResponded)
+	// eventRouter.POST("/:eventId/attendee", middleware.AuthRequired(), addAttendee)
+	// eventRouter.DELETE("/:eventId/attendee", middleware.AuthRequired(), removeAttendee)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
@@ -36,7 +41,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,type=models.EventType} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,remindees=[]string,type=models.EventType} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -45,6 +50,7 @@ func createEvent(c *gin.Context) {
 		Duration             *float32             `json:"duration" binding:"required"`
 		Dates                []primitive.DateTime `json:"dates" binding:"required"`
 		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
+		Remindees            []string             `json:"remindees" binding:"required"`
 		Type                 models.EventType     `json:"type" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
@@ -55,14 +61,17 @@ func createEvent(c *gin.Context) {
 	// If user logged in, set owner id to their user id, otherwise set owner id to nil
 	userIdInterface := session.Get("userId")
 	userId, signedIn := userIdInterface.(string)
+	var user *models.User
 	var ownerId primitive.ObjectID
 	if signedIn {
 		ownerId = utils.StringToObjectID(userId)
+		user = db.GetUserById(userId)
 	} else {
 		ownerId = primitive.NilObjectID
 	}
 
 	event := models.Event{
+		Id:                   primitive.NewObjectID(),
 		OwnerId:              ownerId,
 		Name:                 payload.Name,
 		Duration:             payload.Duration,
@@ -70,6 +79,30 @@ func createEvent(c *gin.Context) {
 		NotificationsEnabled: *payload.NotificationsEnabled,
 		Type:                 payload.Type,
 		Responses:            make(map[string]*models.Response),
+	}
+
+	// Schedule reminder emails if remindees array is not empty
+	if len(payload.Remindees) > 0 {
+		// Determine owner name
+		var ownerName string
+		if signedIn {
+			ownerName = user.FirstName
+		} else {
+			ownerName = "Somebody"
+		}
+
+		// Schedule email reminders for each of the remindees' emails
+		remindees := make([]models.Remindee, 0)
+		for _, email := range payload.Remindees {
+			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, event.Id.Hex())
+			remindees = append(remindees, models.Remindee{
+				Email:     email,
+				TaskIds:   taskIds,
+				Responded: utils.FalsePtr(),
+			})
+		}
+
+		event.Remindees = remindees
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -81,7 +114,6 @@ func createEvent(c *gin.Context) {
 
 	var creator string
 	if signedIn {
-		user := db.GetUserById(userId)
 		creator = fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email)
 	} else {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
@@ -90,6 +122,141 @@ func createEvent(c *gin.Context) {
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+}
+
+// @Summary Edits an event based on its id
+// @Tags events
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,remindees=[]string,type=models.EventType} true "Object containing info about the event to update"
+// @Success 200
+// @Router /events/{eventId} [put]
+func editEvent(c *gin.Context) {
+	payload := struct {
+		Name                 string               `json:"name" binding:"required"`
+		Duration             *float32             `json:"duration" binding:"required"`
+		Dates                []primitive.DateTime `json:"dates" binding:"required"`
+		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
+		Remindees            []string             `json:"remindees" binding:"required"`
+		Type                 models.EventType     `json:"type" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	eventId := c.Param("eventId")
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	event := db.GetEventById(eventId)
+
+	// If user logged in, set owner id to their user id, otherwise set owner id to nil
+	session := sessions.Default(c)
+	userIdInterface := session.Get("userId")
+	userId, signedIn := userIdInterface.(string)
+	var ownerId primitive.ObjectID
+	if signedIn {
+		ownerId = utils.StringToObjectID(userId)
+	} else {
+		ownerId = primitive.NilObjectID
+	}
+
+	// If event has an owner id, check if user has permissions to edit event
+	if event.OwnerId != primitive.NilObjectID {
+		if event.OwnerId != ownerId {
+			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
+			return
+		}
+	}
+
+	// Update event
+	event.Name = payload.Name
+	event.Duration = payload.Duration
+	event.Dates = payload.Dates
+	event.NotificationsEnabled = *payload.NotificationsEnabled
+	event.Type = payload.Type
+
+	//
+	// Update remindees
+	//
+	updatedRemindees := make([]models.Remindee, 0)
+
+	// Find remindees to delete
+	for i, remindee := range event.Remindees {
+		found := false
+		for _, email := range payload.Remindees {
+			if email == remindee.Email {
+				found = true
+				break
+			}
+		}
+
+		if found {
+			// If remindee is found in updated remindees array, add to updatedRemindees
+			updatedRemindees = append(updatedRemindees, event.Remindees[i])
+		} else {
+			// If remindee not found in the updated remindees array, delete remindee
+
+			// Delete email tasks
+			for _, taskId := range event.Remindees[i].TaskIds {
+				gcloud.DeleteEmailTask(taskId)
+			}
+		}
+	}
+
+	// Find remindees to add
+	for _, email := range payload.Remindees {
+		found := false
+		for _, remindee := range updatedRemindees {
+			if email == remindee.Email {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			// Update remindees array contains a new remindee, so add a new remindee
+
+			// Determine owner name
+			var ownerName string
+			if event.OwnerId != primitive.NilObjectID {
+				owner := db.GetUserById(event.OwnerId.Hex())
+				ownerName = owner.FirstName
+			} else {
+				ownerName = "Somebody"
+			}
+
+			// Schedule email tasks
+			taskIds := gcloud.CreateEmailTask(email, ownerName, event.Name, event.Id.Hex())
+			updatedRemindees = append(updatedRemindees, models.Remindee{
+				Email:     email,
+				TaskIds:   taskIds,
+				Responded: utils.FalsePtr(),
+			})
+		}
+	}
+
+	event.Remindees = updatedRemindees
+
+	// Update event object
+	_, err = db.EventsCollection.UpdateOne(
+		context.Background(),
+		bson.M{
+			"_id": objectId,
+		},
+		bson.M{
+			"$set": event,
+		},
+	)
+
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.Status(http.StatusOK)
 }
 
 // @Summary Gets an event based on its id
@@ -129,7 +296,7 @@ func getEvent(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,guest=bool,name=string} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,guest=bool,name=string,attendeeEmail=string} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
@@ -290,74 +457,81 @@ func deleteEventResponse(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// @Summary Edits an event based on its id
+// @Summary Mark the user as having responded to this event
 // @Tags events
+// @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,type=models.EventType} true "Object containing info about the event to update"
+// @Param payload body object{email=string} true "Object containing the user's email"
 // @Success 200
-// @Router /events/{eventId} [put]
-func editEvent(c *gin.Context) {
+// @Router /events/{eventId}/responded [post]
+func userResponded(c *gin.Context) {
 	payload := struct {
-		Name                 string               `json:"name" binding:"required"`
-		Duration             *float32             `json:"duration" binding:"required"`
-		Dates                []primitive.DateTime `json:"dates" binding:"required"`
-		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
-		Type                 models.EventType     `json:"type" binding:"required"`
+		Email string `json:"email" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
 	}
 
+	// Fetch event
 	eventId := c.Param("eventId")
-	objectId, err := primitive.ObjectIDFromHex(eventId)
-	if err != nil {
-		// eventId is malformatted
-		c.Status(http.StatusBadRequest)
-		return
-	}
 	event := db.GetEventById(eventId)
 
-	// If user logged in, set owner id to their user id, otherwise set owner id to nil
-	session := sessions.Default(c)
-	userIdInterface := session.Get("userId")
-	userId, signedIn := userIdInterface.(string)
-	var ownerId primitive.ObjectID
-	if signedIn {
-		ownerId = utils.StringToObjectID(userId)
-	} else {
-		ownerId = primitive.NilObjectID
+	// Update responded boolean for the given email
+	index := utils.Find(event.Remindees, func(r models.Remindee) bool {
+		return r.Email == payload.Email
+	})
+	if index == -1 {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.RemindeeEmailNotFound})
+		return
+	}
+	if *event.Remindees[index].Responded {
+		// If remindee has already responded, just return and don't update db
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+	event.Remindees[index].Responded = utils.TruePtr()
+
+	// Delete the reminder email tasks
+	for _, taskId := range event.Remindees[index].TaskIds {
+		gcloud.DeleteEmailTask(taskId)
 	}
 
-	// If event has an owner id, check if user has permissions to edit event
-	if event.OwnerId != primitive.NilObjectID {
-		if event.OwnerId != ownerId {
-			c.JSON(http.StatusForbidden, responses.Error{Error: errs.UserNotEventOwner})
-			return
+	// Update event in database
+	db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{
+		"$set": event,
+	})
+
+	// Email owner of event if all remindees have responded
+	everyoneResponded := true
+	for _, remindee := range event.Remindees {
+		if !*remindee.Responded {
+			everyoneResponded = false
+			break
 		}
 	}
+	if everyoneResponded {
+		// Get owner
+		owner := db.GetUserById(event.OwnerId.Hex())
 
-	_, err = db.EventsCollection.UpdateOne(
-		context.Background(),
-		bson.M{
-			"_id": objectId,
-		},
-		bson.M{
-			"$set": bson.M{
-				"name":                 payload.Name,
-				"duration":             payload.Duration,
-				"dates":                payload.Dates,
-				"notificationsEnabled": *payload.NotificationsEnabled,
-				"type":                 payload.Type,
-			},
-		},
-	)
+		// Get event url
+		var baseUrl string
+		if utils.IsRelease() {
+			baseUrl = "https://schej.it"
+		} else {
+			baseUrl = "http://localhost:8080"
+		}
+		eventUrl := fmt.Sprintf("%s/e/%s", baseUrl, eventId)
 
-	if err != nil {
-		logger.StdErr.Panicln(err)
+		// Send email
+		everyoneRespondedEmailTemplateId := 8
+		listmonk.SendEmail(owner.Email, everyoneRespondedEmailTemplateId, bson.M{
+			"eventName": event.Name,
+			"eventUrl":  eventUrl,
+		})
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // @Summary Deletes an event based on its id
@@ -439,3 +613,89 @@ func duplicateEvent(c *gin.Context) {
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
+
+// @Summary [UNUSED] Adds an attendee to the event's list of attendees
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing info about the attendee to add"
+// @Success 200
+// @Router /events/{eventId}/attendee [post]
+// func addAttendee(c *gin.Context) {
+// 	// UNUSED
+// 	payload := struct {
+// 		Email string `json:"email" binding:"required"`
+// 	}{}
+// 	if err := c.Bind(&payload); err != nil {
+// 		return
+// 	}
+// 	session := sessions.Default(c)
+// 	eventIdString := c.Param("eventId")
+// 	eventId, err := primitive.ObjectIDFromHex(eventIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	userIdInterface := session.Get("userId")
+// 	userIdString := userIdInterface.(string)
+// 	userId, err := primitive.ObjectIDFromHex(userIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
+// 		"_id":     eventId,
+// 		"ownerId": userId,
+// 	}, bson.M{
+// 		"$addToSet": bson.M{"attendees": payload.Email},
+// 	})
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{})
+// }
+
+// @Summary [UNUSED] Removes an attendee from the event's list of attendees
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{email=string} true "Object containing info about the attendee to remove"
+// @Success 200
+// @Router /events/{eventId}/attendee [delete]
+// func removeAttendee(c *gin.Context) {
+// 	// UNUSED
+// 	payload := struct {
+// 		Email string `json:"email" binding:"required"`
+// 	}{}
+// 	if err := c.Bind(&payload); err != nil {
+// 		return
+// 	}
+// 	session := sessions.Default(c)
+// 	eventIdString := c.Param("eventId")
+// 	eventId, err := primitive.ObjectIDFromHex(eventIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	userIdInterface := session.Get("userId")
+// 	userIdString := userIdInterface.(string)
+// 	userId, err := primitive.ObjectIDFromHex(userIdString)
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
+// 		"_id":     eventId,
+// 		"ownerId": userId,
+// 	}, bson.M{
+// 		"$pull": bson.M{"attendees": payload.Email},
+// 	})
+// 	if err != nil {
+// 		logger.StdErr.Panicln(err)
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{})
+// }

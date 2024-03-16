@@ -46,7 +46,7 @@
               icon
               v-bind="attrs"
               v-on="on"
-              @click="() => reauthenticateCalendarAccount"
+              @click="reauthenticateCalendarAccount"
             >
               <v-icon>mdi-alert-circle</v-icon>
             </v-btn>

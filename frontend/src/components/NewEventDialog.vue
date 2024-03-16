@@ -9,6 +9,7 @@
       :editEvent="editEvent"
       :allow-notifications="allowNotifications"
       @input="$emit('input', false)"
+      :contactsPayload="contactsPayload"
     />
   </v-dialog>
 </template>
@@ -27,6 +28,7 @@ export default {
     event: { type: Object },
     editEvent: { type: Boolean, default: false },
     allowNotifications: { type: Boolean, default: true },
+    contactsPayload: { type: Object, default: () => ({}) },
   },
 
   components: {

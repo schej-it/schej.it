@@ -245,6 +245,12 @@ var doc = `{
                                         "notificationsEnabled": {
                                             "type": "boolean"
                                         },
+                                        "remindees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
                                         }
@@ -347,6 +353,12 @@ var doc = `{
                                         "notificationsEnabled": {
                                             "type": "boolean"
                                         },
+                                        "remindees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
                                         }
@@ -429,6 +441,53 @@ var doc = `{
                 }
             }
         },
+        "/events/{eventId}/responded": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Mark the user as having responded to this event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Object containing the user's email",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/events/{eventId}/response": {
             "post": {
                 "consumes": [
@@ -462,6 +521,9 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "attendeeEmail": {
+                                            "type": "string"
+                                        },
                                         "availability": {
                                             "type": "array",
                                             "items": {
@@ -695,6 +757,49 @@ var doc = `{
                             ]
                         }
                     }
+                }
+            }
+        },
+        "/user/name": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Updates the user's name",
+                "parameters": [
+                    {
+                        "description": "Object containing the updated name",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "firstName": {
+                                            "type": "string"
+                                        },
+                                        "lastName": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
                 }
             }
         },
@@ -1024,6 +1129,13 @@ var doc = `{
                 "ownerId": {
                     "type": "string"
                 },
+                "remindees": {
+                    "description": "Remindees",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Remindee"
+                    }
+                },
                 "responses": {
                     "description": "Availability responses",
                     "type": "object",
@@ -1067,6 +1179,17 @@ var doc = `{
                 },
                 "state": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Remindee": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "responded": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1118,6 +1241,10 @@ var doc = `{
                 },
                 "firstName": {
                     "type": "string"
+                },
+                "hasCustomName": {
+                    "description": "Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in",
+                    "type": "boolean"
                 },
                 "lastName": {
                     "type": "string"

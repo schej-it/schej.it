@@ -74,6 +74,11 @@ definitions:
         type: boolean
       ownerId:
         type: string
+      remindees:
+        description: Remindees
+        items:
+          $ref: '#/definitions/models.Remindee'
+        type: array
       responses:
         additionalProperties:
           $ref: '#/definitions/models.Response'
@@ -104,6 +109,13 @@ definitions:
         type: string
       state:
         type: string
+    type: object
+  models.Remindee:
+    properties:
+      email:
+        type: string
+      responded:
+        type: boolean
     type: object
   models.Response:
     properties:
@@ -140,6 +152,10 @@ definitions:
         type: string
       firstName:
         type: string
+      hasCustomName:
+        description: Whether the user has set a custom name for themselves, i.e. don't
+          change their name when they sign in
+        type: boolean
       lastName:
         type: string
       picture:
@@ -297,6 +313,10 @@ paths:
                 type: string
               notificationsEnabled:
                 type: boolean
+              remindees:
+                items:
+                  type: string
+                type: array
               type:
                 $ref: '#/definitions/models.EventType'
             type: object
@@ -372,6 +392,10 @@ paths:
                 type: string
               notificationsEnabled:
                 type: boolean
+              remindees:
+                items:
+                  type: string
+                type: array
               type:
                 $ref: '#/definitions/models.EventType'
             type: object
@@ -408,6 +432,34 @@ paths:
       responses:
         "200": {}
       summary: Duplicate event
+      tags:
+      - events
+  /events/{eventId}/responded:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing the user's email
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Mark the user as having responded to this event
       tags:
       - events
   /events/{eventId}/response:
@@ -459,6 +511,8 @@ paths:
           allOf:
           - type: object
           - properties:
+              attendeeEmail:
+                type: string
               availability:
                 items:
                   type: string
@@ -573,6 +627,31 @@ paths:
                   type: array
               type: object
       summary: Gets all the user's events
+      tags:
+      - user
+  /user/name:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the updated name
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              firstName:
+                type: string
+              lastName:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Updates the user's name
       tags:
       - user
   /user/profile:
