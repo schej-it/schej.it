@@ -198,7 +198,7 @@
     <!-- Privacy Policy -->
     <div class="tw-flex tw-flex-col tw-bg-green">
       <div
-        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pb-6 tw-pt-6"
+        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pb-6 tw-pt-6 sm:tw-pb-20"
       >
         <router-link
           class="tw-font-bold tw-text-white"
@@ -228,6 +228,34 @@
 
     <!-- New event dialog -->
     <NewEventDialog v-model="newEventDialog" :allow-notifications="false" />
+
+    <!-- GitHub button -->
+    <v-snackbar
+      v-if="!isPhone"
+      min-width="unset"
+      v-model="githubSnackbar"
+      bottom
+      :timeout="-1"
+      content-class="tw-flex tw-items-center tw-gap-x-4"
+      rounded="pill"
+    >
+      We're fully open source on GitHub!
+      <!-- Place this tag where you want the button to render. -->
+      <github-button
+        class="-tw-mb-1"
+        href="https://github.com/schej-it/schej.it"
+        data-color-scheme="no-preference: light; light: light; dark: dark;"
+        data-size="large"
+        data-show-count="true"
+        aria-label="Star schej-it/schej.it on GitHub"
+        >Star</github-button
+      >
+      <template v-slot:action="{ attrs }">
+        <v-btn v-bind="attrs" icon @click="githubSnackbar = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -251,6 +279,7 @@ import NewEvent from "@/components/NewEvent.vue"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
 import { Rive } from "@rive-app/canvas"
+import GithubButton from "vue-github-button"
 
 export default {
   name: "Landing",
@@ -264,11 +293,13 @@ export default {
     NewEvent,
     NewEventDialog,
     LandingPageHeader,
+    GithubButton,
   },
 
   data: () => ({
     signInDialog: false,
     newEventDialog: false,
+    githubSnackbar: true,
     howItWorksSteps: [
       "Create a schej event",
       "Autofill your availability with Google Calendar",
