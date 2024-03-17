@@ -124,16 +124,38 @@
           >
           <v-expand-transition>
             <div v-show="showAdvancedOptions">
-              <div class="tw-my-2">
-                <EmailReminders
+              <div class="tw-my-2 tw-space-y-4">
+                <TimezoneSelector v-model="timezone" label="Timezone" />
+                <EmailInput
                   v-show="authUser"
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
                   :addedEmails="addedEmails"
                   @update:emails="(newEmails) => (emails = newEmails)"
-                ></EmailReminders>
-                <TimezoneSelector v-model="timezone" label="Timezone" />
+                >
+                  <template v-slot:header>
+                    <div class="tw-flex tw-gap-1">
+                      <div class="tw-text-very-dark-gray">
+                        Set up email reminders
+                      </div>
+
+                      <v-tooltip top>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon small v-bind="attrs" v-on="on"
+                            >mdi-information-outline
+                          </v-icon>
+                        </template>
+                        <div>
+                          Reminder emails will be sent the day of event
+                          creation,<br />one day after, and three days after.
+                          You will also receive <br />an email when everybody
+                          has filled out the Schej.
+                        </div>
+                      </v-tooltip>
+                    </div>
+                  </template>
+                </EmailInput>
               </div>
             </div>
           </v-expand-transition>
@@ -171,7 +193,7 @@ import {
 import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
-import EmailReminders from "./event/EmailReminders.vue"
+import EmailInput from "./event/EmailInput.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -196,7 +218,7 @@ export default {
   components: {
     TimezoneSelector,
     HelpDialog,
-    EmailReminders,
+    EmailInput,
   },
 
   data: () => ({

@@ -1,21 +1,6 @@
 <template>
   <div>
-    <div class="tw-flex tw-gap-1">
-      <div class="tw-text-very-dark-gray">Set up email reminders</div>
-
-      <v-tooltip top>
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon small v-bind="attrs" v-on="on"
-            >mdi-information-outline
-          </v-icon>
-        </template>
-        <div>
-          Reminder emails will be sent the day of event creation,<br />one day
-          after, and three days after. You will also receive <br />an email when
-          everybody has filled out the Schej.
-        </div>
-      </v-tooltip>
-    </div>
+    <slot name="header"></slot>
     <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="!hasContactsAccess">
       <a class="tw-underline" @click="requestContactsAccess"
         >Enable contacts access</a
@@ -35,6 +20,7 @@
       append-icon=""
       solo
       :rules="[rules.validEmails]"
+      hide-details
     >
       <template v-slot:selection="data, parent">
         <v-chip

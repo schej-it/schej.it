@@ -79,6 +79,14 @@
         </div>
 
         <div>
+          <EmailInput>
+            <template v-slot:header>
+              <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
+            </template>
+          </EmailInput>
+        </div>
+
+        <div>
           <v-btn
             class="tw-justify-start tw-pl-0"
             block
@@ -119,6 +127,7 @@ import { validateEmail, isPhone } from "@/utils"
 import { mapState, mapActions } from "vuex"
 import HelpDialog from "./HelpDialog.vue"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
+import EmailInput from "./event/EmailInput.vue"
 
 export default {
   name: "NewGroup",
@@ -135,6 +144,7 @@ export default {
   components: {
     HelpDialog,
     TimezoneSelector,
+    EmailInput,
   },
 
   data: () => ({
