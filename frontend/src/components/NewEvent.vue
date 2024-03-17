@@ -1,40 +1,33 @@
 <template>
   <v-card
-    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4 tw-transition-all"
+    :flat="dialog"
+    :class="{ 'tw-py-4': !dialog }"
+    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-transition-all"
   >
-    <div
-      v-if="dialog && !editEvent"
-      class="-tw-mt-4 tw-flex tw-rounded sm:tw-px-8"
-    >
-      <v-tabs v-model="tab">
-        <v-tab v-for="t in tabs" :key="t.type">{{ t.title }}</v-tab>
-      </v-tabs>
-      <v-spacer />
-      <v-btn
-        absolute
-        @click="$emit('input', false)"
-        icon
-        class="tw-right-0 tw-mr-2 tw-self-center"
-      >
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </div>
     <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
       <div>
-        {{ editEvent ? text.editTitle : text.title }}
+        {{ edit ? "Edit event" : "New event" }}
       </div>
       <v-spacer />
-      <v-btn v-if="dialog" icon @click="helpDialog = true">
-        <v-icon>mdi-help-circle</v-icon>
-      </v-btn>
-      <HelpDialog v-model="helpDialog" :text="text.help" />
+      <template v-if="dialog">
+        <v-btn v-if="showHelp" icon @click="helpDialog = true">
+          <v-icon>mdi-help-circle</v-icon>
+        </v-btn>
+        <v-btn v-else @click="$emit('input', false)" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <HelpDialog
+          v-model="helpDialog"
+          text="Use events to poll people for their availabilities on certain days"
+        />
+      </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
       <div class="tw-flex tw-flex-col tw-space-y-6">
         <v-text-field
           ref="name-field"
           v-model="name"
-          :placeholder="text.namePlaceholder"
+          placeholder="Name your event..."
           autofocus
           :disabled="loading"
           hide-details
@@ -44,7 +37,7 @@
 
         <div>
           <div class="tw-mb-2 tw-text-lg tw-text-black">
-            {{ text.times }}
+            What times might work?
           </div>
           <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
             <v-select
@@ -157,7 +150,7 @@
         :disabled="!formComplete"
         @click="submit"
       >
-        {{ editEvent ? "Edit" : "Create" }}
+        {{ edit ? "Edit" : "Create" }}
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -192,11 +185,12 @@ export default {
 
   props: {
     event: { type: Object },
-    editEvent: { type: Boolean, default: false },
+    edit: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     inDialog: { type: Boolean, default: true },
+    showHelp: { type: Boolean, default: false },
   },
 
   components: {
@@ -227,33 +221,6 @@ export default {
     emails: [], // For email reminders
 
     helpDialog: false,
-
-    // Tabs
-    tab: 0,
-    tabs: [
-      { title: "Event", type: "event" },
-      { title: "Availability group", type: "group" },
-    ],
-    TAB_TYPES: {
-      EVENT: "event",
-      GROUP: "group",
-    },
-    EVENT_TEXT: {
-      title: "New event",
-      editTitle: "Edit event",
-      help: "Use events to poll people for their availabilities on certain days",
-      namePlaceholder: "Name your event...",
-      times: "What times might work?",
-      dates: "What dates might work?",
-    },
-    GROUP_TEXT: {
-      title: "New group",
-      editTitle: "Edit group",
-      help: "Use availability groups to see people's calendar availabilities each week",
-      namePlaceholder: "Name your group...",
-      times: "Time range",
-      dates: "Day range",
-    },
   }),
 
   mounted() {
@@ -302,7 +269,7 @@ export default {
       return times
     },
     minCalendarDate() {
-      if (this.editEvent) {
+      if (this.edit) {
         return ""
       }
 
@@ -316,27 +283,6 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
-
-    // Tabs
-    createEvent() {
-      return this.tabs[this.tab].type === this.TABS.EVENT
-    },
-    createGroup() {
-      return this.tabs[this.tab].type === this.TABS.GROUP
-    },
-    text() {
-      let textObject
-      switch (this.tabs[this.tab].type) {
-        case this.TAB_TYPES.EVENT:
-          textObject = this.EVENT_TEXT
-          break
-        case this.TAB_TYPES.GROUP:
-          textObject = this.GROUP_TEXT
-          break
-      }
-
-      return textObject
-    },
   },
 
   methods: {
@@ -349,6 +295,7 @@ export default {
       this.startTime = 9
       this.endTime = 17
       this.selectedDays = []
+      this.selectedDaysOfWeek = []
     },
     submit() {
       this.selectedDays.sort()
@@ -391,7 +338,7 @@ export default {
       const name = this.name
       const notificationsEnabled = this.notificationsEnabled
       const remindees = this.emails
-      if (!this.editEvent) {
+      if (!this.edit) {
         // Create new event on backend
         post("/events", {
           name,

@@ -1558,7 +1558,6 @@ export default {
       },
     },
     calendarEventsByDay() {
-      console.log("calendareventsbyday changed")
       if (
         this.state === this.states.EDIT_AVAILABILITY &&
         this.authUser &&

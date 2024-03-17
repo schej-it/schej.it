@@ -1,7 +1,7 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
     <!-- Dialog -->
-    <NewEventDialog v-model="dialog" :contactsPayload="contactsPayload" />
+    <NewDialog v-model="dialog" :contactsPayload="contactsPayload" />
 
     <v-fade-transition>
       <div
@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import NewEventDialog from "@/components/NewEventDialog.vue"
+import NewDialog from "@/components/NewDialog.vue"
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
@@ -49,7 +49,7 @@ export default {
   name: "Home",
 
   components: {
-    NewEventDialog,
+    NewDialog,
     EventType,
     BottomFab,
     CreateSpeedDial,

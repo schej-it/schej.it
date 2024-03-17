@@ -3,7 +3,7 @@
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <SignInNotSupportedDialog v-model="webviewDialog" />
-    <NewEventDialog v-model="newEventDialog" />
+    <NewDialog v-model="newDialog" type="event" no-tabs />
     <div
       v-if="showHeader"
       class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-bg-white sm:tw-h-16"
@@ -105,7 +105,7 @@ import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "./components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "./components/SignInNotSupportedDialog.vue"
 import isWebview from "is-ua-webview"
-import NewEventDialog from "./components/NewEventDialog.vue"
+import NewDialog from "./components/NewDialog.vue"
 
 export default {
   name: "App",
@@ -120,7 +120,7 @@ export default {
     AutoSnackbar,
     AuthUserMenu,
     SignInNotSupportedDialog,
-    NewEventDialog,
+    NewDialog,
   },
 
   data: () => ({
@@ -128,7 +128,7 @@ export default {
     loaded: false,
     scrollY: 0,
     webviewDialog: false,
-    newEventDialog: false,
+    newDialog: false,
   }),
 
   computed: {
@@ -166,7 +166,7 @@ export default {
       this.scrollY = window.scrollY
     },
     createEvent() {
-      this.newEventDialog = true
+      this.newDialog = true
     },
     signIn() {
       if (this.$route.name === "event") {

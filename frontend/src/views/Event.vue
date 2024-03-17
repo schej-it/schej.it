@@ -18,7 +18,13 @@
     />
 
     <!-- Edit event dialog -->
-    <NewEventDialog v-model="editEventDialog" :event="event" :contactsPayload="contactsPayload" edit-event />
+    <NewDialog
+      v-model="editEventDialog"
+      :event="event"
+      :contactsPayload="contactsPayload"
+      edit
+      no-tabs
+    />
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
@@ -63,7 +69,7 @@
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
-            <div v-if="!isPhone" class="tw-w-40 tw-flex">
+            <div v-if="!isPhone" class="tw-flex tw-w-40">
               <template v-if="!isEditing">
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"
@@ -147,7 +153,7 @@
     <!-- Bottom bar for phones -->
     <div
       v-if="isPhone"
-      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4 tw-z-20"
+      class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
     >
       <template v-if="!isEditing">
         <v-spacer />
@@ -195,7 +201,7 @@ import {
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
-import NewEventDialog from "@/components/NewEventDialog.vue"
+import NewDialog from "@/components/NewDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
 import { errors, authTypes, eventTypes } from "@/constants"
@@ -210,13 +216,13 @@ export default {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
     initialTimezone: { type: Object, default: () => ({}) },
-    contactsPayload: {type: Object, default: () => ({})},
+    contactsPayload: { type: Object, default: () => ({}) },
   },
 
   components: {
     GuestDialog,
     ScheduleOverlap,
-    NewEventDialog,
+    NewDialog,
     SignInNotSupportedDialog,
     MarkAvailabilityDialog,
   },
@@ -239,10 +245,10 @@ export default {
 
     availabilityBtnOpacity: 1,
   }),
-  
+
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
-    this.editEventDialog = Object.keys(this.contactsPayload).length > 0;
+    this.editEventDialog = Object.keys(this.contactsPayload).length > 0
   },
 
   computed: {
