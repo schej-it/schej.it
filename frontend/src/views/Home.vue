@@ -5,7 +5,7 @@
     <v-fade-transition>
       <div
         class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8"
-        v-if="!loading && events"
+        v-if="!loading || events"
       >
         <EventType
           v-for="(eventType, t) in events"
