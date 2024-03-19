@@ -177,6 +177,8 @@ export default {
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
+
+    // Whether this component is in a dialog or not - for scolling when advanced options is toggled
     inDialog: { type: Boolean, default: true },
   },
 
