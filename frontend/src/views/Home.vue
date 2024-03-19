@@ -5,7 +5,7 @@
     <v-fade-transition>
       <div
         class="tw-grid tw-gap-4 tw-p-4 sm:tw-gap-8"
-        v-if="!loading || events"
+        v-if="!loading || eventsNotEmpty"
       >
         <EventType
           v-for="(eventType, t) in events"
@@ -84,6 +84,9 @@ export default {
         .filter((e) => e.type === eventTypes.DOW)
         .concat(this.joinedEvents.filter((e) => e.type === eventTypes.DOW))
     },
+    eventsNotEmpty() {
+      return this.createdEvents.length > 0 || this.joinedEvents.length > 0 || this.weeklyEvents.length > 0
+    }
   },
 
   methods: {
