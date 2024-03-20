@@ -74,7 +74,7 @@
           <div>
             <v-img
               alt="schej character"
-              src="@/assets/schejie_hand.png"
+              src="@/assets/schejie/wave.png"
               :height="isPhone ? 70 : 80"
               transition="fade-transition"
               contain
@@ -88,7 +88,7 @@
         <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col">
           <!-- <v-img
             alt="schej character"
-            src="@/assets/schejie_hand.png"
+            src="@/assets/schejie/wave.png"
             :height="90"
             transition="fade-transition"
             contain
