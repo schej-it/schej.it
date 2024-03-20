@@ -31,8 +31,6 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.POST("/:eventId/responded", userResponded)
-	// eventRouter.POST("/:eventId/attendee", middleware.AuthRequired(), addAttendee)
-	// eventRouter.DELETE("/:eventId/attendee", middleware.AuthRequired(), removeAttendee)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
@@ -41,17 +39,23 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,remindees=[]string,type=models.EventType} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,remindees=[]string,attendees=[]string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
 	payload := struct {
-		Name                 string               `json:"name" binding:"required"`
-		Duration             *float32             `json:"duration" binding:"required"`
-		Dates                []primitive.DateTime `json:"dates" binding:"required"`
-		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
-		Remindees            []string             `json:"remindees" binding:"required"`
-		Type                 models.EventType     `json:"type" binding:"required"`
+		// Required parameters
+		Name     string               `json:"name" binding:"required"`
+		Duration *float32             `json:"duration" binding:"required"`
+		Dates    []primitive.DateTime `json:"dates" binding:"required"`
+		Type     models.EventType     `json:"type" binding:"required"`
+
+		// Only for discrete events
+		NotificationsEnabled *bool    `json:"notificationsEnabled"`
+		Remindees            []string `json:"remindees"`
+
+		// Only for availability groups
+		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -76,7 +80,7 @@ func createEvent(c *gin.Context) {
 		Name:                 payload.Name,
 		Duration:             payload.Duration,
 		Dates:                payload.Dates,
-		NotificationsEnabled: *payload.NotificationsEnabled,
+		NotificationsEnabled: payload.NotificationsEnabled,
 		Type:                 payload.Type,
 		Responses:            make(map[string]*models.Response),
 	}
@@ -102,7 +106,32 @@ func createEvent(c *gin.Context) {
 			})
 		}
 
-		event.Remindees = remindees
+		event.Remindees = &remindees
+	}
+
+	// Add attendees and send email
+	if len(payload.Attendees) > 0 {
+		// Determine owner name
+		var ownerName string
+		if signedIn {
+			ownerName = user.FirstName
+		} else {
+			ownerName = "Somebody"
+		}
+
+		// Add attendees to attendees array and send invite emails
+		attendees := make([]models.Attendee, 0)
+		availabilityGroupInviteEmailId := 9
+		for _, email := range payload.Attendees {
+			listmonk.SendEmail(email, availabilityGroupInviteEmailId, bson.M{
+				"ownerName": ownerName,
+				"groupName": event.Name,
+				"groupUrl":  fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.Id.Hex()),
+			})
+			attendees = append(attendees, models.Attendee{Email: email})
+		}
+
+		event.Attendees = &attendees
 	}
 
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -128,17 +157,23 @@ func createEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]string,notificationsEnabled=bool,remindees=[]string,type=models.EventType} true "Object containing info about the event to update"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,remindees=[]string,attendees=[]string} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
 	payload := struct {
-		Name                 string               `json:"name" binding:"required"`
-		Duration             *float32             `json:"duration" binding:"required"`
-		Dates                []primitive.DateTime `json:"dates" binding:"required"`
-		NotificationsEnabled *bool                `json:"notificationsEnabled" binding:"required"`
-		Remindees            []string             `json:"remindees" binding:"required"`
-		Type                 models.EventType     `json:"type" binding:"required"`
+		// Required parameters
+		Name     string               `json:"name" binding:"required"`
+		Duration *float32             `json:"duration" binding:"required"`
+		Dates    []primitive.DateTime `json:"dates" binding:"required"`
+		Type     models.EventType     `json:"type" binding:"required"`
+
+		// Only for discrete events
+		NotificationsEnabled *bool    `json:"notificationsEnabled"`
+		Remindees            []string `json:"remindees"`
+
+		// Only for availability groups
+		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -176,70 +211,82 @@ func editEvent(c *gin.Context) {
 	event.Name = payload.Name
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
-	event.NotificationsEnabled = *payload.NotificationsEnabled
+	event.NotificationsEnabled = payload.NotificationsEnabled
 	event.Type = payload.Type
 
-	//
 	// Update remindees
-	//
-	updatedRemindees := make([]models.Remindee, 0)
+	if event.Type == models.DOW || event.Type == models.SPECIFIC_DATES {
+		origRemindees := utils.Coalesce(event.Remindees)
+		updatedRemindees := make([]models.Remindee, 0)
+		added, removed, kept := utils.FindAddedRemovedKept(payload.Remindees, utils.Map(origRemindees, func(r models.Remindee) string { return r.Email }))
 
-	// Find remindees to delete
-	for i, remindee := range event.Remindees {
-		found := false
-		for _, email := range payload.Remindees {
-			if email == remindee.Email {
-				found = true
-				break
-			}
-		}
-
-		if found {
-			// If remindee is found in updated remindees array, add to updatedRemindees
-			updatedRemindees = append(updatedRemindees, event.Remindees[i])
+		// Determine owner name
+		var ownerName string
+		if event.OwnerId != primitive.NilObjectID {
+			owner := db.GetUserById(event.OwnerId.Hex())
+			ownerName = owner.FirstName
 		} else {
-			// If remindee not found in the updated remindees array, delete remindee
-
-			// Delete email tasks
-			for _, taskId := range event.Remindees[i].TaskIds {
-				gcloud.DeleteEmailTask(taskId)
-			}
-		}
-	}
-
-	// Find remindees to add
-	for _, email := range payload.Remindees {
-		found := false
-		for _, remindee := range updatedRemindees {
-			if email == remindee.Email {
-				found = true
-				break
-			}
+			ownerName = "Somebody"
 		}
 
-		if !found {
-			// Update remindees array contains a new remindee, so add a new remindee
+		for _, keptEmail := range kept {
+			updatedRemindees = append(updatedRemindees, origRemindees[keptEmail.Index])
+		}
 
-			// Determine owner name
-			var ownerName string
-			if event.OwnerId != primitive.NilObjectID {
-				owner := db.GetUserById(event.OwnerId.Hex())
-				ownerName = owner.FirstName
-			} else {
-				ownerName = "Somebody"
-			}
-
+		for _, addedEmail := range added {
 			// Schedule email tasks
-			taskIds := gcloud.CreateEmailTask(email, ownerName, event.Name, event.Id.Hex())
+			taskIds := gcloud.CreateEmailTask(addedEmail.Value, ownerName, event.Name, event.Id.Hex())
 			updatedRemindees = append(updatedRemindees, models.Remindee{
-				Email:     email,
+				Email:     addedEmail.Value,
 				TaskIds:   taskIds,
 				Responded: utils.FalsePtr(),
 			})
 		}
+
+		for _, removedEmail := range removed {
+			// Delete email tasks
+			for _, taskId := range origRemindees[removedEmail.Index].TaskIds {
+				gcloud.DeleteEmailTask(taskId)
+			}
+		}
+
+		event.Remindees = &updatedRemindees
 	}
 
-	event.Remindees = updatedRemindees
+	// Update attendees
+	if event.Type == models.GROUP {
+		origAttendees := utils.Coalesce(event.Attendees)
+		updatedAttendees := make([]models.Attendee, 0)
+		added, _, kept := utils.FindAddedRemovedKept(payload.Attendees, utils.Map(origAttendees, func(a models.Attendee) string { return a.Email }))
+
+		// Determine owner name
+		var ownerName string
+		if event.OwnerId != primitive.NilObjectID {
+			owner := db.GetUserById(event.OwnerId.Hex())
+			ownerName = owner.FirstName
+		} else {
+			ownerName = "Somebody"
+		}
+
+		for _, keptEmail := range kept {
+			updatedAttendees = append(updatedAttendees, origAttendees[keptEmail.Index])
+		}
+
+		for _, addedEmail := range added {
+			// Send invite email
+			availabilityGroupInviteEmailId := 9
+			listmonk.SendEmail(addedEmail.Value, availabilityGroupInviteEmailId, bson.M{
+				"ownerName": ownerName,
+				"groupName": event.Name,
+				"groupUrl":  fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.Id.Hex()),
+			})
+			updatedAttendees = append(updatedAttendees, models.Attendee{
+				Email: addedEmail.Value,
+			})
+		}
+
+		event.Attendees = &updatedAttendees
+	}
 
 	// Update event object
 	_, err = db.EventsCollection.UpdateOne(
@@ -322,7 +369,7 @@ func updateEventResponse(c *gin.Context) {
 	var response models.Response
 	var userIdString string
 	// Populate response differently if guest vs signed in user
-	if *payload.Guest && !*payload.UseCalendarAvailability {
+	if *payload.Guest {
 		userIdString = payload.Name
 
 		response = models.Response{
@@ -362,7 +409,7 @@ func updateEventResponse(c *gin.Context) {
 	}
 
 	// Send email to creator of event if creator enabled it
-	if event.NotificationsEnabled && !userHasResponded && userIdString != event.OwnerId.Hex() {
+	if utils.Coalesce(event.NotificationsEnabled) && !userHasResponded && userIdString != event.OwnerId.Hex() {
 		// Send email asynchronously
 		go func() {
 			creator := db.GetUserById(event.OwnerId.Hex())
@@ -478,22 +525,26 @@ func userResponded(c *gin.Context) {
 	event := db.GetEventById(eventId)
 
 	// Update responded boolean for the given email
-	index := utils.Find(event.Remindees, func(r models.Remindee) bool {
+	if event.Remindees == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.RemindeeEmailNotFound})
+		return
+	}
+	index := utils.Find(*event.Remindees, func(r models.Remindee) bool {
 		return r.Email == payload.Email
 	})
 	if index == -1 {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.RemindeeEmailNotFound})
 		return
 	}
-	if *event.Remindees[index].Responded {
+	if *(*event.Remindees)[index].Responded {
 		// If remindee has already responded, just return and don't update db
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	}
-	event.Remindees[index].Responded = utils.TruePtr()
+	(*event.Remindees)[index].Responded = utils.TruePtr()
 
 	// Delete the reminder email tasks
-	for _, taskId := range event.Remindees[index].TaskIds {
+	for _, taskId := range (*event.Remindees)[index].TaskIds {
 		gcloud.DeleteEmailTask(taskId)
 	}
 
@@ -504,7 +555,7 @@ func userResponded(c *gin.Context) {
 
 	// Email owner of event if all remindees have responded
 	everyoneResponded := true
-	for _, remindee := range event.Remindees {
+	for _, remindee := range *event.Remindees {
 		if !*remindee.Responded {
 			everyoneResponded = false
 			break
@@ -613,89 +664,3 @@ func duplicateEvent(c *gin.Context) {
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
 }
-
-// @Summary [UNUSED] Adds an attendee to the event's list of attendees
-// @Tags events
-// @Accept json
-// @Produce json
-// @Param eventId path string true "Event ID"
-// @Param payload body object{email=string} true "Object containing info about the attendee to add"
-// @Success 200
-// @Router /events/{eventId}/attendee [post]
-// func addAttendee(c *gin.Context) {
-// 	// UNUSED
-// 	payload := struct {
-// 		Email string `json:"email" binding:"required"`
-// 	}{}
-// 	if err := c.Bind(&payload); err != nil {
-// 		return
-// 	}
-// 	session := sessions.Default(c)
-// 	eventIdString := c.Param("eventId")
-// 	eventId, err := primitive.ObjectIDFromHex(eventIdString)
-// 	if err != nil {
-// 		logger.StdErr.Panicln(err)
-// 	}
-
-// 	userIdInterface := session.Get("userId")
-// 	userIdString := userIdInterface.(string)
-// 	userId, err := primitive.ObjectIDFromHex(userIdString)
-// 	if err != nil {
-// 		logger.StdErr.Panicln(err)
-// 	}
-
-// 	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
-// 		"_id":     eventId,
-// 		"ownerId": userId,
-// 	}, bson.M{
-// 		"$addToSet": bson.M{"attendees": payload.Email},
-// 	})
-// 	if err != nil {
-// 		logger.StdErr.Panicln(err)
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{})
-// }
-
-// @Summary [UNUSED] Removes an attendee from the event's list of attendees
-// @Tags events
-// @Accept json
-// @Produce json
-// @Param eventId path string true "Event ID"
-// @Param payload body object{email=string} true "Object containing info about the attendee to remove"
-// @Success 200
-// @Router /events/{eventId}/attendee [delete]
-// func removeAttendee(c *gin.Context) {
-// 	// UNUSED
-// 	payload := struct {
-// 		Email string `json:"email" binding:"required"`
-// 	}{}
-// 	if err := c.Bind(&payload); err != nil {
-// 		return
-// 	}
-// 	session := sessions.Default(c)
-// 	eventIdString := c.Param("eventId")
-// 	eventId, err := primitive.ObjectIDFromHex(eventIdString)
-// 	if err != nil {
-// 		logger.StdErr.Panicln(err)
-// 	}
-
-// 	userIdInterface := session.Get("userId")
-// 	userIdString := userIdInterface.(string)
-// 	userId, err := primitive.ObjectIDFromHex(userIdString)
-// 	if err != nil {
-// 		logger.StdErr.Panicln(err)
-// 	}
-
-// 	_, err = db.EventsCollection.UpdateOne(context.Background(), bson.M{
-// 		"_id":     eventId,
-// 		"ownerId": userId,
-// 	}, bson.M{
-// 		"$pull": bson.M{"attendees": payload.Email},
-// 	})
-// 	if err != nil {
-// 		logger.StdErr.Panicln(err)
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{})
-// }

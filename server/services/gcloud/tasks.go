@@ -74,12 +74,7 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 	tasksToCreate[finalEmailReminderId] = timestamppb.New(time.Now().Add(3 * 24 * time.Hour))
 
 	// Construct URLs
-	var baseUrl string
-	if utils.IsRelease() {
-		baseUrl = "https://schej.it"
-	} else {
-		baseUrl = "http://localhost:8080"
-	}
+	baseUrl := utils.GetBaseUrl()
 	eventUrl := fmt.Sprintf("%s/e/%s", baseUrl, eventId)
 	finishedUrl := fmt.Sprintf("%s/e/%s/responded?email=%s", baseUrl, eventId, email)
 

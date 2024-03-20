@@ -85,7 +85,7 @@ type OldEvent struct {
 
 	Duration             *float32             `json:"duration" bson:"duration,omitempty"`
 	Dates                []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
-	NotificationsEnabled bool                 `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
+	NotificationsEnabled *bool                `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
 
 	Type models.EventType `json:"type" bson:"type,omitempty"`
 

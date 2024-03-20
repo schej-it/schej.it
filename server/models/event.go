@@ -18,7 +18,7 @@ type Event struct {
 
 	Duration             *float32             `json:"duration" bson:"duration,omitempty"`
 	Dates                []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
-	NotificationsEnabled bool                 `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
+	NotificationsEnabled *bool                `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
@@ -30,7 +30,10 @@ type Event struct {
 	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
 
 	// Remindees
-	Remindees []Remindee `json:"remindees" bson:"remindees,omitempty"`
+	Remindees *[]Remindee `json:"remindees" bson:"remindees,omitempty"`
+
+	// Attendees for an availability group
+	Attendees *[]Attendee `json:"attendees" bson:"attendees,omitempty"`
 }
 
 // A response object containing an array of times that the given user is available
@@ -53,4 +56,8 @@ type Remindee struct {
 	Email     string   `json:"email" bson:"email,omitempty"`
 	TaskIds   []string `json:"-" bson:"taskIds,omitempty"` // Task IDs of the scheduled emails
 	Responded *bool    `json:"responded" bson:"responded,omitempty"`
+}
+
+type Attendee struct {
+	Email string `json:"email" bson:"email,omitempty"`
 }

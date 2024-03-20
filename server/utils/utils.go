@@ -108,11 +108,37 @@ func PrintHttpResponse(resp *http.Response) {
 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 }
 
+// Returns the correct base url, based on whether we're on dev or prod
+func GetBaseUrl() string {
+	var baseUrl string
+	if IsRelease() {
+		baseUrl = "https://schej.it"
+	} else {
+		baseUrl = "http://localhost:8080"
+	}
+	return baseUrl
+}
+
+// Returns the value of the first non nil pointer in `args`.
+// Otherwise, just return the zero value
+func Coalesce[T any](args ...*T) T {
+	for _, val := range args {
+		if val != nil {
+			return *val
+		}
+	}
+
+	var val T
+	return val
+}
+
+// Return a pointer to true
 func TruePtr() *bool {
 	b := true
 	return &b
 }
 
+// Return a pointer to false
 func FalsePtr() *bool {
 	b := false
 	return &b
