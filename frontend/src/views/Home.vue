@@ -76,17 +76,9 @@ export default {
     ...mapState(["createdEvents", "joinedEvents"]),
     events() {
       return [
-        ...(this.weeklyEvents.length > 0
-          ? [
-              {
-                header: "Weekly events",
-                events: this.weeklyEvents,
-              },
-            ]
-          : []),
         {
           header: "Events I created",
-          events: this.createdEventsWithSpecificDates,
+          events: this.createdEventsNonGroup,
         },
         {
           header: "Events I joined",
@@ -94,15 +86,10 @@ export default {
         },
       ]
     },
-    createdEventsWithSpecificDates() {
+    createdEventsNonGroup() {
       return this.createdEvents.filter(
-        (e) => e.type !== eventTypes.DOW && e.type !== eventTypes.GROUP
+        (e) => e.type !== eventTypes.GROUP
       )
-    },
-    weeklyEvents() {
-      return this.createdEvents
-        .filter((e) => e.type === eventTypes.DOW)
-        .concat(this.joinedEvents.filter((e) => e.type === eventTypes.DOW))
     },
     availabilityGroups() {
       return {
