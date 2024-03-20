@@ -22,7 +22,7 @@
       </div>
 
       <v-expand-transition>
-        <div v-if="createEvent">
+        <div v-show="createEvent">
           <NewEvent
             :event="event"
             :edit="edit"
@@ -34,7 +34,7 @@
         </div>
       </v-expand-transition>
       <v-expand-transition>
-        <div v-if="createGroup">
+        <div v-show="createGroup">
           <NewGroup
             :event="event"
             :edit="edit"

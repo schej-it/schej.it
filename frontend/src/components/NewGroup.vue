@@ -79,7 +79,7 @@
         </div>
 
         <div>
-          <EmailInput>
+          <EmailInput @update:emails="(newEmails) => (emails = newEmails)">
             <template v-slot:header>
               <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
             </template>
@@ -123,11 +123,18 @@
 </template>
 
 <script>
-import { validateEmail, isPhone } from "@/utils"
+import { validateEmail, isPhone, post, put, timeNumToTimeString } from "@/utils"
 import { mapState, mapActions } from "vuex"
+import { eventTypes, dayIndexToDayString } from "@/constants"
 import HelpDialog from "./HelpDialog.vue"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import EmailInput from "./event/EmailInput.vue"
+
+import dayjs from "dayjs"
+import utcPlugin from "dayjs/plugin/utc"
+import timezonePlugin from "dayjs/plugin/timezone"
+dayjs.extend(utcPlugin)
+dayjs.extend(timezonePlugin)
 
 export default {
   name: "NewGroup",
@@ -210,7 +217,91 @@ export default {
       this.endTime = 17
       this.selectedDaysOfWeek = []
     },
-    submit() {},
+    submit() {
+      // Get duration of event
+      let duration = this.endTime - this.startTime
+      if (duration < 0) duration += 24
+
+      // Populate dates
+      const dates = []
+      const startTimeString = timeNumToTimeString(this.startTime)
+      this.selectedDaysOfWeek.sort((a, b) => a - b)
+      for (const dayIndex of this.selectedDaysOfWeek) {
+        const day = dayIndexToDayString[dayIndex]
+        const date = dayjs.tz(`${day} ${startTimeString}`, this.timezone.value)
+        dates.push(date.toDate())
+      }
+
+      this.loading = true
+
+      const name = this.name
+      const type = eventTypes.GROUP
+      const attendees = this.emails
+      if (!this.edit) {
+        // Create a new group
+        post("/events", {
+          name,
+          duration,
+          dates,
+          attendees,
+          type,
+        })
+          .then(({ eventId }) => {
+            this.$router.push({
+              name: "group",
+              params: { eventId, initialTimezone: this.timezone },
+            })
+
+            this.$posthog?.capture("Availability group created", {
+              eventId: eventId,
+              eventName: name,
+              eventDuration: duration,
+              eventDates: JSON.stringify(dates),
+              eventAttendees: attendees,
+              eventType: type,
+            })
+          })
+          .catch((err) => {
+            this.showError(
+              "There was a problem creating that group! Please try again later."
+            )
+          })
+          .finally(() => {
+            this.loading = false
+          })
+      } else {
+        // Edit group
+        put(`/events/${this.event._id}`, {
+          name,
+          duration,
+          dates,
+          attendees,
+          type,
+        })
+          .then(() => {
+            this.$posthog?.capture("Availability group edited", {
+              eventId: this.event._id,
+              eventName: name,
+              eventDuration: duration,
+              eventDates: JSON.stringify(dates),
+              eventAttendees: attendees,
+              eventType: type,
+            })
+
+            this.$emit("input", false)
+            this.reset()
+            window.location.reload()
+          })
+          .catch((err) => {
+            this.showError(
+              "There was a problem editing this group! Please try again later."
+            )
+          })
+          .finally(() => {
+            this.loading = false
+          })
+      }
+    },
   },
 
   watch: {

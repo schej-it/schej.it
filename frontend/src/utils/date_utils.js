@@ -308,7 +308,7 @@ export const getCalendarEventsMap = async (event, weekOffset = 0) => {
       new Date(event.dates[event.dates.length - 1]),
       2
     ).toISOString()
-  } else if (event.type === eventTypes.DOW) {
+  } else if (event.type === eventTypes.DOW || event.type === eventTypes.GROUP) {
     // Get all calendar events for the current week offsetted by weekOffset
     const curDateWithWeekOffset = getDateDayOffset(new Date(), weekOffset * 7)
     const curDateDay = curDateWithWeekOffset.getDay()

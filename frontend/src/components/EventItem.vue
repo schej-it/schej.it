@@ -1,5 +1,5 @@
 <template>
-  <router-link :to="{ name: 'event', params: { eventId: event._id } }">
+  <router-link :to="{ name: linkTo, params: { eventId: event._id } }">
     <v-container
       v-ripple
       class="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
@@ -117,6 +117,7 @@
 <script>
 import { getDateRangeStringForEvent, _delete, isPhone, post } from "@/utils"
 import { mapActions, mapState } from "vuex"
+import { eventTypes } from "@/constants"
 
 export default {
   name: "EventItem",
@@ -142,6 +143,12 @@ export default {
     },
     showOptions() {
       return this.event.ownerId === this.authUser._id
+    },
+    linkTo() {
+      if (this.event.type === eventTypes.GROUP) {
+        return "group"
+      }
+      return "event"
     },
   },
 

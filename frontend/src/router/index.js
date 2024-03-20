@@ -35,6 +35,12 @@ const routes = [
     props: true,
   },
   {
+    path: "/g/:eventId",
+    name: "group",
+    component: () => import("@/views/Event.vue"),
+    props: true,
+  },
+  {
     path: "/auth",
     name: "auth",
     component: () => import("@/views/Auth.vue"),

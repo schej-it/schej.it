@@ -475,7 +475,6 @@ export default {
     getCalendarEventsMap(this.event, this.weekOffset)
       .then((eventsMap) => {
         this.calendarEventsMap = eventsMap
-        this.loading = false
 
         // Set user availability automatically if we're in editing mode and they haven't responded
         if (
@@ -495,11 +494,12 @@ export default {
         ).every((c) => Boolean(c.error))
       })
       .catch((err) => {
-        this.loading = false
         console.error(err)
-        if (err.error.code === 401 || err.error.code === 403) {
-          this.calendarPermissionGranted = false
-        }
+        // if (err.error.code === 401 || err.error.code === 403) {
+        this.calendarPermissionGranted = false
+      })
+      .finally(() => {
+        this.loading = false
       })
   },
 

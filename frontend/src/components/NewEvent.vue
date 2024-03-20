@@ -376,7 +376,6 @@ export default {
               params: { eventId, initialTimezone: this.timezone },
             })
 
-            this.loading = false
             this.$emit("input", false)
             this.reset()
 
@@ -394,6 +393,9 @@ export default {
             this.showError(
               "There was a problem creating that event! Please try again later."
             )
+          })
+          .finally(() => {
+            this.loading = false
           })
       } else {
         // Edit event on backend
@@ -424,6 +426,9 @@ export default {
               this.showError(
                 "There was a problem editing this event! Please try again later."
               )
+            })
+            .finally(() => {
+              this.loading = false
             })
         }
       }
