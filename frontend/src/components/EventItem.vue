@@ -32,7 +32,12 @@
           </template>
 
           <v-list justify="center" class="tw-py-1">
-            <v-dialog v-model="duplicateDialog" width="400" persistent>
+            <v-dialog
+              v-if="!isGroup"
+              v-model="duplicateDialog"
+              width="400"
+              persistent
+            >
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   id="duplicate-event-btn"
@@ -45,7 +50,7 @@
                 >
               </template>
               <v-card>
-                <v-card-title>Duplicate event</v-card-title>
+                <v-card-title>Duplicate {{ typeText }}</v-card-title>
                 <v-card-text>
                   <v-text-field
                     v-model="duplicateDialogOptions.name"
@@ -89,13 +94,14 @@
                   v-bind="attrs"
                   v-on="on"
                   block
-                  >Delete event</v-btn
+                  >Delete {{ typeText }}</v-btn
                 >
               </template>
               <v-card>
                 <v-card-title>Are you sure?</v-card-title>
                 <v-card-text
-                  >Are you sure you want to delete this event?</v-card-text
+                  >Are you sure you want to delete this
+                  {{ typeText }}?</v-card-text
                 >
                 <v-card-actions>
                   <v-spacer />
@@ -144,11 +150,14 @@ export default {
     showOptions() {
       return this.event.ownerId === this.authUser._id
     },
+    isGroup() {
+      return this.event.type === eventTypes.GROUP
+    },
     linkTo() {
-      if (this.event.type === eventTypes.GROUP) {
-        return "group"
-      }
-      return "event"
+      return this.isGroup ? "group" : "event"
+    },
+    typeText() {
+      return this.isGroup ? "group" : "event"
     },
   },
 
