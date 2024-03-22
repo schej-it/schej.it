@@ -325,9 +325,16 @@ func getEvent(c *gin.Context) {
 	for userId, response := range event.Responses {
 		user := db.GetUserById(userId)
 		if user == nil {
-			userId = response.Name
-			response.User = &models.User{
-				FirstName: response.Name,
+			if len(response.Name) == 0 {
+				// User was deleted
+				delete(event.Responses, userId)
+				continue
+			} else {
+				// User is guest
+				userId = response.Name
+				response.User = &models.User{
+					FirstName: response.Name,
+				}
 			}
 		} else {
 			response.User = user
@@ -377,6 +384,7 @@ func updateEventResponse(c *gin.Context) {
 			Name:         payload.Name,
 			Availability: payload.Availability,
 		}
+		event.Responses[payload.Name] = &response
 	} else {
 		userIdInterface := session.Get("userId")
 		if userIdInterface == nil {
@@ -392,6 +400,7 @@ func updateEventResponse(c *gin.Context) {
 			UseCalendarAvailability: payload.UseCalendarAvailability,
 			EnabledCalendars:        payload.EnabledCalendars,
 		}
+		event.Responses[userIdString] = &response
 	}
 
 	// Check if user has responded to event before (edit response) or not (new response)
@@ -400,10 +409,8 @@ func updateEventResponse(c *gin.Context) {
 	// Update responses in mongodb
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
-		utils.StringToObjectID(eventId),
-		bson.A{
-			utils.UpdateEventResponseAggregation(userIdString, response),
-		},
+		event.Id,
+		bson.M{"$set": event},
 	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
@@ -472,9 +479,8 @@ func deleteEventResponse(c *gin.Context) {
 		return
 	}
 
-	var userToDelete string
 	if *payload.Guest {
-		userToDelete = payload.Name
+		delete(event.Responses, payload.Name)
 	} else {
 		userIdInterface := session.Get("userId")
 		if userIdInterface == nil {
@@ -491,15 +497,15 @@ func deleteEventResponse(c *gin.Context) {
 			return
 		}
 
-		userToDelete = payload.UserId
+		delete(event.Responses, payload.UserId)
 	}
 
 	// Update responses in mongodb
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
-		utils.StringToObjectID(eventId),
-		bson.A{
-			utils.DeleteEventResponseAggregation(userToDelete),
+		event.Id,
+		bson.M{
+			"$set": event,
 		},
 	)
 	if err != nil {
