@@ -32,6 +32,13 @@ definitions:
       status:
         type: string
     type: object
+  models.Attendee:
+    properties:
+      declined:
+        type: boolean
+      email:
+        type: string
+    type: object
   models.CalendarAccount:
     properties:
       email:
@@ -58,10 +65,22 @@ definitions:
       summary:
         type: string
     type: object
+  models.EnabledCalendar:
+    properties:
+      calendarId:
+        type: string
+      email:
+        type: string
+    type: object
   models.Event:
     properties:
       _id:
         type: string
+      attendees:
+        description: Attendees for an availability group
+        items:
+          $ref: '#/definitions/models.Attendee'
+        type: array
       calendarEventId:
         type: string
       dates:
@@ -121,8 +140,15 @@ definitions:
     properties:
       availability:
         type: string
+      enabledCalendars:
+        items:
+          $ref: '#/definitions/models.EnabledCalendar'
+        type: array
       name:
         type: string
+      useCalendarAvailability:
+        description: Calendar availability variables for Availability Groups feature
+        type: boolean
       user:
         $ref: '#/definitions/models.User'
         type: object
@@ -303,6 +329,10 @@ paths:
           allOf:
           - type: object
           - properties:
+              attendees:
+                items:
+                  type: string
+                type: array
               dates:
                 items:
                   type: string
@@ -382,6 +412,10 @@ paths:
           allOf:
           - type: object
           - properties:
+              attendees:
+                items:
+                  type: string
+                type: array
               dates:
                 items:
                   type: string
@@ -404,6 +438,23 @@ paths:
       responses:
         "200": {}
       summary: Edits an event based on its id
+      tags:
+      - events
+  /events/{eventId}/decline:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Decline the current user's invite to the event
       tags:
       - events
   /events/{eventId}/duplicate:
@@ -511,16 +562,20 @@ paths:
           allOf:
           - type: object
           - properties:
-              attendeeEmail:
-                type: string
               availability:
                 items:
                   type: string
+                type: array
+              enabledCalendars:
+                items:
+                  $ref: '#/definitions/models.EnabledCalendar'
                 type: array
               guest:
                 type: boolean
               name:
                 type: string
+              useCalendarAvailability:
+                type: boolean
             type: object
       produces:
       - application/json

@@ -44,11 +44,13 @@ type Response struct {
 	Availability []primitive.DateTime `json:"availability" bson:"availability"`
 
 	// Calendar availability variables for Availability Groups feature
-	UseCalendarAvailability *bool `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
-	EnabledCalendars        []struct {
-		Email      string `json:"email" bson:"email,omitempty"`
-		CalendarId string `json:"calendarId" bson:"email,omitempty"`
-	} `json:"enabledCalendars" bson:"enabledCalendars,omitempty"`
+	UseCalendarAvailability *bool              `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
+	EnabledCalendars        *[]EnabledCalendar `json:"enabledCalendars" bson:"enabledCalendars,omitempty"`
+}
+
+type EnabledCalendar struct {
+	Email      string `json:"email" bson:"email,omitempty"`
+	CalendarId string `json:"calendarId" bson:"email,omitempty"`
 }
 
 // Object containing information associated with the remindee
@@ -59,5 +61,6 @@ type Remindee struct {
 }
 
 type Attendee struct {
-	Email string `json:"email" bson:"email,omitempty"`
+	Email    string `json:"email" bson:"email,omitempty"`
+	Declined *bool  `json:"declined" bson:"declined,omitempty"`
 }

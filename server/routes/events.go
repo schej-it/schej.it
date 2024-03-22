@@ -31,6 +31,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.POST("/:eventId/responded", userResponded)
+	eventRouter.POST("/:eventId/decline", middleware.AuthRequired(), declineInvite)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
@@ -126,9 +127,9 @@ func createEvent(c *gin.Context) {
 			listmonk.SendEmail(email, availabilityGroupInviteEmailId, bson.M{
 				"ownerName": ownerName,
 				"groupName": event.Name,
-				"groupUrl":  fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.Id.Hex()),
+				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
 			})
-			attendees = append(attendees, models.Attendee{Email: email})
+			attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr()})
 		}
 
 		event.Attendees = &attendees
@@ -180,13 +181,11 @@ func editEvent(c *gin.Context) {
 	}
 
 	eventId := c.Param("eventId")
-	objectId, err := primitive.ObjectIDFromHex(eventId)
-	if err != nil {
-		// eventId is malformatted
-		c.Status(http.StatusBadRequest)
+	event := db.GetEventById(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
-	event := db.GetEventById(eventId)
 
 	// If user logged in, set owner id to their user id, otherwise set owner id to nil
 	session := sessions.Default(c)
@@ -278,10 +277,11 @@ func editEvent(c *gin.Context) {
 			listmonk.SendEmail(addedEmail.Value, availabilityGroupInviteEmailId, bson.M{
 				"ownerName": ownerName,
 				"groupName": event.Name,
-				"groupUrl":  fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.Id.Hex()),
+				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
 			})
 			updatedAttendees = append(updatedAttendees, models.Attendee{
-				Email: addedEmail.Value,
+				Email:    addedEmail.Value,
+				Declined: utils.FalsePtr(),
 			})
 		}
 
@@ -289,10 +289,10 @@ func editEvent(c *gin.Context) {
 	}
 
 	// Update event object
-	_, err = db.EventsCollection.UpdateOne(
+	_, err := db.EventsCollection.UpdateOne(
 		context.Background(),
 		bson.M{
-			"_id": objectId,
+			"_id": event.Id,
 		},
 		bson.M{
 			"$set": event,
@@ -343,7 +343,7 @@ func getEvent(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,guest=bool,name=string,attendeeEmail=string} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=[]models.EnabledCalendar} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
@@ -353,11 +353,8 @@ func updateEventResponse(c *gin.Context) {
 		Name         string               `json:"name"`
 
 		// Calendar availability variables for Availability Groups feature
-		UseCalendarAvailability *bool `json:"useCalendarAvailability"`
-		EnabledCalendars        []struct {
-			Email      string `json:"email" bson:"email,omitempty"`
-			CalendarId string `json:"calendarId" bson:"email,omitempty"`
-		} `json:"enabledCalendars"`
+		UseCalendarAvailability *bool                     `json:"useCalendarAvailability"`
+		EnabledCalendars        *[]models.EnabledCalendar `json:"enabledCalendars"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -365,6 +362,10 @@ func updateEventResponse(c *gin.Context) {
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
 
 	var response models.Response
 	var userIdString string
@@ -466,6 +467,10 @@ func deleteEventResponse(c *gin.Context) {
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
 
 	var userToDelete string
 	if *payload.Guest {
@@ -523,6 +528,10 @@ func userResponded(c *gin.Context) {
 	// Fetch event
 	eventId := c.Param("eventId")
 	event := db.GetEventById(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
 
 	// Update responded boolean for the given email
 	if event.Remindees == nil {
@@ -580,6 +589,59 @@ func userResponded(c *gin.Context) {
 			"eventName": event.Name,
 			"eventUrl":  eventUrl,
 		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Decline the current user's invite to the event
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Success 200
+// @Router /events/{eventId}/decline [post]
+func declineInvite(c *gin.Context) {
+	// Fetch event
+	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+
+	// Ensure that event is a group
+	if event.Type != models.GROUP {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.EventNotGroup})
+		return
+	}
+
+	// Get current user
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	// Check if user is in attendees array
+	index := -1
+	for i, attendee := range utils.Coalesce(event.Attendees) {
+		if user.Email == attendee.Email {
+			index = i
+		}
+	}
+	if index == -1 {
+		// User not in attendees array
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.AttendeeEmailNotFound})
+		return
+	}
+
+	// Decline invite
+	(*event.Attendees)[index].Declined = utils.TruePtr()
+
+	// Update event in database
+	_, err := db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{
+		"$set": event,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{})

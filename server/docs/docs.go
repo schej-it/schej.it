@@ -230,6 +230,12 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "attendees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "dates": {
                                             "type": "array",
                                             "items": {
@@ -338,6 +344,12 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "attendees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "dates": {
                                             "type": "array",
                                             "items": {
@@ -380,6 +392,32 @@ var doc = `{
                     "events"
                 ],
                 "summary": "Deletes an event based on its id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/events/{eventId}/decline": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Decline the current user's invite to the event",
                 "parameters": [
                     {
                         "type": "string",
@@ -521,13 +559,16 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "attendeeEmail": {
-                                            "type": "string"
-                                        },
                                         "availability": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
+                                            }
+                                        },
+                                        "enabledCalendars": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.EnabledCalendar"
                                             }
                                         },
                                         "guest": {
@@ -535,6 +576,9 @@ var doc = `{
                                         },
                                         "name": {
                                             "type": "string"
+                                        },
+                                        "useCalendarAvailability": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -1065,6 +1109,17 @@ var doc = `{
                 }
             }
         },
+        "models.Attendee": {
+            "type": "object",
+            "properties": {
+                "declined": {
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CalendarAccount": {
             "type": "object",
             "properties": {
@@ -1105,11 +1160,29 @@ var doc = `{
                 }
             }
         },
+        "models.EnabledCalendar": {
+            "type": "object",
+            "properties": {
+                "calendarId": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Event": {
             "type": "object",
             "properties": {
                 "_id": {
                     "type": "string"
+                },
+                "attendees": {
+                    "description": "Attendees for an availability group",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attendee"
+                    }
                 },
                 "calendarEventId": {
                     "type": "string"
@@ -1199,8 +1272,18 @@ var doc = `{
                 "availability": {
                     "type": "string"
                 },
+                "enabledCalendars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.EnabledCalendar"
+                    }
+                },
                 "name": {
                     "type": "string"
+                },
+                "useCalendarAvailability": {
+                    "description": "Calendar availability variables for Availability Groups feature",
+                    "type": "boolean"
                 },
                 "user": {
                     "type": "object",
