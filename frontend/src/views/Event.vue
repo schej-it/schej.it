@@ -472,7 +472,7 @@ export default {
     }
 
     // Get all calendar accounts' events
-    getCalendarEventsMap(this.event, this.weekOffset)
+    getCalendarEventsMap(this.event, { weekOffset: this.weekOffset })
       .then((eventsMap) => {
         this.calendarEventsMap = eventsMap
 
@@ -530,21 +530,23 @@ export default {
 
       this.calendarEventsMap = {}
       const curWeekOffset = this.weekOffset
-      getCalendarEventsMap(this.event, curWeekOffset).then((eventsMap) => {
-        // Don't set calendar events / set availability if user has already
-        // selected a different weekoffset by the time these calendar events load
-        if (curWeekOffset !== this.weekOffset) return
+      getCalendarEventsMap(this.event, { weekOffset: curWeekOffset }).then(
+        (eventsMap) => {
+          // Don't set calendar events / set availability if user has already
+          // selected a different weekoffset by the time these calendar events load
+          if (curWeekOffset !== this.weekOffset) return
 
-        this.calendarEventsMap = eventsMap
-        this.loading = false
+          this.calendarEventsMap = eventsMap
+          this.loading = false
 
-        // Only autofill availability if user hasn't responded and they don't have unsaved changes
-        if (!this.userHasResponded && !this.areUnsavedChanges) {
-          this.$nextTick(() => {
-            this.scheduleOverlapComponent.setAvailabilityAutomatically()
-          })
+          // Only autofill availability if user hasn't responded and they don't have unsaved changes
+          if (!this.userHasResponded && !this.areUnsavedChanges) {
+            this.$nextTick(() => {
+              this.scheduleOverlapComponent.setAvailabilityAutomatically()
+            })
+          }
         }
-      })
+      )
     },
   },
 }

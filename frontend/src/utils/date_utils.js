@@ -299,7 +299,10 @@ export const getCurrentTimezone = () => {
   ranges
   weekOffset specifies the amount of weeks forward or backward to display events for (only used for weekly schej's)
 */
-export const getCalendarEventsMap = async (event, weekOffset = 0) => {
+export const getCalendarEventsMap = async (
+  event,
+  { weekOffset = 0, eventId = "" }
+) => {
   let timeMin, timeMax
   if (event.type === eventTypes.SPECIFIC_DATES) {
     // Get all calendar events between the first date and the last date in dates
@@ -320,9 +323,16 @@ export const getCalendarEventsMap = async (event, weekOffset = 0) => {
   }
 
   // Fetch calendar events from Google Calendar
-  const calendarEventsMap = await get(
-    `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
-  )
+  let calendarEventsMap
+  if (eventId.length === 0) {
+    calendarEventsMap = await get(
+      `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
+    )
+  } else {
+    calendarEventsMap = await get(
+      `/events/${eventId}/calendar-availabilities?timeMin=${timeMin}&timeMax=${timeMax}`
+    )
+  }
 
   return calendarEventsMap
 }
