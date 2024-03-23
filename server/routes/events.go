@@ -736,6 +736,19 @@ func getCalendarAvalabilities(c *gin.Context) {
 		userIdToCalendarEvents[calendarEvents.UserId] = calendarEvents.Events
 	}
 
+	// Redact event names of the other users
+	user := utils.GetAuthUser(c)
+	for userId, calendarEvents := range userIdToCalendarEvents {
+		if userId != user.Id.Hex() {
+			for email, events := range calendarEvents {
+				for i, event := range events.CalendarEvents {
+					event.Summary = "BUSY"
+					userIdToCalendarEvents[userId][email].CalendarEvents[i] = event
+				}
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, userIdToCalendarEvents)
 }
 
