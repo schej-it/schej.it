@@ -480,6 +480,7 @@ func deleteEventResponse(c *gin.Context) {
 	}
 
 	if *payload.Guest {
+		// Delete response
 		delete(event.Responses, payload.Name)
 	} else {
 		userIdInterface := session.Get("userId")
@@ -497,7 +498,21 @@ func deleteEventResponse(c *gin.Context) {
 			return
 		}
 
+		// Delete response
 		delete(event.Responses, payload.UserId)
+
+		// If this event is a Group, also make the attendee "leave the group" by setting "declined" to true
+		if event.Type == models.GROUP {
+			user := db.GetUserById(userIdString)
+			if user != nil {
+				for i, attendee := range utils.Coalesce(event.Attendees) {
+					if attendee.Email == user.Email {
+						(*event.Attendees)[i].Declined = utils.TruePtr()
+						break
+					}
+				}
+			}
+		}
 	}
 
 	// Update responses in mongodb
