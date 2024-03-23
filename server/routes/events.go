@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/responses"
+	"schej.it/server/services/calendar"
 	"schej.it/server/services/gcloud"
 	"schej.it/server/services/listmonk"
 	"schej.it/server/slackbot"
@@ -32,6 +34,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.POST("/:eventId/responded", userResponded)
 	eventRouter.POST("/:eventId/decline", middleware.AuthRequired(), declineInvite)
+	eventRouter.GET("/:eventId/calendar-availabilities", middleware.AuthRequired(), getCalendarAvalabilities)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
@@ -666,6 +669,74 @@ func declineInvite(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Return a map mapping user id to their calendar events that they have enabled for the given time range
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param timeMin query string true "Lower bound for event's start time to filter by"
+// @Param timeMax query string true "Upper bound for event's end time to filter by"
+// @Success 200 {object} map[string]map[string]calendar.CalendarEventsWithError
+// @Router /events/{eventId}/calendar-availabilities [get]
+func getCalendarAvalabilities(c *gin.Context) {
+	// Bind query parameters
+	payload := struct {
+		TimeMin time.Time `form:"timeMin" binding:"required"`
+		TimeMax time.Time `form:"timeMax" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	// Fetch event
+	eventId := c.Param("eventId")
+	event := db.GetEventById(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+
+	// Ensure that event is a group
+	if event.Type != models.GROUP {
+		c.JSON(http.StatusBadRequest, responses.Error{Error: errs.EventNotGroup})
+		return
+	}
+
+	// Fetch calendar events for each of the attendees
+	numCalendarEventsRequests := 0
+	calendarEventsChan := make(chan struct {
+		UserId string
+		Events map[string]calendar.CalendarEventsWithError
+	})
+	for userId, response := range event.Responses {
+		if utils.Coalesce(response.UseCalendarAvailability) {
+			user := db.GetUserById(userId)
+			if user != nil {
+				numCalendarEventsRequests++
+				go func() {
+					calendarEvents, _ := calendar.GetUsersCalendarEvents(user, nil, payload.TimeMin, payload.TimeMax)
+					calendarEventsChan <- struct {
+						UserId string
+						Events map[string]calendar.CalendarEventsWithError
+					}{
+						UserId: user.Id.Hex(),
+						Events: calendarEvents,
+					}
+				}()
+			}
+		}
+	}
+
+	// Create a map mapping user id to the calendar events of that user
+	userIdToCalendarEvents := make(map[string]map[string]calendar.CalendarEventsWithError)
+	for i := 0; i < numCalendarEventsRequests; i++ {
+		calendarEvents := <-calendarEventsChan
+		userIdToCalendarEvents[calendarEvents.UserId] = calendarEvents.Events
+	}
+
+	c.JSON(http.StatusOK, userIdToCalendarEvents)
 }
 
 // @Summary Deletes an event based on its id

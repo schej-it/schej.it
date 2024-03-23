@@ -406,6 +406,57 @@ var doc = `{
                 }
             }
         },
+        "/events/{eventId}/calendar-availabilities": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Return a map mapping user id to their calendar events that they have enabled for the given time range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lower bound for event's start time to filter by",
+                        "name": "timeMin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upper bound for event's end time to filter by",
+                        "name": "timeMax",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "$ref": "#/definitions/calendar.CalendarEventsWithError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/events/{eventId}/decline": {
             "post": {
                 "consumes": [

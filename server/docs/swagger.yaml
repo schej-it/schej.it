@@ -440,6 +440,41 @@ paths:
       summary: Edits an event based on its id
       tags:
       - events
+  /events/{eventId}/calendar-availabilities:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Lower bound for event's start time to filter by
+        in: query
+        name: timeMin
+        required: true
+        type: string
+      - description: Upper bound for event's end time to filter by
+        in: query
+        name: timeMax
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              additionalProperties:
+                $ref: '#/definitions/calendar.CalendarEventsWithError'
+              type: object
+            type: object
+      summary: Return a map mapping user id to their calendar events that they have
+        enabled for the given time range
+      tags:
+      - events
   /events/{eventId}/decline:
     post:
       consumes:
