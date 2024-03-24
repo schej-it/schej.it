@@ -177,9 +177,6 @@ export default {
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
-
-    // Whether this component is in a dialog or not - for scolling when advanced options is toggled
-    inDialog: { type: Boolean, default: true },
   },
 
   components: {
@@ -396,7 +393,7 @@ export default {
 
       const openScrollEl = this.$refs.advancedOpenScrollTo
 
-      if (this.inDialog && openScrollEl && this.showAdvancedOptions) {
+      if (this.dialog && openScrollEl && this.showAdvancedOptions) {
         setTimeout(
           () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
           delayed ? 500 : 200
