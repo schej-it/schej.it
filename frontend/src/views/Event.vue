@@ -88,8 +88,8 @@
                   :style="{ opacity: availabilityBtnOpacity }"
                   @click="addAvailability"
                 >
-                  {{
-                    userHasResponded ? "Edit availability" : "Add availability"
+                  {{ isGroup ? "Edit Calendars" : (
+                    userHasResponded ? "Edit availability" : "Add availability")
                   }}
                 </v-btn>
               </template>
@@ -272,6 +272,9 @@ export default {
     },
     isWeekly() {
       return this.event?.type === eventTypes.DOW
+    },
+    isGroup() {
+      return this.event?.type === eventTypes.GROUP
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges
