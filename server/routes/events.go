@@ -127,7 +127,7 @@ func createEvent(c *gin.Context) {
 		attendees := make([]models.Attendee, 0)
 		availabilityGroupInviteEmailId := 9
 		for _, email := range payload.Attendees {
-			listmonk.SendEmail(email, availabilityGroupInviteEmailId, bson.M{
+			listmonk.SendEmailAddSubscriberIfNotExist(email, availabilityGroupInviteEmailId, bson.M{
 				"ownerName": ownerName,
 				"groupName": event.Name,
 				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
@@ -277,7 +277,7 @@ func editEvent(c *gin.Context) {
 		for _, addedEmail := range added {
 			// Send invite email
 			availabilityGroupInviteEmailId := 9
-			listmonk.SendEmail(addedEmail.Value, availabilityGroupInviteEmailId, bson.M{
+			listmonk.SendEmailAddSubscriberIfNotExist(addedEmail.Value, availabilityGroupInviteEmailId, bson.M{
 				"ownerName": ownerName,
 				"groupName": event.Name,
 				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
