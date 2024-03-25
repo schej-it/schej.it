@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="tw-flex tw-items-center tw-font-medium">
-      <div class="tw-mr-1 tw-text-lg">Responses</div>
+      <div class="tw-mr-1 tw-text-lg">
+        {{ !isGroup ? "Responses" : "Members" }}
+      </div>
       <div class="tw-font-normal">
         <template v-if="curRespondents.length === 0">
           {{
@@ -63,6 +65,10 @@
             :class="respondentClass(user._id)"
           >
             {{ user.firstName + " " + user.lastName }}
+          </div>
+
+          <div v-if="isGroup" class="tw-ml-1">
+            <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
           </div>
 
           <v-btn
@@ -136,6 +142,7 @@ export default {
     respondents: { type: Array, required: true },
     isOwner: { type: Boolean, required: true },
     maxHeight: { type: Number },
+    isGroup: { type: Boolean, required: true },
   },
 
   data() {

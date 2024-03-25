@@ -23,26 +23,13 @@
       hide-details
     >
       <template v-slot:selection="data, parent">
-        <v-chip
-          :key="isContact(data.item) ? data.item.email : data.item"
-          size="x-small"
-          class="tw-flex tw-items-center tw-bg-light-gray tw-text-very-dark-gray"
-        >
-          <v-avatar class="bg-accent text-uppercase tw-mr-2" start
-            ><img
-              v-if="isContact(data.item) && data.item.picture.length > 0"
-              :src="data.item.picture"
-              referrerpolicy="no-referrer"
-              width="10px"
-            />
-            <v-icon v-else>mdi-account</v-icon></v-avatar
-          >
-          {{ isContact(data.item) ? data.item.email : data.item }}
-
-          <v-icon small @click="() => removeEmail(data.item)" class="tw-ml-1"
-            >mdi-close</v-icon
-          >
-        </v-chip>
+        <UserChip
+          :user="
+            isContact(data.item) ? data.item : { email: data.item, picture: '' }
+          "
+          :removable="true"
+          :removeEmail="removeEmail"
+        ></UserChip>
       </template>
       <template v-slot:item="{ item }">
         <v-list-item-avatar>
@@ -66,6 +53,7 @@
 
 <script>
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
+import UserChip from "@/components/general/UserChip.vue"
 import { validateEmail, get, post } from "@/utils"
 
 export default {
@@ -140,7 +128,19 @@ export default {
      * Removes the specified email from the remindees list.
      */
     removeEmail(email) {
-      this.remindees.splice(this.remindees.indexOf(email), 1)
+      // this.remindees.splice(this.remindees.indexOf(email), 1)
+
+      for (let i = 0; i < this.remindees.length; i++) {
+        if (this.isContact(this.remindees[i])) {
+          if (this.remindees[i].email == email) {
+            this.remindees.splice(i, 1)
+          }
+        } else {
+          if (this.remindees[i] == email) {
+            this.remindees.splice(i, 1)
+          }
+        }
+      }
     },
     /**
      * Check if the contact is an object and not a user inputed string.
@@ -176,6 +176,6 @@ export default {
     },
   },
 
-  components: { UserAvatarContent },
+  components: { UserAvatarContent, UserChip },
 }
 </script>

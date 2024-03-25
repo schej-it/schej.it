@@ -35,9 +35,9 @@ const routes = [
     props: true,
   },
   {
-    path: "/g/:eventId",
+    path: "/g/:groupId",
     name: "group",
-    component: () => import("@/views/Event.vue"),
+    component: () => import("@/views/Group.vue"),
     props: true,
   },
   {

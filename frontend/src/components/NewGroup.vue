@@ -249,7 +249,7 @@ export default {
           .then(({ eventId }) => {
             this.$router.push({
               name: "group",
-              params: { eventId, initialTimezone: this.timezone },
+              params: { groupId: eventId, initialTimezone: this.timezone },
             })
 
             this.$posthog?.capture("Availability group created", {

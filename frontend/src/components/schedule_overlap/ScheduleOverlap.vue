@@ -255,15 +255,14 @@
                     v-on="on"
                     class="tw-cursor-pointer tw-text-sm tw-text-red tw-underline"
                   >
-                    Delete Availability
+                    {{ !isGroup ? "Delete availability" : "Leave group" }}
                   </span>
                 </template>
 
                 <v-card>
                   <v-card-title>Are you sure?</v-card-title>
                   <v-card-text class="tw-text-sm tw-text-dark-gray"
-                    >Are you sure you want to delete your availability from this
-                    event?</v-card-text
+                    >Are you sure you want to {{ !isGroup ? "delete your availability from this event?" : "leave this group?"}}</v-card-text
                   >
                   <v-card-actions>
                     <v-spacer />
@@ -277,7 +276,7 @@
                         $emit('deleteAvailability')
                         deleteAvailabilityDialog = false
                       "
-                      >Delete</v-btn
+                      >{{!isGroup ? "Delete" : "Leave"}}</v-btn
                     >
                   </v-card-actions>
                 </v-card>
@@ -300,6 +299,7 @@
                   :curTimeslotAvailability="curTimeslotAvailability"
                   :respondents="respondents"
                   :isOwner="isOwner"
+                  :isGroup="isGroup"
                   @mouseOverRespondent="mouseOverRespondent"
                   @mouseLeaveRespondent="mouseLeaveRespondent"
                   @clickRespondent="clickRespondent"
@@ -317,6 +317,7 @@
               :curTimeslotAvailability="curTimeslotAvailability"
               :respondents="respondents"
               :isOwner="isOwner"
+              :isGroup="isGroup"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"

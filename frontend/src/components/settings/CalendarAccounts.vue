@@ -12,7 +12,7 @@
       class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-off-white tw-pb-1 tw-align-middle"
     >
       <div class="tw-font-medium">My calendars</div>
-      <v-btn @click="addCalendarAccount" icon
+      <v-btn v-if="!asInput" @click="addCalendarAccount" icon
         ><v-icon class="tw-text-very-dark-gray">mdi-plus</v-icon></v-btn
       >
     </div>
@@ -20,6 +20,7 @@
       <CalendarAccount
         v-for="account in calendarAccounts"
         :key="account.email"
+        asInput
         :toggleState="toggleState"
         :account="account"
         :eventId="eventId"
@@ -27,6 +28,8 @@
         :calendarEventsMap="calendarEventsMap"
         :removeDialog="removeDialog"
         :selectedRemoveEmail="selectedRemoveEmail"
+        @toggleCalendarAccount="(payload) => $emit('toggleCalendarAccount', payload)"
+        @toggleSubCalendarAccount="(payload) => $emit('toggleSubCalendarAccount', payload)"
       ></CalendarAccount>
     </div>
     <v-dialog v-model="removeDialog" width="500" persistent>
@@ -49,7 +52,7 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes } from "@/constants"
-import { get, post, _delete, signInGoogle } from "@/utils"
+import { _delete, signInGoogle } from "@/utils"
 import CalendarAccount from "@/components/settings/CalendarAccount.vue"
 
 export default {
@@ -59,6 +62,7 @@ export default {
     toggleState: { type: Boolean, default: false },
     eventId: { type: String, default: "" },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
+    asInput: { type: Boolean, default: false },
   },
 
   data: () => ({
