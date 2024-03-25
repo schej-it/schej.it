@@ -59,7 +59,7 @@
           </div>
           <v-spacer />
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
-            <div>
+            <div v-if="!isGroup">
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
@@ -96,7 +96,7 @@
                 >
                   {{
                     isGroup
-                      ? "Edit Calendars"
+                      ? "Edit calendars"
                       : userHasResponded
                       ? "Edit availability"
                       : "Add availability"
@@ -263,7 +263,7 @@ export default {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
     this.editEventDialog = Object.keys(this.contactsPayload).length > 0
 
-    if (true /** TODO - check if invited to group but not accepted */) {
+    if (false /** TODO - check if invited to group but not accepted */) {
       this.invitationDialog = true
     }
   },

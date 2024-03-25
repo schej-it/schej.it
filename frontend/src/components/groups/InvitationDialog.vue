@@ -62,14 +62,6 @@ export default {
   },
 
   data: () => ({
-    /** TODO - integrate with backend */
-    members: [
-      {
-        picture:
-          "https://lh3.googleusercontent.com/a/ACg8ocJapP74GKFVhbi7iFKuB1ZS1ynAY067Y91m7FBaFLmr-Tc=s96-c",
-        email: "tonyxin@berkeley.edu",
-      },
-    ],
     calendarAccounts: {},
   }),
 
@@ -88,12 +80,16 @@ export default {
   methods: {
 
     rejectInvitation() {
+      /** TODO */
+      
       post(`/events/${this.group._id}/decline`).then((res) => {
         console.log(res)
       })
     },
 
     acceptInvitation() {
+      /** TODO */
+
       const payload = { useCalendarAvailability: true, enabledCalendars: [] }
 
       /** Determine which sub calendars are enabled */
