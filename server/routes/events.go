@@ -34,7 +34,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.POST("/:eventId/responded", userResponded)
 	eventRouter.POST("/:eventId/decline", middleware.AuthRequired(), declineInvite)
-	eventRouter.GET("/:eventId/calendar-availabilities", middleware.AuthRequired(), getCalendarAvalabilities)
+	eventRouter.GET("/:eventId/calendar-availabilities", middleware.AuthRequired(), getCalendarAvailabilities)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
 }
@@ -680,7 +680,7 @@ func declineInvite(c *gin.Context) {
 // @Param timeMax query string true "Upper bound for event's end time to filter by"
 // @Success 200 {object} map[string]map[string]calendar.CalendarEventsWithError
 // @Router /events/{eventId}/calendar-availabilities [get]
-func getCalendarAvalabilities(c *gin.Context) {
+func getCalendarAvailabilities(c *gin.Context) {
 	// Bind query parameters
 	payload := struct {
 		TimeMin time.Time `form:"timeMin" binding:"required"`
@@ -715,8 +715,16 @@ func getCalendarAvalabilities(c *gin.Context) {
 			user := db.GetUserById(userId)
 			if user != nil {
 				numCalendarEventsRequests++
+
+				// Construct enabled accounts set
+				enabledAccounts := make([]string, 0)
+				for _, enabledCalendar := range utils.Coalesce(response.EnabledCalendars) {
+					enabledAccounts = append(enabledAccounts, enabledCalendar.Email)
+				}
+
+				// Fetch calendar events
 				go func() {
-					calendarEvents, _ := calendar.GetUsersCalendarEvents(user, nil, payload.TimeMin, payload.TimeMax)
+					calendarEvents, _ := calendar.GetUsersCalendarEvents(user, utils.ArrayToSet(enabledAccounts), payload.TimeMin, payload.TimeMax)
 					calendarEventsChan <- struct {
 						UserId string
 						Events map[string]calendar.CalendarEventsWithError
@@ -730,23 +738,42 @@ func getCalendarAvalabilities(c *gin.Context) {
 	}
 
 	// Create a map mapping user id to the calendar events of that user
-	userIdToCalendarEvents := make(map[string]map[string]calendar.CalendarEventsWithError)
+	userIdToCalendarEvents := make(map[string][]models.CalendarEvent)
 	for i := 0; i < numCalendarEventsRequests; i++ {
 		calendarEvents := <-calendarEventsChan
-		userIdToCalendarEvents[calendarEvents.UserId] = calendarEvents.Events
+		userIdToCalendarEvents[calendarEvents.UserId] = make([]models.CalendarEvent, 0)
+		for _, events := range calendarEvents.Events {
+			userIdToCalendarEvents[calendarEvents.UserId] = append(userIdToCalendarEvents[calendarEvents.UserId], events.CalendarEvents...)
+		}
 	}
 
-	// Redact event names of the other users
-	user := utils.GetAuthUser(c)
+	// Filter and format calendar events
+	authUser := utils.GetAuthUser(c)
 	for userId, calendarEvents := range userIdToCalendarEvents {
-		if userId != user.Id.Hex() {
-			for email, events := range calendarEvents {
-				for i, event := range events.CalendarEvents {
-					event.Summary = "BUSY"
-					userIdToCalendarEvents[userId][email].CalendarEvents[i] = event
-				}
+		// Construct enabled calendar ids set
+		enabledCalendarIds := utils.ArrayToSet(
+			utils.Map(
+				utils.Coalesce(event.Responses[userId].EnabledCalendars),
+				func(e models.EnabledCalendar) string { return e.CalendarId },
+			),
+		)
+
+		// Update calendar events
+		updatedCalendarEvents := make([]models.CalendarEvent, 0)
+		for _, calendarEvent := range calendarEvents {
+			// Get rid of events on sub calendars that aren't enabled
+			if _, ok := enabledCalendarIds[calendarEvent.CalendarId]; !ok {
+				continue
 			}
+
+			// Redact event names of other users
+			if authUser.Id.Hex() != userId {
+				calendarEvent.Summary = "BUSY"
+			}
+
+			updatedCalendarEvents = append(updatedCalendarEvents, calendarEvent)
 		}
+		userIdToCalendarEvents[userId] = updatedCalendarEvents
 	}
 
 	c.JSON(http.StatusOK, userIdToCalendarEvents)

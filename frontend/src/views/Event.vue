@@ -121,6 +121,7 @@
         :loadingCalendarEvents="loading"
         :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
+        :calendar-availabilities="calendarAvailabilities"
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
@@ -244,6 +245,9 @@ export default {
     weekOffset: 0,
 
     availabilityBtnOpacity: 1,
+
+    // Availability Groups
+    calendarAvailabilities: {}, // maps userId to their calendar events
   }),
 
   mounted() {
@@ -445,6 +449,32 @@ export default {
       }, 100)
     },
 
+    // Refresh calendar availabilities of everybody in the group
+    fetchCalendarAvailabilities() {
+      if (this.event.type !== eventTypes.GROUP) return
+
+      this.loading = true
+      getCalendarEventsMap(this.event, {
+        weekOffset: this.weekOffset,
+        eventId: this.event._id,
+      })
+        .then((eventsMap) => {
+          this.calendarAvailabilities = eventsMap
+
+          // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
+          this.calendarPermissionGranted = !Object.values(
+            this.calendarEventsMap
+          ).every((c) => Boolean(c.error))
+        })
+        .catch((err) => {
+          console.error(err)
+          this.calendarPermissionGranted = false
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
+
     onBeforeUnload(e) {
       if (this.areUnsavedChanges) {
         e.preventDefault()
@@ -471,7 +501,11 @@ export default {
       }
     }
 
-    // Get all calendar accounts' events
+    if (this.event.type === eventTypes.GROUP) {
+      this.fetchCalendarAvailabilities()
+    }
+
+    // Get current user's calendar events
     getCalendarEventsMap(this.event, { weekOffset: this.weekOffset })
       .then((eventsMap) => {
         this.calendarEventsMap = eventsMap

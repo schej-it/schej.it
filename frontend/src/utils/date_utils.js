@@ -365,7 +365,7 @@ export const processCalendarEvents = (
   // Put calendarEvents into the correct format
   calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
   calendarEvents = calendarEvents.map((e) => {
-    if (eventType === eventTypes.DOW) {
+    if (eventType === eventTypes.DOW || eventType === eventTypes.GROUP) {
       e.startDate = dateToDowDate(dates, e.startDate, weekOffset)
       e.endDate = dateToDowDate(dates, e.endDate, weekOffset)
     } else {

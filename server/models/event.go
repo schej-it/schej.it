@@ -50,7 +50,7 @@ type Response struct {
 
 type EnabledCalendar struct {
 	Email      string `json:"email" bson:"email,omitempty"`
-	CalendarId string `json:"calendarId" bson:"email,omitempty"`
+	CalendarId string `json:"calendarId" bson:"calendarId,omitempty"`
 }
 
 // Object containing information associated with the remindee

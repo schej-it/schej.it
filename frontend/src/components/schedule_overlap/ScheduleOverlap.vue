@@ -52,7 +52,7 @@
                 >
                   <div class="tw-text-center">
                     <div
-                      v-if="isSpecificDates"
+                      v-if="isSpecificDates || isGroup"
                       class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
                     >
                       {{ day.dateString }}
@@ -422,6 +422,9 @@ export default {
     curGuestId: { type: String, default: "" }, // Id of the current guest being edited
 
     initialTimezone: { type: Object, default: () => ({}) },
+
+    // Availability Groups
+    calendarAvailabilities: { type: Object, default: () => ({}) },
   },
   data() {
     return {
@@ -493,16 +496,17 @@ export default {
         this.state === this.states.SCHEDULE_EVENT
       )
     },
+    /** Returns an array of calendar events for all of the authUser's enabled calendars, separated by the day they occur on */
     calendarEventsByDay() {
-      /** If this is an example calendar */
+      // If this is an example calendar
       if (this.sampleCalendarEventsByDay) return this.sampleCalendarEventsByDay
 
-      /** If the user isn't logged in */
+      // If the user isn't logged in
       if (!this.authUser) return []
 
       let events = []
       let event
-      /** Adds events from calendar accounts that are enabled */
+      // Adds events from calendar accounts that are enabled
       for (const id in this.authUser.calendarAccounts) {
         if (
           this.authUser.calendarAccounts[id].enabled &&
@@ -539,6 +543,21 @@ export default {
       )
 
       return calendarEventsByDay
+    },
+    /** [SPECIFIC TO GROUPS] Returns an object mapping user ids to their calendar events separated by the day they occur on */
+    groupCalendarEventsByDay() {
+      if (this.event.type !== eventTypes.GROUP) return {}
+
+      const userIdToEventsByDay = {}
+      for (const userId in this.calendarAvailabilities) {
+        userIdToEventsByDay[userId] = splitCalendarEventsByDay(
+          this.event,
+          this.calendarAvailabilities[userId],
+          this.weekOffset
+        )
+      }
+
+      return userIdToEventsByDay
     },
     curRespondentsSet() {
       return new Set(this.curRespondents)
@@ -593,11 +612,27 @@ export default {
         const offsetDate = new Date(date)
         offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
+        let dateString = ""
+        if (this.isSpecificDates) {
+          dateString = `${
+            months[offsetDate.getUTCMonth()]
+          } ${offsetDate.getUTCDate()}`
+        } else if (this.isGroup) {
+          const tmpDate = dateToDowDate(
+            this.event.dates,
+            offsetDate,
+            this.weekOffset,
+            true
+          )
+
+          dateString = `${
+            months[tmpDate.getUTCMonth()]
+          } ${tmpDate.getUTCDate()}`
+        }
+
         days.push({
           dayText: daysOfWeek[offsetDate.getUTCDay()],
-          dateString: `${
-            months[offsetDate.getUTCMonth()]
-          } ${offsetDate.getUTCDate()}`,
+          dateString,
           dateObject: date,
         })
       }
@@ -634,6 +669,9 @@ export default {
     isWeekly() {
       return this.event.type === eventTypes.DOW
     },
+    isGroup() {
+      return this.event.type === eventTypes.GROUP
+    },
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user)
     },
@@ -657,9 +695,27 @@ export default {
       style.height = `calc(${height} * 1rem)`
       return style
     },
+    /** Parses the responses to the Schej, makes necessary changes based on the type of event, and returns it */
     parsedResponses() {
-      /* Parses responses so that if _id is null (i.e. guest user), then it is set to the guest user's name */
       const parsed = {}
+
+      // Return calendar availability if group
+      if (this.event.type === eventTypes.GROUP) {
+        for (const userId in this.event.responses) {
+          const calendarEventsByDay = this.groupCalendarEventsByDay[userId]
+          if (calendarEventsByDay) {
+            const availability =
+              this.getAvailabilityFromCalendarEvents(calendarEventsByDay)
+            parsed[userId] = {
+              ...this.event.responses[userId],
+              availability: [...availability],
+            }
+          }
+        }
+        return parsed
+      }
+
+      // Otherwise, parse responses so that if _id is null (i.e. guest user), then it is set to the guest user's name
       for (const k of Object.keys(this.event.responses)) {
         const newUser = {
           ...this.event.responses[k].user,
@@ -904,42 +960,50 @@ export default {
         this.setAuthUser(authUser)
       })
     },
+    /** resets cur user availability to the response stored on the server */
     resetCurUserAvailability() {
-      /* resets cur user availability to the response stored on the server */
       this.availability = new Set()
       if (this.userHasResponded) {
         this.populateUserAvailability(this.authUser._id)
       }
     },
+    /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      /* Populates the availability set for the auth user from the responses object stored on the server */
       this.event.responses[id].availability.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
     },
-    setAvailabilityAutomatically() {
-      /* Constructs the availability array using calendarEvents array */
-      // This is not a computed property because we should be able to change it manually from what it automatically fills in
-      this.availability = new Set()
-      const tmpAvailability = new Set()
+    /** Returns a set containing the available times based on the given calendar events object */
+    getAvailabilityFromCalendarEvents(calendarEventsByDay) {
+      const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
           const startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
-          const index = this.calendarEventsByDay[i].findIndex((e) => {
+          const index = calendarEventsByDay[i].findIndex((e) => {
             const notIntersect =
               dateCompare(endDate, e.startDate) <= 0 ||
               dateCompare(startDate, e.endDate) >= 0
             return !notIntersect
           })
           if (index === -1) {
-            tmpAvailability.add(startDate.getTime())
+            availability.add(startDate.getTime())
           }
         }
       }
+      return availability
+    },
+    /** Constructs the availability array using calendarEvents array */
+    setAvailabilityAutomatically() {
+      // This is not a computed property because we should be able to change it manually from what it automatically fills in
+      this.availability = new Set()
+      const tmpAvailability = this.getAvailabilityFromCalendarEvents(
+        this.calendarEventsByDay
+      )
+
       const pageStartDate = getDateDayOffset(
         new Date(this.event.dates[0]),
         this.page * this.maxDaysPerPage
@@ -947,9 +1011,8 @@ export default {
       const pageEndDate = getDateDayOffset(pageStartDate, this.maxDaysPerPage)
       this.animateAvailability(tmpAvailability, pageStartDate, pageEndDate)
     },
+    /** Animate the filling out of availability using setTimeout, between startDate and endDate */
     animateAvailability(availability, startDate, endDate) {
-      /* Animate the filling out of availability using setTimeout, between startDate and endDate */
-
       this.availabilityAnimEnabled = true
       this.availabilityAnimTimeouts = []
 
