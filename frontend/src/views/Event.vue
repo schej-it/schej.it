@@ -26,6 +26,12 @@
       no-tabs
     />
 
+    <!-- Group invitation dialog -->
+    <InvitationDialog
+      v-model="invitationDialog"
+      :group="event"
+    ></InvitationDialog>
+
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
         <!-- Title and copy link -->
@@ -88,8 +94,12 @@
                   :style="{ opacity: availabilityBtnOpacity }"
                   @click="addAvailability"
                 >
-                  {{ isGroup ? "Edit Calendars" : (
-                    userHasResponded ? "Edit availability" : "Add availability")
+                  {{
+                    isGroup
+                      ? "Edit Calendars"
+                      : userHasResponded
+                      ? "Edit availability"
+                      : "Add availability"
                   }}
                 </v-btn>
               </template>
@@ -208,6 +218,7 @@ import { errors, authTypes, eventTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
+import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 
 export default {
   name: "Event",
@@ -225,6 +236,7 @@ export default {
     NewDialog,
     SignInNotSupportedDialog,
     MarkAvailabilityDialog,
+    InvitationDialog,
   },
 
   data: () => ({
@@ -232,6 +244,7 @@ export default {
     webviewDialog: false,
     guestDialog: false,
     editEventDialog: false,
+    invitationDialog: false,
     loading: true,
     calendarEventsMap: {},
     event: null,
@@ -249,6 +262,10 @@ export default {
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
     this.editEventDialog = Object.keys(this.contactsPayload).length > 0
+
+    if (true /** TODO - check if invited to group but not accepted */) {
+      this.invitationDialog = true
+    }
   },
 
   computed: {

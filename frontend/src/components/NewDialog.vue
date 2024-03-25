@@ -8,7 +8,7 @@
     <v-card class="tw-py-4">
       <div v-if="!noTabs" class="-tw-mt-4 tw-flex tw-rounded sm:tw-px-8">
         <v-tabs v-model="tab">
-          <v-tab v-for="t in tabs" :key="t.type">{{ t.title }}</v-tab>
+          <v-tab v-for="t in tabs" :key="t.type" class="tw-text-xs">{{ t.title }}</v-tab>
         </v-tabs>
         <v-spacer />
         <v-btn
