@@ -80,19 +80,15 @@ export default {
   methods: {
 
     rejectInvitation() {
-      /** TODO */
-      
       post(`/events/${this.group._id}/decline`).then((res) => {
         console.log(res)
       })
     },
 
     acceptInvitation() {
-      /** TODO */
-
       const payload = { useCalendarAvailability: true, enabledCalendars: [] }
 
-      /** Determine which sub calendars are enabled */
+      /** Determine which sub calendars are enabled - same code can be used for submitAvailability in scheduleOverlap.vue */
       for (const email in this.calendarAccounts) {
         if (this.calendarAccounts[email].enabled) {
           for (const subCalendarId in this.calendarAccounts[email].subCalendars) {
