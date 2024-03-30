@@ -262,7 +262,12 @@
                 <v-card>
                   <v-card-title>Are you sure?</v-card-title>
                   <v-card-text class="tw-text-sm tw-text-dark-gray"
-                    >Are you sure you want to {{ !isGroup ? "delete your availability from this event?" : "leave this group?"}}</v-card-text
+                    >Are you sure you want to
+                    {{
+                      !isGroup
+                        ? "delete your availability from this event?"
+                        : "leave this group?"
+                    }}</v-card-text
                   >
                   <v-card-actions>
                     <v-spacer />
@@ -276,7 +281,7 @@
                         $emit('deleteAvailability')
                         deleteAvailabilityDialog = false
                       "
-                      >{{!isGroup ? "Delete" : "Leave"}}</v-btn
+                      >{{ !isGroup ? "Delete" : "Leave" }}</v-btn
                     >
                   </v-card-actions>
                 </v-card>
@@ -813,10 +818,13 @@ export default {
       return this.isPhone ? 3 : 7
     },
     hasNextPage() {
-      return this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0
+      return (
+        this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
+        this.event.type === eventTypes.GROUP
+      )
     },
     hasPrevPage() {
-      return this.page > 0
+      return this.page > 0 || this.event.type === eventTypes.GROUP
     },
 
     showStickyRespondents() {
@@ -1573,11 +1581,19 @@ export default {
     // -----------------------------------
     nextPage(e) {
       e.stopImmediatePropagation()
-      this.page++
+      if (this.event.type === eventTypes.GROUP) {
+        this.$emit("update:weekOffset", this.weekOffset + 1)
+      } else {
+        this.page++
+      }
     },
     prevPage(e) {
       e.stopImmediatePropagation()
-      this.page--
+      if (this.event.type === eventTypes.GROUP) {
+        this.$emit("update:weekOffset", this.weekOffset - 1)
+      } else {
+        this.page--
+      }
     },
     //#endregion
 

@@ -28,6 +28,7 @@
 
     <!-- Group invitation dialog -->
     <InvitationDialog
+      v-if="isGroup"
       v-model="invitationDialog"
       :group="event"
     ></InvitationDialog>
@@ -469,17 +470,57 @@ export default {
       }, 100)
     },
 
-    // Refresh calendar availabilities of everybody in the group
-    fetchCalendarAvailabilities() {
+    /** Refresh calendar availabilities of everybody in the group */
+    async fetchCalendarAvailabilities() {
       if (this.event.type !== eventTypes.GROUP) return
 
-      this.loading = true
-      getCalendarEventsMap(this.event, {
-        weekOffset: this.weekOffset,
+      this.calendarAvailabilities = {}
+      const curWeekOffset = this.weekOffset
+      return getCalendarEventsMap(this.event, {
+        weekOffset: curWeekOffset,
         eventId: this.event._id,
       })
+        .then((calendarAvailabilities) => {
+          // Don't update calendar availabilities if user
+          // selected a different weekoffset by the time these calendar events load
+          if (curWeekOffset !== this.weekOffset) return
+
+          this.calendarAvailabilities = calendarAvailabilities
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    },
+
+    /** Fetch current user's calendar events */
+    async fetchAuthUserCalendarEvents() {
+      if (!this.authUser) {
+        this.calendarPermissionGranted = false
+        return
+      }
+
+      this.calendarEventsMap = {}
+      const curWeekOffset = this.weekOffset
+      return getCalendarEventsMap(this.event, { weekOffset: curWeekOffset })
         .then((eventsMap) => {
-          this.calendarAvailabilities = eventsMap
+          // Don't set calendar events / set availability if user has already
+          // selected a different weekoffset by the time these calendar events load
+          if (curWeekOffset !== this.weekOffset) return
+
+          this.calendarEventsMap = eventsMap
+
+          // Set user availability automatically if we're in editing mode and they haven't responded
+          if (
+            this.authUser &&
+            this.isEditing &&
+            !this.userHasResponded &&
+            !this.areUnsavedChanges &&
+            this.scheduleOverlapComponent
+          ) {
+            this.$nextTick(() => {
+              this.scheduleOverlapComponent?.setAvailabilityAutomatically()
+            })
+          }
 
           // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
           this.calendarPermissionGranted = !Object.values(
@@ -489,9 +530,6 @@ export default {
         .catch((err) => {
           console.error(err)
           this.calendarPermissionGranted = false
-        })
-        .finally(() => {
-          this.loading = false
         })
     },
 
@@ -521,40 +559,14 @@ export default {
       }
     }
 
-    if (this.event.type === eventTypes.GROUP) {
-      this.fetchCalendarAvailabilities()
-    }
+    const promises = []
+    promises.push(this.fetchCalendarAvailabilities())
+    promises.push(this.fetchAuthUserCalendarEvents())
 
-    // Get current user's calendar events
-    getCalendarEventsMap(this.event, { weekOffset: this.weekOffset })
-      .then((eventsMap) => {
-        this.calendarEventsMap = eventsMap
-
-        // Set user availability automatically if we're in editing mode and they haven't responded
-        if (
-          this.authUser &&
-          this.isEditing &&
-          !this.userHasResponded &&
-          this.scheduleOverlapComponent
-        ) {
-          this.$nextTick(() => {
-            this.scheduleOverlapComponent.setAvailabilityAutomatically()
-          })
-        }
-
-        // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
-        this.calendarPermissionGranted = !Object.values(
-          this.calendarEventsMap
-        ).every((c) => Boolean(c.error))
-      })
-      .catch((err) => {
-        console.error(err)
-        // if (err.error.code === 401 || err.error.code === 403) {
-        this.calendarPermissionGranted = false
-      })
-      .finally(() => {
-        this.loading = false
-      })
+    this.loading = true
+    Promise.allSettled(promises).then(() => {
+      this.loading = false
+    })
   },
 
   beforeDestroy() {
@@ -580,27 +592,19 @@ export default {
       }
     },
     weekOffset() {
-      this.loading = true
+      const promises = []
+      promises.push(this.fetchCalendarAvailabilities())
+      promises.push(this.fetchAuthUserCalendarEvents())
 
-      this.calendarEventsMap = {}
       const curWeekOffset = this.weekOffset
-      getCalendarEventsMap(this.event, { weekOffset: curWeekOffset }).then(
-        (eventsMap) => {
-          // Don't set calendar events / set availability if user has already
-          // selected a different weekoffset by the time these calendar events load
-          if (curWeekOffset !== this.weekOffset) return
-
-          this.calendarEventsMap = eventsMap
+      this.loading = true
+      Promise.allSettled(promises).then(() => {
+        // Only set loading to false if promises resolved at the same week offset they were fetched at
+        // i.e. no new promises are currently being run
+        if (curWeekOffset === this.weekOffset) {
           this.loading = false
-
-          // Only autofill availability if user hasn't responded and they don't have unsaved changes
-          if (!this.userHasResponded && !this.areUnsavedChanges) {
-            this.$nextTick(() => {
-              this.scheduleOverlapComponent.setAvailabilityAutomatically()
-            })
-          }
         }
-      )
+      })
     },
   },
 }
