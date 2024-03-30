@@ -136,6 +136,7 @@
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
+        :always-show-calendar-events="isGroup"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"
@@ -474,7 +475,7 @@ export default {
     async fetchCalendarAvailabilities() {
       if (this.event.type !== eventTypes.GROUP) return
 
-      this.calendarAvailabilities = {}
+      // this.calendarAvailabilities = {}
       const curWeekOffset = this.weekOffset
       return getCalendarEventsMap(this.event, {
         weekOffset: curWeekOffset,
@@ -499,7 +500,7 @@ export default {
         return
       }
 
-      this.calendarEventsMap = {}
+      // this.calendarEventsMap = {}
       const curWeekOffset = this.weekOffset
       return getCalendarEventsMap(this.event, { weekOffset: curWeekOffset })
         .then((eventsMap) => {

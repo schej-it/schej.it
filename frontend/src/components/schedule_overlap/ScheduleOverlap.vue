@@ -88,6 +88,9 @@
                       v-for="(day, d) in days"
                       :key="d"
                       class="tw-relative tw-flex-1"
+                      :class="
+                        isGroup && loadingCalendarEvents && 'tw-opacity-50'
+                      "
                       style="min-width: 50px"
                     >
                       <!-- Timeslots -->
@@ -105,7 +108,12 @@
                       </div>
 
                       <!-- Calendar events -->
-                      <div v-if="editing || alwaysShowCalendarEvents">
+                      <div
+                        v-if="
+                          !loadingCalendarEvents &&
+                          (editing || alwaysShowCalendarEvents)
+                        "
+                      >
                         <v-fade-transition
                           v-for="event in calendarEventsByDay[
                             d + page * maxDaysPerPage
@@ -114,7 +122,7 @@
                           appear
                         >
                           <div
-                            class="ph-no-capture tw-absolute tw-w-full tw-select-none tw-p-px"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="{
                               top: `calc(${event.hoursOffset} * 4 * 1rem)`,
                               height: `calc(${event.hoursLength} * 4 * 1rem)`,
@@ -122,13 +130,22 @@
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-p-px tw-text-xs"
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
+                              :class="
+                                isGroup
+                                  ? 'tw-border-white tw-bg-blue'
+                                  : 'tw-border-blue'
+                              "
                             >
                               <div
                                 :class="`tw-text-${
-                                  noEventNames ? 'dark-gray' : 'blue'
+                                  isGroup
+                                    ? 'white'
+                                    : noEventNames
+                                    ? 'dark-gray'
+                                    : 'blue'
                                 }`"
-                                class="tw-font-medium"
+                                class="ph-no-capture tw-font-medium"
                               >
                                 {{ noEventNames ? "BUSY" : event.summary }}
                               </div>
@@ -514,10 +531,31 @@ export default {
       let event
       // Adds events from calendar accounts that are enabled
       for (const id in this.authUser.calendarAccounts) {
-        if (
-          this.authUser.calendarAccounts[id].enabled &&
-          this.calendarEventsMap.hasOwnProperty(id)
-        ) {
+        // Create enabled sub calendars set for GROUPs
+        let enabledSubCalendarsSet = new Set()
+        if (this.event.type === eventTypes.GROUP) {
+          // Check if auth user has enabled calendars
+          const enabledCalendars =
+            this.event.responses[this.authUser?._id]?.enabledCalendars
+          if (!enabledCalendars) continue
+
+          // Check if the current calendar account is enabled
+          const calendarAccountEnabled =
+            enabledCalendars.findIndex((ec) => ec.email === id) !== -1
+          if (!calendarAccountEnabled) continue
+
+          // Create enabled sub calendars set
+          for (const enabledCalendar of enabledCalendars) {
+            if (enabledCalendar.email === id) {
+              enabledSubCalendarsSet.add(enabledCalendar.calendarId)
+            }
+          }
+        } else {
+          // Check if authUser has the calendarAccount enabled in all other event types
+          if (!this.authUser.calendarAccounts[id].enabled) continue
+        }
+
+        if (this.calendarEventsMap.hasOwnProperty(id)) {
           for (const index in this.calendarEventsMap[id].calendarEvents) {
             event = this.calendarEventsMap[id].calendarEvents[index]
 
@@ -534,8 +572,14 @@ export default {
             }
 
             // Push event to events if subcalendar is enabled
-            if (subCalendars[event.calendarId].enabled) {
-              events.push(event)
+            if (this.event.type === eventTypes.GROUP) {
+              if (enabledSubCalendarsSet.has(event.calendarId)) {
+                events.push(event)
+              }
+            } else {
+              if (subCalendars[event.calendarId].enabled) {
+                events.push(event)
+              }
             }
           }
         }
