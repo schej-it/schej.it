@@ -78,6 +78,7 @@ func createEvent(c *gin.Context) {
 		ownerId = primitive.NilObjectID
 	}
 
+	// Construct event object
 	event := models.Event{
 		Id:                   primitive.NewObjectID(),
 		OwnerId:              ownerId,
@@ -138,20 +139,39 @@ func createEvent(c *gin.Context) {
 		event.Attendees = &attendees
 	}
 
+	if payload.Type == models.GROUP {
+		// Add event owner to group by default
+		if signedIn {
+			enabledCalendars := make(map[string][]string)
+			for email, calendarAccount := range user.CalendarAccounts {
+				enabledCalendars[email] = make([]string, 0)
+				for calendarId := range utils.Coalesce(calendarAccount.SubCalendars) {
+					enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+				}
+			}
+
+			event.Responses[user.Id.Hex()] = &models.Response{
+				UserId:                  user.Id,
+				UseCalendarAvailability: utils.TruePtr(),
+				EnabledCalendars:        &enabledCalendars,
+			}
+		}
+	}
+
+	// Insert event
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
-
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 
+	// Send slackbot message
 	var creator string
 	if signedIn {
 		creator = fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email)
 	} else {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
-
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})

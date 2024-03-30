@@ -30,7 +30,7 @@
           </div>
           <div>
             <UserChip
-              v-for="user in group.attendees.filter((u) => !u.declined)"
+              v-for="user in group.attendees?.filter((u) => !u.declined)"
               :key="user.email"
               :user="user"
             ></UserChip>
