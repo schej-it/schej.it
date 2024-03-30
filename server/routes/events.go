@@ -353,7 +353,7 @@ func getEvent(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=[]models.EnabledCalendar} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
@@ -363,8 +363,8 @@ func updateEventResponse(c *gin.Context) {
 		Name         string               `json:"name"`
 
 		// Calendar availability variables for Availability Groups feature
-		UseCalendarAvailability *bool                     `json:"useCalendarAvailability"`
-		EnabledCalendars        *[]models.EnabledCalendar `json:"enabledCalendars"`
+		UseCalendarAvailability *bool                `json:"useCalendarAvailability"`
+		EnabledCalendars        *map[string][]string `json:"enabledCalendars"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -718,8 +718,8 @@ func getCalendarAvailabilities(c *gin.Context) {
 
 				// Construct enabled accounts set
 				enabledAccounts := make([]string, 0)
-				for _, enabledCalendar := range utils.Coalesce(response.EnabledCalendars) {
-					enabledAccounts = append(enabledAccounts, enabledCalendar.Email)
+				for email := range utils.Coalesce(response.EnabledCalendars) {
+					enabledAccounts = append(enabledAccounts, email)
 				}
 
 				// Fetch calendar events
@@ -751,12 +751,11 @@ func getCalendarAvailabilities(c *gin.Context) {
 	authUser := utils.GetAuthUser(c)
 	for userId, calendarEvents := range userIdToCalendarEvents {
 		// Construct enabled calendar ids set
-		enabledCalendarIds := utils.ArrayToSet(
-			utils.Map(
-				utils.Coalesce(event.Responses[userId].EnabledCalendars),
-				func(e models.EnabledCalendar) string { return e.CalendarId },
-			),
-		)
+		enabledCalendarIdsArr := make([]string, 0)
+		for _, calendarIds := range utils.Coalesce(event.Responses[userId].EnabledCalendars) {
+			enabledCalendarIdsArr = append(enabledCalendarIdsArr, calendarIds...)
+		}
+		enabledCalendarIds := utils.ArrayToSet(enabledCalendarIdsArr)
 
 		// Update calendar events
 		updatedCalendarEvents := make([]models.CalendarEvent, 0)

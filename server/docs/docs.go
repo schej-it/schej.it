@@ -617,9 +617,12 @@ var doc = `{
                                             }
                                         },
                                         "enabledCalendars": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.EnabledCalendar"
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
                                             }
                                         },
                                         "guest": {
@@ -1211,17 +1214,6 @@ var doc = `{
                 }
             }
         },
-        "models.EnabledCalendar": {
-            "type": "object",
-            "properties": {
-                "calendarId": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Event": {
             "type": "object",
             "properties": {
@@ -1324,9 +1316,13 @@ var doc = `{
                     "type": "string"
                 },
                 "enabledCalendars": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.EnabledCalendar"
+                    "description": "Maps email to an array of sub calendar ids",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 },
                 "name": {

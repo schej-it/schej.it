@@ -1,6 +1,8 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type EventType string
 
@@ -44,13 +46,8 @@ type Response struct {
 	Availability []primitive.DateTime `json:"availability" bson:"availability"`
 
 	// Calendar availability variables for Availability Groups feature
-	UseCalendarAvailability *bool              `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
-	EnabledCalendars        *[]EnabledCalendar `json:"enabledCalendars" bson:"enabledCalendars,omitempty"`
-}
-
-type EnabledCalendar struct {
-	Email      string `json:"email" bson:"email,omitempty"`
-	CalendarId string `json:"calendarId" bson:"calendarId,omitempty"`
+	UseCalendarAvailability *bool                `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
+	EnabledCalendars        *map[string][]string `json:"enabledCalendars" bson:"enabledCalendars,omitempty"` // Maps email to an array of sub calendar ids
 }
 
 // Object containing information associated with the remindee

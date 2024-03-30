@@ -100,20 +100,18 @@ export default {
     },
 
     acceptInvitation() {
-      const payload = { useCalendarAvailability: true, enabledCalendars: [] }
+      const payload = { useCalendarAvailability: true, enabledCalendars: {} }
 
       /** Determine which sub calendars are enabled - same code can be used for submitAvailability in scheduleOverlap.vue */
       for (const email in this.calendarAccounts) {
         if (this.calendarAccounts[email].enabled) {
+          payload.enabledCalendars[email] = []
           for (const subCalendarId in this.calendarAccounts[email]
             .subCalendars) {
             if (
               this.calendarAccounts[email].subCalendars[subCalendarId].enabled
             ) {
-              payload.enabledCalendars.push({
-                email,
-                calendarId: subCalendarId,
-              })
+              payload.enabledCalendars[email].push(subCalendarId)
             }
           }
         }

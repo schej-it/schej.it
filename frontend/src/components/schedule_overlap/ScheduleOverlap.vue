@@ -541,16 +541,11 @@ export default {
           if (!enabledCalendars) continue
 
           // Check if the current calendar account is enabled
-          const calendarAccountEnabled =
-            enabledCalendars.findIndex((ec) => ec.email === id) !== -1
+          const calendarAccountEnabled = id in enabledCalendars
           if (!calendarAccountEnabled) continue
 
           // Create enabled sub calendars set
-          for (const enabledCalendar of enabledCalendars) {
-            if (enabledCalendar.email === id) {
-              enabledSubCalendarsSet.add(enabledCalendar.calendarId)
-            }
-          }
+          enabledSubCalendarsSet = new Set(enabledCalendars[id])
         } else {
           // Check if authUser has the calendarAccount enabled in all other event types
           if (!this.authUser.calendarAccounts[id].enabled) continue
