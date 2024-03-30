@@ -12,7 +12,7 @@
       class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-off-white tw-pb-1 tw-align-middle"
     >
       <div class="tw-font-medium">My calendars</div>
-      <v-btn v-if="!asInput" @click="addCalendarAccount" icon
+      <v-btn v-if="allowAddCalendarAccount" @click="addCalendarAccount" icon
         ><v-icon class="tw-text-very-dark-gray">mdi-plus</v-icon></v-btn
       >
     </div>
@@ -20,7 +20,7 @@
       <CalendarAccount
         v-for="account in calendarAccounts"
         :key="account.email"
-        asInput
+        :syncWithBackend="syncWithBackend"
         :toggleState="toggleState"
         :account="account"
         :eventId="eventId"
@@ -28,8 +28,12 @@
         :calendarEventsMap="calendarEventsMap"
         :removeDialog="removeDialog"
         :selectedRemoveEmail="selectedRemoveEmail"
-        @toggleCalendarAccount="(payload) => $emit('toggleCalendarAccount', payload)"
-        @toggleSubCalendarAccount="(payload) => $emit('toggleSubCalendarAccount', payload)"
+        @toggleCalendarAccount="
+          (payload) => $emit('toggleCalendarAccount', payload)
+        "
+        @toggleSubCalendarAccount="
+          (payload) => $emit('toggleSubCalendarAccount', payload)
+        "
       ></CalendarAccount>
     </div>
     <v-dialog v-model="removeDialog" width="500" persistent>
@@ -62,7 +66,8 @@ export default {
     toggleState: { type: Boolean, default: false },
     eventId: { type: String, default: "" },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
-    asInput: { type: Boolean, default: false },
+    syncWithBackend: { type: Boolean, default: true }, // Whether toggling calendar accounts also updates the backend
+    allowAddCalendarAccount: { type: Boolean, default: true }, // Whether to allow user to add a new calendar account
   },
 
   data: () => ({

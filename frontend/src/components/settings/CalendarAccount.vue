@@ -110,7 +110,7 @@ export default {
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
     removeDialog: { type: Boolean, default: false },
     selectedRemoveEmail: { type: String, default: "" },
-    asInput: { type: Boolean, default: false },
+    syncWithBackend: { type: Boolean, default: true },
   },
 
   data: () => ({
@@ -160,13 +160,7 @@ export default {
       })
     },
     toggleSubCalendarAccount(enabled, subCalendarId) {
-      if (this.asInput)
-        this.$emit("toggleSubCalendarAccount", {
-          email: this.account.email,
-          enabled,
-          subCalendarId,
-        })
-      else {
+      if (this.syncWithBackend) {
         post(`/user/toggle-sub-calendar`, {
           email: this.account.email,
           enabled,
@@ -176,17 +170,18 @@ export default {
             "There was a problem with toggling your calendar account! Please try again later."
           )
         })
+      } else {
+        this.$emit("toggleSubCalendarAccount", {
+          email: this.account.email,
+          enabled,
+          subCalendarId,
+        })
       }
     },
     toggleCalendarAccount(enabled) {
       if (!enabled) this.showSubCalendars = false
 
-      if (this.asInput)
-        this.$emit("toggleCalendarAccount", {
-          email: this.account.email,
-          enabled,
-        })
-      else {
+      if (this.syncWithBackend) {
         post(`/user/toggle-calendar`, {
           email: this.account.email,
           enabled,
@@ -194,6 +189,11 @@ export default {
           this.showError(
             "There was a problem with toggling your calendar account! Please try again later."
           )
+        })
+      } else {
+        this.$emit("toggleCalendarAccount", {
+          email: this.account.email,
+          enabled,
         })
       }
     },
