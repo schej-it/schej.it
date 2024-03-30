@@ -358,7 +358,7 @@ func getEvent(c *gin.Context) {
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
-		Availability []primitive.DateTime `json:"availability" binding:"required"`
+		Availability []primitive.DateTime `json:"availability"`
 		Guest        *bool                `json:"guest" binding:"required"`
 		Name         string               `json:"name"`
 

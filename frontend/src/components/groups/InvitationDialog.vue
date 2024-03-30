@@ -100,7 +100,11 @@ export default {
     },
 
     acceptInvitation() {
-      const payload = { useCalendarAvailability: true, enabledCalendars: {} }
+      const payload = {
+        guest: false,
+        useCalendarAvailability: true,
+        enabledCalendars: {},
+      }
 
       /** Determine which sub calendars are enabled - same code can be used for submitAvailability in scheduleOverlap.vue */
       for (const email in this.calendarAccounts) {
