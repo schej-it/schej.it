@@ -114,7 +114,8 @@
                           (editing || alwaysShowCalendarEvents)
                         "
                       >
-                        <v-fade-transition
+                        <transition
+                          :name="isGroup ? '' : 'fade-transition'"
                           v-for="event in calendarEventsByDay[
                             d + page * maxDaysPerPage
                           ]"
@@ -151,7 +152,7 @@
                               </div>
                             </div>
                           </div>
-                        </v-fade-transition>
+                        </transition>
                       </div>
 
                       <!-- Scheduled event -->
@@ -1626,7 +1627,14 @@ export default {
     nextPage(e) {
       e.stopImmediatePropagation()
       if (this.event.type === eventTypes.GROUP) {
-        this.$emit("update:weekOffset", this.weekOffset + 1)
+        // Go to next page if there are still more days left to see
+        // Otherwise, update week offset
+        if ((this.page + 1) * this.maxDaysPerPage < this.event.dates.length) {
+          this.page++
+        } else {
+          this.page = 0
+          this.$emit("update:weekOffset", this.weekOffset + 1)
+        }
       } else {
         this.page++
       }
@@ -1634,7 +1642,15 @@ export default {
     prevPage(e) {
       e.stopImmediatePropagation()
       if (this.event.type === eventTypes.GROUP) {
-        this.$emit("update:weekOffset", this.weekOffset - 1)
+        // Go to prev page if there is a prev page
+        // Otherwise, update week offset
+        if (this.page > 0) {
+          this.page--
+        } else {
+          this.page =
+            Math.ceil(this.event.dates.length / this.maxDaysPerPage) - 1
+          this.$emit("update:weekOffset", this.weekOffset - 1)
+        }
       } else {
         this.page--
       }

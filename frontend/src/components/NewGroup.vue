@@ -123,7 +123,14 @@
 </template>
 
 <script>
-import { validateEmail, isPhone, post, put, timeNumToTimeString } from "@/utils"
+import {
+  validateEmail,
+  isPhone,
+  post,
+  put,
+  timeNumToTimeString,
+  dateToTimeNum,
+} from "@/utils"
 import { mapState, mapActions } from "vuex"
 import { eventTypes, dayIndexToDayString } from "@/constants"
 import HelpDialog from "./HelpDialog.vue"

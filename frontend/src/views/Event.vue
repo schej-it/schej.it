@@ -20,6 +20,7 @@
     <!-- Edit event dialog -->
     <NewDialog
       v-model="editEventDialog"
+      :type="isGroup ? 'group' : 'event'"
       :event="event"
       :contactsPayload="contactsPayload"
       edit
