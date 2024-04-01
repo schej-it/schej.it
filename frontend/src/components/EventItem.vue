@@ -179,7 +179,7 @@ export default {
         eventName: this.duplicateDialogOptions.name,
         copyAvailability: this.duplicateDialogOptions.copyAvailability,
       })
-        .then(({ eventId }) => {
+        .then(({ eventId, shortId }) => {
           this.getEvents()
           this.$refs.menu.save() // NOTE: Not sure why but without this line, the menu persists to the next event.
 

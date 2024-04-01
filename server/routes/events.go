@@ -593,11 +593,15 @@ func duplicateEvent(c *gin.Context) {
 	}
 
 	// Update event
-	event.Id = primitive.NilObjectID
+	event.Id = primitive.NewObjectID()
 	event.Name = payload.EventName
 	if !*payload.CopyAvailability {
 		event.Responses = make(map[string]*models.Response)
 	}
+
+	// Generate short id
+	shortId := db.GenerateShortEventId(event.Id)
+	event.ShortId = &shortId
 
 	// Insert new event
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -606,7 +610,7 @@ func duplicateEvent(c *gin.Context) {
 	}
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
-	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId, "shortId": shortId})
 }
 
 // @Summary [UNUSED] Adds an attendee to the event's list of attendees
