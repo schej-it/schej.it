@@ -665,12 +665,9 @@ func declineInvite(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Check if user is in attendees array
-	index := -1
-	for i, attendee := range utils.Coalesce(event.Attendees) {
-		if user.Email == attendee.Email {
-			index = i
-		}
-	}
+	index := utils.Find(utils.Coalesce(event.Attendees), func(a models.Attendee) bool {
+		return user.Email == a.Email
+	})
 	if index == -1 {
 		// User not in attendees array
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.AttendeeEmailNotFound})

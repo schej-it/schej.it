@@ -87,7 +87,8 @@ func updateName(c *gin.Context) {
 // @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
-	userId := utils.GetAuthUser(c).Id
+	user := utils.GetAuthUser(c)
+	userId := user.Id
 
 	// Get the events associated with the current user
 	events := make([]models.Event, 0)
@@ -96,6 +97,7 @@ func getEvents(c *gin.Context) {
 		"$or": bson.A{
 			bson.M{"ownerId": userId},
 			bson.M{"responses." + userId.Hex(): bson.M{"$exists": true}},
+			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
 		},
 	}, opts)
 	if err != nil {
