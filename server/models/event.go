@@ -12,6 +12,7 @@ const (
 // Representation of an Event in the mongoDB database
 type Event struct {
 	Id      primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	ShortId string             `json:"shortId" bson:"shortId,omitempty"`
 	OwnerId primitive.ObjectID `json:"ownerId" bson:"ownerId,omitempty"`
 	Name    string             `json:"name" bson:"name,omitempty"`
 
