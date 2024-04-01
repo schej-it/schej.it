@@ -412,7 +412,7 @@ export default {
       signInGoogle({
         state: {
           type: authTypes.EVENT_CONTACTS,
-          eventId: this.event ? this.event._id : "",
+          eventId: this.event ? this.event.shortId ?? this.event._id : "",
           payload,
         },
         requestContactsPermission: true,
