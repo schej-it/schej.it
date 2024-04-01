@@ -1,5 +1,7 @@
 <template>
-  <router-link :to="{ name: 'event', params: { eventId: event._id } }">
+  <router-link
+    :to="{ name: 'event', params: { eventId: event.shortId ?? event._id } }"
+  >
     <v-container
       v-ripple
       class="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"

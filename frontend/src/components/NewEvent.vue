@@ -330,10 +330,13 @@ export default {
           remindees,
           type,
         })
-          .then(({ eventId }) => {
+          .then(({ eventId, shortId }) => {
             this.$router.push({
               name: "event",
-              params: { eventId, initialTimezone: this.timezone },
+              params: {
+                eventId: shortId ?? eventId,
+                initialTimezone: this.timezone,
+              },
             })
 
             this.loading = false

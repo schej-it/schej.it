@@ -15,6 +15,7 @@ import (
 	"schej.it/server/utils"
 )
 
+// Returns a user based on their _id
 func GetUserById(userId string) *models.User {
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
@@ -38,6 +39,7 @@ func GetUserById(userId string) *models.User {
 	return &user
 }
 
+// Returns an event based on its _id
 func GetEventById(eventId string) *models.Event {
 	objectId, err := primitive.ObjectIDFromHex(eventId)
 	if err != nil {
@@ -61,6 +63,7 @@ func GetEventById(eventId string) *models.Event {
 	return &event
 }
 
+// Returns an event based on its shortId
 func GetEventByShortId(shortEventId string) *models.Event {
 	result := EventsCollection.FindOne(context.Background(), bson.M{
 		"shortId": shortEventId,
@@ -77,6 +80,15 @@ func GetEventByShortId(shortEventId string) *models.Event {
 	}
 
 	return &event
+}
+
+// Returns an event by either its _id or shortId
+func GetEventByEitherId(id string) *models.Event {
+	if len(id) <= 10 {
+		return GetEventByShortId(id)
+	}
+
+	return GetEventById(id)
 }
 
 func GetFriendRequestById(friendRequestId string) *models.FriendRequest {

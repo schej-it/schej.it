@@ -81,6 +81,10 @@ func createEvent(c *gin.Context) {
 		Responses:            make(map[string]*models.Response),
 	}
 
+	// Generate short id
+	shortId := db.GenerateShortEventId(event.Id)
+	event.ShortId = &shortId
+
 	// Schedule reminder emails if remindees array is not empty
 	if len(payload.Remindees) > 0 {
 		// Determine owner name
@@ -121,7 +125,7 @@ func createEvent(c *gin.Context) {
 
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
 
-	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId, "shortId": event.ShortId})
 }
 
 // @Summary Edits an event based on its id
@@ -151,7 +155,7 @@ func editEvent(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 
 	// If user logged in, set owner id to their user id, otherwise set owner id to nil
 	session := sessions.Default(c)
@@ -267,7 +271,7 @@ func editEvent(c *gin.Context) {
 // @Router /events/{eventId} [get]
 func getEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
@@ -310,7 +314,7 @@ func updateEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 
 	var response models.Response
 	var userIdString string
@@ -409,7 +413,7 @@ func deleteEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 
 	var userToDelete string
 	if *payload.Guest {
@@ -466,7 +470,7 @@ func userResponded(c *gin.Context) {
 
 	// Fetch event
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 
 	// Update responded boolean for the given email
 	index := utils.Find(event.Remindees, func(r models.Remindee) bool {
@@ -576,7 +580,7 @@ func duplicateEvent(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Get event
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 	if event == nil {
 		c.Status(http.StatusBadRequest)
 		return
