@@ -168,7 +168,13 @@ export default {
     },
     query() {
       if (this.query && this.query.length > 0) {
-        this.searchContacts()
+        const pureEmail = this.query.substring(0, this.query.length - 1)
+        if (this.query[this.query.length - 1] == " " && validateEmail(pureEmail)) {
+          if (!this.remindees.includes(pureEmail)) this.remindees.push(pureEmail)
+          this.query = ""
+        } else {
+          this.searchContacts()
+        }
       } else {
         clearTimeout(this.timeout)
         this.searchedContacts = []

@@ -13,11 +13,13 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 	eventInfoText := fmt.Sprintf(
 		"*Name*: %s\n"+
 			"*Event url*: https://schej.it/e/%s\n"+
+			"*Short url*: https://schej.it/e/%s\n"+
 			"*Creator*: %s\n"+
 			"*Num days*: %v\n"+
 			"*Type*: %s",
 		event.Name,
 		insertedId,
+		utils.Coalesce(event.ShortId),
 		creator,
 		len(event.Dates),
 		event.Type,

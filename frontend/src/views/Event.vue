@@ -365,7 +365,7 @@ export default {
     copyLink() {
       /* Copies event link to clipboard */
       navigator.clipboard.writeText(
-        `${window.location.origin}/e/${this.eventId}`
+        `${window.location.origin}/e/${this.event.shortId ?? this.event._id}`
       )
       this.showInfo("Link copied to clipboard!")
     },

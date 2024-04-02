@@ -14,7 +14,7 @@
     "dayjs": "^1.11.10",
     "html2canvas": "^1.4.1",
     "is-ua-webview": "^1.1.2",
-    "posthog-js": "^1.108.0",
+    "posthog-js": "^1.116.6",
     "register-service-worker": "^1.7.2",
     "spacetime": "^7.5.0",
     "ua-parser-js": "^1.0.37",

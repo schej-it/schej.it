@@ -90,6 +90,10 @@ func createEvent(c *gin.Context) {
 		Responses:            make(map[string]*models.Response),
 	}
 
+	// Generate short id
+	shortId := db.GenerateShortEventId(event.Id)
+	event.ShortId = &shortId
+
 	// Schedule reminder emails if remindees array is not empty
 	if len(payload.Remindees) > 0 {
 		// Determine owner name
@@ -174,7 +178,7 @@ func createEvent(c *gin.Context) {
 	}
 	slackbot.SendEventCreatedMessage(insertedId, creator, event)
 
-	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId, "shortId": event.ShortId})
 }
 
 // @Summary Edits an event based on its id
@@ -204,7 +208,7 @@ func editEvent(c *gin.Context) {
 	}
 
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -244,11 +248,11 @@ func editEvent(c *gin.Context) {
 
 		// Determine owner name
 		var ownerName string
-		if event.OwnerId != primitive.NilObjectID {
+		if event.OwnerId == primitive.NilObjectID {
+			ownerName = "Somebody"
+		} else {
 			owner := db.GetUserById(event.OwnerId.Hex())
 			ownerName = owner.FirstName
-		} else {
-			ownerName = "Somebody"
 		}
 
 		for _, keptEmail := range kept {
@@ -337,7 +341,7 @@ func editEvent(c *gin.Context) {
 // @Router /events/{eventId} [get]
 func getEvent(c *gin.Context) {
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
@@ -391,7 +395,7 @@ func updateEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -496,7 +500,7 @@ func deleteEventResponse(c *gin.Context) {
 	}
 	session := sessions.Default(c)
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -571,7 +575,7 @@ func userResponded(c *gin.Context) {
 
 	// Fetch event
 	eventId := c.Param("eventId")
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 	if event == nil {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
@@ -846,7 +850,7 @@ func duplicateEvent(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Get event
-	event := db.GetEventById(eventId)
+	event := db.GetEventByEitherId(eventId)
 	if event == nil {
 		c.Status(http.StatusBadRequest)
 		return
@@ -859,11 +863,15 @@ func duplicateEvent(c *gin.Context) {
 	}
 
 	// Update event
-	event.Id = primitive.NilObjectID
+	event.Id = primitive.NewObjectID()
 	event.Name = payload.EventName
 	if !*payload.CopyAvailability {
 		event.Responses = make(map[string]*models.Response)
 	}
+
+	// Generate short id
+	shortId := db.GenerateShortEventId(event.Id)
+	event.ShortId = &shortId
 
 	// Insert new event
 	result, err := db.EventsCollection.InsertOne(context.Background(), event)
@@ -872,5 +880,5 @@ func duplicateEvent(c *gin.Context) {
 	}
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
-	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId})
+	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId, "shortId": shortId})
 }

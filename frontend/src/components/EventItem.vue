@@ -1,5 +1,10 @@
 <template>
-  <router-link :to="{ name: linkTo, params: isGroup ? { groupId: event._id } : { eventId: event._id } }">
+  <router-link
+    :to="{
+      name: linkTo,
+      params: { [isGroup ? 'groupId' : 'eventId']: event.shortId ?? event._id },
+    }"
+  >
     <v-container
       v-ripple
       class="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
@@ -193,7 +198,7 @@ export default {
         eventName: this.duplicateDialogOptions.name,
         copyAvailability: this.duplicateDialogOptions.copyAvailability,
       })
-        .then(({ eventId }) => {
+        .then(({ eventId, shortId }) => {
           this.getEvents()
           this.$refs.menu.save() // NOTE: Not sure why but without this line, the menu persists to the next event.
 

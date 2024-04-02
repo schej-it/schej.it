@@ -211,7 +211,6 @@ export default {
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
-    inDialog: { type: Boolean, default: true },
     showHelp: { type: Boolean, default: false },
   },
 
@@ -370,10 +369,13 @@ export default {
           remindees,
           type,
         })
-          .then(({ eventId }) => {
+          .then(({ eventId, shortId }) => {
             this.$router.push({
               name: "event",
-              params: { eventId, initialTimezone: this.timezone },
+              params: {
+                eventId: shortId ?? eventId,
+                initialTimezone: this.timezone,
+              },
             })
 
             this.$emit("input", false)
@@ -438,7 +440,7 @@ export default {
 
       const openScrollEl = this.$refs.advancedOpenScrollTo
 
-      if (this.inDialog && openScrollEl && this.showAdvancedOptions) {
+      if (this.dialog && openScrollEl && this.showAdvancedOptions) {
         setTimeout(
           () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
           delayed ? 500 : 200
@@ -454,7 +456,7 @@ export default {
       signInGoogle({
         state: {
           type: authTypes.EVENT_CONTACTS,
-          eventId: this.event ? this.event._id : "",
+          eventId: this.event ? this.event.shortId ?? this.event._id : "",
           payload,
         },
         requestContactsPermission: true,

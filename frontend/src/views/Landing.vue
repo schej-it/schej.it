@@ -15,7 +15,7 @@
             alt="schej Logo"
             class="shrink tw-cursor-pointer"
             contain
-            src="@/assets/schej_logo_with_text.png"
+            src="@/assets/april_fools_logo.png"
             transition="scale-transition"
             :width="logoWidth"
           />
@@ -48,7 +48,7 @@
               >
                 Let's schej it!
               </div>
-              <div class="-tw-mt-1 tw-leading-snug">Find a time to meet</div>
+              <div class="-tw-mt-1 tw-leading-snug">a better when2meet</div>
             </div>
 
             <div
@@ -74,7 +74,7 @@
           <div>
             <v-img
               alt="schej character"
-              src="@/assets/schejie_hand.png"
+              src="@/assets/schejie/wave.png"
               :height="isPhone ? 70 : 80"
               transition="fade-transition"
               contain
@@ -88,7 +88,7 @@
         <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col">
           <!-- <v-img
             alt="schej character"
-            src="@/assets/schejie_hand.png"
+            src="@/assets/schejie/wave.png"
             :height="90"
             transition="fade-transition"
             contain
@@ -112,7 +112,6 @@
           </v-slide-y-reverse-transition>
           <NewEvent
             class="tw-drop-shadow-lg"
-            :inDialog="false"
             :dialog="false"
             :allow-notifications="false"
           />
@@ -339,7 +338,7 @@ export default {
       return isPhone(this.$vuetify)
     },
     logoWidth() {
-      return 90
+      return this.isPhone ? 200 : 300
     },
   },
 

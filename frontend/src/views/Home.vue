@@ -6,7 +6,7 @@
     <v-fade-transition>
       <div
         class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
-        v-if="!loading && events"
+        v-if="!loading || eventsNotEmpty"
       >
         <EventType
           :eventType="availabilityGroups"
@@ -87,9 +87,7 @@ export default {
       ]
     },
     createdEventsNonGroup() {
-      return this.createdEvents.filter(
-        (e) => e.type !== eventTypes.GROUP
-      )
+      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
     },
     availabilityGroups() {
       return {
@@ -98,6 +96,13 @@ export default {
           .filter((e) => e.type === eventTypes.GROUP)
           .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP)),
       }
+    },
+    eventsNotEmpty() {
+      return (
+        this.createdEvents.length > 0 ||
+        this.joinedEvents.length > 0 ||
+        this.weeklyEvents.length > 0
+      )
     },
   },
 
