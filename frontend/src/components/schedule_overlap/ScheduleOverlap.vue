@@ -76,7 +76,7 @@
                     <!-- Loader -->
                     <div
                       v-if="
-                        (alwaysShowCalendarEvents || editing) &&
+                        (isGroup || alwaysShowCalendarEvents || editing) &&
                         loadingCalendarEvents
                       "
                       class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
@@ -111,7 +111,9 @@
                       <div
                         v-if="
                           !loadingCalendarEvents &&
-                          (editing || alwaysShowCalendarEvents)
+                          (editing ||
+                            alwaysShowCalendarEvents ||
+                            showCalendarEvents)
                         "
                       >
                         <transition
@@ -323,6 +325,7 @@
                   :respondents="respondents"
                   :isOwner="isOwner"
                   :isGroup="isGroup"
+                  :showCalendarEvents.sync="showCalendarEvents"
                   @mouseOverRespondent="mouseOverRespondent"
                   @mouseLeaveRespondent="mouseLeaveRespondent"
                   @clickRespondent="clickRespondent"
@@ -341,6 +344,7 @@
               :respondents="respondents"
               :isOwner="isOwner"
               :isGroup="isGroup"
+              :showCalendarEvents.sync="showCalendarEvents"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
@@ -491,6 +495,7 @@ export default {
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
       deleteAvailabilityDialog: false,
+      showCalendarEvents: false,
 
       /* Variables for scrolling */
       calendarScrollLeft: 0, // The current scroll position of the calendar

@@ -137,7 +137,6 @@
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
-        :always-show-calendar-events="isGroup"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"

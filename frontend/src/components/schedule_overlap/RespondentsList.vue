@@ -120,6 +120,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <div v-if="isGroup">
+      <v-checkbox
+        :input-value="showCalendarEvents"
+        @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
+        hide-details
+      >
+        <template v-slot:label>
+          <div class="tw-text-sm">Show calendar events</div>
+        </template>
+      </v-checkbox>
+    </div>
   </div>
 </template>
 
@@ -143,6 +155,7 @@ export default {
     isOwner: { type: Boolean, required: true },
     maxHeight: { type: Number },
     isGroup: { type: Boolean, required: true },
+    showCalendarEvents: { type: Boolean, required: true },
   },
 
   data() {
