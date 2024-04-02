@@ -17,9 +17,9 @@
             alt="Schej Logo"
             class="shrink tw-cursor-pointer"
             contain
-            src="@/assets/schej_logo_with_text.png"
+            src="@/assets/april_fools_logo.png"
             transition="scale-transition"
-            :width="isPhone ? 70 : 90"
+            :width="isPhone ? 200 : 300"
           />
         </router-link>
 

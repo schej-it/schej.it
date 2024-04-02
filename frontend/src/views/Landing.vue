@@ -15,7 +15,7 @@
             alt="schej Logo"
             class="shrink tw-cursor-pointer"
             contain
-            src="@/assets/schej_logo_with_text.png"
+            src="@/assets/april_fools_logo.png"
             transition="scale-transition"
             :width="logoWidth"
           />
@@ -48,7 +48,7 @@
               >
                 Let's schej it!
               </div>
-              <div class="-tw-mt-1 tw-leading-snug">Find a time to meet</div>
+              <div class="-tw-mt-1 tw-leading-snug">a better when2meet</div>
             </div>
 
             <div
@@ -338,7 +338,7 @@ export default {
       return isPhone(this.$vuetify)
     },
     logoWidth() {
-      return 90
+      return this.isPhone ? 200 : 300
     },
   },
 
