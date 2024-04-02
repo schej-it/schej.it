@@ -13,14 +13,7 @@
         class="tw-relative tw-m-auto tw-flex tw-h-full tw-max-w-6xl tw-items-center tw-justify-center tw-px-4"
       >
         <router-link :to="{ name: 'home' }">
-          <v-img
-            alt="Schej Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="@/assets/april_fools_logo.png"
-            transition="scale-transition"
-            :width="isPhone ? 200 : 300"
-          />
+          <Logo type="schej" />
         </router-link>
 
         <v-spacer />
@@ -99,11 +92,12 @@ html {
 
 <script>
 import { mapMutations, mapState } from "vuex"
-import { get, getLocation, isPhone, post, signInGoogle } from "./utils"
-import { authTypes } from "./constants"
+import { get, getLocation, isPhone, post, signInGoogle } from "@/utils"
+import { authTypes } from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
-import AuthUserMenu from "./components/AuthUserMenu.vue"
-import SignInNotSupportedDialog from "./components/SignInNotSupportedDialog.vue"
+import AuthUserMenu from "@/components/AuthUserMenu.vue"
+import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
+import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
 
@@ -121,6 +115,7 @@ export default {
     AuthUserMenu,
     SignInNotSupportedDialog,
     NewDialog,
+    Logo,
   },
 
   data: () => ({
