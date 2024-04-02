@@ -81,7 +81,10 @@
                       "
                       class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                     >
-                      <v-progress-circular class="tw-text-blue" indeterminate />
+                      <v-progress-circular
+                        class="tw-text-green"
+                        indeterminate
+                      />
                     </div>
 
                     <div

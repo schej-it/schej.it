@@ -61,7 +61,24 @@
           </div>
           <v-spacer />
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
-            <div v-if="!isGroup">
+            <div v-if="isGroup">
+              <v-btn
+                :icon="isPhone"
+                :outlined="!isPhone"
+                class="tw-text-green"
+                @click="refreshCalendar"
+                :loading="loading"
+              >
+                <v-icon class="tw-mr-1 tw-text-green" v-if="!isPhone"
+                  >mdi-refresh</v-icon
+                >
+                <span v-if="!isPhone" class="tw-mr-2 tw-text-green"
+                  >Refresh</span
+                >
+                <v-icon class="tw-text-green" v-else>mdi-refresh</v-icon>
+              </v-btn>
+            </div>
+            <div v-else>
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
@@ -80,7 +97,7 @@
             <div v-if="!isPhone" class="tw-flex tw-w-40">
               <template v-if="!isEditing">
                 <v-btn
-                  v-if="!authUser && selectedGuestRespondent"
+                  v-if="!isGroup && !authUser && selectedGuestRespondent"
                   min-width="10.25rem"
                   class="tw-bg-green tw-text-white tw-transition-opacity"
                   :style="{ opacity: availabilityBtnOpacity }"
@@ -171,7 +188,7 @@
       <template v-if="!isEditing">
         <v-spacer />
         <v-btn
-          v-if="!authUser && selectedGuestRespondent"
+          v-if="!isGroup && !authUser && selectedGuestRespondent"
           outlined
           class="tw-bg-white tw-text-green tw-transition-opacity"
           :style="{ opacity: availabilityBtnOpacity }"
@@ -187,7 +204,13 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
         >
-          {{ userHasResponded ? "Edit availability" : "Add availability" }}
+          {{
+            isGroup
+              ? "Edit calendars"
+              : userHasResponded
+              ? "Edit availability"
+              : "Add availability"
+          }}
         </v-btn>
       </template>
       <template v-else>
@@ -534,6 +557,23 @@ export default {
         })
     },
 
+    /** Refreshes calendar avaliabilities and fetches current user calendar events */
+    refreshCalendar() {
+      const promises = []
+      promises.push(this.fetchCalendarAvailabilities())
+      promises.push(this.fetchAuthUserCalendarEvents())
+
+      const curWeekOffset = this.weekOffset
+      this.loading = true
+      Promise.allSettled(promises).then(() => {
+        // Only set loading to false if promises resolved at the same week offset they were fetched at
+        // i.e. no new promises are currently being run
+        if (curWeekOffset === this.weekOffset) {
+          this.loading = false
+        }
+      })
+    },
+
     onBeforeUnload(e) {
       if (this.areUnsavedChanges) {
         e.preventDefault()
@@ -593,19 +633,7 @@ export default {
       }
     },
     weekOffset() {
-      const promises = []
-      promises.push(this.fetchCalendarAvailabilities())
-      promises.push(this.fetchAuthUserCalendarEvents())
-
-      const curWeekOffset = this.weekOffset
-      this.loading = true
-      Promise.allSettled(promises).then(() => {
-        // Only set loading to false if promises resolved at the same week offset they were fetched at
-        // i.e. no new promises are currently being run
-        if (curWeekOffset === this.weekOffset) {
-          this.loading = false
-        }
-      })
+      this.refreshCalendar()
     },
   },
 }
