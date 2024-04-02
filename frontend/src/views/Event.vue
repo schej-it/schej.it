@@ -390,8 +390,8 @@ export default {
       /* Show edit event dialog */
       this.editEventDialog = true
     },
+    /** Refresh event details */
     async refreshEvent() {
-      /* Refresh event details */
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
