@@ -11,14 +11,7 @@
       <!-- Header -->
       <div class="tw-mb-16">
         <div class="tw-flex tw-items-center tw-px-5 tw-pt-5">
-          <v-img
-            alt="schej Logo"
-            class="shrink tw-cursor-pointer"
-            contain
-            src="@/assets/april_fools_logo.png"
-            transition="scale-transition"
-            :width="logoWidth"
-          />
+          <Logo type="schej" />
 
           <v-spacer />
 
@@ -48,7 +41,7 @@
               >
                 Let's schej it!
               </div>
-              <div class="-tw-mt-1 tw-leading-snug">a better when2meet</div>
+              <div class="-tw-mt-1 tw-leading-snug">Find a time to meet</div>
             </div>
 
             <div
@@ -277,6 +270,7 @@ import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
 import NewEventDialog from "@/components/NewEventDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
+import Logo from "@/components/Logo.vue"
 import { Rive } from "@rive-app/canvas"
 import GithubButton from "vue-github-button"
 
@@ -293,6 +287,7 @@ export default {
     NewEventDialog,
     LandingPageHeader,
     GithubButton,
+    Logo,
   },
 
   data: () => ({
@@ -336,9 +331,6 @@ export default {
   computed: {
     isPhone() {
       return isPhone(this.$vuetify)
-    },
-    logoWidth() {
-      return this.isPhone ? 200 : 300
     },
   },
 
