@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +15,7 @@ import (
 	"schej.it/server/utils"
 )
 
+// Returns a user based on their _id
 func GetUserById(userId string) *models.User {
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
@@ -37,6 +39,7 @@ func GetUserById(userId string) *models.User {
 	return &user
 }
 
+// Returns an event based on its _id
 func GetEventById(eventId string) *models.Event {
 	objectId, err := primitive.ObjectIDFromHex(eventId)
 	if err != nil {
@@ -58,6 +61,34 @@ func GetEventById(eventId string) *models.Event {
 	}
 
 	return &event
+}
+
+// Returns an event based on its shortId
+func GetEventByShortId(shortEventId string) *models.Event {
+	result := EventsCollection.FindOne(context.Background(), bson.M{
+		"shortId": shortEventId,
+	})
+	if result.Err() == mongo.ErrNoDocuments {
+		// Event does not exist!
+		return nil
+	}
+
+	// Decode result
+	var event models.Event
+	if err := result.Decode(&event); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	return &event
+}
+
+// Returns an event by either its _id or shortId
+func GetEventByEitherId(id string) *models.Event {
+	if len(id) <= 10 {
+		return GetEventByShortId(id)
+	}
+
+	return GetEventById(id)
 }
 
 func GetFriendRequestById(friendRequestId string) *models.FriendRequest {
@@ -201,4 +232,35 @@ func UpdateDailyUserLog(user *models.User) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+}
+
+// Returns a random unique short event id seeded by the actual event id
+func GenerateShortEventId(eventId primitive.ObjectID) string {
+	r := rand.New(rand.NewSource(eventId.Timestamp().Unix()))
+
+	id := ""
+
+	letters := "23456789ABCDEFabcdef"
+	for i := 0; i < 5; i++ {
+		index := r.Intn(len(letters))
+		letter := letters[index : index+1]
+		id += letter
+	}
+
+	i := 0
+	event := GetEventByShortId(id)
+	for event != nil && i < 5 {
+		// Event exists, keep on adding letters until event doesn't exist anymore, max of 5 more letters
+		index := r.Intn(len(letters))
+		letter := letters[index : index+1]
+		id += letter
+		event = GetEventByShortId(id)
+		i++
+	}
+
+	if event != nil {
+		logger.StdErr.Panicln("Couldn't generate unique id")
+	}
+
+	return id
 }

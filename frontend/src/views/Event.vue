@@ -18,7 +18,12 @@
     />
 
     <!-- Edit event dialog -->
-    <NewEventDialog v-model="editEventDialog" :event="event" :contactsPayload="contactsPayload" edit-event />
+    <NewEventDialog
+      v-model="editEventDialog"
+      :event="event"
+      :contactsPayload="contactsPayload"
+      edit-event
+    />
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
@@ -63,7 +68,7 @@
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
-            <div v-if="!isPhone" class="tw-w-40 tw-flex">
+            <div v-if="!isPhone" class="tw-flex tw-w-40">
               <template v-if="!isEditing">
                 <v-btn
                   v-if="!authUser && selectedGuestRespondent"
@@ -147,7 +152,7 @@
     <!-- Bottom bar for phones -->
     <div
       v-if="isPhone"
-      class="tw-fixed tw-bottom-0 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4 tw-z-20"
+      class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
     >
       <template v-if="!isEditing">
         <v-spacer />
@@ -210,7 +215,7 @@ export default {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
     initialTimezone: { type: Object, default: () => ({}) },
-    contactsPayload: {type: Object, default: () => ({})},
+    contactsPayload: { type: Object, default: () => ({}) },
   },
 
   components: {
@@ -239,10 +244,10 @@ export default {
 
     availabilityBtnOpacity: 1,
   }),
-  
+
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
-    this.editEventDialog = Object.keys(this.contactsPayload).length > 0;
+    this.editEventDialog = Object.keys(this.contactsPayload).length > 0
   },
 
   computed: {
@@ -310,7 +315,7 @@ export default {
     copyLink() {
       /* Copies event link to clipboard */
       navigator.clipboard.writeText(
-        `${window.location.origin}/e/${this.eventId}`
+        `${window.location.origin}/e/${this.event.shortId ?? this.event._id}`
       )
       this.showInfo("Link copied to clipboard!")
     },

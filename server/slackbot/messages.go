@@ -9,6 +9,11 @@ import (
 )
 
 func SendEventCreatedMessage(insertedId string, creator string, event models.Event) {
+	shortId := ""
+	if event.ShortId != nil {
+		shortId = *event.ShortId
+	}
+
 	response := commands.Response{Blocks: []bson.M{
 		{
 			"type": "header",
@@ -24,12 +29,14 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 				"type": "mrkdwn",
 				"text": fmt.Sprintf(
 					"*Event url*: https://schej.it/e/%s\n"+
+						"*Short url*: https://schej.it/e/%s\n"+
 						"*Creator*: %s\n"+
 						"*Num days*: %v\n"+
 						"*Type*: %s\n"+
 						"*Notifications Enabled*: %v\n"+
 						"*Num remindees*: %v",
 					insertedId,
+					shortId,
 					creator,
 					len(event.Dates),
 					event.Type,

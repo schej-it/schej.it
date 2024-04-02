@@ -330,10 +330,13 @@ export default {
           remindees,
           type,
         })
-          .then(({ eventId }) => {
+          .then(({ eventId, shortId }) => {
             this.$router.push({
               name: "event",
-              params: { eventId, initialTimezone: this.timezone },
+              params: {
+                eventId: shortId ?? eventId,
+                initialTimezone: this.timezone,
+              },
             })
 
             this.loading = false
@@ -409,7 +412,7 @@ export default {
       signInGoogle({
         state: {
           type: authTypes.EVENT_CONTACTS,
-          eventId: this.event ? this.event._id : "",
+          eventId: this.event ? this.event.shortId ?? this.event._id : "",
           payload,
         },
         requestContactsPermission: true,
