@@ -118,34 +118,11 @@ func createEvent(c *gin.Context) {
 		event.Remindees = &remindees
 	}
 
-	// Add attendees and send email
-	if len(payload.Attendees) > 0 {
-		// Determine owner name
-		var ownerName string
-		if signedIn {
-			ownerName = user.FirstName
-		} else {
-			ownerName = "Somebody"
-		}
-
-		// Add attendees to attendees array and send invite emails
-		attendees := make([]models.Attendee, 0)
-		availabilityGroupInviteEmailId := 9
-		for _, email := range payload.Attendees {
-			listmonk.SendEmailAddSubscriberIfNotExist(email, availabilityGroupInviteEmailId, bson.M{
-				"ownerName": ownerName,
-				"groupName": event.Name,
-				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
-			})
-			attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr()})
-		}
-
-		event.Attendees = &attendees
-	}
-
 	if payload.Type == models.GROUP {
-		// Add event owner to group by default
+		attendees := make([]models.Attendee, 0)
+
 		if signedIn {
+			// Add event owner to group by default
 			enabledCalendars := make(map[string][]string)
 			for email, calendarAccount := range user.CalendarAccounts {
 				enabledCalendars[email] = make([]string, 0)
@@ -153,13 +130,40 @@ func createEvent(c *gin.Context) {
 					enabledCalendars[email] = append(enabledCalendars[email], calendarId)
 				}
 			}
-
 			event.Responses[user.Id.Hex()] = &models.Response{
 				UserId:                  user.Id,
 				UseCalendarAvailability: utils.TruePtr(),
 				EnabledCalendars:        &enabledCalendars,
 			}
+
+			// Add owner as attendee
+			attendees = append(attendees, models.Attendee{Email: user.Email, Declined: utils.FalsePtr()})
 		}
+
+		// Add attendees and send email
+		if len(payload.Attendees) > 0 {
+			// Determine owner name
+			var ownerName string
+			if signedIn {
+				ownerName = user.FirstName
+			} else {
+				ownerName = "Somebody"
+			}
+
+			// Add attendees to attendees array and send invite emails
+			availabilityGroupInviteEmailId := 9
+			for _, email := range payload.Attendees {
+				listmonk.SendEmailAddSubscriberIfNotExist(email, availabilityGroupInviteEmailId, bson.M{
+					"ownerName": ownerName,
+					"groupName": event.Name,
+					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
+				})
+				attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr()})
+			}
+
+		}
+
+		event.Attendees = &attendees
 	}
 
 	// Insert event
@@ -290,6 +294,11 @@ func editEvent(c *gin.Context) {
 		if event.OwnerId != primitive.NilObjectID {
 			owner := db.GetUserById(event.OwnerId.Hex())
 			ownerName = owner.FirstName
+
+			// Keep owner in attendees array
+			if ownerIndex := utils.Find(origAttendees, func(a models.Attendee) bool { return a.Email == owner.Email }); ownerIndex != -1 {
+				updatedAttendees = append(updatedAttendees, origAttendees[ownerIndex])
+			}
 		} else {
 			ownerName = "Somebody"
 		}
