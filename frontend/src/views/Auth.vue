@@ -59,6 +59,12 @@ export default {
               params: { eventId: state.eventId },
             })
             break
+          case authTypes.GROUP_SIGN_IN:
+            this.$router.replace({
+              name: "group",
+              params: { groupId: state.groupId },
+            })
+            break
           case authTypes.ADD_CALENDAR_ACCOUNT:
             this.$router.replace({
               name: "settings",
@@ -80,7 +86,7 @@ export default {
                 name: "home",
                 params: {
                   contactsPayload: state.payload,
-                }
+                },
               })
             } else {
               this.$router.replace({

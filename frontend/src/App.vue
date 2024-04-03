@@ -164,16 +164,26 @@ export default {
       this.newDialog = true
     },
     signIn() {
-      if (this.$route.name === "event") {
+      if (this.$route.name === "event" || this.$route.name === "group") {
         if (isWebview(navigator.userAgent)) {
           this.webviewDialog = true
           return
         }
-        signInGoogle({
-          state: {
-            type: authTypes.EVENT_SIGN_IN,
+
+        let state
+        if (this.$route.name === "event") {
+          state = {
             eventId: this.$route.params.eventId,
-          },
+            type: authTypes.EVENT_SIGN_IN,
+          }
+        } else if (this.$route.name === "group") {
+          state = {
+            groupId: this.$route.params.groupId,
+            type: authTypes.GROUP_SIGN_IN,
+          }
+        }
+        signInGoogle({
+          state,
           selectAccount: true,
         })
       }

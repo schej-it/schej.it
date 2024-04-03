@@ -25,12 +25,31 @@
       <div class="tw-text-center tw-text-dark-gray">
         Already have a Schej account? <a @click="signIn">Sign in instead</a>
       </div>
+
+      <v-dialog
+        v-model="calendarPermissionsDialog"
+        width="400"
+        content-class="tw-m-0"
+      >
+        <v-card class="tw-p-4 sm:tw-p-6">
+          <CalendarPermissionsCard
+            @cancel="calendarPermissionsDialog = false"
+            @allow="allowCalendarAccess"
+          />
+        </v-card>
+      </v-dialog>
+
+      <SignInNotSupportedDialog v-model="webviewDialog" />
     </div>
   </v-fade-transition>
 </template>
 
 <script>
-import { get, isPhone } from "@/utils"
+import { get, isPhone, signInGoogle } from "@/utils"
+import { authTypes } from "@/constants"
+import CalendarPermissionsCard from "@/components/CalendarPermissionsCard"
+import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog"
+import isWebview from "is-ua-webview"
 
 export default {
   name: "NotSignedIn",
@@ -39,12 +58,17 @@ export default {
     event: { type: Object, required: true },
   },
 
-  components: {},
+  components: {
+    CalendarPermissionsCard,
+    SignInNotSupportedDialog,
+  },
 
   data() {
     return {
       owner: {},
       loaded: false,
+      calendarPermissionsDialog: false,
+      webviewDialog: false,
     }
   },
 
@@ -55,8 +79,40 @@ export default {
   },
 
   methods: {
-    join() {},
-    signIn() {},
+    join() {
+      this.calendarPermissionsDialog = true
+    },
+    allowCalendarAccess() {
+      if (isWebview(navigator.userAgent)) {
+        this.webviewDialog = true
+        return
+      }
+
+      // Ask the user to select the account they want to sign in with if not logged in yet
+      signInGoogle({
+        state: {
+          type: authTypes.GROUP_SIGN_IN,
+          groupId: this.$route.params.groupId,
+        },
+        selectAccount: true,
+        requestCalendarPermission: true,
+      })
+    },
+    signIn() {
+      if (isWebview(navigator.userAgent)) {
+        this.webviewDialog = true
+        return
+      }
+
+      const state = {
+        type: authTypes.GROUP_SIGN_IN,
+        groupId: this.$route.params.groupId,
+      }
+      signInGoogle({
+        state,
+        selectAccount: true,
+      })
+    },
   },
 
   async created() {
