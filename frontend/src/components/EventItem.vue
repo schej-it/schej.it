@@ -19,7 +19,7 @@
       </div>
       <div class="tw-min-w-max">
         <v-chip
-          v-if="responded"
+          v-if="responded || !isGroup"
           small
           class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray"
         >
