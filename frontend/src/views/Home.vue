@@ -82,12 +82,15 @@ export default {
         },
         {
           header: "Events I joined",
-          events: this.joinedEvents,
+          events: this.joinedEventsNonGroup,
         },
       ]
     },
     createdEventsNonGroup() {
       return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
+    },
+    joinedEventsNonGroup() {
+      return this.joinedEvents.filter((e) => e.type !== eventTypes.GROUP)
     },
     availabilityGroups() {
       return {
@@ -100,8 +103,7 @@ export default {
     eventsNotEmpty() {
       return (
         this.createdEvents.length > 0 ||
-        this.joinedEvents.length > 0 ||
-        this.weeklyEvents.length > 0
+        this.joinedEvents.length > 0 
       )
     },
   },

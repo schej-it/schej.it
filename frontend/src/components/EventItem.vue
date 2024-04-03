@@ -7,7 +7,7 @@
   >
     <v-container
       v-ripple
-      class="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
+      class="tw-flex tw-min-h-16 tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
       :data-ph-capture-attribute-event-id="event._id"
       :data-ph-capture-attribute-event-name="event.name"
     >
@@ -18,10 +18,17 @@
         </div>
       </div>
       <div class="tw-min-w-max">
-        <v-chip small class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray">
+        <v-chip
+          v-if="responded"
+          small
+          class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray"
+        >
           <v-icon left small> mdi-account-multiple </v-icon>
           {{ Object.keys(this.event.responses).length }}
         </v-chip>
+        <div v-else class="tw-inline-block tw-text-sm tw-italic tw-text-gray">
+          Invited
+        </div>
         <v-menu
           v-if="showOptions"
           ref="menu"
@@ -163,6 +170,9 @@ export default {
     },
     typeText() {
       return this.isGroup ? "group" : "event"
+    },
+    responded() {
+      return this.authUser._id in this.event.responses
     },
   },
 
