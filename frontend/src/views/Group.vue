@@ -1,6 +1,7 @@
 <template>
   <div v-if="event" class="tw-h-full">
-    <AccessDenied v-if="accessDenied" />
+    <NotSignedIn v-if="!authUser" :event="event" />
+    <AccessDenied v-else-if="accessDenied" />
     <Event
       v-else
       :eventId="groupId"
@@ -17,6 +18,7 @@ import { mapActions, mapState } from "vuex"
 import { get } from "@/utils"
 import { errors } from "@/constants"
 import AccessDenied from "@/components/groups/AccessDenied.vue"
+import NotSignedIn from "@/components/groups/NotSignedIn.vue"
 
 export default {
   name: "Group",
@@ -31,6 +33,7 @@ export default {
   components: {
     AccessDenied,
     Event,
+    NotSignedIn,
   },
 
   data() {
@@ -42,7 +45,7 @@ export default {
   computed: {
     ...mapState(["authUser"]),
     accessDenied() {
-      if (this.event.ownerId === this.authUser._id) {
+      if (this.event.ownerId === this.authUser?._id) {
         return false
       }
 

@@ -9,7 +9,7 @@
       contain
       class="tw-mb-6 tw-h-[150px] tw-flex-none sm:tw-h-[200px]"
     />
-    <div class="tw-mb-8 tw-max-w-[19rem]">
+    <div class="tw-mb-8 tw-max-w-[30rem]">
       <h1 class="tw-mb-2 tw-text-center tw-text-2xl tw-font-medium">
         You need access
       </h1>

@@ -100,6 +100,8 @@ definitions:
         $ref: '#/definitions/models.CalendarEvent'
         description: Scheduled event
         type: object
+      shortId:
+        type: string
       type:
         type: string
     type: object
@@ -855,21 +857,19 @@ paths:
   /users:
     get:
       parameters:
-      - description: Search query matching users' names/emails
-        in: query
-        name: query
+      - description: User ID
+        in: path
+        name: userId
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: An array of user profile objects
+          description: A user profile object
           schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
-      summary: Returns users that match the search query
+            $ref: '#/definitions/models.User'
+      summary: Returns the user by their user id
       tags:
       - users
 swagger: "2.0"

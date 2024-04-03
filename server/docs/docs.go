@@ -1088,24 +1088,21 @@ var doc = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Returns users that match the search query",
+                "summary": "Returns the user by their user id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Search query matching users' names/emails",
-                        "name": "query",
-                        "in": "query",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "An array of user profile objects",
+                        "description": "A user profile object",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.User"
-                            }
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 }
@@ -1263,6 +1260,9 @@ var doc = `{
                     "description": "Scheduled event",
                     "type": "object",
                     "$ref": "#/definitions/models.CalendarEvent"
+                },
+                "shortId": {
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
