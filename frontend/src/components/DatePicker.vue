@@ -1,21 +1,27 @@
 <template>
-  <v-date-picker
-    ref="datePicker"
-    :pickerDate.sync="pickerDate"
-    :value="value"
-    @touchstart:date="touchstart"
-    @mousedown:date="mousedown"
-    @mouseover:date="mouseover"
-    readonly
-    no-title
-    multiple
-    color="primary"
-    :show-current="false"
-    class="tw-min-w-full tw-border-0 tw-drop-shadow sm:tw-min-w-0"
-    :min="minCalendarDate"
-    full-width
-    :scrollable="false"
-  />
+  <div>
+    <div class="tw-mb-1 tw-text-center tw-text-xs tw-text-very-dark-gray">
+      Drag to select multiple dates
+    </div>
+    <v-date-picker
+      ref="datePicker"
+      :pickerDate.sync="pickerDate"
+      :value="value"
+      @touchstart:date="touchstart"
+      @mousedown:date="mousedown"
+      @mouseover:date="mouseover"
+      readonly
+      no-title
+      multiple
+      color="primary"
+      :show-current="false"
+      class="tw-min-w-full tw-border-0 tw-drop-shadow sm:tw-min-w-0"
+      :min="minCalendarDate"
+      full-width
+      :scrollable="false"
+    >
+    </v-date-picker>
+  </div>
 </template>
 
 <script>
