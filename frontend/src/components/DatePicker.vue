@@ -1,8 +1,5 @@
 <template>
   <div>
-    <div class="tw-mb-1 tw-text-center tw-text-xs tw-text-very-dark-gray">
-      Drag to select multiple dates
-    </div>
     <v-date-picker
       ref="datePicker"
       :pickerDate.sync="pickerDate"
@@ -19,8 +16,10 @@
       :min="minCalendarDate"
       full-width
       :scrollable="false"
-    >
-    </v-date-picker>
+    ></v-date-picker>
+    <div class="tw-mt-2 tw-text-xs tw-text-very-dark-gray">
+      Drag to select multiple dates
+    </div>
   </div>
 </template>
 
