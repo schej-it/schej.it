@@ -612,6 +612,10 @@ export default {
       // Returns whether currently in the editing state
       return this.state === this.states.EDIT_AVAILABILITY
     },
+    scheduling() {
+      // Returns whether currently in the scheduling state
+      return this.state === this.states.SCHEDULE_EVENT
+    },
     hintText() {
       switch (this.state) {
         case this.states.EDIT_AVAILABILITY:
