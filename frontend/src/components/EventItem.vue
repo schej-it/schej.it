@@ -129,7 +129,7 @@
             </v-dialog>
           </v-list>
         </v-menu>
-        <v-icon v-else class="tw-mx-1 tw-opacity-75">mdi-chevron-right</v-icon>
+        <v-icon v-else class="tw-mr-1 tw-ml-2 tw-opacity-75">mdi-chevron-right</v-icon>
       </div>
     </v-container>
   </router-link>
