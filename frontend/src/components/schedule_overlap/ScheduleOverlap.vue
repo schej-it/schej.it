@@ -383,6 +383,7 @@ import {
   get,
   getDateDayOffset,
   isDateBetween,
+  isTouchEnabled,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -1616,7 +1617,7 @@ export default {
     addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
-      if (isPhone(this.$vuetify)) {
+      if (isTouchEnabled()) {
         timesEl.addEventListener("touchstart", this.startDrag)
         timesEl.addEventListener("touchmove", this.moveDrag)
         timesEl.addEventListener("touchend", this.endDrag)
