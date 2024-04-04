@@ -63,23 +63,26 @@ export default {
   name: "CalendarAccounts",
 
   props: {
-    toggleState: { type: Boolean, default: false },
+    toggleState: { type: Boolean, default: false }, // Whether to allow user to toggle calendar accounts
     eventId: { type: String, default: "" },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
     syncWithBackend: { type: Boolean, default: true }, // Whether toggling calendar accounts also updates the backend
     allowAddCalendarAccount: { type: Boolean, default: true }, // Whether to allow user to add a new calendar account
+    initialCalendarAccountsData: { type: Object, default: () => {} }, // Initial data to display for enabled calendar accounts
   },
 
   data: () => ({
     removeDialog: false,
     selectedRemoveEmail: "",
+    calendarAccounts: {},
   }),
 
   computed: {
     ...mapState(["authUser"]),
-    calendarAccounts() {
-      return this.authUser.calendarAccounts
-    },
+  },
+
+  mounted() {
+    this.calendarAccounts = !this.initialCalendarAccountsData ? this.authUser.calendarAccounts : this.initialCalendarAccountsData
   },
 
   methods: {

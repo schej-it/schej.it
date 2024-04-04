@@ -58,7 +58,7 @@
 
 <script>
 import { mapState } from "vuex"
-import { isPhone, post } from "@/utils"
+import { isPhone, post, generateEnabledCalendarsPayload } from "@/utils"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import UserChip from "@/components/general/UserChip.vue"
 
@@ -82,7 +82,7 @@ export default {
   }),
 
   mounted() {
-    this.calendarAccounts = this.authUser.calendarAccounts
+    this.calendarAccounts = JSON.parse(JSON.stringify(this.authUser.calendarAccounts))
   },
 
   computed: {
@@ -100,26 +100,7 @@ export default {
     },
 
     acceptInvitation() {
-      const payload = {
-        guest: false,
-        useCalendarAvailability: true,
-        enabledCalendars: {},
-      }
-
-      /** Determine which sub calendars are enabled - same code can be used for submitAvailability in scheduleOverlap.vue */
-      for (const email in this.calendarAccounts) {
-        if (this.calendarAccounts[email].enabled) {
-          payload.enabledCalendars[email] = []
-          for (const subCalendarId in this.calendarAccounts[email]
-            .subCalendars) {
-            if (
-              this.calendarAccounts[email].subCalendars[subCalendarId].enabled
-            ) {
-              payload.enabledCalendars[email].push(subCalendarId)
-            }
-          }
-        }
-      }
+      const payload = generateEnabledCalendarsPayload(this.calendarAccounts);
 
       post(`/events/${this.group._id}/response`, payload).then((res) => {
         console.log(res)

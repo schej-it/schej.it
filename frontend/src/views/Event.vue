@@ -291,10 +291,6 @@ export default {
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
     this.editEventDialog = Object.keys(this.contactsPayload).length > 0
-
-    if (false /** TODO - check if invited to group but not accepted */) {
-      this.invitationDialog = true
-    }
   },
 
   computed: {
@@ -629,6 +625,12 @@ export default {
         // Put into editing mode if just signed in
         if (this.fromSignIn) {
           this.scheduleOverlapComponent.startEditing()
+        }
+
+        if (
+          this.isGroup && !this.userHasResponded
+        ) {
+          this.invitationDialog = true
         }
       }
     },

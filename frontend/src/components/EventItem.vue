@@ -18,17 +18,20 @@
         </div>
       </div>
       <div class="tw-min-w-max">
+        <div
+          v-if="isGroup && !userHasResponded"
+          class="tw-inline-block tw-text-sm tw-italic tw-text-gray"
+        >
+          Invited
+        </div>
         <v-chip
-          v-if="responded || !isGroup"
+          v-else
           small
           class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray"
         >
           <v-icon left small> mdi-account-multiple </v-icon>
           {{ Object.keys(this.event.responses).length }}
         </v-chip>
-        <div v-else class="tw-inline-block tw-text-sm tw-italic tw-text-gray">
-          Invited
-        </div>
         <v-menu
           v-if="showOptions"
           ref="menu"
@@ -171,8 +174,8 @@ export default {
     typeText() {
       return this.isGroup ? "group" : "event"
     },
-    responded() {
-      return this.authUser._id in this.event.responses
+    userHasResponded() {
+      return this.authUser?._id in this.event.responses
     },
   },
 

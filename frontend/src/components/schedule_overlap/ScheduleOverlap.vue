@@ -264,6 +264,13 @@
               :toggleState="true"
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
+              :syncWithBackend="!isGroup"
+              :allowAddCalendarAccount="!isGroup"
+              @toggleCalendarAccount="toggleCalendarAccount"
+              @toggleSubCalendarAccount="toggleSubCalendarAccount"
+              :initialCalendarAccountsData="
+                isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
+              "
             ></CalendarAccounts>
             <div v-if="userHasResponded || curGuestId">
               <div class="tw-mb-1 tw-font-medium">Options</div>
@@ -414,6 +421,7 @@ import {
   get,
   getDateDayOffset,
   isDateBetween,
+  generateEnabledCalendarsPayload,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -478,6 +486,7 @@ export default {
       curTimeslotAvailability: {}, // The users available for the current timeslot
       curRespondent: "", // Id of the active respondent (set on hover)
       curRespondents: [], // Id of currently selected respondents (set on click)
+      sharedCalendarAccounts: {}, // The user's calendar accounts for changing calendar options for groups
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -538,58 +547,41 @@ export default {
 
       let events = []
       let event
+
+      const calendarAccounts = this.isGroup
+        ? this.sharedCalendarAccounts
+        : this.authUser.calendarAccounts
+
       // Adds events from calendar accounts that are enabled
-      for (const id in this.authUser.calendarAccounts) {
-        // Create enabled sub calendars set for GROUPs
-        let enabledSubCalendarsSet = new Set()
-        if (this.event.type === eventTypes.GROUP) {
-          // Check if auth user has enabled calendars
-          const enabledCalendars =
-            this.event.responses[this.authUser?._id]?.enabledCalendars
-          if (!enabledCalendars) continue
-
-          // Check if the current calendar account is enabled
-          const calendarAccountEnabled = id in enabledCalendars
-          if (!calendarAccountEnabled) continue
-
-          // Create enabled sub calendars set
-          enabledSubCalendarsSet = new Set(enabledCalendars[id])
-        } else {
-          // Check if authUser has the calendarAccount enabled in all other event types
-          if (!this.authUser.calendarAccounts[id].enabled) continue
-        }
+      for (const id in calendarAccounts) {
+        if (!calendarAccounts[id].enabled) continue
 
         if (this.calendarEventsMap.hasOwnProperty(id)) {
           for (const index in this.calendarEventsMap[id].calendarEvents) {
             event = this.calendarEventsMap[id].calendarEvents[index]
 
             // Check if we need to update authUser (to get latest subcalendars)
-            const subCalendars = this.authUser.calendarAccounts[id].subCalendars
+            const subCalendars = calendarAccounts[id].subCalendars
             if (!subCalendars || !(event.calendarId in subCalendars)) {
               // authUser doesn't contain the subCalendar, so push event to events without checking if subcalendar is enabled
               // and queue the authUser to be refreshed
               events.push(event)
-              if (!this.hasRefreshedAuthUser) {
+              if (!this.hasRefreshedAuthUser && !this.isGroup) {
                 this.refreshAuthUser()
               }
               continue
             }
 
             // Push event to events if subcalendar is enabled
-            if (this.event.type === eventTypes.GROUP) {
-              if (enabledSubCalendarsSet.has(event.calendarId)) {
-                events.push(event)
-              }
-            } else {
-              if (subCalendars[event.calendarId].enabled) {
-                events.push(event)
-              }
+            if (subCalendars[event.calendarId].enabled) {
+              events.push(event)
             }
           }
         }
       }
 
       const eventsCopy = JSON.parse(JSON.stringify(events))
+
       const calendarEventsByDay = splitCalendarEventsByDay(
         this.event,
         eventsCopy,
@@ -1123,13 +1115,21 @@ export default {
       this.availabilityAnimEnabled = false
     },
     async submitAvailability(name = "") {
-      const payload = { availability: this.availabilityArray }
-      if (this.authUser) {
-        payload.guest = false
+      let payload = {}
+
+      /** If this is a group submit enabled calendars, otherwise submit availability */
+      if (this.isGroup) {
+        payload = generateEnabledCalendarsPayload(this.sharedCalendarAccounts)
       } else {
-        payload.guest = true
-        payload.name = name
+        payload.availability = this.availabilityArray
+        if (this.authUser) {
+          payload.guest = false
+        } else {
+          payload.guest = true
+          payload.name = name
+        }
       }
+
       await post(`/events/${this.event._id}/response`, payload)
 
       // Update analytics
@@ -1676,6 +1676,29 @@ export default {
       localStorage[`closedHint${this.state}`] = true
     },
     //#endregion
+
+    // -----------------------------------
+    //#region Group
+    // -----------------------------------
+
+    /** Toggles calendar account - in groups to enable/disable calendars */
+    toggleCalendarAccount(payload) {
+      this.sharedCalendarAccounts[payload.email].enabled = payload.enabled
+      this.sharedCalendarAccounts = JSON.parse(
+        JSON.stringify(this.sharedCalendarAccounts)
+      )
+    },
+
+    /** Toggles sub calendar account - in groups to enable/disable sub calendars */
+    toggleSubCalendarAccount(payload) {
+      this.sharedCalendarAccounts[payload.email].subCalendars[
+        payload.subCalendarId
+      ].enabled = payload.enabled
+      this.sharedCalendarAccounts = JSON.parse(
+        JSON.stringify(this.sharedCalendarAccounts)
+      )
+    },
+    //#endregion
   },
   watch: {
     availability() {
@@ -1764,6 +1787,36 @@ export default {
         timesEl.addEventListener("mousedown", this.startDrag)
         timesEl.addEventListener("mousemove", this.moveDrag)
         timesEl.addEventListener("mouseup", this.endDrag)
+      }
+    }
+
+    // TODO: set initial calendar settings
+    this.sharedCalendarAccounts = JSON.parse(
+      JSON.stringify(this.authUser.calendarAccounts)
+    )
+
+    for (const id in this.sharedCalendarAccounts) {
+      this.sharedCalendarAccounts[id].enabled = false
+      for (const subCalendarId in this.sharedCalendarAccounts[id]
+        .subCalendars) {
+        this.sharedCalendarAccounts[id].subCalendars[
+          subCalendarId
+        ].enabled = false
+      }
+    }
+
+    if (this.authUser._id in this.event.responses) {
+      const enabledCalendars =
+        this.event.responses[this.authUser._id].enabledCalendars
+
+      for (const id in enabledCalendars) {
+        this.sharedCalendarAccounts[id].enabled = true
+
+        enabledCalendars[id].forEach((subCalendarId) => {
+          this.sharedCalendarAccounts[id].subCalendars[
+            subCalendarId
+          ].enabled = true
+        })
       }
     }
   },
