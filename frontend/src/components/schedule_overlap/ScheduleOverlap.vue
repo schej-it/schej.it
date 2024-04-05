@@ -336,6 +336,7 @@
                   :respondents="respondents"
                   :isOwner="isOwner"
                   :isGroup="isGroup"
+                  :attendees="event.attendees"
                   :showCalendarEvents.sync="showCalendarEvents"
                   @mouseOverRespondent="mouseOverRespondent"
                   @mouseLeaveRespondent="mouseLeaveRespondent"
@@ -355,6 +356,7 @@
               :respondents="respondents"
               :isOwner="isOwner"
               :isGroup="isGroup"
+              :attendees="event.attendees"
               :showCalendarEvents.sync="showCalendarEvents"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
@@ -534,6 +536,7 @@ export default {
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
+      if (this.isGroup) return false
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT

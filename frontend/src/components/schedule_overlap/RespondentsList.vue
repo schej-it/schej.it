@@ -95,6 +95,26 @@
       </template>
     </div>
 
+    <div v-if="pendingUsers.length > 0" class="tw-flex tw-items-center tw-font-medium tw-mb-2">
+      <div class="tw-mr-1 tw-text-lg">Pending</div>
+      <div class="tw-font-normal">({{ pendingUsers.length }})</div>
+    </div>
+
+    <div>
+      <div v-for="(user, i) in pendingUsers" :key="user.email">
+        <div class="tw-relative tw-flex tw-items-center">
+          <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+          <div
+          class="tw-mr-1 tw-transition-all tw-text-sm"
+        >
+          {{ user.email }}
+        </div>
+        </div>
+
+       
+      </div>
+    </div>
+
     <v-dialog v-model="deleteAvailabilityDialog" width="500" persistent>
       <v-card>
         <v-card-title>Are you sure?</v-card-title>
@@ -155,6 +175,7 @@ export default {
     isOwner: { type: Boolean, required: true },
     maxHeight: { type: Number },
     isGroup: { type: Boolean, required: true },
+    attendees: { type: Array, default: [] },
     showCalendarEvents: { type: Boolean, required: true },
   },
 
@@ -195,6 +216,18 @@ export default {
       }
       return numUsers
     },
+    pendingUsers() {
+      if (!this.isGroup) return []
+
+      const respondentEmailsSet = new Set(this.respondents.map((r) => r.email))
+
+      return this.attendees.filter((a) => {
+        if (!a.declined && !respondentEmailsSet.has(a.email)) {
+          return true
+        }
+        return false
+      })
+    }
   },
 
   methods: {
