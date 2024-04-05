@@ -226,6 +226,7 @@
               :cur-timezone.sync="curTimezone"
               :show-best-times.sync="showBestTimes"
               :cur-scheduled-event="curScheduledEvent"
+              :isGroup="isGroup"
               :is-weekly="isWeekly"
               :calendar-permission-granted="calendarPermissionGranted"
               :week-offset="weekOffset"
@@ -373,6 +374,7 @@
         :cur-timezone.sync="curTimezone"
         :show-best-times.sync="showBestTimes"
         :cur-scheduled-event="curScheduledEvent"
+        :isGroup="isGroup"
         :is-weekly="isWeekly"
         :calendar-permission-granted="calendarPermissionGranted"
         :week-offset="weekOffset"
@@ -695,8 +697,10 @@ export default {
     },
     hintText() {
       switch (this.state) {
+        case this.isGroup && this.states.EDIT_AVAILABILITY:
+          return "Toggle which calendars are shared with the group"
         case this.states.EDIT_AVAILABILITY:
-          return "Click and drag to add your available times in green."
+          return "Click and drag to add your available times in green"
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times"
         default:

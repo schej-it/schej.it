@@ -128,6 +128,7 @@ export default {
     curTimezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
+    isGroup: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
     numResponses: { type: Number, required: true },
@@ -151,8 +152,10 @@ export default {
     },
     hintText() {
       switch(this.state) {
+        case this.isGroup && this.states.EDIT_AVAILABILITY:
+          return "Toggle which calendars are shared with the group"
         case this.states.EDIT_AVAILABILITY:
-          return "Tap and drag to add your available times in green."
+          return "Tap and drag to add your available times in green"
         case this.states.SCHEDULE_EVENT:
           return "Tap and drag on the calendar to schedule a Google Calendar event during those times"
         default:
