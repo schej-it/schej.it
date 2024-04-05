@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="tw-flex tw-gap-1">
-      <div class="tw-text-very-dark-gray">Set up email reminders</div>
+      <div class="tw-text-very-dark-gray">Remind people to fill out the Schej</div>
 
       <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
