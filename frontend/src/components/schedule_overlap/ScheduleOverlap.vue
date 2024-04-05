@@ -547,7 +547,7 @@ export default {
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
       let max = 0
-      for (const day of this.days) {
+      for (const day of this.allDays) {
         for (const time of this.times) {
           const num = [
             ...this.getRespondentsForHoursOffset(
@@ -565,8 +565,8 @@ export default {
     dayOffset() {
       return Math.floor((this.event.startTime - this.timezoneOffset / 60) / 24)
     },
-    days() {
-      /* Return the days that are encompassed by startDate and endDate */
+    /** Returns all the days that are encompassed by startDate and endDate */
+    allDays() {
       const days = []
       const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
       const months = [
@@ -584,12 +584,7 @@ export default {
         "dec",
       ]
 
-      for (
-        let i = this.page * this.maxDaysPerPage;
-        i < this.event.dates.length &&
-        i < (this.page + 1) * this.maxDaysPerPage;
-        ++i
-      ) {
+      for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
         const offsetDate = new Date(date)
         offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
@@ -604,6 +599,13 @@ export default {
       }
 
       return days
+    },
+    /** Returns a subset of all days based on the page number */
+    days() {
+      return this.allDays.slice(
+        this.page * this.maxDaysPerPage,
+        Math.min(this.event.dates.length, (this.page + 1) * this.maxDaysPerPage)
+      )
     },
     defaultState() {
       // Either the heatmap or the best_times state, depending on the toggle
@@ -680,7 +682,7 @@ export default {
     responsesFormatted() {
       /* Formats the responses in a map where date/time is mapped to the people that are available then */
       const formatted = new Map()
-      for (const day of this.days) {
+      for (const day of this.allDays) {
         for (const time of this.times) {
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           formatted.set(date.getTime(), new Set())
