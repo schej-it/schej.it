@@ -28,9 +28,9 @@
           <div class="tw-mb-2 tw-mt-5 tw-font-medium tw-text-black">
             These calendars will be shared with
           </div>
-          <div>
+          <div class="tw-flex tw-gap-1 tw-flex-wrap">
             <UserChip
-              v-for="user in group.attendees?.filter((u) => !u.declined)"
+              v-for="user in group.attendees?.filter((u) => !u.declined && u.email != authUser.email)"
               :key="user.email"
               :user="user"
             ></UserChip>
