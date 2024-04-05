@@ -73,7 +73,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["createdEvents", "joinedEvents"]),
+    ...mapState(["createdEvents", "joinedEvents", "authUser"]),
     events() {
       return [
         {
@@ -97,7 +97,9 @@ export default {
         header: "Availability groups",
         events: this.createdEvents
           .filter((e) => e.type === eventTypes.GROUP)
-          .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP)),
+          .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP)).sort((e1, e2) => 
+            this.userRespondedToEvent(e1) ? 1 : -1
+          ),
       }
     },
     eventsNotEmpty() {
@@ -110,6 +112,9 @@ export default {
 
   methods: {
     ...mapActions(["getEvents"]),
+    userRespondedToEvent(event) {
+      return this.authUser._id in event.responses
+    }
   },
 
   created() {
