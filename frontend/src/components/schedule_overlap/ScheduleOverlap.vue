@@ -1624,11 +1624,10 @@ export default {
         timesEl.addEventListener("touchmove", this.moveDrag)
         timesEl.addEventListener("touchend", this.endDrag)
         timesEl.addEventListener("touchcancel", this.endDrag)
-      } else {
-        timesEl.addEventListener("mousedown", this.startDrag)
-        timesEl.addEventListener("mousemove", this.moveDrag)
-        timesEl.addEventListener("mouseup", this.endDrag)
       }
+      timesEl.addEventListener("mousedown", this.startDrag)
+      timesEl.addEventListener("mousemove", this.moveDrag)
+      timesEl.addEventListener("mouseup", this.endDrag)
     }
   },
   beforeDestroy() {
