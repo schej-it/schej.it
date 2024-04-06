@@ -24,8 +24,6 @@
 </template>
 
 <script>
-import { isTouchEnabled } from "@/utils"
-
 export default {
   name: "DatePicker",
 
@@ -47,8 +45,6 @@ export default {
   methods: {
     /** Start drag */
     mousedown(date) {
-      if (isTouchEnabled()) return
-
       this.dragging = true
       this.setDragState(date)
       this.addRemoveDate(date)
