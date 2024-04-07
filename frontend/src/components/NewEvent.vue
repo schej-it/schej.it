@@ -75,16 +75,10 @@
           />
 
           <v-expand-transition>
-            <v-date-picker
+            <DatePicker
               v-if="selectedDateOption === dateOptions.SPECIFIC"
               v-model="selectedDays"
-              no-title
-              multiple
-              color="primary"
-              :show-current="false"
-              class="tw-min-w-full tw-border-0 tw-drop-shadow sm:tw-min-w-0"
-              :min="minCalendarDate"
-              full-width
+              :minCalendarDate="minCalendarDate"
             />
             <div v-else-if="selectedDateOption === dateOptions.DOW">
               <v-btn-toggle
@@ -137,7 +131,7 @@
                   <template v-slot:header>
                     <div class="tw-flex tw-gap-1">
                       <div class="tw-text-very-dark-gray">
-                        Set up email reminders
+                        Remind people to fill out the Schej
                       </div>
 
                       <v-tooltip top>
@@ -194,6 +188,7 @@ import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
+import DatePicker from "@/components/DatePicker"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -218,6 +213,7 @@ export default {
     TimezoneSelector,
     HelpDialog,
     EmailInput,
+    DatePicker,
   },
 
   data: () => ({
