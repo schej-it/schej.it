@@ -126,8 +126,10 @@ func createEvent(c *gin.Context) {
 			enabledCalendars := make(map[string][]string)
 			for email, calendarAccount := range user.CalendarAccounts {
 				enabledCalendars[email] = make([]string, 0)
-				for calendarId := range utils.Coalesce(calendarAccount.SubCalendars) {
-					enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+				for calendarId, subCalendar := range utils.Coalesce(calendarAccount.SubCalendars) {
+					if utils.Coalesce(subCalendar.Enabled) {
+						enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+					}
 				}
 			}
 			event.Responses[user.Id.Hex()] = &models.Response{
