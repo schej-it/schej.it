@@ -763,6 +763,11 @@ export default {
               ...this.event.responses[userId],
               availability: [...availability],
             }
+          } else {
+            parsed[userId] = {
+              ...this.event.responses[userId],
+              availability: [],
+            }
           }
         }
         return parsed
@@ -1025,7 +1030,7 @@ export default {
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.event.responses[id].availability.forEach((item) =>
+      this.event.responses[id].availability?.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
