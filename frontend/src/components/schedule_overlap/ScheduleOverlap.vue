@@ -139,7 +139,7 @@
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
                               :class="
                                 isGroup
-                                  ? 'tw-border-white tw-bg-blue'
+                                  ? 'tw-border-white tw-bg-light-blue'
                                   : 'tw-border-blue'
                               "
                             >
@@ -536,7 +536,7 @@ export default {
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
-      if (this.isGroup) return false
+      if (this.isGroup) return this.state === this.states.SCHEDULE_EVENT
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
