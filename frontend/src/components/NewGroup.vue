@@ -78,8 +78,11 @@
           </div>
         </div>
 
-        <div>
-          <EmailInput @update:emails="(newEmails) => (emails = newEmails)">
+        <div v-if="!edit">
+          <EmailInput
+            :addedEmails="emails"
+            @update:emails="(newEmails) => (emails = newEmails)"
+          >
             <template v-slot:header>
               <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
             </template>
@@ -329,6 +332,10 @@ export default {
             selectedDaysOfWeek.push(new Date(date).getDay())
           }
           this.selectedDaysOfWeek = selectedDaysOfWeek
+
+          this.emails = this.event.attendees
+            .map((a) => a.email)
+            .filter((email) => email !== this.authUser.email)
         }
       },
     },
