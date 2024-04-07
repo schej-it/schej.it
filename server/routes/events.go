@@ -107,7 +107,7 @@ func createEvent(c *gin.Context) {
 		// Schedule email reminders for each of the remindees' emails
 		remindees := make([]models.Remindee, 0)
 		for _, email := range payload.Remindees {
-			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, event.Id.Hex())
+			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, event.GetId())
 			remindees = append(remindees, models.Remindee{
 				Email:     email,
 				TaskIds:   taskIds,
@@ -125,10 +125,12 @@ func createEvent(c *gin.Context) {
 			// Add event owner to group by default
 			enabledCalendars := make(map[string][]string)
 			for email, calendarAccount := range user.CalendarAccounts {
-				enabledCalendars[email] = make([]string, 0)
-				for calendarId, subCalendar := range utils.Coalesce(calendarAccount.SubCalendars) {
-					if utils.Coalesce(subCalendar.Enabled) {
-						enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+				if utils.Coalesce(calendarAccount.Enabled) {
+					enabledCalendars[email] = make([]string, 0)
+					for calendarId, subCalendar := range utils.Coalesce(calendarAccount.SubCalendars) {
+						if utils.Coalesce(subCalendar.Enabled) {
+							enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+						}
 					}
 				}
 			}
@@ -158,7 +160,7 @@ func createEvent(c *gin.Context) {
 				listmonk.SendEmailAddSubscriberIfNotExist(email, availabilityGroupInviteEmailId, bson.M{
 					"ownerName": ownerName,
 					"groupName": event.Name,
-					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
+					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 				})
 				attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr()})
 			}
@@ -267,7 +269,7 @@ func editEvent(c *gin.Context) {
 
 		for _, addedEmail := range added {
 			// Schedule email tasks
-			taskIds := gcloud.CreateEmailTask(addedEmail.Value, ownerName, event.Name, event.Id.Hex())
+			taskIds := gcloud.CreateEmailTask(addedEmail.Value, ownerName, event.Name, event.GetId())
 			updatedRemindees = append(updatedRemindees, models.Remindee{
 				Email:     addedEmail.Value,
 				TaskIds:   taskIds,
@@ -315,7 +317,7 @@ func editEvent(c *gin.Context) {
 			listmonk.SendEmailAddSubscriberIfNotExist(addedEmail.Value, availabilityGroupInviteEmailId, bson.M{
 				"ownerName": ownerName,
 				"groupName": event.Name,
-				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
+				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 			})
 			updatedAttendees = append(updatedAttendees, models.Attendee{
 				Email:    addedEmail.Value,

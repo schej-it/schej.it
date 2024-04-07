@@ -253,10 +253,13 @@ export default {
           attendees,
           type,
         })
-          .then(({ eventId }) => {
+          .then(({ eventId, shortId }) => {
             this.$router.push({
               name: "group",
-              params: { groupId: eventId, initialTimezone: this.timezone },
+              params: {
+                groupId: shortId ?? eventId,
+                initialTimezone: this.timezone,
+              },
             })
 
             this.$posthog?.capture("Availability group created", {
