@@ -424,7 +424,6 @@ func updateEventResponse(c *gin.Context) {
 			Name:         payload.Name,
 			Availability: payload.Availability,
 		}
-		event.Responses[payload.Name] = &response
 	} else {
 		userIdInterface := session.Get("userId")
 		if userIdInterface == nil {
@@ -440,13 +439,13 @@ func updateEventResponse(c *gin.Context) {
 			UseCalendarAvailability: payload.UseCalendarAvailability,
 			EnabledCalendars:        payload.EnabledCalendars,
 		}
-		event.Responses[userIdString] = &response
 	}
 
 	// Check if user has responded to event before (edit response) or not (new response)
 	_, userHasResponded := event.Responses[userIdString]
 
 	// Update responses in mongodb
+	event.Responses[userIdString] = &response
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
 		event.Id,
@@ -473,21 +472,13 @@ func updateEventResponse(c *gin.Context) {
 				respondent := db.GetUserById(userIdString)
 				respondentName = fmt.Sprintf("%s %s", respondent.FirstName, respondent.LastName)
 			}
-			utils.SendEmail(
-				creator.Email,
-				fmt.Sprintf("Someone just responded to your schej - \"%s\"!", event.Name),
-				fmt.Sprintf(
-					`<p>Hi %s,</p>
-
-					<p>%s just responded to your schej named "%s"!<br>
-					<a href="https://schej.it/e/%s">Click here to view the event</a></p>
-
-					<p>Best,<br>
-					schej team</p>`,
-					creator.FirstName, respondentName, event.Name, eventId,
-				),
-				"text/html",
-			)
+			someoneRespondedEmailId := 10
+			listmonk.SendEmail(creator.Email, someoneRespondedEmailId, bson.M{
+				"eventName":      event.Name,
+				"ownerName":      creator.FirstName,
+				"respondentName": respondentName,
+				"eventUrl":       fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
+			})
 		}()
 	}
 
