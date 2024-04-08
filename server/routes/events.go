@@ -439,6 +439,19 @@ func updateEventResponse(c *gin.Context) {
 			UseCalendarAvailability: payload.UseCalendarAvailability,
 			EnabledCalendars:        payload.EnabledCalendars,
 		}
+
+		// If event is group, set declined to false (in case user declined group in the past)
+		if event.Type == models.GROUP {
+			user := db.GetUserById(userIdString)
+			if user != nil {
+				for i, attendee := range utils.Coalesce(event.Attendees) {
+					if attendee.Email == user.Email {
+						(*event.Attendees)[i].Declined = utils.FalsePtr()
+						break
+					}
+				}
+			}
+		}
 	}
 
 	// Check if user has responded to event before (edit response) or not (new response)
