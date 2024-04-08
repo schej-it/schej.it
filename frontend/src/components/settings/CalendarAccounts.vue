@@ -28,6 +28,7 @@
         :calendarEventsMap="calendarEventsMap"
         :removeDialog="removeDialog"
         :selectedRemoveEmail="selectedRemoveEmail"
+        :fillSpace="fillSpace"
         @toggleCalendarAccount="
           (payload) => $emit('toggleCalendarAccount', payload)
         "
@@ -69,6 +70,7 @@ export default {
     syncWithBackend: { type: Boolean, default: true }, // Whether toggling calendar accounts also updates the backend
     allowAddCalendarAccount: { type: Boolean, default: true }, // Whether to allow user to add a new calendar account
     initialCalendarAccountsData: { type: Object, default: () => {} }, // Initial data to display for enabled calendar accounts
+    fillSpace: { type: Boolean, default: false }, // Whether to fill the available space up
   },
 
   data: () => ({

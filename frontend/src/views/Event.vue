@@ -32,7 +32,9 @@
       v-if="isGroup"
       v-model="invitationDialog"
       :group="event"
+      :calendarPermissionGranted="calendarPermissionGranted"
       @refreshEvent="refreshEvent"
+      @setAvailabilityAutomatically="setAvailabilityAutomatically"
     ></InvitationDialog>
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
@@ -295,7 +297,7 @@ export default {
     scheduleOverlapComponentLoaded: false,
 
     curGuestId: "", // Id of the current guest being edited
-    calendarPermissionGranted: false,
+    calendarPermissionGranted: true,
 
     weekOffset: 0,
 
@@ -656,7 +658,7 @@ export default {
         this.scheduleOverlapComponentLoaded = true
 
         // Put into editing mode if just signed in
-        if (this.fromSignIn) {
+        if (this.fromSignIn && !this.isGroup) {
           this.scheduleOverlapComponent.startEditing()
         }
 

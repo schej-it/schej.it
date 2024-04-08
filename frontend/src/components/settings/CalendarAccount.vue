@@ -35,7 +35,7 @@
           <v-img :src="account.picture"></v-img
         ></v-avatar>
         <div
-          :class="toggleState ? 'tw-w-[180px]' : ''"
+          :class="toggleState && !fillSpace ? 'tw-w-[180px]' : ''"
           class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
         >
           {{ account.email }}
@@ -84,7 +84,8 @@
             class="tw-h-5 tw-items-center"
           />
           <div
-            class="tw-align-text-middle tw-ml-8 tw-inline-block tw-w-40 tw-break-words tw-text-sm"
+            :class="!fillSpace ? 'tw-w-40' : ''"
+            class="tw-align-text-middle tw-ml-8 tw-inline-block tw-break-words tw-text-sm"
           >
             {{ subCalendar.name }}
           </div>
@@ -111,6 +112,7 @@ export default {
     removeDialog: { type: Boolean, default: false },
     selectedRemoveEmail: { type: String, default: "" },
     syncWithBackend: { type: Boolean, default: true },
+    fillSpace: { type: Boolean, default: false },
   },
 
   data: () => ({

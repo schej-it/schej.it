@@ -16,27 +16,49 @@
           >
             Accept invitation to share your calendars with "{{ group.name }}"?
           </div>
+          <v-expand-transition>
+            <div v-if="calendarPermissionGranted">
+              <CalendarAccounts
+                :sync-with-backend="false"
+                :allow-add-calendar-account="false"
+                :toggle-state="true"
+                :fill-space="true"
+                @toggleCalendarAccount="toggleCalendarAccount"
+                @toggleSubCalendarAccount="toggleSubCalendarAccount"
+              ></CalendarAccounts>
 
-          <CalendarAccounts
-            :sync-with-backend="false"
-            :allow-add-calendar-account="false"
-            :toggle-state="true"
-            @toggleCalendarAccount="toggleCalendarAccount"
-            @toggleSubCalendarAccount="toggleSubCalendarAccount"
-          ></CalendarAccounts>
+              <div class="tw-mb-2 tw-mt-5 tw-font-medium tw-text-black">
+                These calendars will be shared with
+              </div>
+              <div class="tw-flex tw-flex-wrap tw-gap-1">
+                <UserChip
+                  v-for="user in group.attendees?.filter(
+                    (u) => !u.declined && u.email != authUser.email
+                  )"
+                  :key="user.email"
+                  :user="user"
+                ></UserChip>
+              </div>
+            </div>
+          </v-expand-transition>
 
-          <div class="tw-mb-2 tw-mt-5 tw-font-medium tw-text-black">
-            These calendars will be shared with
-          </div>
-          <div class="tw-flex tw-flex-wrap tw-gap-1">
-            <UserChip
-              v-for="user in group.attendees?.filter(
-                (u) => !u.declined && u.email != authUser.email
-              )"
-              :key="user.email"
-              :user="user"
-            ></UserChip>
-          </div>
+          <v-expand-transition>
+            <v-card class="tw-p-5" v-if="!calendarPermissionGranted">
+              <CalendarPermissionsCard
+                v-show="true"
+                cancelLabel=""
+                @cancel="
+                  () => {
+                    $emit('setAvailabilityAutomatically')
+                  }
+                "
+                @allow="
+                  () => {
+                    $emit('setAvailabilityAutomatically')
+                  }
+                "
+            /></v-card>
+          </v-expand-transition>
         </v-card-text>
 
         <v-card-actions>
@@ -50,6 +72,7 @@
           <v-btn
             class="tw-bg-green tw-px-5 tw-text-white tw-transition-opacity"
             @click="acceptInvitation"
+            :disabled="!calendarPermissionGranted"
             >Accept Invitation</v-btn
           >
         </v-card-actions>
@@ -62,6 +85,7 @@
 import { mapState } from "vuex"
 import { isPhone, post, generateEnabledCalendarsPayload } from "@/utils"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
+import CalendarPermissionsCard from "@/components/CalendarPermissionsCard.vue"
 import UserChip from "@/components/general/UserChip.vue"
 
 export default {
@@ -72,11 +96,13 @@ export default {
   props: {
     value: { type: Boolean, required: true },
     group: { type: Object },
+    calendarPermissionGranted: { type: Boolean, required: true },
   },
 
   components: {
     CalendarAccounts,
     UserChip,
+    CalendarPermissionsCard,
   },
 
   data: () => ({
