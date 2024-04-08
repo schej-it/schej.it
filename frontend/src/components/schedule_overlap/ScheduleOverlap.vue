@@ -896,7 +896,10 @@ export default {
       )
     },
     hintClosed() {
-      return !this.hintState || localStorage[`closedHint${this.state}`]
+      return !this.hintState || localStorage[this.hintStateLocalStorageKey]
+    },
+    hintStateLocalStorageKey() {
+      return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
     },
   },
   methods: {
@@ -1693,7 +1696,7 @@ export default {
     // -----------------------------------
     closeHint() {
       this.hintState = false
-      localStorage[`closedHint${this.state}`] = true
+      localStorage[this.hintStateLocalStorageKey] = true
     },
     //#endregion
 

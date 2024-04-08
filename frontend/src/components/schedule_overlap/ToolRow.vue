@@ -154,8 +154,11 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
+    hintStateLocalStorageKey() {
+      return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
+    },
     showHintText() {
-      return this.hintTextState && !localStorage[`closedHintText${this.state}`]
+      return this.hintTextState && !localStorage[this.hintStateLocalStorageKey]
     },
     hintText() {
       switch (this.state) {
@@ -178,7 +181,7 @@ export default {
     },
     closeHint() {
       this.hintTextState = false
-      localStorage[`closedHintText${this.state}`] = true
+      localStorage[this.hintStateLocalStorageKey] = true
     },
   },
 }
