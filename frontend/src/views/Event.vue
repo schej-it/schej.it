@@ -187,7 +187,14 @@
       v-if="isPhone"
       class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
     >
-      <template v-if="!isEditing">
+      <template v-if="!isEditing && !isScheduling">
+        <v-btn
+          v-if="numResponses > 0"
+          text
+          class="tw-text-white"
+          @click="scheduleEvent"
+          >Schedule</v-btn
+        >
         <v-spacer />
         <v-btn
           v-if="!isGroup && !authUser && selectedGuestRespondent"
@@ -215,13 +222,22 @@
           }}
         </v-btn>
       </template>
-      <template v-else>
+      <template v-else-if="isEditing">
         <v-btn text class="tw-text-white" @click="cancelEditing">
           Cancel
         </v-btn>
         <v-spacer />
         <v-btn class="tw-bg-white tw-text-green" @click="saveChanges">
           Save
+        </v-btn>
+      </template>
+      <template v-else-if="isScheduling">
+        <v-btn text class="tw-text-white" @click="cancelScheduleEvent">
+          Cancel
+        </v-btn>
+        <v-spacer />
+        <v-btn class="tw-bg-white tw-text-green" @click="confirmScheduleEvent">
+          Schedule
         </v-btn>
       </template>
     </div>
@@ -304,6 +320,9 @@ export default {
     isEditing() {
       return this.scheduleOverlapComponent?.editing
     },
+    isScheduling() {
+      return this.scheduleOverlapComponent?.scheduling
+    },
     canEdit() {
       return (
         this.event.ownerId == 0 || this.authUser?._id === this.event.ownerId
@@ -332,6 +351,9 @@ export default {
     },
     showFeedbackBtn() {
       return this.isPhone
+    },
+    numResponses() {
+      return this.scheduleOverlapComponent?.respondents.length
     },
   },
 
@@ -474,6 +496,15 @@ export default {
         this.scheduleOverlapComponent.stopEditing()
         this.guestDialog = false
       }
+    },
+    scheduleEvent() {
+      this.scheduleOverlapComponent?.scheduleEvent()
+    },
+    cancelScheduleEvent() {
+      this.scheduleOverlapComponent?.cancelScheduleEvent()
+    },
+    confirmScheduleEvent() {
+      this.scheduleOverlapComponent?.confirmScheduleEvent()
     },
 
     highlightAvailabilityBtn() {

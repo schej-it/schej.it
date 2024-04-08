@@ -139,7 +139,7 @@
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
                               :class="
                                 isGroup
-                                  ? 'tw-border-white tw-bg-blue'
+                                  ? 'tw-border-white tw-bg-light-blue'
                                   : 'tw-border-blue'
                               "
                             >
@@ -426,6 +426,7 @@ import {
   getDateDayOffset,
   isDateBetween,
   generateEnabledCalendarsPayload,
+  isTouchEnabled,
 } from "@/utils"
 import { eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -536,7 +537,7 @@ export default {
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
-      if (this.isGroup && this.state === this.states.EDIT_AVAILABILITY) return false
+      if (this.isGroup) return this.state === this.states.SCHEDULE_EVENT
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
@@ -616,7 +617,7 @@ export default {
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
       let max = 0
-      for (const day of this.days) {
+      for (const day of this.allDays) {
         for (const time of this.times) {
           const num = [
             ...this.getRespondentsForHoursOffset(
@@ -634,8 +635,8 @@ export default {
     dayOffset() {
       return Math.floor((this.event.startTime - this.timezoneOffset / 60) / 24)
     },
-    days() {
-      /* Return the days that are encompassed by startDate and endDate */
+    /** Returns all the days that are encompassed by startDate and endDate */
+    allDays() {
       const days = []
       const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
       const months = [
@@ -653,12 +654,7 @@ export default {
         "dec",
       ]
 
-      for (
-        let i = this.page * this.maxDaysPerPage;
-        i < this.event.dates.length &&
-        i < (this.page + 1) * this.maxDaysPerPage;
-        ++i
-      ) {
+      for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
         const offsetDate = new Date(date)
         offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
@@ -690,6 +686,13 @@ export default {
 
       return days
     },
+    /** Returns a subset of all days based on the page number */
+    days() {
+      return this.allDays.slice(
+        this.page * this.maxDaysPerPage,
+        Math.min(this.event.dates.length, (this.page + 1) * this.maxDaysPerPage)
+      )
+    },
     defaultState() {
       // Either the heatmap or the best_times state, depending on the toggle
       return this.showBestTimes ? this.states.BEST_TIMES : this.states.HEATMAP
@@ -697,6 +700,10 @@ export default {
     editing() {
       // Returns whether currently in the editing state
       return this.state === this.states.EDIT_AVAILABILITY
+    },
+    scheduling() {
+      // Returns whether currently in the scheduling state
+      return this.state === this.states.SCHEDULE_EVENT
     },
     hintText() {
       switch (this.state) {
@@ -763,6 +770,11 @@ export default {
               ...this.event.responses[userId],
               availability: [...availability],
             }
+          } else {
+            parsed[userId] = {
+              ...this.event.responses[userId],
+              availability: [],
+            }
           }
         }
         return parsed
@@ -784,7 +796,7 @@ export default {
     responsesFormatted() {
       /* Formats the responses in a map where date/time is mapped to the people that are available then */
       const formatted = new Map()
-      for (const day of this.days) {
+      for (const day of this.allDays) {
         for (const time of this.times) {
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           formatted.set(date.getTime(), new Set())
@@ -1025,7 +1037,7 @@ export default {
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.event.responses[id].availability.forEach((item) =>
+      this.event.responses[id].availability?.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -1786,16 +1798,15 @@ export default {
     addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
       const timesEl = document.getElementById("times")
-      if (isPhone(this.$vuetify)) {
+      if (isTouchEnabled()) {
         timesEl.addEventListener("touchstart", this.startDrag)
         timesEl.addEventListener("touchmove", this.moveDrag)
         timesEl.addEventListener("touchend", this.endDrag)
         timesEl.addEventListener("touchcancel", this.endDrag)
-      } else {
-        timesEl.addEventListener("mousedown", this.startDrag)
-        timesEl.addEventListener("mousemove", this.moveDrag)
-        timesEl.addEventListener("mouseup", this.endDrag)
       }
+      timesEl.addEventListener("mousedown", this.startDrag)
+      timesEl.addEventListener("mousemove", this.moveDrag)
+      timesEl.addEventListener("mouseup", this.endDrag)
     }
 
     // TODO: set initial calendar settings

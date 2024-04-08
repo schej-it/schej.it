@@ -107,7 +107,7 @@ func createEvent(c *gin.Context) {
 		// Schedule email reminders for each of the remindees' emails
 		remindees := make([]models.Remindee, 0)
 		for _, email := range payload.Remindees {
-			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, event.Id.Hex())
+			taskIds := gcloud.CreateEmailTask(email, ownerName, payload.Name, event.GetId())
 			remindees = append(remindees, models.Remindee{
 				Email:     email,
 				TaskIds:   taskIds,
@@ -125,9 +125,13 @@ func createEvent(c *gin.Context) {
 			// Add event owner to group by default
 			enabledCalendars := make(map[string][]string)
 			for email, calendarAccount := range user.CalendarAccounts {
-				enabledCalendars[email] = make([]string, 0)
-				for calendarId := range utils.Coalesce(calendarAccount.SubCalendars) {
-					enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+				if utils.Coalesce(calendarAccount.Enabled) {
+					enabledCalendars[email] = make([]string, 0)
+					for calendarId, subCalendar := range utils.Coalesce(calendarAccount.SubCalendars) {
+						if utils.Coalesce(subCalendar.Enabled) {
+							enabledCalendars[email] = append(enabledCalendars[email], calendarId)
+						}
+					}
 				}
 			}
 			event.Responses[user.Id.Hex()] = &models.Response{
@@ -156,7 +160,7 @@ func createEvent(c *gin.Context) {
 				listmonk.SendEmailAddSubscriberIfNotExist(email, availabilityGroupInviteEmailId, bson.M{
 					"ownerName": ownerName,
 					"groupName": event.Name,
-					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
+					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 				})
 				attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr()})
 			}
@@ -265,7 +269,7 @@ func editEvent(c *gin.Context) {
 
 		for _, addedEmail := range added {
 			// Schedule email tasks
-			taskIds := gcloud.CreateEmailTask(addedEmail.Value, ownerName, event.Name, event.Id.Hex())
+			taskIds := gcloud.CreateEmailTask(addedEmail.Value, ownerName, event.Name, event.GetId())
 			updatedRemindees = append(updatedRemindees, models.Remindee{
 				Email:     addedEmail.Value,
 				TaskIds:   taskIds,
@@ -313,7 +317,7 @@ func editEvent(c *gin.Context) {
 			listmonk.SendEmailAddSubscriberIfNotExist(addedEmail.Value, availabilityGroupInviteEmailId, bson.M{
 				"ownerName": ownerName,
 				"groupName": event.Name,
-				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.Id.Hex()),
+				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 			})
 			updatedAttendees = append(updatedAttendees, models.Attendee{
 				Email:    addedEmail.Value,
@@ -420,7 +424,6 @@ func updateEventResponse(c *gin.Context) {
 			Name:         payload.Name,
 			Availability: payload.Availability,
 		}
-		event.Responses[payload.Name] = &response
 	} else {
 		userIdInterface := session.Get("userId")
 		if userIdInterface == nil {
@@ -436,13 +439,13 @@ func updateEventResponse(c *gin.Context) {
 			UseCalendarAvailability: payload.UseCalendarAvailability,
 			EnabledCalendars:        payload.EnabledCalendars,
 		}
-		event.Responses[userIdString] = &response
 	}
 
 	// Check if user has responded to event before (edit response) or not (new response)
 	_, userHasResponded := event.Responses[userIdString]
 
 	// Update responses in mongodb
+	event.Responses[userIdString] = &response
 	_, err := db.EventsCollection.UpdateByID(
 		context.Background(),
 		event.Id,
@@ -469,21 +472,13 @@ func updateEventResponse(c *gin.Context) {
 				respondent := db.GetUserById(userIdString)
 				respondentName = fmt.Sprintf("%s %s", respondent.FirstName, respondent.LastName)
 			}
-			utils.SendEmail(
-				creator.Email,
-				fmt.Sprintf("Someone just responded to your schej - \"%s\"!", event.Name),
-				fmt.Sprintf(
-					`<p>Hi %s,</p>
-
-					<p>%s just responded to your schej named "%s"!<br>
-					<a href="https://schej.it/e/%s">Click here to view the event</a></p>
-
-					<p>Best,<br>
-					schej team</p>`,
-					creator.FirstName, respondentName, event.Name, eventId,
-				),
-				"text/html",
-			)
+			someoneRespondedEmailId := 10
+			listmonk.SendEmail(creator.Email, someoneRespondedEmailId, bson.M{
+				"eventName":      event.Name,
+				"ownerName":      creator.FirstName,
+				"respondentName": respondentName,
+				"eventUrl":       fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
+			})
 		}()
 	}
 

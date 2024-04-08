@@ -129,3 +129,12 @@ export const generateEnabledCalendarsPayload = (calendarAccounts) => {
 
   return payload
 }
+
+/** Returns whether touch is enabled on the device */
+export const isTouchEnabled = () => {
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  )
+}

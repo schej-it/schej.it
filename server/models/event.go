@@ -62,3 +62,11 @@ type Attendee struct {
 	Email    string `json:"email" bson:"email,omitempty"`
 	Declined *bool  `json:"declined" bson:"declined,omitempty"`
 }
+
+func (e *Event) GetId() string {
+	if e.ShortId != nil {
+		return *e.ShortId
+	}
+
+	return e.Id.Hex()
+}
