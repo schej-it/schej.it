@@ -55,6 +55,9 @@ export default {
       let found = false
       for (const attendee of attendees) {
         if (attendee.email === this.authUser.email) {
+          
+          if (attendee.declined) return true
+
           found = true
           break
         }

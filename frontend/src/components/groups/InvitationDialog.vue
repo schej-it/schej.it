@@ -28,9 +28,11 @@
           <div class="tw-mb-2 tw-mt-5 tw-font-medium tw-text-black">
             These calendars will be shared with
           </div>
-          <div class="tw-flex tw-gap-1 tw-flex-wrap">
+          <div class="tw-flex tw-flex-wrap tw-gap-1">
             <UserChip
-              v-for="user in group.attendees?.filter((u) => !u.declined && u.email != authUser.email)"
+              v-for="user in group.attendees?.filter(
+                (u) => !u.declined && u.email != authUser.email
+              )"
               :key="user.email"
               :user="user"
             ></UserChip>
@@ -82,7 +84,9 @@ export default {
   }),
 
   mounted() {
-    this.calendarAccounts = JSON.parse(JSON.stringify(this.authUser.calendarAccounts))
+    this.calendarAccounts = JSON.parse(
+      JSON.stringify(this.authUser.calendarAccounts)
+    )
   },
 
   computed: {
@@ -95,16 +99,16 @@ export default {
   methods: {
     rejectInvitation() {
       post(`/events/${this.group._id}/decline`).then((res) => {
-        console.log(res)
+        this.$router.replace({ name: "home" })
       })
     },
 
     acceptInvitation() {
-      const payload = generateEnabledCalendarsPayload(this.calendarAccounts);
+      const payload = generateEnabledCalendarsPayload(this.calendarAccounts)
 
       post(`/events/${this.group._id}/response`, payload).then((res) => {
-        console.log(res)
         this.$emit("input", false)
+        this.$emit("refreshEvent")
       })
     },
 

@@ -536,7 +536,7 @@ export default {
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
-      if (this.isGroup) return false
+      if (this.isGroup && this.state === this.states.EDIT_AVAILABILITY) return false
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
@@ -1187,7 +1187,8 @@ export default {
       }
       await _delete(`/events/${this.event._id}/response`, payload)
       this.availability = new Set()
-      this.$emit("refreshEvent")
+      if (this.isGroup) this.$router.replace({ name: "home" })
+      else this.$emit("refreshEvent")
     },
     //#endregion
 
