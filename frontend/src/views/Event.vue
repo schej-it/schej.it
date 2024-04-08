@@ -648,7 +648,6 @@ export default {
     event() {
       if (this.event) {
         this.$nextTick(() => {
-          console.log(this.scheduleOverlapKey)
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
       }
