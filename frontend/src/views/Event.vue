@@ -32,6 +32,7 @@
       v-if="isGroup"
       v-model="invitationDialog"
       :group="event"
+      @refreshEvent="refreshEvent"
     ></InvitationDialog>
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
@@ -146,6 +147,7 @@
 
       <ScheduleOverlap
         ref="scheduleOverlap"
+        :key="scheduleOverlapKey"
         :event="event"
         :loadingCalendarEvents="loading"
         :calendarEventsMap="calendarEventsMap"
@@ -276,6 +278,7 @@ export default {
     event: null,
     scheduleOverlapComponent: null,
     scheduleOverlapComponentLoaded: false,
+    scheduleOverlapKey: 0,
 
     curGuestId: "", // Id of the current guest being edited
     calendarPermissionGranted: false,
@@ -379,7 +382,7 @@ export default {
         await this.scheduleOverlapComponent.deleteAvailability()
       }
 
-      this.showInfo("Availability deleted!")
+      this.showInfo(this.isGroup ? "Left group!" : "Availability deleted!")
       this.scheduleOverlapComponent.stopEditing()
     },
     editEvent() {
@@ -388,13 +391,14 @@ export default {
     },
     /** Refresh event details */
     async refreshEvent() {
+      console.log("REFRESHED")
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
       if (isWebview(navigator.userAgent)) {
-        // Show dialog prompting user to user a real browser
+        // Show dialog prompting user to use a real browser
         this.webviewDialog = true
       } else {
         // Or sign in if user is already using a real browser
@@ -613,8 +617,13 @@ export default {
   watch: {
     event() {
       if (this.event) {
+        console.log("REFRESHING SCHEDULE OVERLAP")
+        console.log(this.event.responses)
         this.$nextTick(() => {
+          console.log(this.scheduleOverlapKey)
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
+          this.scheduleOverlapKey += 1
+          console.log(this.scheduleOverlapKey)
         })
       }
     },
