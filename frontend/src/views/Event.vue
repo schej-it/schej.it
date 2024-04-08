@@ -147,7 +147,6 @@
 
       <ScheduleOverlap
         ref="scheduleOverlap"
-        :key="scheduleOverlapKey"
         :event="event"
         :loadingCalendarEvents="loading"
         :calendarEventsMap="calendarEventsMap"
@@ -294,7 +293,6 @@ export default {
     event: null,
     scheduleOverlapComponent: null,
     scheduleOverlapComponentLoaded: false,
-    scheduleOverlapKey: 0,
 
     curGuestId: "", // Id of the current guest being edited
     calendarPermissionGranted: false,
@@ -413,7 +411,6 @@ export default {
     },
     /** Refresh event details */
     async refreshEvent() {
-      console.log("REFRESHED")
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
@@ -648,13 +645,9 @@ export default {
   watch: {
     event() {
       if (this.event) {
-        console.log("REFRESHING SCHEDULE OVERLAP")
-        console.log(this.event.responses)
         this.$nextTick(() => {
           console.log(this.scheduleOverlapKey)
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
-          this.scheduleOverlapKey += 1
-          console.log(this.scheduleOverlapKey)
         })
       }
     },
