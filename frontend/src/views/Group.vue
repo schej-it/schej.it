@@ -52,18 +52,23 @@ export default {
       const attendees = this.event?.attendees
       if (!attendees) return true
 
-      let found = false
-      for (const attendee of attendees) {
-        if (attendee.email === this.authUser.email) {
-          
-          if (attendee.declined) return true
+      return false
 
-          found = true
-          break
-        }
-      }
+      // The below is commented out because we want to allow attendee to
+      // rejoin group after declining
 
-      return !found
+      // let found = false
+      // for (const attendee of attendees) {
+      //   if (attendee.email === this.authUser.email) {
+
+      //     if (attendee.declined) return true
+
+      //     found = true
+      //     break
+      //   }
+      // }
+
+      // return !found
     },
   },
 

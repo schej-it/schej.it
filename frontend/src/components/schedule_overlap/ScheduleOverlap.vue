@@ -601,10 +601,10 @@ export default {
       if (this.event.type !== eventTypes.GROUP) return {}
 
       const userIdToEventsByDay = {}
-      for (const userId in this.calendarAvailabilities) {
+      for (const userId in this.event.responses) {
         if (userId === this.authUser._id) {
           userIdToEventsByDay[userId] = this.calendarEventsByDay
-        } else {
+        } else if (userId in this.calendarAvailabilities) {
           userIdToEventsByDay[userId] = splitCalendarEventsByDay(
             this.event,
             this.calendarAvailabilities[userId],
@@ -1728,6 +1728,42 @@ export default {
         JSON.stringify(this.sharedCalendarAccounts)
       )
     },
+
+    /** Sets the initial sharedCalendarAccounts object */
+    initSharedCalendarAccounts() {
+      // Init shared calendar accounts to current calendar accounts
+      this.sharedCalendarAccounts = JSON.parse(
+        JSON.stringify(this.authUser.calendarAccounts)
+      )
+
+      // Disable all calendars
+      for (const id in this.sharedCalendarAccounts) {
+        this.sharedCalendarAccounts[id].enabled = false
+        for (const subCalendarId in this.sharedCalendarAccounts[id]
+          .subCalendars) {
+          this.sharedCalendarAccounts[id].subCalendars[
+            subCalendarId
+          ].enabled = false
+        }
+      }
+
+      // Enable calendars based on responses
+      if (this.authUser._id in this.event.responses) {
+        const enabledCalendars =
+          this.event.responses[this.authUser._id].enabledCalendars
+
+        for (const id in enabledCalendars) {
+          this.sharedCalendarAccounts[id].enabled = true
+
+          enabledCalendars[id].forEach((subCalendarId) => {
+            this.sharedCalendarAccounts[id].subCalendars[
+              subCalendarId
+            ].enabled = true
+          })
+        }
+      }
+    },
+
     //#endregion
   },
   watch: {
@@ -1735,6 +1771,12 @@ export default {
       if (this.state === this.states.EDIT_AVAILABILITY) {
         this.unsavedChanges = true
       }
+    },
+    event: {
+      immediate: true,
+      handler() {
+        this.initSharedCalendarAccounts()
+      },
     },
     state(nextState, prevState) {
       // Reset scheduled event when exiting schedule event state
@@ -1817,36 +1859,6 @@ export default {
       timesEl.addEventListener("mousedown", this.startDrag)
       timesEl.addEventListener("mousemove", this.moveDrag)
       timesEl.addEventListener("mouseup", this.endDrag)
-    }
-
-    // TODO: set initial calendar settings
-    this.sharedCalendarAccounts = JSON.parse(
-      JSON.stringify(this.authUser.calendarAccounts)
-    )
-
-    for (const id in this.sharedCalendarAccounts) {
-      this.sharedCalendarAccounts[id].enabled = false
-      for (const subCalendarId in this.sharedCalendarAccounts[id]
-        .subCalendars) {
-        this.sharedCalendarAccounts[id].subCalendars[
-          subCalendarId
-        ].enabled = false
-      }
-    }
-
-    if (this.authUser._id in this.event.responses) {
-      const enabledCalendars =
-        this.event.responses[this.authUser._id].enabledCalendars
-
-      for (const id in enabledCalendars) {
-        this.sharedCalendarAccounts[id].enabled = true
-
-        enabledCalendars[id].forEach((subCalendarId) => {
-          this.sharedCalendarAccounts[id].subCalendars[
-            subCalendarId
-          ].enabled = true
-        })
-      }
     }
   },
   beforeDestroy() {
