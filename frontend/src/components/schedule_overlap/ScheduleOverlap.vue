@@ -1731,6 +1731,8 @@ export default {
 
     /** Sets the initial sharedCalendarAccounts object */
     initSharedCalendarAccounts() {
+      if (!this.authUser) return
+
       // Init shared calendar accounts to current calendar accounts
       this.sharedCalendarAccounts = JSON.parse(
         JSON.stringify(this.authUser.calendarAccounts)
