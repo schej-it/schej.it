@@ -602,11 +602,15 @@ export default {
 
       const userIdToEventsByDay = {}
       for (const userId in this.calendarAvailabilities) {
-        userIdToEventsByDay[userId] = splitCalendarEventsByDay(
-          this.event,
-          this.calendarAvailabilities[userId],
-          this.weekOffset
-        )
+        if (userId === this.authUser._id) {
+          userIdToEventsByDay[userId] = this.calendarEventsByDay
+        } else {
+          userIdToEventsByDay[userId] = splitCalendarEventsByDay(
+            this.event,
+            this.calendarAvailabilities[userId],
+            this.weekOffset
+          )
+        }
       }
 
       return userIdToEventsByDay
@@ -1139,10 +1143,13 @@ export default {
     async submitAvailability(name = "") {
       let payload = {}
 
-      /** If this is a group submit enabled calendars, otherwise submit availability */
+      let type = ""
+      // If this is a group submit enabled calendars, otherwise submit availability
       if (this.isGroup) {
+        type = "calendars"
         payload = generateEnabledCalendarsPayload(this.sharedCalendarAccounts)
       } else {
+        type = "availability"
         payload.availability = this.availabilityArray
         if (this.authUser) {
           payload.guest = false
@@ -1157,22 +1164,22 @@ export default {
       // Update analytics
       if (this.authUser) {
         if (this.authUser._id in this.parsedResponses) {
-          this.$posthog?.capture("Edited availability", {
+          this.$posthog?.capture(`Edited ${type}`, {
             eventId: this.event._id,
           })
         } else {
-          this.$posthog?.capture("Added availability", {
+          this.$posthog?.capture(`Added ${type}`, {
             eventId: this.event._id,
           })
         }
       } else {
         if (name in this.parsedResponses) {
-          this.$posthog?.capture("Edited availability as guest", {
+          this.$posthog?.capture(`Edited ${type} as guest`, {
             eventId: this.event._id,
             name,
           })
         } else {
-          this.$posthog?.capture("Added availability as guest", {
+          this.$posthog?.capture(`Added ${type} as guest`, {
             eventId: this.event._id,
             name,
           })

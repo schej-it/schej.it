@@ -363,7 +363,7 @@ export const processCalendarEvents = (
   weekOffset = 0
 ) => {
   // Put calendarEvents into the correct format
-  calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
+  calendarEvents = JSON.parse(JSON.stringify(calendarEvents)) // Make a copy so we don't mutate original array
   calendarEvents = calendarEvents.map((e) => {
     if (eventType === eventTypes.DOW || eventType === eventTypes.GROUP) {
       e.startDate = dateToDowDate(dates, e.startDate, weekOffset)

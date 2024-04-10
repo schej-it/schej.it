@@ -661,9 +661,7 @@ export default {
           this.scheduleOverlapComponent.startEditing()
         }
 
-        if (
-          this.isGroup && !this.userHasResponded
-        ) {
+        if (this.isGroup && !this.userHasResponded) {
           this.invitationDialog = true
         }
       }
