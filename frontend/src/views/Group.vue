@@ -16,7 +16,7 @@
 import Event from "./Event.vue"
 import { mapActions, mapState } from "vuex"
 import { get } from "@/utils"
-import { errors } from "@/constants"
+import { errors, eventTypes } from "@/constants"
 import AccessDenied from "@/components/groups/AccessDenied.vue"
 import NotSignedIn from "@/components/groups/NotSignedIn.vue"
 
@@ -79,6 +79,19 @@ export default {
   async created() {
     try {
       this.event = await get(`/events/${this.groupId}`)
+
+      // Redirect if we're at the wrong route
+      if (this.event.type !== eventTypes.GROUP) {
+        this.$router.replace({
+          name: "event",
+          params: {
+            eventId: this.groupId,
+            initialTimezone: this.initialTimezone,
+            fromSignIn: this.fromSignIn,
+            contactsPayload: this.contactsPayload,
+          },
+        })
+      }
     } catch (err) {
       switch (err.error) {
         case errors.EventNotFound:

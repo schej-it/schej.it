@@ -621,6 +621,33 @@ export default {
     // Get event details
     try {
       await this.refreshEvent()
+
+      // Redirect if we're at the wrong route
+      if (this.event.type === eventTypes.GROUP) {
+        if (this.$route.name === "event") {
+          this.$router.replace({
+            name: "group",
+            params: {
+              groupId: this.eventId,
+              initialTimezone: this.initialTimezone,
+              fromSignIn: this.fromSignIn,
+              contactsPayload: this.contactsPayload,
+            },
+          })
+        }
+      } else {
+        if (this.$route.name === "group") {
+          this.$router.replace({
+            name: "event",
+            params: {
+              eventId: this.eventId,
+              initialTimezone: this.initialTimezone,
+              fromSignIn: this.fromSignIn,
+              contactsPayload: this.contactsPayload,
+            },
+          })
+        }
+      }
     } catch (err) {
       switch (err.error) {
         case errors.EventNotFound:

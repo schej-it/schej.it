@@ -12,7 +12,9 @@
           class="tw-mb-4 tw-rounded-full tw-text-center"
         />
         <h1 class="tw-mb-2 tw-text-center tw-text-xl tw-font-medium">
-          {{ owner.firstName ?? "" }} invited you to join "{{ event.name }}"
+          {{ owner.firstName ?? "" }} invited you to join <br />"{{
+            event.name
+          }}"
         </h1>
         <div class="tw-text-center tw-text-dark-gray">
           Join the group now to share your real-time <br v-if="!isPhone" />
