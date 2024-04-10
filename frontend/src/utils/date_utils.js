@@ -39,7 +39,7 @@ export const getDateRangeString = (date1, date2) => {
 
 /** Returns a string representing the date range for the provided event */
 export const getDateRangeStringForEvent = (event) => {
-  if (event.type === eventTypes.DOW) {
+  if (event.type === eventTypes.DOW || event.type === eventTypes.GROUP) {
     let s = ""
 
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
