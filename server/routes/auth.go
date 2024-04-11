@@ -147,7 +147,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		}
 
 		// Set calendar account
-		user.CalendarAccounts[calendarAccount.Email] = calendarAccount
+		userData.CalendarAccounts[calendarAccount.Email] = calendarAccount
 
 		// Update user if exists
 		_, err := db.UsersCollection.UpdateByID(
