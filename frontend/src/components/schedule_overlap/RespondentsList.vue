@@ -95,7 +95,10 @@
       </template>
     </div>
 
-    <div v-if="pendingUsers.length > 0" class="tw-flex tw-items-center tw-font-medium tw-mb-2">
+    <div
+      v-if="pendingUsers.length > 0"
+      class="tw-mb-2 tw-flex tw-items-center tw-font-medium"
+    >
       <div class="tw-mr-1 tw-text-lg">Pending</div>
       <div class="tw-font-normal">({{ pendingUsers.length }})</div>
     </div>
@@ -104,14 +107,10 @@
       <div v-for="(user, i) in pendingUsers" :key="user.email">
         <div class="tw-relative tw-flex tw-items-center">
           <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-          <div
-          class="tw-mr-1 tw-transition-all tw-text-sm"
-        >
-          {{ user.email }}
+          <div class="tw-mr-1 tw-text-sm tw-transition-all">
+            {{ user.email }}
+          </div>
         </div>
-        </div>
-
-       
       </div>
     </div>
 
@@ -121,7 +120,8 @@
         <v-card-text class="tw-text-sm tw-text-dark-gray"
           >Are you sure you want to delete
           <strong>{{ userToDelete?.firstName }}</strong
-          >'s availability from this event?</v-card-text
+          >'s availability from this
+          {{ isGroup ? "group" : "event" }}?</v-card-text
         >
         <v-card-actions>
           <v-spacer />
@@ -227,7 +227,7 @@ export default {
         }
         return false
       })
-    }
+    },
   },
 
   methods: {
