@@ -557,6 +557,15 @@ export default {
       const curWeekOffset = this.weekOffset
       return getCalendarEventsMap(this.event, { weekOffset: curWeekOffset })
         .then((eventsMap) => {
+
+          for (const id in eventsMap) {
+            if (eventsMap[id].error) {
+              this.calendarPermissionGranted = false
+              console.error(eventsMap[id].error)
+              return
+            }
+          }
+
           // Don't set calendar events / set availability if user has already
           // selected a different weekoffset by the time these calendar events load
           if (curWeekOffset !== this.weekOffset) return
