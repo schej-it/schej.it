@@ -427,7 +427,9 @@ export default {
           // Request permission if calendar permissions not yet granted
           signInGoogle({
             state: {
-              type: this.isGroup ? authTypes.GROUP_ADD_AVAILABILITY : authTypes.EVENT_ADD_AVAILABILITY,
+              type: this.isGroup
+                ? authTypes.GROUP_ADD_AVAILABILITY
+                : authTypes.EVENT_ADD_AVAILABILITY,
               eventId: this.eventId,
             },
             selectAccount: false,
@@ -557,13 +559,11 @@ export default {
       const curWeekOffset = this.weekOffset
       return getCalendarEventsMap(this.event, { weekOffset: curWeekOffset })
         .then((eventsMap) => {
-
-          for (const id in eventsMap) {
-            if (eventsMap[id].error) {
-              this.calendarPermissionGranted = false
-              console.error(eventsMap[id].error)
-              return
-            }
+          // Check if the primary calendar has an error
+          // We don't care if other calendars have an error, because if they do we just dont show them
+          if (eventsMap[this.authUser.email].error) {
+            this.calendarPermissionGranted = false
+            return
           }
 
           // Don't set calendar events / set availability if user has already
