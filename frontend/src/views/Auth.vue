@@ -65,6 +65,14 @@ export default {
               params: { groupId: state.groupId },
             })
             break
+          case authTypes.GROUP_ADD_AVAILABILITY:
+            this.$router.replace({
+              name: "group",
+              params: { groupId: state.eventId, fromSignIn: true },
+            })
+            authUser = await get("/user/profile")
+            this.setAuthUser(authUser)
+            break
           case authTypes.ADD_CALENDAR_ACCOUNT:
             this.$router.replace({
               name: "settings",

@@ -427,7 +427,7 @@ export default {
           // Request permission if calendar permissions not yet granted
           signInGoogle({
             state: {
-              type: authTypes.EVENT_ADD_AVAILABILITY,
+              type: this.isGroup ? authTypes.GROUP_ADD_AVAILABILITY : authTypes.EVENT_ADD_AVAILABILITY,
               eventId: this.eventId,
             },
             selectAccount: false,

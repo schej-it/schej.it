@@ -1738,6 +1738,9 @@ export default {
         JSON.stringify(this.authUser.calendarAccounts)
       )
 
+      console.log("INITITAILIZING CALENDAR ACCOUNTS")
+      console.log(this.sharedCalendarAccounts)
+
       // Disable all calendars
       for (const id in this.sharedCalendarAccounts) {
         this.sharedCalendarAccounts[id].enabled = false
