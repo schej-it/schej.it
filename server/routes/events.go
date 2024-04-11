@@ -325,6 +325,21 @@ func editEvent(c *gin.Context) {
 			})
 		}
 
+		// Send group update emails
+		if len(added) > 0 {
+			emails := utils.Map(added, func(a utils.ElementWithIndex[string]) string { return a.Value })
+			addedAttendeeEmailId := 11
+
+			for _, keptEmail := range kept {
+				listmonk.SendEmailAddSubscriberIfNotExist(keptEmail.Value, addedAttendeeEmailId, bson.M{
+					"ownerName": ownerName,
+					"groupName": event.Name,
+					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
+					"emails":    emails,
+				})
+			}
+		}
+
 		event.Attendees = &updatedAttendees
 	}
 

@@ -78,16 +78,16 @@
           </div>
         </div>
 
-        <div v-if="!edit">
-          <EmailInput
-            :addedEmails="emails"
-            @update:emails="(newEmails) => (emails = newEmails)"
-          >
-            <template v-slot:header>
-              <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
-            </template>
-          </EmailInput>
-        </div>
+        <!-- <div v-if="!edit"> -->
+        <EmailInput
+          :addedEmails="emails"
+          @update:emails="(newEmails) => (emails = newEmails)"
+        >
+          <template v-slot:header>
+            <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
+          </template>
+        </EmailInput>
+        <!-- </div> -->
 
         <div>
           <v-btn
