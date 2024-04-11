@@ -210,13 +210,24 @@ func addCalendarAccount(c *gin.Context) {
 		RefreshToken:          tokens.RefreshToken,
 	}
 
+	// Set subalendars map based on whether calendar account already exists
+	if oldCalendarAccount, ok := authUser.CalendarAccounts[calendarAccount.Email]; ok && oldCalendarAccount.SubCalendars != nil {
+		calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
+	} else {
+		subCalendars, err := calendar.GetCalendarList(calendarAccount.AccessToken)
+		if err == nil {
+			calendarAccount.SubCalendars = &subCalendars
+		}
+	}
+
+	// Set calendar account
+	authUser.CalendarAccounts[calendarAccount.Email] = calendarAccount
+
 	// Perform mongo update
 	db.UsersCollection.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"_id": authUser.Id},
-		bson.A{
-			utils.InsertCalendarAccountAggregation(calendarAccount),
-		},
+		bson.M{"$set": authUser},
 	)
 
 	c.JSON(http.StatusOK, gin.H{})
