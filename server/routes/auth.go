@@ -141,14 +141,19 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 			userData.LastName = ""
 		}
 
+		// If calendar account already exists for user, update calendar account
+		if oldCalendarAccount, ok := user.CalendarAccounts[calendarAccount.Email]; ok {
+			calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
+		}
+
+		// Set calendar account
+		user.CalendarAccounts[calendarAccount.Email] = calendarAccount
+
 		// Update user if exists
 		_, err := db.UsersCollection.UpdateByID(
 			context.Background(),
 			userId,
-			bson.A{
-				bson.M{"$set": userData},
-				utils.InsertCalendarAccountAggregation(calendarAccount),
-			},
+			bson.M{"$set": userData},
 		)
 		if err != nil {
 			logger.StdErr.Panicln(err)
