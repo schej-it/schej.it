@@ -1,10 +1,6 @@
 <template>
   <div
-    :class="
-      toggleState
-        ? 'tw-min-w-[240px]'
-        : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'
-    "
+    :class="toggleState ? '' : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'"
     class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-transition-all"
   >
     <div
@@ -84,7 +80,9 @@ export default {
   },
 
   mounted() {
-    this.calendarAccounts = !this.initialCalendarAccountsData ? this.authUser.calendarAccounts : this.initialCalendarAccountsData
+    this.calendarAccounts = !this.initialCalendarAccountsData
+      ? this.authUser.calendarAccounts
+      : this.initialCalendarAccountsData
   },
 
   methods: {
