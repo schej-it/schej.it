@@ -147,6 +147,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		}
 
 		// Set calendar account
+		userData.CalendarAccounts = user.CalendarAccounts
 		userData.CalendarAccounts[calendarAccount.Email] = calendarAccount
 
 		// Update user if exists
