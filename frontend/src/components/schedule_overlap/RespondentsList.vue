@@ -175,7 +175,7 @@ export default {
     isOwner: { type: Boolean, required: true },
     maxHeight: { type: Number },
     isGroup: { type: Boolean, required: true },
-    attendees: { type: Array, default: [] },
+    attendees: { type: Array, default: () => [] },
     showCalendarEvents: { type: Boolean, required: true },
   },
 
