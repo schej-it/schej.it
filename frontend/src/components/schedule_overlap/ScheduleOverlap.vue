@@ -1741,11 +1741,13 @@ export default {
       // Disable all calendars
       for (const id in this.sharedCalendarAccounts) {
         this.sharedCalendarAccounts[id].enabled = false
-        for (const subCalendarId in this.sharedCalendarAccounts[id]
-          .subCalendars) {
-          this.sharedCalendarAccounts[id].subCalendars[
-            subCalendarId
-          ].enabled = false
+        if (this.sharedCalendarAccounts[id].subCalendars) {
+          for (const subCalendarId in this.sharedCalendarAccounts[id]
+            .subCalendars) {
+            this.sharedCalendarAccounts[id].subCalendars[
+              subCalendarId
+            ].enabled = false
+          }
         }
       }
 
