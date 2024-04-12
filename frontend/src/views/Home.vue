@@ -135,16 +135,12 @@ export default {
       timeMax.setDate(timeMax.getDate() + 1)
       timeMax = timeMax.toISOString()
 
-      console.log(timeMax)
       let calendarEventsMap = await get(
         `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
       )
 
-      console.log(calendarEventsMap)
-
       if (calendarEventsMap[this.authUser.email].error) {
         this.calendarPermissionGranted = false
-        console.log("Calendar permission not granted")
         return
       }
 
@@ -152,8 +148,6 @@ export default {
       this.calendarPermissionGranted = !Object.values(calendarEventsMap).every(
         (c) => Boolean(c.error)
       )
-
-      console.log(this.calendarPermissionGranted)
     },
   },
 
