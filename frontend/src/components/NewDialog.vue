@@ -47,6 +47,7 @@
           :edit="edit"
           @input="$emit('input', false)"
           :show-help="!noTabs"
+          :calendarPermissionGranted="calendarPermissionGranted"
         />
       </template>
     </v-card>
@@ -71,6 +72,8 @@ export default {
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     noTabs: { type: Boolean, default: false },
+    calendarPermissionGranted: { type: Boolean, default: true },
+    initialTab: { type: String, default: "event" },
   },
 
   components: {
@@ -90,6 +93,10 @@ export default {
         GROUP: "group",
       },
     }
+  },
+
+  mounted() {
+    this.tab = this.initialTab
   },
 
   computed: {

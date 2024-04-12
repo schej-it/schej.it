@@ -59,6 +59,14 @@ export default {
               params: { eventId: state.eventId },
             })
             break
+          case authTypes.GROUP_CREATE:
+            this.$router.replace({
+              name: "home",
+              params: {
+                openNewGroup: true,
+              },
+            })
+            break
           case authTypes.GROUP_SIGN_IN:
             this.$router.replace({
               name: "group",
@@ -94,6 +102,7 @@ export default {
                 name: "home",
                 params: {
                   contactsPayload: state.payload,
+                  openNewGroup: state.openNewGroup,
                 },
               })
             } else {

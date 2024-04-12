@@ -23,7 +23,10 @@
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
-      <div class="tw-flex tw-flex-col tw-space-y-6">
+      <div
+        v-if="calendarPermissionGranted"
+        class="tw-flex tw-flex-col tw-space-y-6"
+      >
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -82,6 +85,7 @@
         <EmailInput
           :addedEmails="emails"
           @update:emails="(newEmails) => (emails = newEmails)"
+          @requestContactsAccess="requestContactsAccess"
         >
           <template v-slot:header>
             <div class="tw-mb-2 tw-text-lg tw-text-black">Members</div>
@@ -109,6 +113,13 @@
           </v-expand-transition>
         </div>
       </div>
+
+      <v-card v-else class="tw-p-5">
+        <CalendarPermissionsCard
+          cancelLabel=""
+          @allow="requestCalendarPermissions"
+        ></CalendarPermissionsCard
+      ></v-card>
     </v-card-text>
     <v-card-actions class="tw-relative tw-px-8">
       <v-btn
@@ -133,10 +144,12 @@ import {
   put,
   timeNumToTimeString,
   dateToTimeNum,
+  signInGoogle,
 } from "@/utils"
 import { mapState, mapActions } from "vuex"
-import { eventTypes, dayIndexToDayString } from "@/constants"
+import { eventTypes, dayIndexToDayString, authTypes } from "@/constants"
 import HelpDialog from "./HelpDialog.vue"
+import CalendarPermissionsCard from "./CalendarPermissionsCard.vue"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import EmailInput from "./event/EmailInput.vue"
 
@@ -156,12 +169,14 @@ export default {
     edit: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     showHelp: { type: Boolean, default: false },
+    calendarPermissionGranted: { type: Boolean, default: true },
   },
 
   components: {
     HelpDialog,
     TimezoneSelector,
     EmailInput,
+    CalendarPermissionsCard,
   },
 
   data: () => ({
@@ -314,6 +329,32 @@ export default {
             this.loading = false
           })
       }
+    },
+    /** Redirects user to oauth page requesting access to the user's calendar */
+    requestCalendarPermissions() {
+      // Request permission if calendar permissions not yet granted
+      signInGoogle({
+        state: {
+          type: authTypes.GROUP_CREATE,
+        },
+        selectAccount: false,
+        requestCalendarPermission: true,
+      })
+    },
+    /** Redirects user to oauth page requesting access to the user's contacts */
+    requestContactsAccess({ emails }) {
+      const payload = {
+        emails,
+      }
+      signInGoogle({
+        state: {
+          type: authTypes.EVENT_CONTACTS,
+          eventId: this.event ? this.event.shortId ?? this.event._id : "",
+          openNewGroup: true,
+          payload,
+        },
+        requestContactsPermission: true,
+      })
     },
   },
 

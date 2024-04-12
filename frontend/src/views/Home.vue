@@ -1,7 +1,12 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
     <!-- Dialog -->
-    <NewDialog v-model="dialog" :contactsPayload="contactsPayload" />
+    <NewDialog
+      v-model="dialog"
+      :contactsPayload="contactsPayload"
+      :calendarPermissionGranted="calendarPermissionGranted"
+      :initialTab="openNewGroup ? 'group' : 'event'"
+    />
 
     <v-fade-transition>
       <div
@@ -38,6 +43,7 @@
 </template>
 
 <script>
+import { get } from "@/utils"
 import NewDialog from "@/components/NewDialog.vue"
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
@@ -60,16 +66,21 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    openNewGroup: { type: Boolean, default: false },
   },
 
   data: () => ({
     dialog: false,
     loading: true,
+    calendarPermissionGranted: true,
   }),
 
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
-    this.dialog = Object.keys(this.contactsPayload).length > 0
+    this.dialog =
+      Object.keys(this.contactsPayload).length > 0 || this.openNewGroup
+
+    this.getCalendarPermission()
   },
 
   computed: {
@@ -97,16 +108,12 @@ export default {
         header: "Availability groups",
         events: this.createdEvents
           .filter((e) => e.type === eventTypes.GROUP)
-          .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP)).sort((e1, e2) => 
-            this.userRespondedToEvent(e1) ? 1 : -1
-          ),
+          .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP))
+          .sort((e1, e2) => (this.userRespondedToEvent(e1) ? 1 : -1)),
       }
     },
     eventsNotEmpty() {
-      return (
-        this.createdEvents.length > 0 ||
-        this.joinedEvents.length > 0 
-      )
+      return this.createdEvents.length > 0 || this.joinedEvents.length > 0
     },
   },
 
@@ -114,7 +121,40 @@ export default {
     ...mapActions(["getEvents"]),
     userRespondedToEvent(event) {
       return this.authUser._id in event.responses
-    }
+    },
+    /** Determine if calendar permissions have been granted */
+    async getCalendarPermission() {
+      if (!this.authUser) {
+        this.calendarPermissionGranted = false
+        return
+      }
+
+      let timeMin, timeMax
+      timeMin = new Date().toISOString()
+      timeMax = new Date()
+      timeMax.setDate(timeMax.getDate() + 1)
+      timeMax = timeMax.toISOString()
+
+      console.log(timeMax)
+      let calendarEventsMap = await get(
+        `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
+      )
+
+      console.log(calendarEventsMap)
+
+      if (calendarEventsMap[this.authUser.email].error) {
+        this.calendarPermissionGranted = false
+        console.log("Calendar permission not granted")
+        return
+      }
+
+      // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
+      this.calendarPermissionGranted = !Object.values(calendarEventsMap).every(
+        (c) => Boolean(c.error)
+      )
+
+      console.log(this.calendarPermissionGranted)
+    },
   },
 
   created() {

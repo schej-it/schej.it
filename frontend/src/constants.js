@@ -17,6 +17,7 @@ export const authTypes = Object.freeze({
   EVENT_CONTACTS: "event-contacts",
   GROUP_ADD_AVAILABILITY: "group-add-availability",
   GROUP_SIGN_IN: "group-sign-in",
+  GROUP_CREATE: "group-create",
   ADD_CALENDAR_ACCOUNT: "add-calendar-account",
   ADD_CALENDAR_ACCOUNT_FROM_EDIT: "add-calendar-account-from-edit",
 })
