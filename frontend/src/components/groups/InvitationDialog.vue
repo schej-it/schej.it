@@ -47,11 +47,6 @@
               <CalendarPermissionsCard
                 v-show="true"
                 cancelLabel=""
-                @cancel="
-                  () => {
-                    $emit('setAvailabilityAutomatically')
-                  }
-                "
                 @allow="
                   () => {
                     $emit('setAvailabilityAutomatically')
