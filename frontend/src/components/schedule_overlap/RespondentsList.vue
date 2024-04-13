@@ -67,9 +67,9 @@
             {{ user.firstName + " " + user.lastName }}
           </div>
 
-          <div v-if="isGroup" class="tw-ml-1">
+          <!-- <div v-if="isGroup" class="tw-ml-1">
             <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
-          </div>
+          </div> -->
 
           <v-btn
             v-if="!authUser && isGuest(user)"
