@@ -230,6 +230,12 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "attendees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "dates": {
                                             "type": "array",
                                             "items": {
@@ -338,6 +344,12 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "attendees": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "dates": {
                                             "type": "array",
                                             "items": {
@@ -380,6 +392,83 @@ var doc = `{
                     "events"
                 ],
                 "summary": "Deletes an event based on its id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/events/{eventId}/calendar-availabilities": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Return a map mapping user id to their calendar events that they have enabled for the given time range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lower bound for event's start time to filter by",
+                        "name": "timeMin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upper bound for event's end time to filter by",
+                        "name": "timeMax",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "$ref": "#/definitions/calendar.CalendarEventsWithError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{eventId}/decline": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Decline the current user's invite to the event",
                 "parameters": [
                     {
                         "type": "string",
@@ -521,13 +610,19 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "attendeeEmail": {
-                                            "type": "string"
-                                        },
                                         "availability": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
+                                            }
+                                        },
+                                        "enabledCalendars": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
                                             }
                                         },
                                         "guest": {
@@ -535,6 +630,9 @@ var doc = `{
                                         },
                                         "name": {
                                             "type": "string"
+                                        },
+                                        "useCalendarAvailability": {
+                                            "type": "boolean"
                                         }
                                     }
                                 }
@@ -990,24 +1088,21 @@ var doc = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Returns users that match the search query",
+                "summary": "Returns the user by their user id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Search query matching users' names/emails",
-                        "name": "query",
-                        "in": "query",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "An array of user profile objects",
+                        "description": "A user profile object",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.User"
-                            }
+                            "$ref": "#/definitions/models.User"
                         }
                     }
                 }
@@ -1065,6 +1160,17 @@ var doc = `{
                 }
             }
         },
+        "models.Attendee": {
+            "type": "object",
+            "properties": {
+                "declined": {
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CalendarAccount": {
             "type": "object",
             "properties": {
@@ -1111,6 +1217,13 @@ var doc = `{
                 "_id": {
                     "type": "string"
                 },
+                "attendees": {
+                    "description": "Attendees for an availability group",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Attendee"
+                    }
+                },
                 "calendarEventId": {
                     "type": "string"
                 },
@@ -1147,6 +1260,9 @@ var doc = `{
                     "description": "Scheduled event",
                     "type": "object",
                     "$ref": "#/definitions/models.CalendarEvent"
+                },
+                "shortId": {
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
@@ -1199,8 +1315,22 @@ var doc = `{
                 "availability": {
                     "type": "string"
                 },
+                "enabledCalendars": {
+                    "description": "Maps email to an array of sub calendar ids",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
                 "name": {
                     "type": "string"
+                },
+                "useCalendarAvailability": {
+                    "description": "Calendar availability variables for Availability Groups feature",
+                    "type": "boolean"
                 },
                 "user": {
                     "type": "object",

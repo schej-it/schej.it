@@ -18,12 +18,24 @@
     />
 
     <!-- Edit event dialog -->
-    <NewEventDialog
+    <NewDialog
       v-model="editEventDialog"
+      :type="isGroup ? 'group' : 'event'"
       :event="event"
       :contactsPayload="contactsPayload"
-      edit-event
+      edit
+      no-tabs
     />
+
+    <!-- Group invitation dialog -->
+    <InvitationDialog
+      v-if="isGroup"
+      v-model="invitationDialog"
+      :group="event"
+      :calendarPermissionGranted="calendarPermissionGranted"
+      @refreshEvent="refreshEvent"
+      @setAvailabilityAutomatically="setAvailabilityAutomatically"
+    ></InvitationDialog>
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
@@ -52,7 +64,24 @@
           </div>
           <v-spacer />
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
-            <div>
+            <div v-if="isGroup">
+              <v-btn
+                :icon="isPhone"
+                :outlined="!isPhone"
+                class="tw-text-green"
+                @click="refreshCalendar"
+                :loading="loading"
+              >
+                <v-icon class="tw-mr-1 tw-text-green" v-if="!isPhone"
+                  >mdi-refresh</v-icon
+                >
+                <span v-if="!isPhone" class="tw-mr-2 tw-text-green"
+                  >Refresh</span
+                >
+                <v-icon class="tw-text-green" v-else>mdi-refresh</v-icon>
+              </v-btn>
+            </div>
+            <div v-else>
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
@@ -71,7 +100,7 @@
             <div v-if="!isPhone" class="tw-flex tw-w-40">
               <template v-if="!isEditing">
                 <v-btn
-                  v-if="!authUser && selectedGuestRespondent"
+                  v-if="!isGroup && !authUser && selectedGuestRespondent"
                   min-width="10.25rem"
                   class="tw-bg-green tw-text-white tw-transition-opacity"
                   :style="{ opacity: availabilityBtnOpacity }"
@@ -88,7 +117,11 @@
                   @click="addAvailability"
                 >
                   {{
-                    userHasResponded ? "Edit availability" : "Add availability"
+                    isGroup
+                      ? "Edit calendars"
+                      : userHasResponded
+                      ? "Edit availability"
+                      : "Add availability"
                   }}
                 </v-btn>
               </template>
@@ -120,6 +153,7 @@
         :loadingCalendarEvents="loading"
         :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
+        :calendar-availabilities="calendarAvailabilities"
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
@@ -164,7 +198,7 @@
         >
         <v-spacer />
         <v-btn
-          v-if="!authUser && selectedGuestRespondent"
+          v-if="!isGroup && !authUser && selectedGuestRespondent"
           outlined
           class="tw-bg-white tw-text-green tw-transition-opacity"
           :style="{ opacity: availabilityBtnOpacity }"
@@ -180,7 +214,13 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
         >
-          {{ userHasResponded ? "Edit availability" : "Add availability" }}
+          {{
+            isGroup
+              ? "Edit calendars"
+              : userHasResponded
+              ? "Edit availability"
+              : "Add availability"
+          }}
         </v-btn>
       </template>
       <template v-else-if="isEditing">
@@ -216,13 +256,14 @@ import {
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
-import NewEventDialog from "@/components/NewEventDialog.vue"
+import NewDialog from "@/components/NewDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
 import { errors, authTypes, eventTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
+import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 
 export default {
   name: "Event",
@@ -237,9 +278,10 @@ export default {
   components: {
     GuestDialog,
     ScheduleOverlap,
-    NewEventDialog,
+    NewDialog,
     SignInNotSupportedDialog,
     MarkAvailabilityDialog,
+    InvitationDialog,
   },
 
   data: () => ({
@@ -247,6 +289,7 @@ export default {
     webviewDialog: false,
     guestDialog: false,
     editEventDialog: false,
+    invitationDialog: false,
     loading: true,
     calendarEventsMap: {},
     event: null,
@@ -254,11 +297,14 @@ export default {
     scheduleOverlapComponentLoaded: false,
 
     curGuestId: "", // Id of the current guest being edited
-    calendarPermissionGranted: false,
+    calendarPermissionGranted: true,
 
     weekOffset: 0,
 
     availabilityBtnOpacity: 1,
+
+    // Availability Groups
+    calendarAvailabilities: {}, // maps userId to their calendar events
   }),
 
   mounted() {
@@ -290,6 +336,9 @@ export default {
     },
     isWeekly() {
       return this.event?.type === eventTypes.DOW
+    },
+    isGroup() {
+      return this.event?.type === eventTypes.GROUP
     },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges
@@ -355,22 +404,22 @@ export default {
         await this.scheduleOverlapComponent.deleteAvailability()
       }
 
-      this.showInfo("Availability deleted!")
+      this.showInfo(this.isGroup ? "Left group!" : "Availability deleted!")
       this.scheduleOverlapComponent.stopEditing()
     },
     editEvent() {
       /* Show edit event dialog */
       this.editEventDialog = true
     },
+    /** Refresh event details */
     async refreshEvent() {
-      /* Refresh event details */
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
       if (isWebview(navigator.userAgent)) {
-        // Show dialog prompting user to user a real browser
+        // Show dialog prompting user to use a real browser
         this.webviewDialog = true
       } else {
         // Or sign in if user is already using a real browser
@@ -378,7 +427,9 @@ export default {
           // Request permission if calendar permissions not yet granted
           signInGoogle({
             state: {
-              type: authTypes.EVENT_ADD_AVAILABILITY,
+              type: this.isGroup
+                ? authTypes.GROUP_ADD_AVAILABILITY
+                : authTypes.EVENT_ADD_AVAILABILITY,
               eventId: this.eventId,
             },
             selectAccount: false,
@@ -475,6 +526,93 @@ export default {
       }, 100)
     },
 
+    /** Refresh calendar availabilities of everybody in the group */
+    async fetchCalendarAvailabilities() {
+      if (this.event.type !== eventTypes.GROUP) return
+
+      // this.calendarAvailabilities = {}
+      const curWeekOffset = this.weekOffset
+      return getCalendarEventsMap(this.event, {
+        weekOffset: curWeekOffset,
+        eventId: this.event._id,
+      })
+        .then((calendarAvailabilities) => {
+          // Don't update calendar availabilities if user
+          // selected a different weekoffset by the time these calendar events load
+          if (curWeekOffset !== this.weekOffset) return
+
+          this.calendarAvailabilities = calendarAvailabilities
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    },
+
+    /** Fetch current user's calendar events */
+    async fetchAuthUserCalendarEvents() {
+      if (!this.authUser) {
+        this.calendarPermissionGranted = false
+        return
+      }
+
+      // this.calendarEventsMap = {}
+      const curWeekOffset = this.weekOffset
+      return getCalendarEventsMap(this.event, { weekOffset: curWeekOffset })
+        .then((eventsMap) => {
+          // Check if the primary calendar has an error
+          // We don't care if other calendars have an error, because if they do we just dont show them
+          if (eventsMap[this.authUser.email].error) {
+            this.calendarPermissionGranted = false
+            return
+          }
+
+          // Don't set calendar events / set availability if user has already
+          // selected a different weekoffset by the time these calendar events load
+          if (curWeekOffset !== this.weekOffset) return
+
+          this.calendarEventsMap = eventsMap
+
+          // Set user availability automatically if we're in editing mode and they haven't responded
+          if (
+            this.authUser &&
+            this.isEditing &&
+            !this.userHasResponded &&
+            !this.areUnsavedChanges &&
+            this.scheduleOverlapComponent
+          ) {
+            this.$nextTick(() => {
+              this.scheduleOverlapComponent?.setAvailabilityAutomatically()
+            })
+          }
+
+          // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
+          this.calendarPermissionGranted = !Object.values(
+            this.calendarEventsMap
+          ).every((c) => Boolean(c.error))
+        })
+        .catch((err) => {
+          console.error(err)
+          this.calendarPermissionGranted = false
+        })
+    },
+
+    /** Refreshes calendar avaliabilities and fetches current user calendar events */
+    refreshCalendar() {
+      const promises = []
+      promises.push(this.fetchCalendarAvailabilities())
+      promises.push(this.fetchAuthUserCalendarEvents())
+
+      const curWeekOffset = this.weekOffset
+      this.loading = true
+      Promise.allSettled(promises).then(() => {
+        // Only set loading to false if promises resolved at the same week offset they were fetched at
+        // i.e. no new promises are currently being run
+        if (curWeekOffset === this.weekOffset) {
+          this.loading = false
+        }
+      })
+    },
+
     onBeforeUnload(e) {
       if (this.areUnsavedChanges) {
         e.preventDefault()
@@ -492,6 +630,33 @@ export default {
     // Get event details
     try {
       await this.refreshEvent()
+
+      // Redirect if we're at the wrong route
+      if (this.event.type === eventTypes.GROUP) {
+        if (this.$route.name === "event") {
+          this.$router.replace({
+            name: "group",
+            params: {
+              groupId: this.eventId,
+              initialTimezone: this.initialTimezone,
+              fromSignIn: this.fromSignIn,
+              contactsPayload: this.contactsPayload,
+            },
+          })
+        }
+      } else {
+        if (this.$route.name === "group") {
+          this.$router.replace({
+            name: "event",
+            params: {
+              eventId: this.eventId,
+              initialTimezone: this.initialTimezone,
+              fromSignIn: this.fromSignIn,
+              contactsPayload: this.contactsPayload,
+            },
+          })
+        }
+      }
     } catch (err) {
       switch (err.error) {
         case errors.EventNotFound:
@@ -501,36 +666,14 @@ export default {
       }
     }
 
-    // Get all calendar accounts' events
-    getCalendarEventsMap(this.event, this.weekOffset)
-      .then((eventsMap) => {
-        this.calendarEventsMap = eventsMap
-        this.loading = false
+    const promises = []
+    promises.push(this.fetchCalendarAvailabilities())
+    promises.push(this.fetchAuthUserCalendarEvents())
 
-        // Set user availability automatically if we're in editing mode and they haven't responded
-        if (
-          this.authUser &&
-          this.isEditing &&
-          !this.userHasResponded &&
-          this.scheduleOverlapComponent
-        ) {
-          this.$nextTick(() => {
-            this.scheduleOverlapComponent.setAvailabilityAutomatically()
-          })
-        }
-
-        // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
-        this.calendarPermissionGranted = !Object.values(
-          this.calendarEventsMap
-        ).every((c) => Boolean(c.error))
-      })
-      .catch((err) => {
-        this.loading = false
-        console.error(err)
-        if (err.error.code === 401 || err.error.code === 403) {
-          this.calendarPermissionGranted = false
-        }
-      })
+    this.loading = true
+    Promise.allSettled(promises).then(() => {
+      this.loading = false
+    })
   },
 
   beforeDestroy() {
@@ -550,31 +693,17 @@ export default {
         this.scheduleOverlapComponentLoaded = true
 
         // Put into editing mode if just signed in
-        if (this.fromSignIn) {
+        if (this.fromSignIn && !this.isGroup) {
           this.scheduleOverlapComponent.startEditing()
+        }
+
+        if (this.isGroup && !this.userHasResponded) {
+          this.invitationDialog = true
         }
       }
     },
     weekOffset() {
-      this.loading = true
-
-      this.calendarEventsMap = {}
-      const curWeekOffset = this.weekOffset
-      getCalendarEventsMap(this.event, curWeekOffset).then((eventsMap) => {
-        // Don't set calendar events / set availability if user has already
-        // selected a different weekoffset by the time these calendar events load
-        if (curWeekOffset !== this.weekOffset) return
-
-        this.calendarEventsMap = eventsMap
-        this.loading = false
-
-        // Only autofill availability if user hasn't responded and they don't have unsaved changes
-        if (!this.userHasResponded && !this.areUnsavedChanges) {
-          this.$nextTick(() => {
-            this.scheduleOverlapComponent.setAvailabilityAutomatically()
-          })
-        }
-      })
+      this.refreshCalendar()
     },
   },
 }

@@ -1,10 +1,6 @@
 <template>
   <div
-    :class="
-      toggleState
-        ? 'tw-min-w-[240px]'
-        : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'
-    "
+    :class="toggleState ? '' : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'"
     class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-transition-all"
   >
     <div
@@ -12,7 +8,7 @@
       class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-off-white tw-pb-1 tw-align-middle"
     >
       <div class="tw-font-medium">My calendars</div>
-      <v-btn @click="addCalendarAccount" icon
+      <v-btn v-if="allowAddCalendarAccount" @click="addCalendarAccount" icon
         ><v-icon class="tw-text-very-dark-gray">mdi-plus</v-icon></v-btn
       >
     </div>
@@ -20,6 +16,7 @@
       <CalendarAccount
         v-for="account in calendarAccounts"
         :key="account.email"
+        :syncWithBackend="syncWithBackend"
         :toggleState="toggleState"
         :account="account"
         :eventId="eventId"
@@ -27,6 +24,13 @@
         :calendarEventsMap="calendarEventsMap"
         :removeDialog="removeDialog"
         :selectedRemoveEmail="selectedRemoveEmail"
+        :fillSpace="fillSpace"
+        @toggleCalendarAccount="
+          (payload) => $emit('toggleCalendarAccount', payload)
+        "
+        @toggleSubCalendarAccount="
+          (payload) => $emit('toggleSubCalendarAccount', payload)
+        "
       ></CalendarAccount>
     </div>
     <v-dialog v-model="removeDialog" width="500" persistent>
@@ -49,28 +53,36 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes } from "@/constants"
-import { get, post, _delete, signInGoogle } from "@/utils"
+import { _delete, signInGoogle } from "@/utils"
 import CalendarAccount from "@/components/settings/CalendarAccount.vue"
 
 export default {
   name: "CalendarAccounts",
 
   props: {
-    toggleState: { type: Boolean, default: false },
+    toggleState: { type: Boolean, default: false }, // Whether to allow user to toggle calendar accounts
     eventId: { type: String, default: "" },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
+    syncWithBackend: { type: Boolean, default: true }, // Whether toggling calendar accounts also updates the backend
+    allowAddCalendarAccount: { type: Boolean, default: true }, // Whether to allow user to add a new calendar account
+    initialCalendarAccountsData: { type: Object, default: () => {} }, // Initial data to display for enabled calendar accounts
+    fillSpace: { type: Boolean, default: false }, // Whether to fill the available space up
   },
 
   data: () => ({
     removeDialog: false,
     selectedRemoveEmail: "",
+    calendarAccounts: {},
   }),
 
   computed: {
     ...mapState(["authUser"]),
-    calendarAccounts() {
-      return this.authUser.calendarAccounts
-    },
+  },
+
+  mounted() {
+    this.calendarAccounts = !this.initialCalendarAccountsData
+      ? this.authUser.calendarAccounts
+      : this.initialCalendarAccountsData
   },
 
   methods: {

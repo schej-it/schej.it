@@ -16,6 +16,7 @@ import (
 	"schej.it/server/middleware"
 	"schej.it/server/models"
 	"schej.it/server/services/auth"
+	"schej.it/server/services/calendar"
 	"schej.it/server/services/listmonk"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
@@ -115,11 +116,20 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 	var userId primitive.ObjectID
 	findResult := db.UsersCollection.FindOne(context.Background(), bson.M{"email": email})
+	// If user doesn't exist, create a new user
 	if findResult.Err() == mongo.ErrNoDocuments {
-		// User doesn't exist, create a new user
+		// Fetch subcalendars
+		subCalendars, subCalendarsErr := calendar.GetCalendarList(calendarAccount.AccessToken)
+		if subCalendarsErr == nil {
+			calendarAccount.SubCalendars = &subCalendars
+		}
+
+		// Set calendar accounts
 		userData.CalendarAccounts = map[string]models.CalendarAccount{
 			email: calendarAccount,
 		}
+
+		// Create user
 		res, err := db.UsersCollection.InsertOne(context.Background(), userData)
 		if err != nil {
 			logger.StdErr.Panicln(err)
@@ -141,14 +151,25 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 			userData.LastName = ""
 		}
 
+		// Set subalendars map based on whether calendar account already exists
+		if oldCalendarAccount, ok := user.CalendarAccounts[calendarAccount.Email]; ok && oldCalendarAccount.SubCalendars != nil {
+			calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
+		} else {
+			subCalendars, err := calendar.GetCalendarList(calendarAccount.AccessToken)
+			if err == nil {
+				calendarAccount.SubCalendars = &subCalendars
+			}
+		}
+
+		// Set calendar account
+		userData.CalendarAccounts = user.CalendarAccounts
+		userData.CalendarAccounts[calendarAccount.Email] = calendarAccount
+
 		// Update user if exists
 		_, err := db.UsersCollection.UpdateByID(
 			context.Background(),
 			userId,
-			bson.A{
-				bson.M{"$set": userData},
-				utils.InsertCalendarAccountAggregation(calendarAccount),
-			},
+			bson.M{"$set": userData},
 		)
 		if err != nil {
 			logger.StdErr.Panicln(err)

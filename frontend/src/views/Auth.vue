@@ -59,6 +59,28 @@ export default {
               params: { eventId: state.eventId },
             })
             break
+          case authTypes.GROUP_CREATE:
+            this.$router.replace({
+              name: "home",
+              params: {
+                openNewGroup: true,
+              },
+            })
+            break
+          case authTypes.GROUP_SIGN_IN:
+            this.$router.replace({
+              name: "group",
+              params: { groupId: state.groupId },
+            })
+            break
+          case authTypes.GROUP_ADD_AVAILABILITY:
+            this.$router.replace({
+              name: "group",
+              params: { groupId: state.eventId, fromSignIn: true },
+            })
+            authUser = await get("/user/profile")
+            this.setAuthUser(authUser)
+            break
           case authTypes.ADD_CALENDAR_ACCOUNT:
             this.$router.replace({
               name: "settings",
@@ -80,7 +102,8 @@ export default {
                 name: "home",
                 params: {
                   contactsPayload: state.payload,
-                }
+                  openNewGroup: state.openNewGroup,
+                },
               })
             } else {
               this.$router.replace({

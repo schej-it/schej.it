@@ -56,7 +56,7 @@
             id="lets-schej-it-btn"
             class="tw-my-6 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-hidden lg:tw-px-12"
             dark
-            @click="newEventDialog = true"
+            @click="newDialog = true"
             large
             :x-large="$vuetify.breakpoint.mdAndUp"
           >
@@ -219,7 +219,7 @@
     </v-dialog>
 
     <!-- New event dialog -->
-    <NewEventDialog v-model="newEventDialog" :allow-notifications="false" />
+    <NewDialog v-model="newDialog" :allow-notifications="false" no-tabs />
 
     <!-- GitHub button -->
     <v-snackbar
@@ -268,7 +268,7 @@ import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
 import NewEvent from "@/components/NewEvent.vue"
-import NewEventDialog from "@/components/NewEventDialog.vue"
+import NewDialog from "@/components/NewDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
 import Logo from "@/components/Logo.vue"
 import { Rive } from "@rive-app/canvas"
@@ -284,7 +284,7 @@ export default {
     Header,
     NumberBullet,
     NewEvent,
-    NewEventDialog,
+    NewDialog,
     LandingPageHeader,
     GithubButton,
     Logo,
@@ -292,7 +292,7 @@ export default {
 
   data: () => ({
     signInDialog: false,
-    newEventDialog: false,
+    newDialog: false,
     githubSnackbar: true,
     howItWorksSteps: [
       "Create a schej event",

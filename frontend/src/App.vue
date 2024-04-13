@@ -3,7 +3,7 @@
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <SignInNotSupportedDialog v-model="webviewDialog" />
-    <NewEventDialog v-model="newEventDialog" />
+    <NewDialog v-model="newDialog" type="event" no-tabs />
     <div
       v-if="showHeader"
       class="tw-fixed tw-z-40 tw-h-14 tw-w-screen tw-bg-white sm:tw-h-16"
@@ -99,7 +99,7 @@ import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
-import NewEventDialog from "./components/NewEventDialog.vue"
+import NewDialog from "./components/NewDialog.vue"
 
 export default {
   name: "App",
@@ -114,7 +114,7 @@ export default {
     AutoSnackbar,
     AuthUserMenu,
     SignInNotSupportedDialog,
-    NewEventDialog,
+    NewDialog,
     Logo,
   },
 
@@ -123,7 +123,7 @@ export default {
     loaded: false,
     scrollY: 0,
     webviewDialog: false,
-    newEventDialog: false,
+    newDialog: false,
   }),
 
   computed: {
@@ -156,24 +156,34 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setAuthUser"]),
+    ...mapMutations(["setAuthUser", "setGroupsEnabled"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
     createEvent() {
-      this.newEventDialog = true
+      this.newDialog = true
     },
     signIn() {
-      if (this.$route.name === "event") {
+      if (this.$route.name === "event" || this.$route.name === "group") {
         if (isWebview(navigator.userAgent)) {
           this.webviewDialog = true
           return
         }
-        signInGoogle({
-          state: {
-            type: authTypes.EVENT_SIGN_IN,
+
+        let state
+        if (this.$route.name === "event") {
+          state = {
             eventId: this.$route.params.eventId,
-          },
+            type: authTypes.EVENT_SIGN_IN,
+          }
+        } else if (this.$route.name === "group") {
+          state = {
+            groupId: this.$route.params.groupId,
+            type: authTypes.GROUP_SIGN_IN,
+          }
+        }
+        signInGoogle({
+          state,
           selectAccount: true,
         })
       }
@@ -195,11 +205,12 @@ export default {
       .catch(() => {
         this.setAuthUser(null)
       })
+      .finally(() => {
+        this.loaded = true
+      })
 
     // Event listeners
     window.addEventListener("scroll", this.handleScroll)
-
-    this.loaded = true
   },
 
   mounted() {
@@ -232,6 +243,29 @@ export default {
           post("/analytics/scanned-poster", {
             url: originalHref,
             location,
+          })
+        }
+      },
+    },
+    authUser: {
+      immediate: true,
+      handler() {
+        if (this.$posthog) {
+          // Check feature flags (only if posthog is enabled)
+          this.$posthog?.setPersonPropertiesForFlags({
+            email: this.authUser?.email,
+          })
+          if (this.$posthog?.isFeatureEnabled("avail-groups")) {
+            this.setGroupsEnabled(true)
+          } else {
+            this.setGroupsEnabled(false)
+          }
+          this.$posthog?.onFeatureFlags(() => {
+            if (this.$posthog?.isFeatureEnabled("avail-groups")) {
+              this.setGroupsEnabled(true)
+            } else {
+              this.setGroupsEnabled(false)
+            }
           })
         }
       },

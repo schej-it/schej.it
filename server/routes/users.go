@@ -18,6 +18,7 @@ import (
 func InitUsers(router *gin.Engine) {
 	userRouter := router.Group("/users")
 	userRouter.GET("", searchUsers)
+	userRouter.GET("/:userId", getUser)
 }
 
 // @Summary Returns users that match the search query
@@ -78,4 +79,22 @@ func searchUsers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, users)
+}
+
+// @Summary Returns the user by their user id
+// @Tags users
+// @Produce json
+// @Param userId path string true "User ID"
+// @Success 200 {object} models.User "A user profile object"
+// @Router /users [get]
+func getUser(c *gin.Context) {
+	userId := c.Param("userId")
+	user := db.GetUserById(userId)
+
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }

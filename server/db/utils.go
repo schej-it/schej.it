@@ -39,6 +39,24 @@ func GetUserById(userId string) *models.User {
 	return &user
 }
 
+func GetUserByEmail(email string) *models.User {
+	result := UsersCollection.FindOne(context.Background(), bson.M{
+		"email": email,
+	})
+	if result.Err() == mongo.ErrNoDocuments {
+		// User does not exist!
+		return nil
+	}
+
+	// Decode result
+	var user models.User
+	if err := result.Decode(&user); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	return &user
+}
+
 // Returns an event based on its _id
 func GetEventById(eventId string) *models.Event {
 	objectId, err := primitive.ObjectIDFromHex(eventId)

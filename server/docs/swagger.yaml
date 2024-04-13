@@ -32,6 +32,13 @@ definitions:
       status:
         type: string
     type: object
+  models.Attendee:
+    properties:
+      declined:
+        type: boolean
+      email:
+        type: string
+    type: object
   models.CalendarAccount:
     properties:
       email:
@@ -62,6 +69,11 @@ definitions:
     properties:
       _id:
         type: string
+      attendees:
+        description: Attendees for an availability group
+        items:
+          $ref: '#/definitions/models.Attendee'
+        type: array
       calendarEventId:
         type: string
       dates:
@@ -88,6 +100,8 @@ definitions:
         $ref: '#/definitions/models.CalendarEvent'
         description: Scheduled event
         type: object
+      shortId:
+        type: string
       type:
         type: string
     type: object
@@ -121,8 +135,18 @@ definitions:
     properties:
       availability:
         type: string
+      enabledCalendars:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        description: Maps email to an array of sub calendar ids
+        type: object
       name:
         type: string
+      useCalendarAvailability:
+        description: Calendar availability variables for Availability Groups feature
+        type: boolean
       user:
         $ref: '#/definitions/models.User'
         type: object
@@ -303,6 +327,10 @@ paths:
           allOf:
           - type: object
           - properties:
+              attendees:
+                items:
+                  type: string
+                type: array
               dates:
                 items:
                   type: string
@@ -382,6 +410,10 @@ paths:
           allOf:
           - type: object
           - properties:
+              attendees:
+                items:
+                  type: string
+                type: array
               dates:
                 items:
                   type: string
@@ -404,6 +436,58 @@ paths:
       responses:
         "200": {}
       summary: Edits an event based on its id
+      tags:
+      - events
+  /events/{eventId}/calendar-availabilities:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Lower bound for event's start time to filter by
+        in: query
+        name: timeMin
+        required: true
+        type: string
+      - description: Upper bound for event's end time to filter by
+        in: query
+        name: timeMax
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              additionalProperties:
+                $ref: '#/definitions/calendar.CalendarEventsWithError'
+              type: object
+            type: object
+      summary: Return a map mapping user id to their calendar events that they have
+        enabled for the given time range
+      tags:
+      - events
+  /events/{eventId}/decline:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Decline the current user's invite to the event
       tags:
       - events
   /events/{eventId}/duplicate:
@@ -511,16 +595,22 @@ paths:
           allOf:
           - type: object
           - properties:
-              attendeeEmail:
-                type: string
               availability:
                 items:
                   type: string
                 type: array
+              enabledCalendars:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
+                type: object
               guest:
                 type: boolean
               name:
                 type: string
+              useCalendarAvailability:
+                type: boolean
             type: object
       produces:
       - application/json
@@ -767,21 +857,19 @@ paths:
   /users:
     get:
       parameters:
-      - description: Search query matching users' names/emails
-        in: query
-        name: query
+      - description: User ID
+        in: path
+        name: userId
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: An array of user profile objects
+          description: A user profile object
           schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
-      summary: Returns users that match the search query
+            $ref: '#/definitions/models.User'
+      summary: Returns the user by their user id
       tags:
       - users
 swagger: "2.0"

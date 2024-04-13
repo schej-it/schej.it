@@ -6,12 +6,34 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"schej.it/server/models"
 	"schej.it/server/slackbot/commands"
+	"schej.it/server/utils"
 )
 
 func SendEventCreatedMessage(insertedId string, creator string, event models.Event) {
-	shortId := ""
-	if event.ShortId != nil {
-		shortId = *event.ShortId
+	eventInfoText := fmt.Sprintf(
+		"*Name*: %s\n"+
+			"*Event url*: https://schej.it/e/%s\n"+
+			"*Short url*: https://schej.it/e/%s\n"+
+			"*Creator*: %s\n"+
+			"*Num days*: %v\n"+
+			"*Type*: %s",
+		event.Name,
+		insertedId,
+		utils.Coalesce(event.ShortId),
+		creator,
+		len(event.Dates),
+		event.Type,
+	)
+
+	if event.Type == models.GROUP {
+		eventInfoText += fmt.Sprintf("\n*Num attendees*: %v", len(utils.Coalesce(event.Attendees)))
+	} else {
+		eventInfoText += fmt.Sprintf(
+			"\n*Notifications Enabled*: %v\n"+
+				"*Num remindees*: %v",
+			utils.Coalesce(event.NotificationsEnabled),
+			len(utils.Coalesce(event.Remindees)),
+		)
 	}
 
 	response := commands.Response{Blocks: []bson.M{
@@ -27,22 +49,7 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 			"type": "section",
 			"text": bson.M{
 				"type": "mrkdwn",
-				"text": fmt.Sprintf(
-					"*Event url*: https://schej.it/e/%s\n"+
-						"*Short url*: https://schej.it/e/%s\n"+
-						"*Creator*: %s\n"+
-						"*Num days*: %v\n"+
-						"*Type*: %s\n"+
-						"*Notifications Enabled*: %v\n"+
-						"*Num remindees*: %v",
-					insertedId,
-					shortId,
-					creator,
-					len(event.Dates),
-					event.Type,
-					event.NotificationsEnabled,
-					len(event.Remindees),
-				),
+				"text": eventInfoText,
 			},
 		},
 	}}

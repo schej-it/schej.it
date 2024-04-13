@@ -39,7 +39,7 @@ export const getDateRangeString = (date1, date2) => {
 
 /** Returns a string representing the date range for the provided event */
 export const getDateRangeStringForEvent = (event) => {
-  if (event.type === eventTypes.DOW) {
+  if (event.type === eventTypes.DOW || event.type === eventTypes.GROUP) {
     let s = ""
 
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -299,7 +299,10 @@ export const getCurrentTimezone = () => {
   ranges
   weekOffset specifies the amount of weeks forward or backward to display events for (only used for weekly schej's)
 */
-export const getCalendarEventsMap = async (event, weekOffset = 0) => {
+export const getCalendarEventsMap = async (
+  event,
+  { weekOffset = 0, eventId = "" }
+) => {
   let timeMin, timeMax
   if (event.type === eventTypes.SPECIFIC_DATES) {
     // Get all calendar events between the first date and the last date in dates
@@ -308,7 +311,7 @@ export const getCalendarEventsMap = async (event, weekOffset = 0) => {
       new Date(event.dates[event.dates.length - 1]),
       2
     ).toISOString()
-  } else if (event.type === eventTypes.DOW) {
+  } else if (event.type === eventTypes.DOW || event.type === eventTypes.GROUP) {
     // Get all calendar events for the current week offsetted by weekOffset
     const curDateWithWeekOffset = getDateDayOffset(new Date(), weekOffset * 7)
     const curDateDay = curDateWithWeekOffset.getDay()
@@ -320,9 +323,16 @@ export const getCalendarEventsMap = async (event, weekOffset = 0) => {
   }
 
   // Fetch calendar events from Google Calendar
-  const calendarEventsMap = await get(
-    `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
-  )
+  let calendarEventsMap
+  if (eventId.length === 0) {
+    calendarEventsMap = await get(
+      `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
+    )
+  } else {
+    calendarEventsMap = await get(
+      `/events/${eventId}/calendar-availabilities?timeMin=${timeMin}&timeMax=${timeMax}`
+    )
+  }
 
   return calendarEventsMap
 }
@@ -353,9 +363,9 @@ export const processCalendarEvents = (
   weekOffset = 0
 ) => {
   // Put calendarEvents into the correct format
-  calendarEvents = [...calendarEvents] // Make a copy so we don't mutate original array
+  calendarEvents = JSON.parse(JSON.stringify(calendarEvents)) // Make a copy so we don't mutate original array
   calendarEvents = calendarEvents.map((e) => {
-    if (eventType === eventTypes.DOW) {
+    if (eventType === eventTypes.DOW || eventType === eventTypes.GROUP) {
       e.startDate = dateToDowDate(dates, e.startDate, weekOffset)
       e.endDate = dateToDowDate(dates, e.endDate, weekOffset)
     } else {

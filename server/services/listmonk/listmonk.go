@@ -127,3 +127,12 @@ func SendEmail(email string, templateId int, data bson.M) {
 	}
 	defer response.Body.Close()
 }
+
+// Send a transactional email using the specified template and data. Adds subscriber if they don't exist
+func SendEmailAddSubscriberIfNotExist(email string, templateId int, data bson.M) {
+	if exists, _ := DoesUserExist(email); !exists {
+		AddUserToListmonk(email, "", "", "", nil)
+	}
+
+	SendEmail(email, templateId, data)
+}

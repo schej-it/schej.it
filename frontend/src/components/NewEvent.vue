@@ -1,15 +1,26 @@
 <template>
   <v-card
-    class="tw-overflow-none tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-rounded-lg tw-py-4 tw-transition-all"
+    :flat="dialog"
+    :class="{ 'tw-py-4': !dialog, 'tw-flex-1': dialog }"
+    class="tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-overflow-hidden tw-rounded-lg tw-transition-all"
   >
     <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
       <div>
-        {{ editEvent ? "Edit event" : "New event" }}
+        {{ edit ? "Edit event" : "New event" }}
       </div>
       <v-spacer />
-      <v-btn v-if="dialog" @click="$emit('input', false)" icon>
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
+      <template v-if="dialog">
+        <v-btn v-if="showHelp" icon @click="helpDialog = true">
+          <v-icon>mdi-help-circle</v-icon>
+        </v-btn>
+        <v-btn v-else @click="$emit('input', false)" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <HelpDialog
+          v-model="helpDialog"
+          text="Use events to poll people for their availabilities on certain days"
+        />
+      </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
       <div class="tw-flex tw-flex-col tw-space-y-6">
@@ -107,16 +118,38 @@
           >
           <v-expand-transition>
             <div v-show="showAdvancedOptions">
-              <div class="tw-my-2">
-                <EmailReminders
+              <div class="tw-my-2 tw-space-y-4">
+                <TimezoneSelector v-model="timezone" label="Timezone" />
+                <EmailInput
                   v-show="authUser"
                   ref="emailReminders"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
                   :addedEmails="addedEmails"
                   @update:emails="(newEmails) => (emails = newEmails)"
-                ></EmailReminders>
-                <TimezoneSelector v-model="timezone" label="Timezone" />
+                >
+                  <template v-slot:header>
+                    <div class="tw-flex tw-gap-1">
+                      <div class="tw-text-very-dark-gray">
+                        Remind people to fill out the Schej
+                      </div>
+
+                      <v-tooltip top>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon small v-bind="attrs" v-on="on"
+                            >mdi-information-outline
+                          </v-icon>
+                        </template>
+                        <div>
+                          Reminder emails will be sent the day of event
+                          creation,<br />one day after, and three days after.
+                          You will also receive <br />an email when everybody
+                          has filled out the Schej.
+                        </div>
+                      </v-tooltip>
+                    </div>
+                  </template>
+                </EmailInput>
               </div>
             </div>
           </v-expand-transition>
@@ -133,7 +166,7 @@
         :disabled="!formComplete"
         @click="submit"
       >
-        {{ editEvent ? "Edit" : "Create" }}
+        {{ edit ? "Edit" : "Create" }}
       </v-btn>
     </v-card-actions>
   </v-card>
@@ -153,7 +186,8 @@ import {
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
-import EmailReminders from "./event/EmailReminders.vue"
+import HelpDialog from "./HelpDialog.vue"
+import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -168,15 +202,17 @@ export default {
 
   props: {
     event: { type: Object },
-    editEvent: { type: Boolean, default: false },
+    edit: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
+    showHelp: { type: Boolean, default: false },
   },
 
   components: {
     TimezoneSelector,
-    EmailReminders,
+    HelpDialog,
+    EmailInput,
     DatePicker,
   },
 
@@ -200,6 +236,8 @@ export default {
     showAdvancedOptions: false,
     timezone: {},
     emails: [], // For email reminders
+
+    helpDialog: false,
   }),
 
   mounted() {
@@ -248,7 +286,7 @@ export default {
       return times
     },
     minCalendarDate() {
-      if (this.editEvent) {
+      if (this.edit) {
         return ""
       }
 
@@ -274,6 +312,7 @@ export default {
       this.startTime = 9
       this.endTime = 17
       this.selectedDays = []
+      this.selectedDaysOfWeek = []
     },
     submit() {
       this.selectedDays.sort()
@@ -316,7 +355,7 @@ export default {
       const name = this.name
       const notificationsEnabled = this.notificationsEnabled
       const remindees = this.emails
-      if (!this.editEvent) {
+      if (!this.edit) {
         // Create new event on backend
         post("/events", {
           name,
@@ -335,7 +374,6 @@ export default {
               },
             })
 
-            this.loading = false
             this.$emit("input", false)
             this.reset()
 
@@ -353,6 +391,9 @@ export default {
             this.showError(
               "There was a problem creating that event! Please try again later."
             )
+          })
+          .finally(() => {
+            this.loading = false
           })
       } else {
         // Edit event on backend
@@ -384,6 +425,9 @@ export default {
                 "There was a problem editing this event! Please try again later."
               )
             })
+            .finally(() => {
+              this.loading = false
+            })
         }
       }
     },
@@ -409,6 +453,7 @@ export default {
         state: {
           type: authTypes.EVENT_CONTACTS,
           eventId: this.event ? this.event.shortId ?? this.event._id : "",
+          openNewGroup: false,
           payload,
         },
         requestContactsPermission: true,

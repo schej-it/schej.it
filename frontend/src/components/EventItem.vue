@@ -1,10 +1,13 @@
 <template>
   <router-link
-    :to="{ name: 'event', params: { eventId: event.shortId ?? event._id } }"
+    :to="{
+      name: linkTo,
+      params: { [isGroup ? 'groupId' : 'eventId']: event.shortId ?? event._id },
+    }"
   >
     <v-container
       v-ripple
-      class="tw-flex tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
+      class="tw-flex tw-min-h-16 tw-items-center tw-justify-between tw-rounded-lg tw-bg-white tw-px-4 tw-py-2.5 tw-text-black tw-drop-shadow tw-transition-all hover:tw-drop-shadow-md sm:tw-py-3"
       :data-ph-capture-attribute-event-id="event._id"
       :data-ph-capture-attribute-event-name="event.name"
     >
@@ -15,7 +18,17 @@
         </div>
       </div>
       <div class="tw-min-w-max">
-        <v-chip small class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray">
+        <div
+          v-if="isGroup && !userHasResponded"
+          class="tw-inline-block tw-text-sm tw-italic tw-text-gray"
+        >
+          Invited
+        </div>
+        <v-chip
+          v-else
+          small
+          class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray"
+        >
           <v-icon left small> mdi-account-multiple </v-icon>
           {{ Object.keys(this.event.responses).length }}
         </v-chip>
@@ -34,7 +47,12 @@
           </template>
 
           <v-list justify="center" class="tw-py-1">
-            <v-dialog v-model="duplicateDialog" width="400" persistent>
+            <v-dialog
+              v-if="!isGroup"
+              v-model="duplicateDialog"
+              width="400"
+              persistent
+            >
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   id="duplicate-event-btn"
@@ -47,7 +65,7 @@
                 >
               </template>
               <v-card>
-                <v-card-title>Duplicate event</v-card-title>
+                <v-card-title>Duplicate {{ typeText }}</v-card-title>
                 <v-card-text>
                   <v-text-field
                     v-model="duplicateDialogOptions.name"
@@ -91,13 +109,14 @@
                   v-bind="attrs"
                   v-on="on"
                   block
-                  >Delete event</v-btn
+                  >Delete {{ typeText }}</v-btn
                 >
               </template>
               <v-card>
                 <v-card-title>Are you sure?</v-card-title>
                 <v-card-text
-                  >Are you sure you want to delete this event?</v-card-text
+                  >Are you sure you want to delete this
+                  {{ typeText }}?</v-card-text
                 >
                 <v-card-actions>
                   <v-spacer />
@@ -110,7 +129,7 @@
             </v-dialog>
           </v-list>
         </v-menu>
-        <v-icon v-else class="tw-mx-1 tw-opacity-75">mdi-chevron-right</v-icon>
+        <v-icon v-else class="tw-mr-1 tw-ml-2 tw-opacity-75">mdi-chevron-right</v-icon>
       </div>
     </v-container>
   </router-link>
@@ -119,6 +138,7 @@
 <script>
 import { getDateRangeStringForEvent, _delete, isPhone, post } from "@/utils"
 import { mapActions, mapState } from "vuex"
+import { eventTypes } from "@/constants"
 
 export default {
   name: "EventItem",
@@ -144,6 +164,18 @@ export default {
     },
     showOptions() {
       return this.event.ownerId === this.authUser._id
+    },
+    isGroup() {
+      return this.event.type === eventTypes.GROUP
+    },
+    linkTo() {
+      return this.isGroup ? "group" : "event"
+    },
+    typeText() {
+      return this.isGroup ? "group" : "event"
+    },
+    userHasResponded() {
+      return this.authUser?._id in this.event.responses
     },
   },
 

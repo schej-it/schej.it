@@ -107,6 +107,29 @@ export const validateEmail = (email) => {
     )
 }
 
+/** Generates a group enabled calendar payload */
+export const generateEnabledCalendarsPayload = (calendarAccounts) => {
+  const payload = {}
+
+  payload.guest = false
+  payload.useCalendarAvailability = true
+  payload.enabledCalendars = {}
+
+  /** Determine which sub calendars are enabled */
+  for (const email in calendarAccounts) {
+    if (calendarAccounts[email].enabled) {
+      payload.enabledCalendars[email] = []
+      for (const subCalendarId in calendarAccounts[email].subCalendars) {
+        if (calendarAccounts[email].subCalendars[subCalendarId].enabled) {
+          payload.enabledCalendars[email].push(subCalendarId)
+        }
+      }
+    }
+  }
+
+  return payload
+}
+
 /** Returns whether touch is enabled on the device */
 export const isTouchEnabled = () => {
   return (

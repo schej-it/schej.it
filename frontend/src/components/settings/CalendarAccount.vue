@@ -35,7 +35,7 @@
           <v-img :src="account.picture"></v-img
         ></v-avatar>
         <div
-          :class="toggleState ? 'tw-w-[180px]' : ''"
+          :class="toggleState && !fillSpace ? 'tw-w-[180px]' : ''"
           class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
         >
           {{ account.email }}
@@ -84,7 +84,8 @@
             class="tw-h-5 tw-items-center"
           />
           <div
-            class="tw-align-text-middle tw-ml-8 tw-inline-block tw-w-40 tw-break-words tw-text-sm"
+            :class="!fillSpace ? 'tw-w-40' : ''"
+            class="tw-align-text-middle tw-ml-8 tw-inline-block tw-break-words tw-text-sm"
           >
             {{ subCalendar.name }}
           </div>
@@ -110,6 +111,8 @@ export default {
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
     removeDialog: { type: Boolean, default: false },
     selectedRemoveEmail: { type: String, default: "" },
+    syncWithBackend: { type: Boolean, default: true },
+    fillSpace: { type: Boolean, default: false },
   },
 
   data: () => ({
@@ -159,26 +162,42 @@ export default {
       })
     },
     toggleSubCalendarAccount(enabled, subCalendarId) {
-      post(`/user/toggle-sub-calendar`, {
-        email: this.account.email,
-        enabled,
-        subCalendarId,
-      }).catch((err) => {
-        this.showError(
-          "There was a problem with toggling your calendar account! Please try again later."
-        )
-      })
+      if (this.syncWithBackend) {
+        post(`/user/toggle-sub-calendar`, {
+          email: this.account.email,
+          enabled,
+          subCalendarId,
+        }).catch((err) => {
+          this.showError(
+            "There was a problem with toggling your calendar account! Please try again later."
+          )
+        })
+      } else {
+        this.$emit("toggleSubCalendarAccount", {
+          email: this.account.email,
+          enabled,
+          subCalendarId,
+        })
+      }
     },
     toggleCalendarAccount(enabled) {
       if (!enabled) this.showSubCalendars = false
-      post(`/user/toggle-calendar`, {
-        email: this.account.email,
-        enabled,
-      }).catch((err) => {
-        this.showError(
-          "There was a problem with toggling your calendar account! Please try again later."
-        )
-      })
+
+      if (this.syncWithBackend) {
+        post(`/user/toggle-calendar`, {
+          email: this.account.email,
+          enabled,
+        }).catch((err) => {
+          this.showError(
+            "There was a problem with toggling your calendar account! Please try again later."
+          )
+        })
+      } else {
+        this.$emit("toggleCalendarAccount", {
+          email: this.account.email,
+          enabled,
+        })
+      }
     },
   },
 

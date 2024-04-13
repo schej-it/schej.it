@@ -6,7 +6,7 @@
     >
       {{ eventType.header }}
       <div
-        v-if="eventType.events.length > DEFAULT_NUM_EVENTS_TO_SHOW"
+        v-if="eventType.events.length > defaultNumEventsToShow"
         @click="toggleShowAll"
         class="tw-mt-2 tw-cursor-pointer tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-hidden"
       >
@@ -16,30 +16,30 @@
     </div>
 
     <div v-if="eventType.events.length === 0" class="tw-my-3">
-      No events yet!
+      {{ emptyText.length > 0 ? emptyText : "No events yet!" }}
     </div>
     <div
       v-else
-      class="tw-gr id-cols-1 tw-my-3 tw-grid tw-gap-3 sm:tw-grid-cols-2 md:tw-grid-cols-2"
+      class="tw-gr id-cols-1 tw-my-3 tw-grid tw-gap-3 sm:tw-grid-cols-2 lg:tw-grid-cols-3"
     >
       <EventItem
         class="tw-cursor-pointer"
-        v-for="(event, i) in sortedEvents.slice(0, DEFAULT_NUM_EVENTS_TO_SHOW)"
+        v-for="(event, i) in sortedEvents.slice(0, defaultNumEventsToShow)"
         :key="i"
         :event="event"
       />
     </div>
     <!-- Show more events sections -->
     <!-- TODO: might want to change for less code repeat -->
-    <div v-if="eventType.events.length > DEFAULT_NUM_EVENTS_TO_SHOW">
+    <div v-if="eventType.events.length > defaultNumEventsToShow">
       <v-expand-transition>
         <div
           v-if="showAll"
-          class="tw-gr id-cols-1 tw-grid tw-gap-2 sm:tw-grid-cols-2 sm:tw-gap-4 md:tw-grid-cols-2"
+          class="tw-gr id-cols-1 tw-grid tw-gap-2 sm:tw-grid-cols-2 sm:tw-gap-4 lg:tw-grid-cols-3"
         >
           <EventItem
             v-for="(event, i) in sortedEvents.slice(
-              DEFAULT_NUM_EVENTS_TO_SHOW,
+              defaultNumEventsToShow,
               eventType.events.length
             )"
             :key="i"
@@ -71,18 +71,21 @@ export default {
 
   props: {
     eventType: { type: Object, required: true },
+    emptyText: { type: String, default: "" },
   },
 
   data: () => ({
     showAll: false,
-    DEFAULT_NUM_EVENTS_TO_SHOW: 4,
   }),
 
   computed: {
+    defaultNumEventsToShow() {
+      return this.$vuetify.breakpoint.lgAndUp ? 6 : 4
+    },
     numEventsToShow() {
       return this.showAll
         ? this.eventType.events.length
-        : this.DEFAULT_NUM_EVENTS_TO_SHOW
+        : this.defaultNumEventsToShow
     },
     sortedEvents() {
       // Events are sorted serverside, so no need to sort here

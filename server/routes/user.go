@@ -87,7 +87,8 @@ func updateName(c *gin.Context) {
 // @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
-	userId := utils.GetAuthUser(c).Id
+	user := utils.GetAuthUser(c)
+	userId := user.Id
 
 	// Get the events associated with the current user
 	events := make([]models.Event, 0)
@@ -96,6 +97,7 @@ func getEvents(c *gin.Context) {
 		"$or": bson.A{
 			bson.M{"ownerId": userId},
 			bson.M{"responses." + userId.Hex(): bson.M{"$exists": true}},
+			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
 		},
 	}, opts)
 	if err != nil {
@@ -208,13 +210,24 @@ func addCalendarAccount(c *gin.Context) {
 		RefreshToken:          tokens.RefreshToken,
 	}
 
+	// Set subalendars map based on whether calendar account already exists
+	if oldCalendarAccount, ok := authUser.CalendarAccounts[calendarAccount.Email]; ok && oldCalendarAccount.SubCalendars != nil {
+		calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
+	} else {
+		subCalendars, err := calendar.GetCalendarList(calendarAccount.AccessToken)
+		if err == nil {
+			calendarAccount.SubCalendars = &subCalendars
+		}
+	}
+
+	// Set calendar account
+	authUser.CalendarAccounts[calendarAccount.Email] = calendarAccount
+
 	// Perform mongo update
 	db.UsersCollection.FindOneAndUpdate(
 		context.Background(),
 		bson.M{"_id": authUser.Id},
-		bson.A{
-			utils.InsertCalendarAccountAggregation(calendarAccount),
-		},
+		bson.M{"$set": authUser},
 	)
 
 	c.JSON(http.StatusOK, gin.H{})

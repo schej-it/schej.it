@@ -1,7 +1,9 @@
 <template>
   <div>
     <div class="tw-flex tw-items-center tw-font-medium">
-      <div class="tw-mr-1 tw-text-lg">Responses</div>
+      <div class="tw-mr-1 tw-text-lg">
+        {{ !isGroup ? "Responses" : "Members" }}
+      </div>
       <div class="tw-font-normal">
         <template v-if="curRespondents.length === 0">
           {{
@@ -65,6 +67,10 @@
             {{ user.firstName + " " + user.lastName }}
           </div>
 
+          <!-- <div v-if="isGroup" class="tw-ml-1">
+            <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
+          </div> -->
+
           <v-btn
             v-if="!authUser && isGuest(user)"
             absolute
@@ -89,13 +95,33 @@
       </template>
     </div>
 
+    <div
+      v-if="pendingUsers.length > 0"
+      class="tw-mb-2 tw-flex tw-items-center tw-font-medium"
+    >
+      <div class="tw-mr-1 tw-text-lg">Pending</div>
+      <div class="tw-font-normal">({{ pendingUsers.length }})</div>
+    </div>
+
+    <div>
+      <div v-for="(user, i) in pendingUsers" :key="user.email">
+        <div class="tw-relative tw-flex tw-items-center">
+          <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+          <div class="tw-mr-1 tw-text-sm tw-transition-all">
+            {{ user.email }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <v-dialog v-model="deleteAvailabilityDialog" width="500" persistent>
       <v-card>
         <v-card-title>Are you sure?</v-card-title>
         <v-card-text class="tw-text-sm tw-text-dark-gray"
           >Are you sure you want to delete
           <strong>{{ userToDelete?.firstName }}</strong
-          >'s availability from this event?</v-card-text
+          >'s availability from this
+          {{ isGroup ? "group" : "event" }}?</v-card-text
         >
         <v-card-actions>
           <v-spacer />
@@ -114,6 +140,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <div v-if="isGroup">
+      <v-checkbox
+        :input-value="showCalendarEvents"
+        @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
+        hide-details
+      >
+        <template v-slot:label>
+          <div class="tw-text-xs">Overlay my calendar events</div>
+        </template>
+      </v-checkbox>
+    </div>
   </div>
 </template>
 
@@ -136,6 +174,9 @@ export default {
     respondents: { type: Array, required: true },
     isOwner: { type: Boolean, required: true },
     maxHeight: { type: Number },
+    isGroup: { type: Boolean, required: true },
+    attendees: { type: Array, default: () => [] },
+    showCalendarEvents: { type: Boolean, required: true },
   },
 
   data() {
@@ -174,6 +215,18 @@ export default {
           numUsers++
       }
       return numUsers
+    },
+    pendingUsers() {
+      if (!this.isGroup) return []
+
+      const respondentEmailsSet = new Set(this.respondents.map((r) => r.email))
+
+      return this.attendees.filter((a) => {
+        if (!a.declined && !respondentEmailsSet.has(a.email)) {
+          return true
+        }
+        return false
+      })
     },
   },
 
