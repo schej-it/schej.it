@@ -148,7 +148,7 @@
         hide-details
       >
         <template v-slot:label>
-          <div class="tw-text-sm">Show calendar events</div>
+          <div class="tw-text-xs">Overlay my calendar events</div>
         </template>
       </v-checkbox>
     </div>
