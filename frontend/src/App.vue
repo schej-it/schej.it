@@ -250,22 +250,24 @@ export default {
     authUser: {
       immediate: true,
       handler() {
-        // Check feature flags
-        this.$posthog?.setPersonPropertiesForFlags({
-          email: this.authUser?.email,
-        })
-        if (this.$posthog?.isFeatureEnabled("avail-groups")) {
-          this.setGroupsEnabled(true)
-        } else {
-          this.setGroupsEnabled(false)
-        }
-        this.$posthog?.onFeatureFlags(() => {
+        if (this.$posthog) {
+          // Check feature flags (only if posthog is enabled)
+          this.$posthog?.setPersonPropertiesForFlags({
+            email: this.authUser?.email,
+          })
           if (this.$posthog?.isFeatureEnabled("avail-groups")) {
             this.setGroupsEnabled(true)
           } else {
             this.setGroupsEnabled(false)
           }
-        })
+          this.$posthog?.onFeatureFlags(() => {
+            if (this.$posthog?.isFeatureEnabled("avail-groups")) {
+              this.setGroupsEnabled(true)
+            } else {
+              this.setGroupsEnabled(false)
+            }
+          })
+        }
       },
     },
   },

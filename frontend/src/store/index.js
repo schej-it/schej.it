@@ -15,7 +15,7 @@ export default new Vuex.Store({
     joinedEvents: [],
 
     // Feature flags
-    groupsEnabled: false,
+    groupsEnabled: true,
   },
   getters: {},
   mutations: {
