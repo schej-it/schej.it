@@ -8,7 +8,7 @@
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
     <v-card class="tw-py-4">
-      <div v-if="!noTabs" class="tw-flex tw-rounded sm:-tw-mt-4 sm:tw-px-8">
+      <div v-if="!_noTabs" class="tw-flex tw-rounded sm:-tw-mt-4 sm:tw-px-8">
         <v-tabs v-model="tab">
           <v-tab
             v-for="t in tabs"
@@ -38,7 +38,7 @@
           :allow-notifications="allowNotifications"
           @input="$emit('input', false)"
           :contactsPayload="contactsPayload"
-          :show-help="!noTabs"
+          :show-help="!_noTabs"
         />
         <NewGroup
           v-else-if="tab === 'group'"
@@ -46,7 +46,7 @@
           :event="event"
           :edit="edit"
           @input="$emit('input', false)"
-          :show-help="!noTabs"
+          :show-help="!_noTabs"
           :calendarPermissionGranted="calendarPermissionGranted"
         />
       </template>
@@ -58,6 +58,7 @@
 import { isPhone } from "@/utils"
 import NewEvent from "@/components/NewEvent.vue"
 import NewGroup from "./NewGroup.vue"
+import { mapState } from "vuex"
 
 export default {
   name: "NewDialog",
@@ -95,16 +96,34 @@ export default {
     }
   },
 
-  mounted() {
-    this.tab = this.initialTab
-  },
-
   computed: {
+    ...mapState(["groupsEnabled"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
+    _noTabs() {
+      if (!this.groupsEnabled) {
+        return true
+      } else {
+        return this.noTabs
+      }
+    },
   },
 
-  methods: {},
+  watch: {
+    groupsEnabled: {
+      immediate: true,
+      handler() {
+        if (this.groupsEnabled) {
+          this.tabs = [
+            { title: "Event", type: "event" },
+            { title: "Availability group", type: "group" },
+          ]
+        } else {
+          this.tabs = [{ title: "Event", type: "event" }]
+        }
+      },
+    },
+  },
 }
 </script>

@@ -156,7 +156,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setAuthUser"]),
+    ...mapMutations(["setAuthUser", "setGroupsEnabled"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
@@ -205,11 +205,12 @@ export default {
       .catch(() => {
         this.setAuthUser(null)
       })
+      .finally(() => {
+        this.loaded = true
+      })
 
     // Event listeners
     window.addEventListener("scroll", this.handleScroll)
-
-    this.loaded = true
   },
 
   mounted() {
@@ -244,6 +245,27 @@ export default {
             location,
           })
         }
+      },
+    },
+    authUser: {
+      immediate: true,
+      handler() {
+        // Check feature flags
+        this.$posthog?.setPersonPropertiesForFlags({
+          email: this.authUser?.email,
+        })
+        if (this.$posthog?.isFeatureEnabled("avail-groups")) {
+          this.setGroupsEnabled(true)
+        } else {
+          this.setGroupsEnabled(false)
+        }
+        this.$posthog?.onFeatureFlags(() => {
+          if (this.$posthog?.isFeatureEnabled("avail-groups")) {
+            this.setGroupsEnabled(true)
+          } else {
+            this.setGroupsEnabled(false)
+          }
+        })
       },
     },
   },

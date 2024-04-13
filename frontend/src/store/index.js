@@ -13,6 +13,9 @@ export default new Vuex.Store({
 
     createdEvents: [],
     joinedEvents: [],
+
+    // Feature flags
+    groupsEnabled: false,
   },
   getters: {},
   mutations: {
@@ -32,6 +35,10 @@ export default new Vuex.Store({
     },
     setJoinedEvents(state, joinedEvents) {
       state.joinedEvents = joinedEvents
+    },
+
+    setGroupsEnabled(state, enabled) {
+      state.groupsEnabled = enabled
     },
   },
   actions: {

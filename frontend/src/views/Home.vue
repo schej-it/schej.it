@@ -8,17 +8,19 @@
       :initialTab="openNewGroup ? 'group' : 'event'"
     />
 
-    <v-fade-transition>
-      <div
-        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
-        v-if="!loading || eventsNotEmpty"
-      >
-        <EventType
-          :eventType="availabilityGroups"
-          emptyText="You are not part of any availability groups!"
-        />
-      </div>
-    </v-fade-transition>
+    <template v-if="groupsEnabled">
+      <v-fade-transition>
+        <div
+          class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
+          v-if="!loading || eventsNotEmpty"
+        >
+          <EventType
+            :eventType="availabilityGroups"
+            emptyText="You are not part of any availability groups!"
+          />
+        </div>
+      </v-fade-transition>
+    </template>
     <v-fade-transition>
       <div
         class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
@@ -84,7 +86,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["createdEvents", "joinedEvents", "authUser"]),
+    ...mapState(["createdEvents", "joinedEvents", "authUser", "groupsEnabled"]),
     events() {
       return [
         {
