@@ -65,9 +65,29 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-btn text class="tw-text-dark-gray" @click="rejectInvitation"
-            >Reject invitation</v-btn
-          >
+          <v-dialog v-model="rejectDialog" width="400" persistent>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn text class="tw-text-dark-gray" v-bind="attrs" v-on="on"
+                >Reject invitation</v-btn
+              >
+            </template>
+            <v-card>
+              <v-card-title>Are you sure?</v-card-title>
+              <v-card-text
+                >Are you sure you want to reject this invite?</v-card-text
+              >
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  text
+                  class="tw-text-dark-gray"
+                  @click="rejectDialog = false"
+                  >Cancel</v-btn
+                >
+                <v-btn text @click="rejectInvitation">I'm sure</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
           <v-spacer />
           <v-btn
             class="tw-bg-green tw-px-5 tw-text-white tw-transition-opacity"
@@ -107,6 +127,7 @@ export default {
 
   data: () => ({
     calendarAccounts: {},
+    rejectDialog: false,
   }),
 
   mounted() {
