@@ -11,13 +11,14 @@
       <v-spacer />
       <template v-if="dialog">
         <v-btn v-if="showHelp" icon @click="helpDialog = true">
-          <v-icon>mdi-help-circle</v-icon>
+          <v-icon>mdi-information-outline</v-icon>
         </v-btn>
         <v-btn v-else @click="$emit('input', false)" icon>
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <HelpDialog v-model="helpDialog">
-          Use events to poll people for their availabilities on certain days
+          Use events to collect people's availabilities and compare them across
+          certain days.
         </HelpDialog>
       </template>
     </v-card-title>

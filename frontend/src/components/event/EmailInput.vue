@@ -1,12 +1,17 @@
 <template>
   <div>
     <slot name="header"></slot>
-    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray" v-if="!hasContactsAccess">
-      <a class="tw-underline" @click="requestContactsAccess"
-        >Enable contacts access</a
+    <v-expand-transition>
+      <div
+        class="tw-mt-1 tw-text-xs tw-text-dark-gray"
+        v-if="!hasContactsAccess"
       >
-      for email auto-suggestions.
-    </div>
+        <a class="tw-underline" @click="requestContactsAccess"
+          >Enable contacts access</a
+        >
+        for email auto-suggestions.
+      </div>
+    </v-expand-transition>
 
     <v-combobox
       v-model="remindees"
