@@ -74,13 +74,13 @@
               solo
               color="primary"
             >
-              <v-btn> S </v-btn>
-              <v-btn> M </v-btn>
-              <v-btn> T </v-btn>
-              <v-btn> W </v-btn>
-              <v-btn> T </v-btn>
-              <v-btn> F </v-btn>
-              <v-btn> S </v-btn>
+              <v-btn depressed> S </v-btn>
+              <v-btn depressed> M </v-btn>
+              <v-btn depressed> T </v-btn>
+              <v-btn depressed> W </v-btn>
+              <v-btn depressed> T </v-btn>
+              <v-btn depressed> F </v-btn>
+              <v-btn depressed> S </v-btn>
             </v-btn-toggle>
           </div>
         </div>
