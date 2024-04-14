@@ -17,6 +17,7 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <HelpDialog v-model="helpDialog">
+          <template v-slot:header>What are events?</template>
           Use events to collect people's availabilities and compare them across
           certain days.
         </HelpDialog>
