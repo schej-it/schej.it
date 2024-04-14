@@ -7,7 +7,7 @@
   >
     <v-card>
       <v-card-title>Help</v-card-title>
-      <v-card-text>{{ text }}</v-card-text>
+      <v-card-text><slot></slot></v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="$emit('input', false)">Ok</v-btn>
@@ -22,7 +22,6 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
-    text: { type: String, default: "" },
   },
 }
 </script>

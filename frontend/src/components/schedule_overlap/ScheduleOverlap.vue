@@ -712,7 +712,7 @@ export default {
     hintText() {
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are shared with the group"
+          return "Toggle which calendars are shared with the group. Editing of availability is disabled since it's determined from your calendar events each week."
         case this.states.EDIT_AVAILABILITY:
           return "Click and drag to add your available times in green"
         case this.states.SCHEDULE_EVENT:
@@ -1037,9 +1037,13 @@ export default {
     },
     /** resets cur user availability to the response stored on the server */
     resetCurUserAvailability() {
-      this.availability = new Set()
-      if (this.userHasResponded) {
-        this.populateUserAvailability(this.authUser._id)
+      if (this.event.type === eventTypes.GROUP) {
+        this.initSharedCalendarAccounts()
+      } else {
+        this.availability = new Set()
+        if (this.userHasResponded) {
+          this.populateUserAvailability(this.authUser._id)
+        }
       }
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
@@ -1271,9 +1275,21 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          if (this.availability.has(date.getTime())) {
-            s.backgroundColor = "#00994C88"
+          if (this.event.type === eventTypes.GROUP) {
+            // Show respondent availability from calendar events
+            const respondents = this.getRespondentsForHoursOffset(
+              day.dateObject,
+              time.hoursOffset
+            )
+            if (respondents.has(this.authUser._id)) {
+              s.backgroundColor = "#00994C88"
+            }
+          } else {
+            // Show current availability from availability set
+            const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+            if (this.availability.has(date.getTime())) {
+              s.backgroundColor = "#00994C88"
+            }
           }
         }
       }
