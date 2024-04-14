@@ -1037,9 +1037,13 @@ export default {
     },
     /** resets cur user availability to the response stored on the server */
     resetCurUserAvailability() {
-      this.availability = new Set()
-      if (this.userHasResponded) {
-        this.populateUserAvailability(this.authUser._id)
+      if (this.event.type === eventTypes.GROUP) {
+        this.initSharedCalendarAccounts()
+      } else {
+        this.availability = new Set()
+        if (this.userHasResponded) {
+          this.populateUserAvailability(this.authUser._id)
+        }
       }
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
