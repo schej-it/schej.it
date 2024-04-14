@@ -7,7 +7,7 @@
           <div class="tw-w-12 tw-flex-none">
             <div
               :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-              class="tw-sticky tw-top-14 tw-z-10 tw-mb-2 tw-h-10 tw-bg-white sm:tw-top-16"
+              class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-10 tw-bg-white sm:tw-top-16"
             >
               <div
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
@@ -42,7 +42,7 @@
                 :class="
                   sampleCalendarEventsByDay ? undefined : 'tw-sticky tw-top-14'
                 "
-                class="tw-z-10 tw-flex tw-h-12 tw-items-center tw-bg-white sm:tw-top-16"
+                class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
               >
                 <div
                   v-for="(day, i) in days"

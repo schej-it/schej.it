@@ -2,7 +2,7 @@
   <v-dialog
     :value="value"
     @input="(e) => $emit('input', e)"
-    width="400"
+    width="425"
     content-class="tw-m-0"
   >
     <v-card>

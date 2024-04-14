@@ -17,10 +17,12 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <HelpDialog v-model="helpDialog">
-          Availability groups are used to see people’s calendar availabilities
-          each week. With availability groups, you will be sharing your
-          availability with real-time updates from your Google Calendar. Your
-          actual calendar events will NOT be visible to others.
+          <div class="mb-4">
+            Availability groups are used to see people’s calendar availabilities
+            each week. With availability groups, you will be sharing your
+            availability with real-time updates from your Google Calendar.
+          </div>
+          <div>Your actual calendar events will NOT be visible to others.</div>
         </HelpDialog>
       </template>
     </v-card-title>
