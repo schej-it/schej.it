@@ -98,7 +98,7 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 	max, _ := timeMax.MarshalText()
 	req, _ := http.NewRequest(
 		"GET",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end)&timeMin=%s&timeMax=%s&singleEvents=true&eventTypes=default", url.PathEscape(calendarId), min, max),
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end,transparency,attendees)&timeMin=%s&timeMax=%s&singleEvents=true&eventTypes=default", url.PathEscape(calendarId), min, max),
 		nil,
 	)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
@@ -109,6 +109,10 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 	defer resp.Body.Close()
 
 	// Define some structs to parse the json response
+	type Attendee struct {
+		Self           bool   `json:"self"`
+		ResponseStatus string `json:"responseStatus"`
+	}
 	type Response struct {
 		Items []struct {
 			Id      string `json:"id"`
@@ -119,6 +123,8 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 			End struct {
 				DateTime time.Time `json:"dateTime" binding:"required"`
 			} `json:"end"`
+			Transparency string     `json:"transparency"`
+			Attendees    []Attendee `json:"attendees"`
 		} `json:"items"`
 		Error *errs.GoogleAPIError `json:"error"`
 	}
@@ -144,14 +150,27 @@ func GetCalendarEventsAsync(email string, accessToken string, calendarId string,
 			continue
 		}
 
+		// Determine if user is free during this event
+		free := false
+		if item.Transparency == "transparent" {
+			free = true
+		} else if item.Attendees != nil {
+			selfIndex := utils.Find(item.Attendees, func(a Attendee) bool { return a.Self })
+			if selfIndex != -1 {
+				free = item.Attendees[selfIndex].ResponseStatus != "accepted"
+			}
+		}
+
 		// Restructure event
-		calendarEvents = append(calendarEvents, models.CalendarEvent{
+		calendarEvent := models.CalendarEvent{
 			Id:         item.Id,
 			CalendarId: calendarId,
 			Summary:    item.Summary,
 			StartDate:  primitive.NewDateTimeFromTime(item.Start.DateTime),
 			EndDate:    primitive.NewDateTimeFromTime(item.End.DateTime),
-		})
+			Free:       free,
+		}
+		calendarEvents = append(calendarEvents, calendarEvent)
 	}
 
 	c <- GetCalendarEventsData{CalendarEvents: calendarEvents, Email: email}
