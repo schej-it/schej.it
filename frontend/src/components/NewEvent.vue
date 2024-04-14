@@ -16,10 +16,9 @@
         <v-btn v-else @click="$emit('input', false)" icon>
           <v-icon>mdi-close</v-icon>
         </v-btn>
-        <HelpDialog
-          v-model="helpDialog"
-          text="Use events to poll people for their availabilities on certain days"
-        />
+        <HelpDialog v-model="helpDialog">
+          Use events to poll people for their availabilities on certain days
+        </HelpDialog>
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">

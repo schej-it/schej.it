@@ -4,7 +4,11 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   important: true,
   theme: {
-    extend: {},
+    extend: {
+      fontSize: {
+        xs: ["0.813rem", "1rem"],
+      },
+    },
     colors: {
       transparent: "transparent",
       current: "currentColor",

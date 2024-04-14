@@ -15,7 +15,10 @@
       </div>
     </div>
 
-    <div v-if="eventType.events.length === 0" class="tw-my-3">
+    <div
+      v-if="eventType.events.length === 0"
+      class="tw-my-3 tw-text-very-dark-gray"
+    >
       {{ emptyText.length > 0 ? emptyText : "No events yet!" }}
     </div>
     <div

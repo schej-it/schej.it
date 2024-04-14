@@ -14,7 +14,9 @@
           <div
             class="tw-mb-5 tw-text-wrap tw-text-xl tw-font-medium tw-text-black"
           >
-            Accept invitation to share your calendars with "{{ group.name }}"?
+            Accept invitation to share your calendar availability with "{{
+              group.name
+            }}"?
           </div>
           <v-expand-transition>
             <div v-if="calendarPermissionGranted">
@@ -27,17 +29,23 @@
                 @toggleSubCalendarAccount="toggleSubCalendarAccount"
               ></CalendarAccounts>
 
-              <div class="tw-mb-2 tw-mt-5 tw-font-medium tw-text-black">
-                These calendars will be shared with
-              </div>
-              <div class="tw-flex tw-flex-wrap tw-gap-1">
-                <UserChip
-                  v-for="user in group.attendees?.filter(
-                    (u) => !u.declined && u.email != authUser.email
-                  )"
-                  :key="user.email"
-                  :user="user"
-                ></UserChip>
+              <div class="tw-mt-5 tw-space-y-4">
+                <div class="tw-font-medium tw-text-black">
+                  Your calendar availability from these calendars will be shared
+                  with:
+                </div>
+                <div class="tw-flex tw-flex-wrap tw-gap-1">
+                  <UserChip
+                    v-for="user in group.attendees?.filter(
+                      (u) => !u.declined && u.email != authUser.email
+                    )"
+                    :key="user.email"
+                    :user="user"
+                  ></UserChip>
+                </div>
+                <div class="tw-text-xs tw-text-dark-gray">
+                  Your calendar events will NOT be visible to others
+                </div>
               </div>
             </div>
           </v-expand-transition>
@@ -57,10 +65,7 @@
         </v-card-text>
 
         <v-card-actions>
-          <v-btn
-            text
-            class="tw-text-dark-gray tw-underline"
-            @click="rejectInvitation"
+          <v-btn text class="tw-text-dark-gray" @click="rejectInvitation"
             >Reject invitation</v-btn
           >
           <v-spacer />

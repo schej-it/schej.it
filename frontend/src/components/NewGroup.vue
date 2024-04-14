@@ -16,10 +16,12 @@
         <v-btn v-else @click="$emit('input', false)" icon>
           <v-icon>mdi-close</v-icon>
         </v-btn>
-        <HelpDialog
-          v-model="helpDialog"
-          text="Use groups to see people's calendar availabilities each week"
-        />
+        <HelpDialog v-model="helpDialog">
+          Availability groups are used to see people’s calendar availabilities
+          each week. With availability groups, you will be sharing your
+          availability with real-time updates from your Google Calendar. Your
+          actual calendar events will NOT be visible to others.
+        </HelpDialog>
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
