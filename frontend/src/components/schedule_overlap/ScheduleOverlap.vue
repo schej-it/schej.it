@@ -1271,9 +1271,21 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          if (this.availability.has(date.getTime())) {
-            s.backgroundColor = "#00994C88"
+          if (this.event.type === eventTypes.GROUP) {
+            // Show respondent availability from calendar events
+            const respondents = this.getRespondentsForHoursOffset(
+              day.dateObject,
+              time.hoursOffset
+            )
+            if (respondents.has(this.authUser._id)) {
+              s.backgroundColor = "#00994C88"
+            }
+          } else {
+            // Show current availability from availability set
+            const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+            if (this.availability.has(date.getTime())) {
+              s.backgroundColor = "#00994C88"
+            }
           }
         }
       }
