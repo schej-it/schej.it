@@ -207,7 +207,7 @@
             <v-expand-transition>
               <div
                 v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
-                class="tw-flex"
+                class="tw-sticky tw-bottom-4 tw-flex"
               >
                 <div
                   class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-2 tw-px-[7px] tw-text-sm tw-text-dark-gray"
