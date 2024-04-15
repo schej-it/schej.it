@@ -46,8 +46,8 @@
 
       <div
         v-if="numResponses > 0 && state !== states.EDIT_AVAILABILITY"
-        style="width: 180.16px"
-        class="tw-hidden sm:tw-block"
+        style="width: 181.5px"
+        class="tw-hidden sm:tw-flex"
       >
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
