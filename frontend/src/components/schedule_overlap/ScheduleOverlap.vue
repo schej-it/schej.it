@@ -11,7 +11,7 @@
             >
               <div
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                class="tw-sticky tw-top-13 -tw-ml-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+                class="tw-top-13 tw-sticky -tw-ml-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
               >
                 <v-btn class="tw-border-gray" outlined icon @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
@@ -138,7 +138,11 @@
                             <div
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
                               :class="
-                                isGroup
+                                event.free
+                                  ? isGroup
+                                    ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
+                                    : 'tw-border-dashed tw-border-blue'
+                                  : isGroup
                                   ? 'tw-border-white tw-bg-light-blue'
                                   : 'tw-border-blue'
                               "
@@ -239,7 +243,7 @@
 
           <div
             :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-            class="tw-sticky tw-top-13 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+            class="tw-top-13 tw-sticky -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
           >
             <v-btn class="tw-border-gray" outlined icon @click="nextPage"
               ><v-icon>mdi-chevron-right</v-icon></v-btn
@@ -1064,7 +1068,7 @@ export default {
             const notIntersect =
               dateCompare(endDate, e.startDate) <= 0 ||
               dateCompare(startDate, e.endDate) >= 0
-            return !notIntersect
+            return !notIntersect && !e.free
           })
           if (index === -1) {
             availability.add(startDate.getTime())

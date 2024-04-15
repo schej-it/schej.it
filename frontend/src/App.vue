@@ -76,6 +76,21 @@ html {
   text-transform: unset !important;
 }
 
+.v-btn.v-btn--is-elevated {
+  -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;
+  -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid theme("colors.light-gray-stroke");
+}
+
+.v-btn.v-btn--is-elevated.primary,
+.v-btn.v-btn--is-elevated.tw-bg-green {
+  -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid theme("colors.light-green") !important;
+}
+
 .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
   > .v-input__control
   > .v-input__slot {

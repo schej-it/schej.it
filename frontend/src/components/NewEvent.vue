@@ -11,13 +11,15 @@
       <v-spacer />
       <template v-if="dialog">
         <v-btn v-if="showHelp" icon @click="helpDialog = true">
-          <v-icon>mdi-help-circle</v-icon>
+          <v-icon>mdi-information-outline</v-icon>
         </v-btn>
         <v-btn v-else @click="$emit('input', false)" icon>
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <HelpDialog v-model="helpDialog">
-          Use events to poll people for their availabilities on certain days
+          <template v-slot:header>Events</template>
+          Use events to collect people's availabilities and compare them across
+          certain days.
         </HelpDialog>
       </template>
     </v-card-title>
@@ -86,13 +88,13 @@
                 solo
                 color="primary"
               >
-                <v-btn> S </v-btn>
-                <v-btn> M </v-btn>
-                <v-btn> T </v-btn>
-                <v-btn> W </v-btn>
-                <v-btn> T </v-btn>
-                <v-btn> F </v-btn>
-                <v-btn> S </v-btn>
+                <v-btn depressed> S </v-btn>
+                <v-btn depressed> M </v-btn>
+                <v-btn depressed> T </v-btn>
+                <v-btn depressed> W </v-btn>
+                <v-btn depressed> T </v-btn>
+                <v-btn depressed> F </v-btn>
+                <v-btn depressed> S </v-btn>
               </v-btn-toggle>
             </div>
           </v-expand-transition>

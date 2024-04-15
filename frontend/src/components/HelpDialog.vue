@@ -6,7 +6,7 @@
     content-class="tw-m-0"
   >
     <v-card>
-      <v-card-title>Help</v-card-title>
+      <v-card-title><slot name="header">Help</slot></v-card-title>
       <v-card-text><slot></slot></v-card-text>
       <v-card-actions>
         <v-spacer />

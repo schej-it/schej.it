@@ -15,7 +15,8 @@
           <div class="">
             <v-btn
               @click="showPermissions"
-              class="tw-mb-2 tw-bg-green"
+              class="tw-mb-2"
+              color="primary"
               dark
               block
             >

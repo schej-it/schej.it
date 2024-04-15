@@ -16,4 +16,7 @@ type CalendarEvent struct {
 	Summary    string             `json:"summary" bson:"summary,omitempty"`
 	StartDate  primitive.DateTime `json:"startDate" bson:"startDate,omitempty"`
 	EndDate    primitive.DateTime `json:"endDate" bson:"endDate,omitempty"`
+
+	// Whether the user is free during this event
+	Free bool `json:"free" bson:"free,omitempty"`
 }
