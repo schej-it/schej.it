@@ -17,7 +17,7 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <HelpDialog v-model="helpDialog">
-          <template v-slot:header>What are availability groups?</template>
+          <template v-slot:header>Availability groups</template>
           <div class="mb-4">
             Use availability groups to see group members' weekly calendar
             availabilities. Your availability will be updated in real-time from
