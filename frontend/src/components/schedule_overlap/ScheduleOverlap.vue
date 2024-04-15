@@ -206,15 +206,13 @@
                 class="tw-flex"
               >
                 <div
-                  class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray"
+                  class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-light-gray tw-px-[7px] tw-text-sm tw-text-dark-gray tw-p-2"
                 >
                   <div class="tw-flex tw-items-center tw-gap-1">
                     <v-icon small>mdi-information-outline</v-icon>
                     {{ hintText }}
                   </div>
-                  <v-btn icon @click="closeHint">
-                    <v-icon small>mdi-close</v-icon></v-btn
-                  >
+                    <v-icon small @click="closeHint">mdi-close</v-icon>
                 </div>
               </div></v-expand-transition
             >
