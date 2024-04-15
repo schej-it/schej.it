@@ -133,7 +133,7 @@
                         Remind people to fill out the Schej
                       </div>
 
-                      <v-tooltip top>
+                      <v-tooltip top color="#4F4F4F">
                         <template v-slot:activator="{ on, attrs }">
                           <v-icon small v-bind="attrs" v-on="on"
                             >mdi-information-outline
