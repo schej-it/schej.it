@@ -484,7 +484,7 @@ func updateEventResponse(c *gin.Context) {
 	}
 
 	// Send email to creator of event if creator enabled it
-	if utils.Coalesce(event.NotificationsEnabled) && !userHasResponded && userIdString != event.OwnerId.Hex() {
+	if (utils.Coalesce(event.NotificationsEnabled) || event.Type == models.GROUP) && !userHasResponded && userIdString != event.OwnerId.Hex() {
 		// Send email asynchronously
 		go func() {
 			creator := db.GetUserById(event.OwnerId.Hex())
@@ -500,13 +500,24 @@ func updateEventResponse(c *gin.Context) {
 				respondent := db.GetUserById(userIdString)
 				respondentName = fmt.Sprintf("%s %s", respondent.FirstName, respondent.LastName)
 			}
-			someoneRespondedEmailId := 10
-			listmonk.SendEmail(creator.Email, someoneRespondedEmailId, bson.M{
-				"eventName":      event.Name,
-				"ownerName":      creator.FirstName,
-				"respondentName": respondentName,
-				"eventUrl":       fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
-			})
+
+			if event.Type == models.GROUP {
+				someoneRespondedEmailId := 13
+				listmonk.SendEmail(creator.Email, someoneRespondedEmailId, bson.M{
+					"groupName":      event.Name,
+					"ownerName":      creator.FirstName,
+					"respondentName": respondentName,
+					"groupUrl":       fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
+				})
+			} else {
+				someoneRespondedEmailId := 10
+				listmonk.SendEmail(creator.Email, someoneRespondedEmailId, bson.M{
+					"eventName":      event.Name,
+					"ownerName":      creator.FirstName,
+					"respondentName": respondentName,
+					"eventUrl":       fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
+				})
+			}
 		}()
 	}
 
