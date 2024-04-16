@@ -42,19 +42,16 @@
       </template>
     </v-combobox>
 
-    
-    <div class="tw-transition-all" :class="emailsAreValid ? '-tw-mt-5' : ''">
-    <v-expand-transition>
-      <div
-        class="tw-text-xs tw-text-dark-gray"
-        v-if="!hasContactsAccess"
-      >
-        <a class="tw-underline" @click="requestContactsAccess"
-          >Enable contacts access</a
-        >
-        for email auto-suggestions.
-      </div>
-    </v-expand-transition></div>
+    <div class="tw-transition-all" :class="emailsAreValid ? '-tw-mt-5' : ''" @click="requestContactsAccess">
+      <v-expand-transition>
+        <div class="tw-text-xs tw-text-dark-gray" v-if="!hasContactsAccess">
+          <a class="tw-underline" @click="requestContactsAccess"
+            >Enable contacts access</a
+          >
+          for email auto-suggestions.
+        </div>
+      </v-expand-transition>
+    </div>
   </div>
 </template>
 
@@ -179,17 +176,26 @@ export default {
     },
     query() {
       if (this.query && this.query.length > 0) {
-        const pureEmail = this.query.substring(0, this.query.length - 1)
-        if (
-          this.query[this.query.length - 1] == " " &&
-          validateEmail(pureEmail)
-        ) {
-          if (!this.remindees.includes(pureEmail))
-            this.remindees.push(pureEmail)
-          this.query = ""
-        } else {
-          this.searchContacts()
+        if ( /[,\s]/.test(this.query)) {
+          /** If the query has spaces or commas, add the valid emails to the list */
+          let successfullyAdded = false
+          const emailsArray = this.query.split(/[,\s]+/).filter(email => email.trim() !== "");
+
+          emailsArray.forEach((email) => {
+            if (validateEmail(email) && !this.remindees.includes(email)) {
+              successfullyAdded = true
+              this.remindees.push(email)
+            }
+          })
+
+          if (successfullyAdded) {
+            this.query = ""
+            return
+          }
+          
         }
+
+        this.searchContacts()
       } else {
         clearTimeout(this.timeout)
         this.searchedContacts = []
