@@ -1240,12 +1240,16 @@ export default {
         c += "animate-bg-color "
       }
 
+      const isEditingCalendars =
+        this.state === this.states.EDIT_AVAILABILITY && this.isGroup
+
       // Border style
       if (
         (this.respondents.length > 0 ||
           this.state === this.states.EDIT_AVAILABILITY) &&
         this.curTimeslot.dayIndex === d &&
-        this.curTimeslot.timeIndex === t
+        this.curTimeslot.timeIndex === t &&
+        !isEditingCalendars
       ) {
         // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
