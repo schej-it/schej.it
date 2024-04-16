@@ -135,7 +135,7 @@
         :disabled="!formComplete"
         @click="submit"
       >
-        {{ edit ? "Edit" : "Create" }}
+        {{ edit ? "Save edits" : "Create" }}
       </v-btn>
     </v-card-actions>
   </v-card>
