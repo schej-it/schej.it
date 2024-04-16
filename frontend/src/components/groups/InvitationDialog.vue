@@ -37,14 +37,18 @@
                   Your calendar availability from these calendars will be shared
                   with:
                 </div>
-                <div class="tw-flex tw-flex-wrap tw-gap-1">
+                <div
+                  class="tw-flex tw-flex-wrap tw-gap-1"
+                  v-if="membersToShareWith.length > 0"
+                >
                   <UserChip
-                    v-for="user in group.attendees?.filter(
-                      (u) => !u.declined && u.email != authUser.email
-                    )"
+                    v-for="user in membersToShareWith"
                     :key="user.email"
                     :user="user"
                   ></UserChip>
+                </div>
+                <div v-else class="tw-flex tw-italic tw-items-center">
+                  <div>No members added yet</div>
                 </div>
                 <div class="tw-text-xs tw-text-dark-gray">
                   Your calendar events will NOT be visible to others
@@ -160,8 +164,12 @@ export default {
     isOwner() {
       return this.authUser._id === this.group.ownerId
     },
+    membersToShareWith() {
+      return this.group.attendees?.filter(
+        (u) => !u.declined && u.email != this.authUser.email
+      )
+    },
   },
-
   methods: {
     goHome() {
       this.$router.push({ name: "home" })
