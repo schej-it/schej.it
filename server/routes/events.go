@@ -291,12 +291,13 @@ func editEvent(c *gin.Context) {
 	if event.Type == models.GROUP {
 		origAttendees := utils.Coalesce(event.Attendees)
 		updatedAttendees := make([]models.Attendee, 0)
-		added, _, kept := utils.FindAddedRemovedKept(payload.Attendees, utils.Map(origAttendees, func(a models.Attendee) string { return a.Email }))
+		added, removed, kept := utils.FindAddedRemovedKept(payload.Attendees, utils.Map(origAttendees, func(a models.Attendee) string { return a.Email }))
 
 		// Determine owner name
 		var ownerName string
+		var owner *models.User
 		if event.OwnerId != primitive.NilObjectID {
-			owner := db.GetUserById(event.OwnerId.Hex())
+			owner = db.GetUserById(event.OwnerId.Hex())
 			ownerName = owner.FirstName
 
 			// Keep owner in attendees array
@@ -305,6 +306,15 @@ func editEvent(c *gin.Context) {
 			}
 		} else {
 			ownerName = "Somebody"
+		}
+
+		// Remove user from responses map
+		for _, removedEmail := range removed {
+			// Only delete response if it isn't the owner of the group
+			if removedEmail.Value != utils.Coalesce(owner).Email {
+				removedUser := db.GetUserByEmail(removedEmail.Value)
+				delete(event.Responses, removedUser.Id.Hex())
+			}
 		}
 
 		for _, keptEmail := range kept {
