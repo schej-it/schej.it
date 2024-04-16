@@ -13,8 +13,7 @@
       multiple
       append-icon=""
       solo
-      :rules="[rules.validEmails]"
-      hide-details
+      :rules="[validEmails]"
     >
       <template v-slot:selection="data, parent">
         <UserChip
@@ -43,9 +42,11 @@
       </template>
     </v-combobox>
 
+    
+    <div class="tw-transition-all" :class="emailsAreValid ? '-tw-mt-5' : ''">
     <v-expand-transition>
       <div
-        class="tw-mt-2 tw-text-xs tw-text-dark-gray"
+        class="tw-text-xs tw-text-dark-gray"
         v-if="!hasContactsAccess"
       >
         <a class="tw-underline" @click="requestContactsAccess"
@@ -53,7 +54,7 @@
         >
         for email auto-suggestions.
       </div>
-    </v-expand-transition>
+    </v-expand-transition></div>
   </div>
 </template>
 
@@ -76,21 +77,12 @@ export default {
     remindees: [], // Currently displayed emails
     searchedContacts: [], // Contacts that match the search query
     timeout: null, // Timeout for search debouncing
-    searchDebounceTime: 250,
+    searchDebounceTime: 250, // Search debounce time in ms
 
     hasContactsAccess: true,
     query: "",
 
-    rules: {
-      validEmails: (emails) => {
-        for (const email of emails) {
-          if (email?.length > 0 && !validateEmail(email)) {
-            return "Please enter a valid email."
-          }
-        }
-        return true
-      },
-    },
+    emailsAreValid: true, // Whether all emails are valid
   }),
 
   mounted() {
@@ -163,6 +155,19 @@ export default {
         contact["email"]
       }`
     },
+    /**
+     * Determines if emails are all valid.
+     */
+    validEmails(emails) {
+      for (const email of emails) {
+        if (email?.length > 0 && !validateEmail(email)) {
+          this.emailsAreValid = false
+          return "Please enter a valid email."
+        }
+      }
+      this.emailsAreValid = true
+      return true
+    },
   },
 
   watch: {
@@ -191,6 +196,8 @@ export default {
       }
     },
   },
+
+  computed: {},
 
   components: { UserAvatarContent, UserChip },
 }
