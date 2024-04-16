@@ -175,9 +175,9 @@
     </div>
 
     <template v-if="showFeedbackBtn">
-      <v-divider />
+      <div class="tw-w-full tw-border-t tw-border-solid tw-border-gray"></div>
 
-      <div class="tw-flex tw-justify-center" v-if="showFeedbackBtn">
+      <div class="tw-flex tw-flex-col tw-items-center" v-if="showFeedbackBtn">
         <v-btn
           class="tw-h-16"
           block
@@ -187,6 +187,16 @@
           target="_blank"
         >
           Give feedback
+        </v-btn>
+        <div class="tw-w-full tw-border-t tw-border-solid tw-border-gray"></div>
+        <v-btn
+          class="tw-h-16"
+          block
+          text
+          href="https://www.paypal.com/donate/?hosted_button_id=KWCH6LGJCP6E6"
+          target="_blank"
+        >
+          Donate
         </v-btn>
       </div>
     </template>

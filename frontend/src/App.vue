@@ -35,6 +35,14 @@
         >
           Give feedback
         </v-btn>
+        <v-btn
+          v-if="!isPhone"
+          text
+          href="https://www.paypal.com/donate/?hosted_button_id=KWCH6LGJCP6E6"
+          target="_blank"
+        >
+          Donate
+        </v-btn>
         <div v-if="authUser" class="sm:tw-ml-4">
           <AuthUserMenu />
         </div>
