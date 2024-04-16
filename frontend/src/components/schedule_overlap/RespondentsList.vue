@@ -81,7 +81,7 @@
             ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
           >
           <v-btn
-            v-else-if="isOwner"
+            v-else-if="isOwner && !isGroup"
             absolute
             small
             icon
