@@ -42,7 +42,17 @@
         <!-- Title and copy link -->
         <div class="tw-flex tw-items-center tw-text-black">
           <div>
-            <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
+            <div
+              class="sm:mb-2 tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2"
+            >
+              <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
+              <v-chip
+                v-if="isGroup"
+                :small="isPhone"
+                class="tw-pointer-events-none tw-rounded tw-bg-light-gray tw-font-medium"
+                >Availability group</v-chip
+              >
+            </div>
             <div class="tw-flex tw-items-baseline tw-gap-1">
               <div
                 class="tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-text-base"
