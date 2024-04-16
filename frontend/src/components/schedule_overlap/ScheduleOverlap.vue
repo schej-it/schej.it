@@ -242,12 +242,17 @@
           </div>
 
           <div
-            :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-            class="tw-top-13 tw-sticky -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+            :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
+            class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-10 tw-bg-white sm:tw-top-16"
           >
-            <v-btn class="tw-border-gray" outlined icon @click="nextPage"
-              ><v-icon>mdi-chevron-right</v-icon></v-btn
+            <div
+              :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+              class="tw-top-13 tw-sticky -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
             >
+              <v-btn class="tw-border-gray" outlined icon @click="nextPage"
+                ><v-icon>mdi-chevron-right</v-icon></v-btn
+              >
+            </div>
           </div>
         </div>
 
