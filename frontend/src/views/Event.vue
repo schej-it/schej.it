@@ -76,6 +76,16 @@
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
             <div v-if="isGroup">
               <v-btn
+                v-if="weekOffset != 0"
+                :icon="isPhone"
+                text
+                class="tw-mr-1 tw-text-very-dark-gray sm:tw-mr-2.5"
+                @click="resetWeekOffset"
+              >
+                <v-icon class="sm:tw-mr-2">mdi-calendar-today</v-icon>
+                <span v-if="!isPhone">Today</span>
+              </v-btn>
+              <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
                 class="tw-text-very-dark-gray"
@@ -642,6 +652,11 @@ export default {
           this.loading = false
         }
       })
+    },
+
+    /** Resets week offset to 0 */
+    resetWeekOffset() {
+      this.weekOffset = 0
     },
 
     onBeforeUnload(e) {
