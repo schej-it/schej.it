@@ -28,10 +28,7 @@
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
-      <div
-        v-if="calendarPermissionGranted"
-        class="tw-flex tw-flex-col tw-space-y-6"
-      >
+      <div class="tw-flex tw-flex-col tw-space-y-6">
         <v-text-field
           ref="name-field"
           v-model="name"
@@ -118,13 +115,6 @@
           </v-expand-transition>
         </div>
       </div>
-
-      <v-card v-else class="tw-p-5">
-        <CalendarPermissionsCard
-          cancelLabel=""
-          @allow="requestCalendarPermissions"
-        ></CalendarPermissionsCard
-      ></v-card>
     </v-card-text>
     <v-card-actions class="tw-relative tw-px-8">
       <v-btn
