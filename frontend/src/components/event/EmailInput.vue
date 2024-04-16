@@ -20,7 +20,7 @@
       item-text="queryString"
       item-value="queryString"
       class="tw-mt-2 tw-text-sm"
-      placeholder="Enter an email address..."
+      placeholder="Type an email address and press enter..."
       multiple
       append-icon=""
       solo
