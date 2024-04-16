@@ -1,5 +1,5 @@
 <template>
-  <div v-if="event" class="tw-mt-8">
+  <div v-if="event" class="tw-mt-8 tw-h-full">
     <!-- Mark availability option dialog -->
     <MarkAvailabilityDialog
       v-model="choiceDialog"
@@ -191,7 +191,7 @@
       </div>
     </template>
 
-    <div class="tw-h-16"></div>
+    <div class="tw-h-8"></div>
 
     <!-- Bottom bar for phones -->
     <div
