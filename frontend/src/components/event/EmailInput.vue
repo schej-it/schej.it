@@ -42,7 +42,7 @@
       </template>
     </v-combobox>
 
-    <div class="tw-transition-all" :class="emailsAreValid ? '-tw-mt-5' : ''" @click="requestContactsAccess">
+    <div class="tw-transition-all tw-relative" :class="emailsAreValid ? '-tw-mt-5' : ''" @click="requestContactsAccess">
       <v-expand-transition>
         <div class="tw-text-xs tw-text-dark-gray" v-if="!hasContactsAccess">
           <a class="tw-underline" @click="requestContactsAccess"
