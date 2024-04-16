@@ -196,7 +196,8 @@
     <!-- Bottom bar for phones -->
     <div
       v-if="isPhone"
-      class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-bg-green tw-px-4"
+      class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-px-4"
+      :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
     >
       <template v-if="!isEditing && !isScheduling">
         <v-btn
@@ -210,7 +211,8 @@
         <v-btn
           v-if="!isGroup && !authUser && selectedGuestRespondent"
           outlined
-          class="tw-bg-white tw-text-green tw-transition-opacity"
+          class="tw-bg-white tw-transition-opacity"
+          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
           :style="{ opacity: availabilityBtnOpacity }"
           @click="editGuestAvailability"
         >
@@ -219,7 +221,8 @@
         <v-btn
           v-else
           outlined
-          class="tw-bg-white tw-text-green tw-transition-opacity"
+          class="tw-bg-white tw-transition-opacity"
+          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
           :disabled="loading && !userHasResponded"
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
@@ -238,7 +241,11 @@
           Cancel
         </v-btn>
         <v-spacer />
-        <v-btn class="tw-bg-white tw-text-green" @click="saveChanges">
+        <v-btn
+          class="tw-bg-white"
+          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
+          @click="saveChanges"
+        >
           Save
         </v-btn>
       </template>
@@ -247,7 +254,11 @@
           Cancel
         </v-btn>
         <v-spacer />
-        <v-btn class="tw-bg-white tw-text-green" @click="confirmScheduleEvent">
+        <v-btn
+          class="tw-bg-white"
+          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
+          @click="confirmScheduleEvent"
+        >
           Schedule
         </v-btn>
       </template>
