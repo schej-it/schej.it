@@ -59,7 +59,7 @@
           </div>
           <v-btn
             outlined
-            class="tw-text-bright-red"
+            class="tw-text-red"
             href="https://myaccount.google.com/connections?filters=3,4&hl=en"
             target="_blank"
             >Revoke calendar access</v-btn
@@ -131,12 +131,7 @@
         <div class="tw-w-64">
           <v-dialog v-model="deleteDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                outlined
-                class="tw-text-bright-red"
-                block
-                v-bind="attrs"
-                v-on="on"
+              <v-btn outlined class="tw-text-red" block v-bind="attrs" v-on="on"
                 >Delete account</v-btn
               >
             </template>

@@ -78,13 +78,15 @@
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
-                class="tw-text-blue"
+                class="tw-text-very-dark-gray"
                 @click="refreshCalendar"
                 :loading="loading"
               >
                 <v-icon class="tw-mr-1" v-if="!isPhone">mdi-refresh</v-icon>
                 <span v-if="!isPhone" class="tw-mr-2">Refresh</span>
-                <v-icon class="tw-text-blue" v-else>mdi-refresh</v-icon>
+                <v-icon class="tw-text-very-dark-gray" v-else
+                  >mdi-refresh</v-icon
+                >
               </v-btn>
             </div>
             <div v-else>
@@ -118,7 +120,7 @@
                   v-else
                   width="10.25rem"
                   class="tw-text-white tw-transition-opacity"
-                  :class="isGroup ? 'tw-bg-blue' : 'tw-bg-green'"
+                  :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
                   :disabled="loading && !userHasResponded"
                   :style="{ opacity: availabilityBtnOpacity }"
                   @click="addAvailability"
@@ -142,7 +144,7 @@
                 </v-btn>
                 <v-btn
                   class="tw-w-20 tw-text-white"
-                  :class="isGroup ? 'tw-bg-blue' : 'tw-bg-green'"
+                  :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
                   @click="saveChanges"
                 >
                   Save

@@ -29,8 +29,7 @@ module.exports = {
       "light-gray": "#f3f4f6",
       "light-gray-stroke": "#dfdfdf",
       "avail-green": colors.emerald, // The green used for marking availability
-      red: "#B13C3C",
-      "bright-red": "#DB1616",
+      red: "#DB1616",
     },
     screens: {
       sm: "640px",

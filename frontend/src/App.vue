@@ -91,6 +91,13 @@ html {
   border: 1px solid theme("colors.light-green") !important;
 }
 
+.v-btn.v-btn--is-elevated.tw-bg-very-dark-gray {
+  -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid theme("colors.dark-gray") !important;
+}
+
 .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
   > .v-input__control
   > .v-input__slot {
