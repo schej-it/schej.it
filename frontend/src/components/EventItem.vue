@@ -46,7 +46,7 @@
             </v-btn>
           </template>
 
-          <v-list justify="center" class="tw-py-1">
+          <v-list class="tw-py-1" dense>
             <v-dialog
               v-if="!isGroup"
               v-model="duplicateDialog"
@@ -54,15 +54,11 @@
               persistent
             >
               <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  id="duplicate-event-btn"
-                  text
-                  class="tw-px-6"
-                  v-bind="attrs"
-                  v-on="on"
-                  block
-                  >Duplicate</v-btn
-                >
+                <v-list-item id="duplicate-event-btn" v-bind="attrs" v-on="on">
+                  <v-list-item-content>
+                    <v-list-item-title>Duplicate</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
               </template>
               <v-card>
                 <v-card-title>Duplicate {{ typeText }}</v-card-title>
@@ -102,15 +98,16 @@
             </v-dialog>
             <v-dialog v-model="removeDialog" width="400" persistent>
               <template v-slot:activator="{ on, attrs }">
-                <v-btn
+                <v-list-item
                   id="delete-event-btn"
-                  text
-                  class="red--text tw-px-6"
+                  class="red--text"
                   v-bind="attrs"
                   v-on="on"
-                  block
-                  >Delete {{ typeText }}</v-btn
                 >
+                  <v-list-item-content>
+                    <v-list-item-title>Delete {{ typeText }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
               </template>
               <v-card>
                 <v-card-title>Are you sure?</v-card-title>
@@ -129,7 +126,9 @@
             </v-dialog>
           </v-list>
         </v-menu>
-        <v-icon v-else class="tw-mr-1 tw-ml-2 tw-opacity-75">mdi-chevron-right</v-icon>
+        <v-icon v-else class="tw-ml-2 tw-mr-1 tw-opacity-75"
+          >mdi-chevron-right</v-icon
+        >
       </div>
     </v-container>
   </router-link>
