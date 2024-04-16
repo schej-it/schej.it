@@ -49,7 +49,7 @@
               <v-chip
                 v-if="isGroup"
                 :small="isPhone"
-                class="tw-pointer-events-none tw-rounded tw-bg-light-gray tw-font-medium"
+                class="tw-pointer-events-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
                 >Availability group</v-chip
               >
             </div>
