@@ -14,9 +14,12 @@
           <div
             class="tw-mb-5 tw-text-wrap tw-text-xl tw-font-medium tw-text-black"
           >
-            Accept invitation to share your calendar availability with "{{
-              group.name
-            }}"?
+            <template v-if="isOwner"> Share calendar availability </template>
+            <template v-else>
+              Accept invitation to share your calendar availability with "{{
+                group.name
+              }}"?
+            </template>
           </div>
           <v-expand-transition>
             <div v-if="calendarPermissionGranted">
@@ -64,7 +67,18 @@
           </v-expand-transition>
         </v-card-text>
 
-        <v-card-actions>
+        <v-card-actions v-if="isOwner">
+          <v-btn class="tw-px-6" @click="goHome" text>Back</v-btn>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            @click="acceptInvitation"
+            :disabled="!calendarPermissionGranted"
+            class="tw-px-6"
+            >Share</v-btn
+          >
+        </v-card-actions>
+        <v-card-actions v-else>
           <v-dialog v-model="rejectDialog" width="400" persistent>
             <template v-slot:activator="{ on, attrs }">
               <v-btn text class="tw-text-dark-gray" v-bind="attrs" v-on="on"
@@ -143,9 +157,15 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
+    isOwner() {
+      return this.authUser._id === this.group.ownerId
+    },
   },
 
   methods: {
+    goHome() {
+      this.$router.push({ name: "home" })
+    },
     rejectInvitation() {
       post(`/events/${this.group._id}/decline`).then((res) => {
         this.$router.replace({ name: "home" })
