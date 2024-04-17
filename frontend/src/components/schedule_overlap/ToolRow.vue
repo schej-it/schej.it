@@ -31,6 +31,24 @@
               hide-details
             />
           </div>
+          <div
+            v-if="isPhone"
+            class="tw-flex tw-basis-full tw-items-center tw-gap-x-2"
+          >
+            Show
+            <v-select
+              :value="mobileNumDays"
+              @input="$emit('update:mobileNumDays', $event)"
+              :items="mobileNumDaysOptions"
+              :menu-props="{ auto: true }"
+              item-text="label"
+              item-value="value"
+              class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
+              dense
+              hide-details
+            />
+            at a time
+          </div>
         </template>
         <template v-else-if="isWeekly && !isPhone">
           <v-spacer />
@@ -139,6 +157,7 @@ export default {
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
     numResponses: { type: Number, required: true },
+    mobileNumDays: { type: Number, default: 3 }, // The number of days to show at a time on mobile
   },
 
   components: {
@@ -148,6 +167,10 @@ export default {
 
   data: () => ({
     hintTextState: true,
+    mobileNumDaysOptions: [
+      { label: "3 days", value: 3 },
+      { label: "7 days", value: 7 },
+    ],
   }),
 
   computed: {

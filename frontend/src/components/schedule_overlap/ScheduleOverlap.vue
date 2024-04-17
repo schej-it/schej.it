@@ -4,14 +4,14 @@
       <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
         <div class="tw-flex tw-grow">
           <!-- Times -->
-          <div class="tw-w-12 tw-flex-none">
+          <div class="tw-w-8 tw-flex-none sm:tw-w-12">
             <div
               :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-              class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-10 tw-bg-white sm:tw-top-16"
+              class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
             >
               <div
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                class="tw-sticky tw-top-14 -tw-ml-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+                class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
               >
                 <v-btn class="tw-border-gray" outlined icon @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
@@ -19,7 +19,7 @@
               </div>
             </div>
 
-            <div class="-tw-mt-[8px]">
+            <div class="-tw-ml-3 -tw-mt-[8px] sm:tw-ml-0">
               <div
                 v-for="(time, i) in times"
                 :key="i"
@@ -48,16 +48,15 @@
                   v-for="(day, i) in days"
                   :key="i"
                   class="tw-flex-1 tw-bg-white"
-                  style="min-width: 50px"
                 >
                   <div class="tw-text-center">
                     <div
                       v-if="isSpecificDates || isGroup"
-                      class="tw-text-xs tw-font-light tw-capitalize tw-text-very-dark-gray"
+                      class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
                     >
                       {{ day.dateString }}
                     </div>
-                    <div class="tw-text-lg tw-capitalize">
+                    <div class="tw-text-base tw-capitalize sm:tw-text-lg">
                       {{ day.dayText }}
                     </div>
                   </div>
@@ -94,7 +93,6 @@
                       :class="
                         isGroup && loadingCalendarEvents && 'tw-opacity-50'
                       "
-                      style="min-width: 50px"
                     >
                       <!-- Timeslots -->
                       <div
@@ -243,7 +241,7 @@
 
           <div
             :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-            class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-10 tw-bg-white sm:tw-top-16"
+            class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
           >
             <div
               :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
@@ -388,6 +386,7 @@
         :calendar-permission-granted="calendarPermissionGranted"
         :week-offset="weekOffset"
         :num-responses="respondents.length"
+        :mobile-num-days.sync="mobileNumDays"
         @update:weekOffset="(val) => $emit('update:weekOffset', val)"
         @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
@@ -530,6 +529,9 @@ export default {
 
       /* Variables for pagination */
       page: 0,
+      mobileNumDays: localStorage["mobileNumDays"]
+        ? parseInt(localStorage["mobileNumDays"])
+        : 3, // The number of days to show at a time on mobile
 
       hasRefreshedAuthUser: false,
 
@@ -885,7 +887,7 @@ export default {
       return Math.ceil(this.calendarScrollLeft) < this.calendarMaxScroll
     },
     maxDaysPerPage() {
-      return this.isPhone ? 3 : 7
+      return this.isPhone ? this.mobileNumDays : 7
     },
     hasNextPage() {
       return (
@@ -1860,6 +1862,15 @@ export default {
       if (this.page * this.maxDaysPerPage >= this.event.dates.length) {
         this.page = 0
       }
+    },
+    mobileNumDays() {
+      // Save mobile num days in localstorage
+      localStorage["mobileNumDays"] = this.mobileNumDays
+
+      // Set timeslot size because it has changed
+      this.$nextTick(() => {
+        this.setTimeslotSize()
+      })
     },
   },
   created() {
