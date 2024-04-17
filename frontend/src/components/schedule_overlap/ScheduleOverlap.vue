@@ -7,7 +7,7 @@
           <div class="tw-w-8 tw-flex-none sm:tw-w-12">
             <div
               :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-              class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
+              class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
             >
               <div
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
@@ -23,7 +23,7 @@
               <div
                 v-for="(time, i) in times"
                 :key="i"
-                class="tw-h-4 tw-pr-2 tw-text-right tw-text-xs tw-font-light tw-uppercase"
+                class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
               >
                 {{ time.text }}
               </div>
