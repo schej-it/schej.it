@@ -37,7 +37,7 @@
           :edit="edit"
           :allow-notifications="allowNotifications"
           @input="$emit('input', false)"
-          :contactsPayload="contactsPayload"
+          :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
         />
         <NewGroup
@@ -48,6 +48,7 @@
           @input="$emit('input', false)"
           :show-help="!_noTabs"
           :calendarPermissionGranted="calendarPermissionGranted"
+          :contactsPayload="this.type == 'group' ? contactsPayload : {}"
         />
       </template>
     </v-card>
@@ -74,7 +75,6 @@ export default {
     contactsPayload: { type: Object, default: () => ({}) },
     noTabs: { type: Boolean, default: false },
     calendarPermissionGranted: { type: Boolean, default: true },
-    initialTab: { type: String, default: "event" },
   },
 
   components: {

@@ -93,7 +93,7 @@
 
         <!-- <div v-if="!edit"> -->
         <EmailInput
-          :addedEmails="emails"
+          :addedEmails="addedEmails"
           @update:emails="(newEmails) => (emails = newEmails)"
           @requestContactsAccess="requestContactsAccess"
         >
@@ -181,6 +181,7 @@ export default {
     dialog: { type: Boolean, default: true },
     showHelp: { type: Boolean, default: false },
     calendarPermissionGranted: { type: Boolean, default: true },
+    contactsPayload: { type: Object, default: () => ({}) },
   },
 
   components: {
@@ -232,6 +233,15 @@ export default {
 
       return times
     },
+    otherEventAttendees() {
+      return this.event && this.event.attendees ? this.event.attendees
+            .map((a) => a.email)
+            .filter((email) => email !== this.authUser.email) : []
+    },
+    addedEmails() {
+      if (Object.keys(this.contactsPayload).length > 0) return this.contactsPayload.emails
+      return this.otherEventAttendees
+    }
   },
 
   methods: {
@@ -381,9 +391,7 @@ export default {
           }
           this.selectedDaysOfWeek = selectedDaysOfWeek
 
-          this.emails = this.event.attendees
-            .map((a) => a.email)
-            .filter((email) => email !== this.authUser.email)
+          this.emails = this.otherEventAttendees
         }
       },
     },

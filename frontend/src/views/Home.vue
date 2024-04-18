@@ -5,7 +5,7 @@
       v-model="dialog"
       :contactsPayload="contactsPayload"
       :calendarPermissionGranted="calendarPermissionGranted"
-      :initialTab="openNewGroup ? 'group' : 'event'"
+      :type="openNewGroup ? 'group' : 'event'"
     />
 
     <template v-if="groupsEnabled">
