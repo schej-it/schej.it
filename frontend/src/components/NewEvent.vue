@@ -72,6 +72,7 @@
             might work?
           </div>
           <v-select
+            v-if="!edit"
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
