@@ -271,8 +271,23 @@ export default {
   }),
 
   mounted() {
-    if (Object.keys(this.contactsPayload).length > 0)
+    if (Object.keys(this.contactsPayload).length > 0) {
       this.toggleAdvancedOptions(true)
+
+      /** Get previously filled out data after enabling contacts  */
+      this.name = this.contactsPayload.name
+      this.startTime = this.contactsPayload.startTime
+      this.endTime = this.contactsPayload.endTime
+      this.selectedDaysOfWeek = this.contactsPayload.selectedDaysOfWeek
+      this.selectedDays = this.contactsPayload.selectedDays
+      this.selectedDateOption = this.contactsPayload.selectedDateOption
+      this.notificationsEnabled = this.contactsPayload.notificationsEnabled
+      this.timezone = this.contactsPayload.timezone
+
+      this.$refs.form.resetValidation()
+
+    }
+
   },
 
   computed: {
@@ -473,6 +488,15 @@ export default {
     requestContactsAccess({ emails }) {
       const payload = {
         emails,
+        name: this.name,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        selectedDays: this.selectedDays,
+        selectedDaysOfWeek: this.selectedDaysOfWeek,
+        selectedDateOption: this.selectedDateOption,
+        notificationsEnabled: this.notificationsEnabled,
+        timezone: this.timezone,
+
       }
       signInGoogle({
         state: {
