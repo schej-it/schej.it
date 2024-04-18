@@ -46,12 +46,29 @@
               class="sm:mb-2 tw-flex tw-flex-wrap tw-items-center tw-gap-x-4 tw-gap-y-2"
             >
               <div class="tw-text-xl sm:tw-text-3xl">{{ event.name }}</div>
-              <v-chip
-                v-if="isGroup"
-                :small="isPhone"
-                class="tw-pointer-events-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
-                >Availability group</v-chip
-              >
+              <template v-if="isGroup">
+                <div class="">
+                  <v-chip
+                    :small="isPhone"
+                    class="tw-pointer-events-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
+                    >Availability group</v-chip
+                  >
+                  <v-btn icon @click="helpDialog = true">
+                    <v-icon>mdi-help-circle-outline</v-icon>
+                  </v-btn>
+                </div>
+                <HelpDialog v-model="helpDialog">
+                  <template v-slot:header>Availability group</template>
+                  <div class="mb-4">
+                    Use availability groups to see group members' weekly
+                    calendar availabilities. Your availability will be updated
+                    in real-time from your Google Calendar.
+                  </div>
+                  <div>
+                    Your actual calendar events will NOT be visible to others.
+                  </div>
+                </HelpDialog>
+              </template>
             </div>
             <div class="tw-flex tw-items-baseline tw-gap-1">
               <div
@@ -306,6 +323,7 @@ import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
+import HelpDialog from "@/components/HelpDialog.vue"
 
 export default {
   name: "Event",
@@ -324,6 +342,7 @@ export default {
     SignInNotSupportedDialog,
     MarkAvailabilityDialog,
     InvitationDialog,
+    HelpDialog,
   },
 
   data: () => ({
@@ -332,6 +351,7 @@ export default {
     guestDialog: false,
     editEventDialog: false,
     invitationDialog: false,
+    helpDialog: false,
     loading: true,
     calendarEventsMap: {},
     event: null,
