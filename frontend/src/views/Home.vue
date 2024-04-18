@@ -24,7 +24,7 @@
     <v-fade-transition>
       <div
         class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
-        v-if="!loading && events"
+        v-if="!loading || eventsNotEmpty"
       >
         <div class="tw-grid tw-gap-4 sm:tw-gap-8">
           <EventType
