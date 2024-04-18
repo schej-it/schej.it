@@ -17,9 +17,9 @@
       full-width
       :scrollable="false"
     ></v-date-picker>
-    <div class="tw-mt-2 tw-text-xs tw-text-very-dark-gray">
+    <!-- <div class="tw-mt-2 tw-text-xs tw-text-very-dark-gray">
       Drag to select multiple dates
-    </div>
+    </div> -->
   </div>
 </template>
 

@@ -66,7 +66,7 @@
                   <v-text-field
                     v-model="duplicateDialogOptions.name"
                     required
-                    placeholder="* Name your event..."
+                    placeholder="Name your event..."
                     :disabled="duplicateDialogOptions.loading"
                     hide-details
                     solo
