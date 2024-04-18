@@ -231,6 +231,7 @@
               :calendar-permission-granted="calendarPermissionGranted"
               :week-offset="weekOffset"
               :num-responses="respondents.length"
+              :allow-schedule-event="allowScheduleEvent"
               @update:weekOffset="(val) => $emit('update:weekOffset', val)"
               @onShowBestTimesChange="onShowBestTimesChange"
               @scheduleEvent="scheduleEvent"
@@ -387,6 +388,7 @@
         :week-offset="weekOffset"
         :num-responses="respondents.length"
         :mobile-num-days.sync="mobileNumDays"
+        :allow-schedule-event="allowScheduleEvent"
         @update:weekOffset="(val) => $emit('update:weekOffset', val)"
         @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
@@ -541,6 +543,10 @@ export default {
   },
   computed: {
     ...mapState(["authUser"]),
+    /** Only allow scheduling when a curScheduledEvent exists */
+    allowScheduleEvent() {
+      return !!this.curScheduledEvent
+    },
     availabilityArray() {
       /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
@@ -1447,6 +1453,7 @@ export default {
 
     /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
+      if (!this.curScheduledEvent) return
       // Get start date, and end date from the area that the user has dragged out
       const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
       let startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)

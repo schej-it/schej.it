@@ -275,6 +275,7 @@
         </v-btn>
         <v-spacer />
         <v-btn
+          :disabled="!allowScheduleEvent"
           class="tw-bg-white"
           :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
           @click="confirmScheduleEvent"
@@ -355,6 +356,9 @@ export default {
 
   computed: {
     ...mapState(["authUser", "events"]),
+    allowScheduleEvent() {
+      return this.scheduleOverlapComponent?.allowScheduleEvent
+    },
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
