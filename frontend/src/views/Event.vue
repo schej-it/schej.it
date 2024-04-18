@@ -62,7 +62,8 @@
                   <div class="mb-4">
                     Use availability groups to see group members' weekly
                     calendar availabilities. Your availability will be updated
-                    in real-time from your Google Calendar.
+                    in real-time from your Google Calendar, and manually editing
+                    your availability is disabled.
                   </div>
                   <div>
                     Your actual calendar events will NOT be visible to others.
