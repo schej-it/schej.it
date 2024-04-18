@@ -140,7 +140,7 @@
           :class="formValid ? 'tw-invisible' : 'tw-visible'"
           class="tw-mt-1 tw-text-xs tw-text-red"
         >
-          There are errors with the form
+          Please fix form errors before continuing
         </div>
       </div>
     </v-card-actions>
@@ -215,24 +215,6 @@ export default {
         (selectedDays) =>
           selectedDays.length > 0 || "Please select at least one day",
       ]
-    },
-    formComplete() {
-      let emailsValid = true
-
-      for (const email of this.emails) {
-        if (!validateEmail(email)) {
-          emailsValid = false
-          break
-        }
-      }
-
-      return (
-        this.name.length > 0 &&
-        this.selectedDaysOfWeek.length > 0 &&
-        emailsValid //&&
-        // (this.startTime < this.endTime ||
-        //   (this.endTime === 0 && this.startTime != 0))
-      )
     },
     isPhone() {
       return isPhone(this.$vuetify)
