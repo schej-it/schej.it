@@ -32,7 +32,7 @@
         <v-text-field
           ref="name-field"
           v-model="name"
-          placeholder="Name your group..."
+          placeholder="* Name your group..."
           autofocus
           :disabled="loading"
           hide-details
