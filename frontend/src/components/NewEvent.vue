@@ -28,7 +28,7 @@
         <v-text-field
           ref="name-field"
           v-model="name"
-          placeholder="Name your event..."
+          placeholder="* Name your event..."
           autofocus
           :disabled="loading"
           hide-details
