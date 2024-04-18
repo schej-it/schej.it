@@ -244,6 +244,17 @@ export default {
     }
   },
 
+  mounted() {
+    if (Object.keys(this.contactsPayload).length > 0) {
+      this.name = this.contactsPayload.name
+      this.startTime = this.contactsPayload.startTime
+      this.endTime = this.contactsPayload.endTime
+      this.selectedDaysOfWeek = this.contactsPayload.selectedDaysOfWeek
+
+      this.$refs.form.resetValidation()
+    }
+  },
+
   methods: {
     ...mapActions(["showError"]),
     blurNameField() {
@@ -362,6 +373,10 @@ export default {
     requestContactsAccess({ emails }) {
       const payload = {
         emails,
+        name: this.name,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        selectedDaysOfWeek: this.selectedDaysOfWeek,
       }
       signInGoogle({
         state: {
