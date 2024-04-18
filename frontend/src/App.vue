@@ -118,6 +118,11 @@ html {
   box-shadow: 0px 5px 5px -1px rgba(0, 0, 0, 0.1),
     0px 8px 10px 0.5px rgba(0, 0, 0, 0.07), 0px 3px 14px 1px rgba(0, 0, 0, 0.06) !important;
 }
+
+.error--text .v-input__slot {
+  outline: red solid;
+  border-radius: 3px;
+}
 </style>
 
 <script>
