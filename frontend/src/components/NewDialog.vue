@@ -7,7 +7,7 @@
     scrollable
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
-    <v-card class="tw-py-4">
+    <v-card class="tw-pt-4">
       <div v-if="!_noTabs" class="tw-flex tw-rounded sm:-tw-mt-4 sm:tw-px-8">
         <v-tabs v-model="tab">
           <v-tab

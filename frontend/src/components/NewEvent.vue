@@ -24,16 +24,22 @@
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
-      <div class="tw-flex tw-flex-col tw-space-y-6">
+      <v-form
+        ref="form"
+        v-model="formValid"
+        lazy-validation
+        class="tw-flex tw-flex-col tw-space-y-6"
+        :disabled="loading"
+      >
         <v-text-field
           ref="name-field"
           v-model="name"
-          placeholder="* Name your event..."
-          autofocus
-          :disabled="loading"
-          hide-details
+          placeholder="Name your event..."
+          hide-details="auto"
           solo
           @keyup.enter="blurNameField"
+          :rules="nameRules"
+          required
         />
 
         <div>
@@ -43,7 +49,6 @@
           <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
             <v-select
               v-model="startTime"
-              :disabled="loading"
               menu-props="auto"
               :items="times"
               hide-details
@@ -52,7 +57,6 @@
             <div>to</div>
             <v-select
               v-model="endTime"
-              :disabled="loading"
               menu-props="auto"
               :items="times"
               hide-details
@@ -76,12 +80,27 @@
           />
 
           <v-expand-transition>
-            <DatePicker
+            <v-input
               v-if="selectedDateOption === dateOptions.SPECIFIC"
               v-model="selectedDays"
-              :minCalendarDate="minCalendarDate"
-            />
-            <div v-else-if="selectedDateOption === dateOptions.DOW">
+              hint="Drag to select multiple dates"
+              persistent-hint
+              hide-details="auto"
+              :rules="selectedDaysRules"
+              key="date-picker"
+            >
+              <DatePicker
+                v-model="selectedDays"
+                :minCalendarDate="minCalendarDate"
+              />
+            </v-input>
+            <v-input
+              v-else-if="selectedDateOption === dateOptions.DOW"
+              v-model="selectedDaysOfWeek"
+              hide-details="auto"
+              :rules="selectedDaysRules"
+              key="days-of-week"
+            >
               <v-btn-toggle
                 v-model="selectedDaysOfWeek"
                 multiple
@@ -96,7 +115,7 @@
                 <v-btn depressed> F </v-btn>
                 <v-btn depressed> S </v-btn>
               </v-btn-toggle>
-            </div>
+            </v-input>
           </v-expand-transition>
         </div>
         <v-checkbox
@@ -156,19 +175,27 @@
           </v-expand-transition>
           <div class="tw-bg-red" ref="advancedOpenScrollTo"></div>
         </div>
-      </div>
+      </v-form>
     </v-card-text>
-    <v-card-actions class="tw-relative tw-px-8">
-      <v-btn
-        block
-        :loading="loading"
-        :dark="formComplete"
-        class="tw-mt-4 tw-bg-green"
-        :disabled="!formComplete"
-        @click="submit"
-      >
-        {{ edit ? "Save edits" : "Create event" }}
-      </v-btn>
+    <v-card-actions class="tw-relative tw-px-4 sm:tw-px-8">
+      <div class="tw-relative tw-w-full">
+        <v-btn
+          :disabled="!formValid"
+          block
+          :loading="loading"
+          color="primary"
+          class="tw-mt-4 tw-bg-green"
+          @click="submit"
+        >
+          {{ edit ? "Save edits" : "Create event" }}
+        </v-btn>
+        <div
+          :class="formValid ? 'tw-invisible' : 'tw-visible'"
+          class="tw-mt-1 tw-text-xs tw-text-red"
+        >
+          There are errors with the form
+        </div>
+      </div>
     </v-card-actions>
   </v-card>
 </template>
@@ -189,7 +216,7 @@ import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
-import DatePicker from "@/components/DatePicker"
+import DatePicker from "@/components/DatePicker.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -218,6 +245,7 @@ export default {
   },
 
   data: () => ({
+    formValid: true,
     name: "",
     startTime: 9,
     endTime: 17,
@@ -248,6 +276,15 @@ export default {
 
   computed: {
     ...mapState(["authUser"]),
+    nameRules() {
+      return [(v) => !!v || "Event name is required"]
+    },
+    selectedDaysRules() {
+      return [
+        (selectedDays) =>
+          selectedDays.length > 0 || "Please select at least one day",
+      ]
+    },
     formComplete() {
       let emailsValid = true
 
@@ -314,8 +351,12 @@ export default {
       this.endTime = 17
       this.selectedDays = []
       this.selectedDaysOfWeek = []
+
+      this.$refs.form.resetValidation()
     },
     submit() {
+      if (!this.$refs.form.validate()) return
+
       this.selectedDays.sort()
 
       // Get duration of event
