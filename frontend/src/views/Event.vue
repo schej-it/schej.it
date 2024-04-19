@@ -60,13 +60,14 @@
                 <HelpDialog v-model="helpDialog">
                   <template v-slot:header>Availability group</template>
                   <div class="mb-4">
-                    Use availability groups to see group members' weekly
-                    calendar availabilities. Your availability will be updated
-                    in real-time from your Google Calendar, and manually editing
-                    your availability is disabled.
+                    Use availability groups to see group members’ weekly
+                    calendar availabilities. Your actual calendar events are NOT
+                    visible to others.
                   </div>
                   <div>
-                    Your actual calendar events will NOT be visible to others.
+                    Your availability is updated in real-time from your Google
+                    Calendar, and manually editing your availability is
+                    disabled.
                   </div>
                 </HelpDialog>
               </template>
