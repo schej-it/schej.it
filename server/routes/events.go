@@ -30,6 +30,7 @@ func InitEvents(router *gin.Engine) {
 	eventRouter.POST("", createEvent)
 	eventRouter.PUT("/:eventId", editEvent)
 	eventRouter.GET("/:eventId", getEvent)
+	eventRouter.GET("/:eventId/responses", getResponses)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
 	eventRouter.POST("/:eventId/responded", userResponded)
@@ -405,9 +406,52 @@ func getEvent(c *gin.Context) {
 			response.User = user
 		}
 		event.Responses[userId] = response
+
+		// Remove availability array
+		event.Responses[userId].Availability = nil
 	}
 
 	c.JSON(http.StatusOK, event)
+}
+
+// @Summary Gets responses for an event, filtering availability to be within the date ranges
+// @Tags events
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param timeMin query string true "Lower bound for start time to filter availability by"
+// @Param timeMax query string true "Upper bound for end time to filter availability by"
+// @Success 200 {object} map[string]models.Response
+// @Router /events/{eventId}/responses [get]
+func getResponses(c *gin.Context) {
+	// Bind query parameters
+	payload := struct {
+		TimeMin time.Time `form:"timeMin" binding:"required"`
+		TimeMax time.Time `form:"timeMax" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+
+	// Fetch event
+	eventId := c.Param("eventId")
+	event := db.GetEventByEitherId(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+
+	// Filter availability slice based on timeMin and timeMax
+	for userId, response := range event.Responses {
+		subsetAvailability := make([]primitive.DateTime, 0)
+		for _, timestamp := range response.Availability {
+			if timestamp.Time().Compare(payload.TimeMin) >= 0 && timestamp.Time().Compare(payload.TimeMax) <= 0 {
+				subsetAvailability = append(subsetAvailability, timestamp)
+			}
+		}
+		event.Responses[userId].Availability = subsetAvailability
+	}
+
+	c.JSON(http.StatusOK, event.Responses)
 }
 
 // @Summary Updates the current user's availability

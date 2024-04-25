@@ -348,7 +348,7 @@
                   @mouseLeaveRespondent="mouseLeaveRespondent"
                   @clickRespondent="clickRespondent"
                   @editGuestAvailability="editGuestAvailability"
-                  @refreshEvent="() => $emit('refreshEvent')"
+                  @refreshEvent="refreshEvent"
                 />
               </div>
             </v-expand-transition>
@@ -368,7 +368,7 @@
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
               @editGuestAvailability="editGuestAvailability"
-              @refreshEvent="() => $emit('refreshEvent')"
+              @refreshEvent="refreshEvent"
             />
           </template>
           <div ref="afterRespondentsList"></div>
@@ -500,6 +500,7 @@ export default {
       curRespondent: "", // Id of the active respondent (set on hover)
       curRespondents: [], // Id of currently selected respondents (set on click)
       sharedCalendarAccounts: {}, // The user's calendar accounts for changing calendar options for groups
+      fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -807,6 +808,7 @@ export default {
         }
         parsed[k] = {
           ...this.event.responses[k],
+          availability: this.fetchedResponses[k]?.availability ?? [],
           user: newUser,
         }
       }
@@ -1007,6 +1009,37 @@ export default {
     //#region Aggregate user availability
     // -----------------------------------
 
+    /** Fetches responses from server */
+    fetchResponses() {
+      if (this.calendarOnly) {
+        this.fetchedResponses = this.event.responses
+        console.log(this.event.responses)
+        return
+      }
+
+      if (this.event.type === eventTypes.GROUP) {
+      } else {
+        if (this.allDays.length > 0) {
+          const timeMin = this.allDays[0].dateObject
+          const timeMax = this.allDays[this.allDays.length - 1].dateObject
+          timeMax.setDate(timeMax.getDate() + 1)
+
+          const url = `/events/${
+            this.event._id
+          }/responses?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
+          get(url)
+            .then((responses) => {
+              this.fetchedResponses = responses
+              console.log(this.fetchedResponses)
+            })
+            .catch((err) => {
+              this.showError(
+                "There was an error fetching availability! Please refresh the page."
+              )
+            })
+        }
+      }
+    },
     /** Returns a set of respondents for the given date/time */
     getRespondentsForHoursOffset(date, hoursOffset) {
       const d = getDateHoursOffset(date, hoursOffset)
@@ -1063,7 +1096,7 @@ export default {
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.event.responses[id].availability?.forEach((item) =>
+      this.fetchedResponses[id]?.availability?.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -1205,7 +1238,7 @@ export default {
         }
       }
 
-      this.$emit("refreshEvent")
+      this.refreshEvent()
       this.unsavedChanges = false
     },
     async deleteAvailability(name = "") {
@@ -1229,7 +1262,7 @@ export default {
       await _delete(`/events/${this.event._id}/response`, payload)
       this.availability = new Set()
       if (this.isGroup) this.$router.replace({ name: "home" })
-      else this.$emit("refreshEvent")
+      else this.refreshEvent()
     },
     //#endregion
 
@@ -1426,6 +1459,9 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
+      if (this.authUser) {
+        this.resetCurUserAvailability()
+      }
     },
     stopEditing() {
       this.state = this.defaultState
@@ -1438,6 +1474,10 @@ export default {
       this.populateUserAvailability(id)
       this.$emit("setCurGuestId", id)
       this.startEditing()
+    },
+    refreshEvent() {
+      this.$emit("refreshEvent")
+      this.fetchResponses()
     },
     //#endregion
 
@@ -1816,6 +1856,7 @@ export default {
       immediate: true,
       handler() {
         this.initSharedCalendarAccounts()
+        this.fetchResponses()
       },
     },
     state(nextState, prevState) {

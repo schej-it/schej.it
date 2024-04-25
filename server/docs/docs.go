@@ -696,6 +696,51 @@ var doc = `{
                 }
             }
         },
+        "/events/{eventId}/responses": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Gets responses for an event, filtering availability to be within the date ranges",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lower bound for start time to filter availability by",
+                        "name": "timeMin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upper bound for end time to filter availability by",
+                        "name": "timeMax",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/models.Response"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/slackbot": {
             "post": {
                 "consumes": [
@@ -1199,6 +1244,10 @@ var doc = `{
                 },
                 "endDate": {
                     "type": "string"
+                },
+                "free": {
+                    "description": "Whether the user is free during this event",
+                    "type": "boolean"
                 },
                 "id": {
                     "type": "string"
