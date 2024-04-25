@@ -74,10 +74,7 @@
                   >
                     <!-- Loader -->
                     <div
-                      v-if="
-                        (isGroup || alwaysShowCalendarEvents || editing) &&
-                        loadingCalendarEvents
-                      "
+                      v-if="showLoader"
                       class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                     >
                       <v-progress-circular
@@ -91,7 +88,9 @@
                       :key="d"
                       class="tw-relative tw-flex-1"
                       :class="
-                        isGroup && loadingCalendarEvents && 'tw-opacity-50'
+                        ((isGroup && loadingCalendarEvents) ||
+                          loadingResponses.loading) &&
+                        'tw-opacity-50'
                       "
                     >
                       <!-- Timeslots -->
@@ -501,6 +500,7 @@ export default {
       curRespondents: [], // Id of currently selected respondents (set on click)
       sharedCalendarAccounts: {}, // The user's calendar accounts for changing calendar options for groups
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
+      loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
 
       /* Variables for drag stuff */
@@ -778,6 +778,7 @@ export default {
     },
     /** Parses the responses to the Schej, makes necessary changes based on the type of event, and returns it */
     parsedResponses() {
+      console.log("start parsed responses")
       const parsed = {}
 
       // Return calendar availability if group
@@ -813,6 +814,7 @@ export default {
           user: newUser,
         }
       }
+      console.log("parsed responses done")
       return parsed
     },
     max() {
@@ -902,6 +904,17 @@ export default {
     },
     hintStateLocalStorageKey() {
       return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
+    },
+
+    /** Whether to show spinner on top of availability grid */
+    showLoader() {
+      return (
+        // Loading calendar events
+        ((this.isGroup || this.alwaysShowCalendarEvents || this.editing) &&
+          this.loadingCalendarEvents) ||
+        // Loading responses
+        this.loadingResponses.loading
+      )
     },
   },
   methods: {
@@ -994,13 +1007,13 @@ export default {
     fetchResponses() {
       if (this.calendarOnly) {
         this.fetchedResponses = this.event.responses
-        console.log(this.event.responses)
         return
       }
 
       if (this.event.type === eventTypes.GROUP) {
       } else {
         if (this.allDays.length > 0) {
+          // Fetch the entire time range of availabilities
           const timeMin = this.allDays[0].dateObject
           const timeMax = this.allDays[this.allDays.length - 1].dateObject
           timeMax.setDate(timeMax.getDate() + 1)
@@ -1010,8 +1023,9 @@ export default {
           }/responses?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
           get(url)
             .then((responses) => {
+              console.log(responses)
               this.fetchedResponses = responses
-              console.log(this.fetchedResponses)
+              this.getResponsesFormatted()
             })
             .catch((err) => {
               this.showError(
@@ -1023,6 +1037,11 @@ export default {
     },
     /** Formats the responses in a map where date/time is mapped to the people that are available then */
     getResponsesFormatted() {
+      const lastFetched = new Date().getTime()
+      this.loadingResponses.loading = true
+      this.loadingResponses.lastFetched = lastFetched
+
+      console.log("running worker")
       this.$worker
         .run(
           (days, times, parsedResponses) => {
@@ -1068,6 +1087,11 @@ export default {
         )
         .then((formatted) => {
           this.responsesFormatted = formatted
+        })
+        .finally(() => {
+          if (this.loadingResponses.lastFetched === lastFetched) {
+            this.loadingResponses.loading = false
+          }
         })
     },
     /** Returns a set of respondents for the given date/time */
@@ -1507,7 +1531,6 @@ export default {
     },
     refreshEvent() {
       this.$emit("refreshEvent")
-      this.fetchResponses()
     },
     //#endregion
 
@@ -1949,12 +1972,6 @@ export default {
       this.$nextTick(() => {
         this.setTimeslotSize()
       })
-    },
-    fetchedResponses: {
-      immediate: true,
-      handler() {
-        this.getResponsesFormatted()
-      },
     },
   },
   created() {
