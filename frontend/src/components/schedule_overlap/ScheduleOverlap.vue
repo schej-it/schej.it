@@ -501,6 +501,7 @@ export default {
       curRespondents: [], // Id of currently selected respondents (set on click)
       sharedCalendarAccounts: {}, // The user's calendar accounts for changing calendar options for groups
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
+      responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -814,26 +815,6 @@ export default {
       }
       return parsed
     },
-    responsesFormatted() {
-      /* Formats the responses in a map where date/time is mapped to the people that are available then */
-      const formatted = new Map()
-      for (const day of this.allDays) {
-        for (const time of this.times) {
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          formatted.set(date.getTime(), new Set())
-          for (const response of Object.values(this.parsedResponses)) {
-            const index = response.availability.findIndex(
-              (d) => dateCompare(d, date) === 0
-            )
-            if (index !== -1) {
-              // TODO: determine whether I should delete the index??
-              formatted.get(date.getTime()).add(response.user._id)
-            }
-          }
-        }
-      }
-      return formatted
-    },
     max() {
       let max = 0
       for (const [dateTime, availability] of this.responsesFormatted) {
@@ -1040,10 +1021,59 @@ export default {
         }
       }
     },
+    /** Formats the responses in a map where date/time is mapped to the people that are available then */
+    getResponsesFormatted() {
+      this.$worker
+        .run(
+          (days, times, parsedResponses) => {
+            const dateCompare = (date1, date2) => {
+              date1 = new Date(date1)
+              date2 = new Date(date2)
+              return date1.getTime() - date2.getTime()
+            }
+            const splitTimeNum = (timeNum) => {
+              const hours = Math.floor(timeNum)
+              const minutes = Math.floor((timeNum - hours) * 60)
+              return { hours, minutes }
+            }
+            const getDateHoursOffset = (date, hoursOffset) => {
+              const { hours, minutes } = splitTimeNum(hoursOffset)
+              const newDate = new Date(date)
+              newDate.setHours(newDate.getHours() + hours)
+              newDate.setMinutes(newDate.getMinutes() + minutes)
+              return newDate
+            }
+            const formatted = new Map()
+            for (const day of days) {
+              for (const time of times) {
+                const date = getDateHoursOffset(
+                  day.dateObject,
+                  time.hoursOffset
+                )
+                formatted.set(date.getTime(), new Set())
+                for (const response of Object.values(parsedResponses)) {
+                  const index = response.availability.findIndex(
+                    (d) => dateCompare(d, date) === 0
+                  )
+                  if (index !== -1) {
+                    // TODO: determine whether I should delete the index??
+                    formatted.get(date.getTime()).add(response.user._id)
+                  }
+                }
+              }
+            }
+            return formatted
+          },
+          [this.allDays, this.times, this.parsedResponses]
+        )
+        .then((formatted) => {
+          this.responsesFormatted = formatted
+        })
+    },
     /** Returns a set of respondents for the given date/time */
     getRespondentsForHoursOffset(date, hoursOffset) {
       const d = getDateHoursOffset(date, hoursOffset)
-      return this.responsesFormatted.get(d.getTime())
+      return this.responsesFormatted.get(d.getTime()) ?? new Set()
     },
     showAvailability(d, t) {
       if (this.state === this.states.EDIT_AVAILABILITY && this.isPhone) {
@@ -1919,6 +1949,12 @@ export default {
       this.$nextTick(() => {
         this.setTimeslotSize()
       })
+    },
+    fetchedResponses: {
+      immediate: true,
+      handler() {
+        this.getResponsesFormatted()
+      },
     },
   },
   created() {

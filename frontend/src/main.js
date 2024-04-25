@@ -1,4 +1,5 @@
 import Vue from "vue"
+import VueWorker from "vue-worker"
 import App from "./App.vue"
 import "./registerServiceWorker"
 import router from "./router"
@@ -22,6 +23,9 @@ Vue.use(VueGtm, {
 
 // Site Metadata
 Vue.use(VueMeta)
+
+// Workers
+Vue.use(VueWorker)
 
 Vue.config.productionTip = false
 
