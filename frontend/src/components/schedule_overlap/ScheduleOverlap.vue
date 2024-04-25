@@ -778,7 +778,6 @@ export default {
     },
     /** Parses the responses to the Schej, makes necessary changes based on the type of event, and returns it */
     parsedResponses() {
-      console.log("start parsed responses")
       const parsed = {}
 
       // Return calendar availability if group
@@ -814,7 +813,6 @@ export default {
           user: newUser,
         }
       }
-      console.log("parsed responses done")
       return parsed
     },
     max() {
@@ -1014,8 +1012,10 @@ export default {
       } else {
         if (this.allDays.length > 0) {
           // Fetch the entire time range of availabilities
-          const timeMin = this.allDays[0].dateObject
-          const timeMax = this.allDays[this.allDays.length - 1].dateObject
+          const timeMin = new Date(this.allDays[0].dateObject)
+          const timeMax = new Date(
+            this.allDays[this.allDays.length - 1].dateObject
+          )
           timeMax.setDate(timeMax.getDate() + 1)
 
           const url = `/events/${
@@ -1023,7 +1023,6 @@ export default {
           }/responses?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
           get(url)
             .then((responses) => {
-              console.log(responses)
               this.fetchedResponses = responses
               this.getResponsesFormatted()
             })
@@ -1041,7 +1040,6 @@ export default {
       this.loadingResponses.loading = true
       this.loadingResponses.lastFetched = lastFetched
 
-      console.log("running worker")
       this.$worker
         .run(
           (days, times, parsedResponses) => {
