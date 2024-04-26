@@ -1084,7 +1084,10 @@ export default {
           [this.allDays, this.times, this.parsedResponses]
         )
         .then((formatted) => {
-          this.responsesFormatted = formatted
+          // Only set responses formatted for the latest request
+          if (lastFetched >= this.loadingResponses.lastFetched) {
+            this.responsesFormatted = formatted
+          }
         })
         .finally(() => {
           if (this.loadingResponses.lastFetched === lastFetched) {
@@ -1970,6 +1973,10 @@ export default {
       this.$nextTick(() => {
         this.setTimeslotSize()
       })
+    },
+    parsedResponses() {
+      // Theoretically, parsed responses should only be changing for groups
+      this.getResponsesFormatted()
     },
   },
   created() {
