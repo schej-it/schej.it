@@ -1284,6 +1284,9 @@ export default {
 
       // Fill style
       if (this.state === this.states.EDIT_AVAILABILITY) {
+        // Set default background color to red (unavailable)
+        s.backgroundColor = "#E523230D"
+
         // Show only current user availability
         const inDragRange = this.inDragRange(d, t)
         if (inDragRange) {
