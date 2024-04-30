@@ -98,7 +98,7 @@
                 v-if="weekOffset != 0"
                 :icon="isPhone"
                 text
-                class="tw-mr-1 tw-text-very-dark-gray sm:tw-mr-2.5"
+                class="tw-mr-1 tw-text-green sm:tw-mr-2.5"
                 @click="resetWeekOffset"
               >
                 <v-icon class="sm:tw-mr-2">mdi-calendar-today</v-icon>
@@ -107,13 +107,13 @@
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
-                class="tw-text-very-dark-gray"
+                class="tw-text-green"
                 @click="refreshCalendar"
                 :loading="loading"
               >
                 <v-icon class="tw-mr-1" v-if="!isPhone">mdi-refresh</v-icon>
                 <span v-if="!isPhone" class="tw-mr-2">Refresh</span>
-                <v-icon class="tw-text-very-dark-gray" v-else
+                <v-icon class="tw-text-green" v-else
                   >mdi-refresh</v-icon
                 >
               </v-btn>
@@ -149,15 +149,13 @@
                   v-else
                   width="10.25rem"
                   class="tw-text-white tw-transition-opacity"
-                  :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
+                  :class="'tw-bg-green'"
                   :disabled="loading && !userHasResponded"
                   :style="{ opacity: availabilityBtnOpacity }"
                   @click="addAvailability"
                 >
                   {{
-                    isGroup
-                      ? "Edit calendars"
-                      : userHasResponded
+                    userHasResponded || isGroup
                       ? "Edit availability"
                       : "Add availability"
                   }}
@@ -173,7 +171,7 @@
                 </v-btn>
                 <v-btn
                   class="tw-w-20 tw-text-white"
-                  :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
+                  :class="'tw-bg-green'"
                   @click="saveChanges"
                 >
                   Save
@@ -236,7 +234,7 @@
     <div
       v-if="isPhone"
       class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-px-4"
-      :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
+      :class="'tw-bg-green'"
     >
       <template v-if="!isEditing && !isScheduling">
         <v-btn
@@ -261,7 +259,7 @@
           v-else
           outlined
           class="tw-bg-white tw-transition-opacity"
-          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
+          :class="'tw-text-green'"
           :disabled="loading && !userHasResponded"
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
