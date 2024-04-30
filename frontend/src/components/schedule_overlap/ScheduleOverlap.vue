@@ -1898,6 +1898,39 @@ export default {
       }
     },
 
+    /** Based on the date, determine whether it has been touched */
+    isTouched(date, availability = [...this.availability]) {
+      const start = new Date(date)
+      const end = new Date(date)
+      end.setHours(end.getHours() + this.event.duration)
+
+      for (const a of availability) {
+        const availableTime = new Date(a).getTime()
+        if (start.getTime() < availableTime && availableTime < end.getTime()) {
+          return true
+        }
+      }
+
+      return false
+    },
+
+    /** Returns a subset of availability for the current date */
+    getAvailabilityForDate(date, availability = [...this.availability]) {
+      const start = new Date(date)
+      const end = new Date(date)
+      end.setHours(end.getHours() + this.event.duration)
+
+      const subset = new Set()
+      for (const a of availability) {
+        const availableTime = new Date(a).getTime()
+        if (start.getTime() < availableTime && availableTime < end.getTime()) {
+          subset.add(availableTime)
+        }
+      }
+
+      return subset
+    },
+
     //#endregion
   },
   watch: {
