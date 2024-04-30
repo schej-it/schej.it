@@ -134,19 +134,11 @@
                           >
                             <div
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
-                              :class="
-                                event.free
-                                  ? isGroup
-                                    ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
-                                    : 'tw-border-dashed tw-border-blue'
-                                  : isGroup
-                                  ? 'tw-border-white tw-bg-light-blue'
-                                  : 'tw-border-blue'
-                              "
+                              :class="calendarEventBackgroundColor"
                             >
                               <div
                                 :class="`tw-text-${
-                                  isGroup
+                                  isGroup && state !== states.EDIT_AVAILABILITY
                                     ? 'white'
                                     : noEventNames
                                     ? 'dark-gray'
@@ -913,6 +905,16 @@ export default {
         // Loading responses
         this.loadingResponses.loading
       )
+    },
+    /** Calendar event background color */
+    calendarEventBackgroundColor() {
+      return this.event.free
+        ? this.isGroup && this.state !== this.states.EDIT_AVAILABILITY
+          ? "tw-border-white tw-bg-light-blue tw-opacity-50"
+          : "tw-border-dashed tw-border-blue"
+        : this.isGroup && this.state !== this.states.EDIT_AVAILABILITY
+        ? "tw-border-white tw-bg-light-blue"
+        : "tw-border-blue"
     },
   },
   methods: {
