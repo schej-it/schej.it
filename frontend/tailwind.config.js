@@ -42,4 +42,5 @@ module.exports = {
   },
   plugins: [],
   prefix: "tw-",
+  safelist: [],
 }

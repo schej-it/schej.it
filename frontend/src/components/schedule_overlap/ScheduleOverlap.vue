@@ -134,7 +134,15 @@
                           >
                             <div
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
-                              :class="calendarEventBackgroundColor"
+                              :class="
+                                event.free
+                                  ? isGroup && !editing
+                                    ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
+                                    : 'tw-border-dashed tw-border-blue'
+                                  : isGroup && !editing
+                                  ? 'tw-border-white tw-bg-light-blue'
+                                  : 'tw-border-blue'
+                              "
                             >
                               <div
                                 :class="`tw-text-${
@@ -905,16 +913,6 @@ export default {
         // Loading responses
         this.loadingResponses.loading
       )
-    },
-    /** Calendar event background color */
-    calendarEventBackgroundColor() {
-      return this.event.free
-        ? this.isGroup && this.state !== this.states.EDIT_AVAILABILITY
-          ? "tw-border-white tw-bg-light-blue tw-opacity-50"
-          : "tw-border-dashed tw-border-blue"
-        : this.isGroup && this.state !== this.states.EDIT_AVAILABILITY
-        ? "tw-border-white tw-bg-light-blue"
-        : "tw-border-blue"
     },
   },
   methods: {
