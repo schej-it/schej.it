@@ -785,8 +785,23 @@ export default {
         for (const userId in this.event.responses) {
           const calendarEventsByDay = this.groupCalendarEventsByDay[userId]
           if (calendarEventsByDay) {
-            const availability =
-              this.getAvailabilityFromCalendarEvents(calendarEventsByDay)
+            // Get manual availability and convert to DOW dates
+            const manualAvailability = this.fetchedResponses[
+              userId
+            ]?.availability?.map((a) =>
+              dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
+            )
+
+            // Get availability from calendar events and use manual availability on the
+            // "touched" days
+            const availability = this.getAvailabilityFromCalendarEvents(
+              calendarEventsByDay,
+              {
+                includeTouchedAvailability: true,
+                manualAvailability: manualAvailability ?? [],
+              }
+            )
+
             parsed[userId] = {
               ...this.event.responses[userId],
               availability: [...availability],
@@ -1008,31 +1023,53 @@ export default {
         return
       }
 
+      let timeMin, timeMax
       if (this.event.type === eventTypes.GROUP) {
+        if (this.event.dates.length > 0) {
+          // Fetch the date range for the current week
+          timeMin = new Date(this.event.dates[0])
+          timeMax = new Date(this.event.dates[this.event.dates.length - 1])
+          timeMax.setDate(timeMax.getDate() + 1)
+
+          // Convert dow dates to discrete dates
+          timeMin = dateToDowDate(
+            this.event.dates,
+            timeMin,
+            this.weekOffset,
+            true
+          )
+          timeMax = dateToDowDate(
+            this.event.dates,
+            timeMax,
+            this.weekOffset,
+            true
+          )
+        }
       } else {
         if (this.allDays.length > 0) {
           // Fetch the entire time range of availabilities
-          const timeMin = new Date(this.allDays[0].dateObject)
-          const timeMax = new Date(
-            this.allDays[this.allDays.length - 1].dateObject
-          )
+          timeMin = new Date(this.allDays[0].dateObject)
+          timeMax = new Date(this.allDays[this.allDays.length - 1].dateObject)
           timeMax.setDate(timeMax.getDate() + 1)
-
-          const url = `/events/${
-            this.event._id
-          }/responses?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
-          get(url)
-            .then((responses) => {
-              this.fetchedResponses = responses
-              this.getResponsesFormatted()
-            })
-            .catch((err) => {
-              this.showError(
-                "There was an error fetching availability! Please refresh the page."
-              )
-            })
         }
       }
+
+      if (!timeMin || !timeMax) return
+
+      // Fetch responses between timeMin and timeMax
+      const url = `/events/${
+        this.event._id
+      }/responses?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
+      get(url)
+        .then((responses) => {
+          this.fetchedResponses = responses
+          this.getResponsesFormatted()
+        })
+        .catch((err) => {
+          this.showError(
+            "There was an error fetching availability! Please refresh the page."
+          )
+        })
     },
     /** Formats the responses in a map where date/time is mapped to the people that are available then */
     getResponsesFormatted() {
@@ -1157,13 +1194,33 @@ export default {
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
-    getAvailabilityFromCalendarEvents(calendarEventsByDay) {
+    getAvailabilityFromCalendarEvents(
+      calendarEventsByDay,
+      options = {
+        includeTouchedAvailability: false, // Whether to include manual availability for touched days
+        manualAvailability: [], // Array of manual availaility
+      }
+    ) {
       const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
+
+        if (options.includeTouchedAvailability) {
+          // Check if manual availability has been added for the current date
+          const availForDate = this.getAvailabilityForDate(
+            date,
+            options.manualAvailability
+          )
+
+          if (availForDate.size > 0) {
+            availForDate.forEach((a) => availability.add(a))
+            continue
+          }
+        }
+
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateHoursOffset(date, time.hoursOffset)
+          let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
           const index = calendarEventsByDay[i].findIndex((e) => {
             const notIntersect =
@@ -1906,7 +1963,10 @@ export default {
 
       for (const a of availability) {
         const availableTime = new Date(a).getTime()
-        if (start.getTime() < availableTime && availableTime < end.getTime()) {
+        if (
+          start.getTime() <= availableTime &&
+          availableTime <= end.getTime()
+        ) {
           return true
         }
       }
@@ -1923,7 +1983,10 @@ export default {
       const subset = new Set()
       for (const a of availability) {
         const availableTime = new Date(a).getTime()
-        if (start.getTime() < availableTime && availableTime < end.getTime()) {
+        if (
+          start.getTime() <= availableTime &&
+          availableTime <= end.getTime()
+        ) {
           subset.add(availableTime)
         }
       }
