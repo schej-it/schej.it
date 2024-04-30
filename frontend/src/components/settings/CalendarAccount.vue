@@ -31,9 +31,7 @@
             >
           </div>
         </div>
-        <v-avatar v-else size="24">
-          <v-img :src="account.picture"></v-img
-        ></v-avatar>
+        <UserAvatarContent v-else :size="24" :user="account" />
         <div
           :class="toggleState && !fillSpace ? 'tw-w-[180px]' : ''"
           class="tw-align-text-middle tw-inline-block tw-break-words tw-text-sm"
@@ -99,6 +97,7 @@
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes } from "@/constants"
 import { get, post, _delete, signInGoogle } from "@/utils"
+import UserAvatarContent from "@/components/UserAvatarContent.vue"
 
 export default {
   name: "CalendarAccount",
@@ -113,6 +112,10 @@ export default {
     selectedRemoveEmail: { type: String, default: "" },
     syncWithBackend: { type: Boolean, default: true },
     fillSpace: { type: Boolean, default: false },
+  },
+
+  components: {
+    UserAvatarContent,
   },
 
   data: () => ({
