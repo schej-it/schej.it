@@ -905,6 +905,9 @@ export default {
     hasPrevPage() {
       return this.page > 0 || this.event.type === eventTypes.GROUP
     },
+    numPages() {
+      return Math.ceil(this.event.dates.length / this.maxDaysPerPage)
+    },
 
     showStickyRespondents() {
       return (

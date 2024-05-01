@@ -46,9 +46,12 @@
       <v-card>
         <v-card-title>Are you sure?</v-card-title>
         <v-card-text
-          >You're about to add your availability without filling out all pages
-          of this Schej. Click the left and right arrows at the top to switch
-          between pages.</v-card-text
+          ><span class="tw-font-medium"
+            >You're about to add your availability without filling out all pages
+            of this Schej.</span
+          >
+          Click the left and right arrows at the top to switch between
+          pages.</v-card-text
         >
         <v-card-actions>
           <v-spacer />
@@ -574,7 +577,8 @@ export default {
         !this.userHasResponded &&
         this.curGuestId.length === 0 &&
         !this.scheduleOverlapComponent.pageHasChanged &&
-        !ignorePagesNotVisited
+        !ignorePagesNotVisited &&
+        this.scheduleOverlapComponent.numPages > 1
       ) {
         this.pagesNotVisitedDialog = true
         return
