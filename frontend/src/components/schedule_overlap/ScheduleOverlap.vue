@@ -542,6 +542,9 @@ export default {
 
       /* Variables for hint */
       hintState: true,
+
+      /** Groups */
+      manualAvailability: new Set(),
     }
   },
   computed: {
@@ -555,7 +558,6 @@ export default {
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
-      if (this.isGroup) return this.state === this.states.SCHEDULE_EVENT
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
@@ -1183,16 +1185,21 @@ export default {
     resetCurUserAvailability() {
       if (this.event.type === eventTypes.GROUP) {
         this.initSharedCalendarAccounts()
-      } else {
-        this.availability = new Set()
-        if (this.userHasResponded) {
-          this.populateUserAvailability(this.authUser._id)
-        }
+        this.manualAvailability = new Set(
+          this.fetchedResponses[this.authUser._id]?.availability?.map((a) =>
+            new Date(a).getTime()
+          )
+        )
+      }
+
+      this.availability = new Set()
+      if (this.userHasResponded) {
+        this.populateUserAvailability(this.authUser._id)
       }
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.fetchedResponses[id]?.availability?.forEach((item) =>
+      this.parsedResponses[id]?.availability?.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -1410,8 +1417,7 @@ export default {
         (this.respondents.length > 0 ||
           this.state === this.states.EDIT_AVAILABILITY) &&
         this.curTimeslot.dayIndex === d &&
-        this.curTimeslot.timeIndex === t &&
-        !isEditingCalendars
+        this.curTimeslot.timeIndex === t
       ) {
         // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
@@ -1446,21 +1452,10 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          if (this.event.type === eventTypes.GROUP) {
-            // Show respondent availability from calendar events
-            const respondents = this.getRespondentsForHoursOffset(
-              day.dateObject,
-              time.hoursOffset
-            )
-            if (respondents.has(this.authUser._id)) {
-              s.backgroundColor = "#00994C88"
-            }
-          } else {
-            // Show current availability from availability set
-            const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-            if (this.availability.has(date.getTime())) {
-              s.backgroundColor = "#00994C88"
-            }
+          // Show current availability from availability set
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          if (this.availability.has(date.getTime())) {
+            s.backgroundColor = "#00994C88"
           }
         }
       }
@@ -1719,11 +1714,58 @@ export default {
               this.days[d].dateObject,
               this.times[t].hoursOffset
             )
+
+            // Add / remove time from availability set
             if (this.dragType === this.DRAG_TYPES.ADD) {
               this.availability.add(date.getTime())
             } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
               this.availability.delete(date.getTime())
             }
+
+            // Edit manualAvailability set if event is a GROUP
+            if (this.event.type === eventTypes.GROUP) {
+              const discreteDate = dateToDowDate(
+                this.event.dates,
+                date,
+                this.weekOffset,
+                true
+              )
+
+              // If date not touched, then add all of the existing calendar availabilities and mark it as touched
+              if (!this.isTouched(discreteDate, [...this.manualAvailability])) {
+                // Add a dummy date (that won't show up in availability) to mark day as touched
+                // This is needed so that if the user removes all availability from the day, it still shows up as touched
+                const startDateOfDay = dateToDowDate(
+                  this.event.dates,
+                  this.days[d].dateObject,
+                  this.weekOffset,
+                  true
+                )
+                this.manualAvailability.add(startDateOfDay.getTime() + 1)
+
+                // Add the existing calendar availabilities
+                const existingAvailability = this.getAvailabilityForDate(
+                  this.days[d].dateObject
+                )
+                for (const a of existingAvailability) {
+                  const convertedDate = dateToDowDate(
+                    this.event.dates,
+                    new Date(a),
+                    this.weekOffset,
+                    true
+                  )
+                  this.manualAvailability.add(convertedDate.getTime())
+                }
+              }
+
+              // Add / remove time from manual availability set
+              if (this.dragType === this.DRAG_TYPES.ADD) {
+                this.manualAvailability.add(discreteDate.getTime())
+              } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
+                this.manualAvailability.delete(discreteDate.getTime())
+              }
+            }
+
             t += timeInc
           }
           d += dayInc
@@ -1747,6 +1789,11 @@ export default {
       this.dragging = false
       this.dragStart = null
       this.dragCur = null
+
+      // console.log(
+      //   "manual availability",
+      //   [...this.manualAvailability].map((a) => new Date(a).toISOString())
+      // )
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
