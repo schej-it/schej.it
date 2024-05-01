@@ -536,6 +536,7 @@ export default {
       mobileNumDays: localStorage["mobileNumDays"]
         ? parseInt(localStorage["mobileNumDays"])
         : 3, // The number of days to show at a time on mobile
+      pageHasChanged: false,
 
       hasRefreshedAuthUser: false,
 
@@ -901,6 +902,9 @@ export default {
     },
     hasPrevPage() {
       return this.page > 0 || this.event.type === eventTypes.GROUP
+    },
+    numPages() {
+      return Math.ceil(this.event.dates.length / this.maxDaysPerPage)
     },
 
     showStickyRespondents() {
@@ -1429,6 +1433,9 @@ export default {
 
       // Fill style
       if (this.state === this.states.EDIT_AVAILABILITY) {
+        // Set default background color to red (unavailable)
+        s.backgroundColor = "#E523230D"
+
         // Show only current user availability
         const inDragRange = this.inDragRange(d, t)
         if (inDragRange) {
@@ -1574,6 +1581,7 @@ export default {
       if (this.authUser) {
         this.resetCurUserAvailability()
       }
+      this.pageHasChanged = false
     },
     stopEditing() {
       this.state = this.defaultState
@@ -1858,6 +1866,7 @@ export default {
       } else {
         this.page++
       }
+      this.pageHasChanged = true
     },
     prevPage(e) {
       e.stopImmediatePropagation()
@@ -1874,6 +1883,7 @@ export default {
       } else {
         this.page--
       }
+      this.pageHasChanged = true
     },
     //#endregion
 
