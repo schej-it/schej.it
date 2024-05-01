@@ -37,6 +37,37 @@
       @setAvailabilityAutomatically="setAvailabilityAutomatically"
     ></InvitationDialog>
 
+    <!-- Pages Not Visited dialog -->
+    <v-dialog
+      v-model="pagesNotVisitedDialog"
+      max-width="400"
+      content-class="tw-m-0"
+    >
+      <v-card>
+        <v-card-title>Are you sure?</v-card-title>
+        <v-card-text
+          >You're about to add your availability without filling out all pages
+          of this Schej. Click the left and right arrows at the top to switch
+          between pages.</v-card-text
+        >
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="pagesNotVisitedDialog = false">Cancel</v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="
+              () => {
+                saveChanges(true)
+                this.pagesNotVisitedDialog = false
+              }
+            "
+            >Add anyways</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
       <div class="tw-mx-4">
         <!-- Title and copy link -->
@@ -174,7 +205,7 @@
                 <v-btn
                   class="tw-w-20 tw-text-white"
                   :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
-                  @click="saveChanges"
+                  @click="() => saveChanges()"
                 >
                   Save
                 </v-btn></template
@@ -283,7 +314,7 @@
         <v-btn
           class="tw-bg-white"
           :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
-          @click="saveChanges"
+          @click="() => saveChanges()"
         >
           Save
         </v-btn>
@@ -353,6 +384,7 @@ export default {
     guestDialog: false,
     editEventDialog: false,
     invitationDialog: false,
+    pagesNotVisitedDialog: false,
     helpDialog: false,
     loading: true,
     calendarEventsMap: {},
@@ -533,9 +565,20 @@ export default {
       )
       this.scheduleOverlapComponent.startEditing()
     },
-    async saveChanges() {
+    async saveChanges(ignorePagesNotVisited = false) {
       /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
       if (!this.scheduleOverlapComponent) return
+
+      // If user hasn't responded and they haven't gone to the next page, show pages not visited dialog
+      if (
+        !this.userHasResponded &&
+        this.curGuestId.length === 0 &&
+        !this.scheduleOverlapComponent.pageHasChanged &&
+        !ignorePagesNotVisited
+      ) {
+        this.pagesNotVisitedDialog = true
+        return
+      }
 
       if (!this.authUser) {
         if (this.curGuestId) {

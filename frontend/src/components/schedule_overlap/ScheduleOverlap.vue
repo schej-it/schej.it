@@ -534,6 +534,7 @@ export default {
       mobileNumDays: localStorage["mobileNumDays"]
         ? parseInt(localStorage["mobileNumDays"])
         : 3, // The number of days to show at a time on mobile
+      pageHasChanged: false,
 
       hasRefreshedAuthUser: false,
 
@@ -1429,6 +1430,7 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
+      this.pageHasChanged = false
     },
     stopEditing() {
       this.state = this.defaultState
@@ -1710,6 +1712,7 @@ export default {
       } else {
         this.page++
       }
+      this.pageHasChanged = true
     },
     prevPage(e) {
       e.stopImmediatePropagation()
@@ -1726,6 +1729,7 @@ export default {
       } else {
         this.page--
       }
+      this.pageHasChanged = true
     },
     //#endregion
 
