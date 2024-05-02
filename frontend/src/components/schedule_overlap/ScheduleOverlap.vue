@@ -789,9 +789,14 @@ export default {
           const calendarEventsByDay = this.groupCalendarEventsByDay[userId]
           if (calendarEventsByDay) {
             // Get manual availability and convert to DOW dates
-            const manualAvailability = this.fetchedResponses[
-              userId
-            ]?.availability?.map((a) =>
+            let curManualAvailability
+            if (this.state === this.states.EDIT_AVAILABILITY) {
+              curManualAvailability = [...this.manualAvailability]
+            } else {
+              curManualAvailability =
+                this.fetchedResponses[userId]?.availability
+            }
+            curManualAvailability = curManualAvailability?.map((a) =>
               dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
             )
 
@@ -801,7 +806,7 @@ export default {
               calendarEventsByDay,
               {
                 includeTouchedAvailability: true,
-                manualAvailability: manualAvailability ?? [],
+                manualAvailability: curManualAvailability ?? [],
               }
             )
 
@@ -2130,6 +2135,16 @@ export default {
     parsedResponses() {
       // Theoretically, parsed responses should only be changing for groups
       this.getResponsesFormatted()
+
+      // Repopulate user availability when editing availability (this happens when switching weeks in a group)
+      if (
+        this.event.type === eventTypes.GROUP &&
+        this.state === this.states.EDIT_AVAILABILITY &&
+        this.authUser
+      ) {
+        this.availability = new Set()
+        this.populateUserAvailability(this.authUser._id)
+      }
     },
   },
   created() {
