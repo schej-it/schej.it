@@ -459,7 +459,7 @@ func getResponses(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[primitive.DateTime][]primitive.DateTime} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
@@ -469,8 +469,9 @@ func updateEventResponse(c *gin.Context) {
 		Name         string               `json:"name"`
 
 		// Calendar availability variables for Availability Groups feature
-		UseCalendarAvailability *bool                `json:"useCalendarAvailability"`
-		EnabledCalendars        *map[string][]string `json:"enabledCalendars"`
+		UseCalendarAvailability *bool                                        `json:"useCalendarAvailability"`
+		EnabledCalendars        *map[string][]string                         `json:"enabledCalendars"`
+		ManualAvailability      *map[primitive.DateTime][]primitive.DateTime `json:"manualAvailability"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -509,9 +510,10 @@ func updateEventResponse(c *gin.Context) {
 			EnabledCalendars:        payload.EnabledCalendars,
 		}
 
-		// If event is group, set declined to false (in case user declined group in the past)
 		if event.Type == models.GROUP {
 			user := db.GetUserById(userIdString)
+
+			// Set declined to false (in case user declined group in the past)
 			if user != nil {
 				for i, attendee := range utils.Coalesce(event.Attendees) {
 					if attendee.Email == user.Email {
@@ -519,6 +521,42 @@ func updateEventResponse(c *gin.Context) {
 						break
 					}
 				}
+			}
+
+			// Update manual availability
+			if _, ok := event.Responses[userIdString]; ok {
+				response.ManualAvailability = event.Responses[userIdString].ManualAvailability
+			}
+			if response.ManualAvailability == nil {
+				manualAvailability := make(map[primitive.DateTime][]primitive.DateTime)
+				response.ManualAvailability = &manualAvailability
+			}
+
+			fmt.Println(payload.ManualAvailability)
+
+			// Replace availability on days that already exist in manual availability map
+			for day := range utils.Coalesce(response.ManualAvailability) {
+				for payloadDay, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
+					// Check if day is between start and end times of the payload day
+					endTime := payloadDay.Time().Add(time.Duration(*event.Duration) * time.Hour)
+					if day.Time().Compare(payloadDay.Time()) >= 0 && day.Time().Compare(endTime) <= 0 {
+						// Replace availability with updated availability
+						delete(*response.ManualAvailability, day)
+						(*response.ManualAvailability)[payloadDay] = availableTimes
+						delete(*payload.ManualAvailability, payloadDay)
+						break
+					}
+				}
+
+				// Break if no more items in manual availability
+				if len(utils.Coalesce(payload.ManualAvailability)) == 0 {
+					break
+				}
+			}
+
+			// Add the rest of manual availability that was not replaced
+			for day, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
+				(*response.ManualAvailability)[day] = availableTimes
 			}
 		}
 	}

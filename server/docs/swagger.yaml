@@ -57,14 +57,16 @@ definitions:
       calendarId:
         type: string
       endDate:
-        type: string
+        $ref: '#/definitions/primitive.DateTime'
+        type: object
       free:
         description: Whether the user is free during this event
         type: boolean
       id:
         type: string
       startDate:
-        type: string
+        $ref: '#/definitions/primitive.DateTime'
+        type: object
       summary:
         type: string
     type: object
@@ -80,7 +82,9 @@ definitions:
       calendarEventId:
         type: string
       dates:
-        type: string
+        items:
+          $ref: '#/definitions/primitive.DateTime'
+        type: array
       duration:
         type: number
       name:
@@ -137,13 +141,23 @@ definitions:
   models.Response:
     properties:
       availability:
-        type: string
+        items:
+          $ref: '#/definitions/primitive.DateTime'
+        type: array
       enabledCalendars:
         additionalProperties:
           items:
             type: string
           type: array
         description: Maps email to an array of sub calendar ids
+        type: object
+      manualAvailability:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/primitive.DateTime'
+          type: array
+        description: Mapping from the start date of a day to the available times for
+          that day
         type: object
       name:
         type: string
@@ -190,6 +204,8 @@ definitions:
       timezoneOffset:
         type: integer
     type: object
+  primitive.DateTime:
+    type: integer
   responses.Error:
     properties:
       error:
@@ -610,6 +626,12 @@ paths:
                 type: object
               guest:
                 type: boolean
+              manualAvailability:
+                additionalProperties:
+                  items:
+                    $ref: '#/definitions/primitive.DateTime'
+                  type: array
+                type: object
               name:
                 type: string
               useCalendarAvailability:

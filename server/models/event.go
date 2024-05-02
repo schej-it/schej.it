@@ -46,6 +46,9 @@ type Response struct {
 	User         *User                `json:"user" bson:",omitempty"`
 	Availability []primitive.DateTime `json:"availability" bson:"availability"`
 
+	// Mapping from the start date of a day to the available times for that day
+	ManualAvailability *map[primitive.DateTime][]primitive.DateTime `json:"manualAvailability" bson:"manualAvailability"`
+
 	// Calendar availability variables for Availability Groups feature
 	UseCalendarAvailability *bool                `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
 	EnabledCalendars        *map[string][]string `json:"enabledCalendars" bson:"enabledCalendars,omitempty"` // Maps email to an array of sub calendar ids
