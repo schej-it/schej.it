@@ -47,7 +47,7 @@
                     :user="user"
                   ></UserChip>
                 </div>
-                <div v-else class="tw-flex tw-italic tw-items-center">
+                <div v-else class="tw-flex tw-items-center tw-italic">
                   <div>No members added yet</div>
                 </div>
                 <div class="tw-text-xs tw-text-dark-gray">
@@ -58,7 +58,7 @@
           </v-expand-transition>
 
           <v-expand-transition>
-            <v-card class="tw-p-5" v-if="!calendarPermissionGranted">
+            <div class="tw-p-5 tw-text-black" v-if="!calendarPermissionGranted">
               <CalendarPermissionsCard
                 v-show="true"
                 cancelLabel=""
@@ -67,7 +67,8 @@
                     $emit('setAvailabilityAutomatically')
                   }
                 "
-            /></v-card>
+              />
+            </div>
           </v-expand-transition>
         </v-card-text>
 
