@@ -289,7 +289,7 @@
                   <span
                     v-bind="attrs"
                     v-on="on"
-                    class="tw-cursor-pointer tw-text-sm tw-text-red tw-underline"
+                    class="tw-cursor-pointer tw-text-sm tw-text-red"
                   >
                     {{ !isGroup ? "Delete availability" : "Leave group" }}
                   </span>
