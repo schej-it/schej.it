@@ -138,7 +138,7 @@ html {
   border: 2px theme("colors.light-green") solid !important;
 }
 .v-input--switch__track {
-  border: 2px theme("colors.light-gray") solid !important;
+  border: 2px theme("colors.gray") solid !important;
   background-color: theme("colors.gray") !important;
   box-shadow: 0px 0.74px 4.46px 0px rgba(0, 0, 0, 0.1) !important;
 }
