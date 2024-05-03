@@ -544,7 +544,7 @@ export default {
       hintState: true,
 
       /** Groups */
-      manualAvailability: new Set(),
+      manualAvailability: {},
     }
   },
   computed: {
@@ -553,8 +553,8 @@ export default {
     allowScheduleEvent() {
       return !!this.curScheduledEvent
     },
+    /** Returns the availability as an array */
     availabilityArray() {
-      /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
@@ -789,16 +789,24 @@ export default {
           const calendarEventsByDay = this.groupCalendarEventsByDay[userId]
           if (calendarEventsByDay) {
             // Get manual availability and convert to DOW dates
-            let curManualAvailability
-            if (this.state === this.states.EDIT_AVAILABILITY) {
-              curManualAvailability = [...this.manualAvailability]
-            } else {
-              curManualAvailability =
-                this.fetchedResponses[userId]?.availability
+            const curManualAvailability = {
+              ...this.fetchedResponses[userId]?.manualAvailability,
             }
-            curManualAvailability = curManualAvailability?.map((a) =>
-              dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
-            )
+            if (curManualAvailability) {
+              for (const time in curManualAvailability) {
+                const dowTime = dateToDowDate(
+                  this.event.dates,
+                  new Date(parseInt(time)),
+                  this.weekOffset
+                ).getTime()
+                curManualAvailability[dowTime] = curManualAvailability[
+                  time
+                ].map((a) =>
+                  dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
+                )
+                delete curManualAvailability[time]
+              }
+            }
 
             // Get availability from calendar events and use manual availability on the
             // "touched" days
@@ -806,7 +814,7 @@ export default {
               calendarEventsByDay,
               {
                 includeTouchedAvailability: true,
-                manualAvailability: curManualAvailability ?? [],
+                manualAvailability: curManualAvailability ?? {},
               }
             )
 
@@ -1190,11 +1198,7 @@ export default {
     resetCurUserAvailability() {
       if (this.event.type === eventTypes.GROUP) {
         this.initSharedCalendarAccounts()
-        this.manualAvailability = new Set(
-          this.fetchedResponses[this.authUser._id]?.availability?.map((a) =>
-            new Date(a).getTime()
-          )
-        )
+        this.manualAvailability = {}
       }
 
       this.availability = new Set()
@@ -1214,7 +1218,7 @@ export default {
       calendarEventsByDay,
       options = {
         includeTouchedAvailability: false, // Whether to include manual availability for touched days
-        manualAvailability: [], // Array of manual availaility
+        manualAvailability: {}, // Object mapping unix timestamp to array of manual availaility
       }
     ) {
       const availability = new Set()
@@ -1222,16 +1226,22 @@ export default {
         const date = new Date(this.event.dates[i])
 
         if (options.includeTouchedAvailability) {
-          // Check if manual availability has been added for the current date
-          const availForDate = this.getAvailabilityForDate(
-            date,
-            options.manualAvailability
-          )
+          const endDate = getDateHoursOffset(date, this.event.duration)
 
-          if (availForDate.size > 0) {
-            availForDate.forEach((a) => availability.add(a))
-            continue
+          // Check if manual availability has been added for the current date
+          let manualAvailabilityAdded = false
+          for (const time in options.manualAvailability) {
+            if (date.getTime() <= time && time <= endDate.getTime()) {
+              options.manualAvailability[time].forEach((a) => {
+                availability.add(new Date(a).getTime())
+              })
+              delete options.manualAvailability[time]
+              manualAvailabilityAdded = true
+              break
+            }
           }
+
+          if (manualAvailabilityAdded) continue
         }
 
         for (const time of this.times) {
@@ -1326,8 +1336,14 @@ export default {
       let type = ""
       // If this is a group submit enabled calendars, otherwise submit availability
       if (this.isGroup) {
-        type = "calendars"
+        type = "group availability and calendars"
         payload = generateEnabledCalendarsPayload(this.sharedCalendarAccounts)
+        payload.manualAvailability = {}
+        for (const day of Object.keys(this.manualAvailability)) {
+          payload.manualAvailability[day] = [
+            ...this.manualAvailability[day],
+          ].map((a) => new Date(a))
+        }
       } else {
         type = "availability"
         payload.availability = this.availabilityArray
@@ -1338,6 +1354,7 @@ export default {
           payload.name = name
         }
       }
+      // console.log("payload: ", payload)
 
       await post(`/events/${this.event._id}/response`, payload)
 
@@ -1735,18 +1752,17 @@ export default {
                 this.weekOffset,
                 true
               )
+              const startDateOfDay = dateToDowDate(
+                this.event.dates,
+                this.days[d].dateObject,
+                this.weekOffset,
+                true
+              )
 
               // If date not touched, then add all of the existing calendar availabilities and mark it as touched
-              if (!this.isTouched(discreteDate, [...this.manualAvailability])) {
-                // Add a dummy date (that won't show up in availability) to mark day as touched
-                // This is needed so that if the user removes all availability from the day, it still shows up as touched
-                const startDateOfDay = dateToDowDate(
-                  this.event.dates,
-                  this.days[d].dateObject,
-                  this.weekOffset,
-                  true
-                )
-                this.manualAvailability.add(startDateOfDay.getTime() + 1)
+              if (!(startDateOfDay.getTime() in this.manualAvailability)) {
+                // Create new set
+                this.manualAvailability[startDateOfDay.getTime()] = new Set()
 
                 // Add the existing calendar availabilities
                 const existingAvailability = this.getAvailabilityForDate(
@@ -1759,15 +1775,21 @@ export default {
                     this.weekOffset,
                     true
                   )
-                  this.manualAvailability.add(convertedDate.getTime())
+                  this.manualAvailability[startDateOfDay.getTime()].add(
+                    convertedDate.getTime()
+                  )
                 }
               }
 
               // Add / remove time from manual availability set
               if (this.dragType === this.DRAG_TYPES.ADD) {
-                this.manualAvailability.add(discreteDate.getTime())
+                this.manualAvailability[startDateOfDay.getTime()].add(
+                  discreteDate.getTime()
+                )
               } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
-                this.manualAvailability.delete(discreteDate.getTime())
+                this.manualAvailability[startDateOfDay.getTime()].delete(
+                  discreteDate.getTime()
+                )
               }
             }
 
@@ -1797,7 +1819,7 @@ export default {
 
       // console.log(
       //   "manual availability",
-      //   [...this.manualAvailability].map((a) => new Date(a).toISOString())
+      //   this.manualAvailability
       // )
     },
     inDragRange(dayIndex, timeIndex) {
@@ -2131,6 +2153,11 @@ export default {
       this.$nextTick(() => {
         this.setTimeslotSize()
       })
+    },
+    weekOffset() {
+      if (this.event.type === eventTypes.GROUP) {
+        this.fetchResponses()
+      }
     },
     parsedResponses() {
       // Theoretically, parsed responses should only be changing for groups

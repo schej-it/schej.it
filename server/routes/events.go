@@ -407,8 +407,9 @@ func getEvent(c *gin.Context) {
 		}
 		event.Responses[userId] = response
 
-		// Remove availability array
+		// Remove availability arrays
 		event.Responses[userId].Availability = nil
+		event.Responses[userId].ManualAvailability = nil
 	}
 
 	c.JSON(http.StatusOK, event)
@@ -449,6 +450,14 @@ func getResponses(c *gin.Context) {
 			}
 		}
 		event.Responses[userId].Availability = subsetAvailability
+
+		subsetManualAvailability := make(map[primitive.DateTime][]primitive.DateTime)
+		for timestamp := range utils.Coalesce(response.ManualAvailability) {
+			if timestamp.Time().Compare(payload.TimeMin) >= 0 && timestamp.Time().Compare(payload.TimeMax) <= 0 {
+				subsetManualAvailability[timestamp] = (*response.ManualAvailability)[timestamp]
+			}
+		}
+		event.Responses[userId].ManualAvailability = &subsetManualAvailability
 	}
 
 	c.JSON(http.StatusOK, event.Responses)
