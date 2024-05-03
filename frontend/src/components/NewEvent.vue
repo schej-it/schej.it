@@ -122,7 +122,7 @@
         <v-checkbox
           v-if="allowNotifications"
           v-model="notificationsEnabled"
-          label="Email me each time someone joins my event!"
+          label="Email me each time someone joins my event"
           hide-details
           class="tw-mt-2"
         />
@@ -285,9 +285,7 @@ export default {
       this.timezone = this.contactsPayload.timezone
 
       this.$refs.form.resetValidation()
-
     }
-
   },
 
   computed: {
@@ -496,7 +494,6 @@ export default {
         selectedDateOption: this.selectedDateOption,
         notificationsEnabled: this.notificationsEnabled,
         timezone: this.timezone,
-
       }
       signInGoogle({
         state: {

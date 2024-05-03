@@ -142,15 +142,17 @@
     </v-dialog>
 
     <div v-if="isGroup">
-      <v-checkbox
+      <v-switch
+        inset
+        class="tw-mb-4"
         :input-value="showCalendarEvents"
         @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
         hide-details
       >
         <template v-slot:label>
-          <div class="tw-text-xs">Overlay my calendar events</div>
+          <div class="tw-text-sm tw-text-black">Overlay calendar events</div>
         </template>
-      </v-checkbox>
+      </v-switch>
     </div>
   </div>
 </template>

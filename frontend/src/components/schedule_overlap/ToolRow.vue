@@ -21,15 +21,18 @@
             v-if="numResponses > 1"
             class="tw-flex tw-items-center tw-justify-center tw-gap-2"
           >
-            <div>Show best times</div>
             <v-switch
+              inset
               id="show-best-times-toggle"
               class="tw-mt-0 tw-py-2.5"
               :input-value="showBestTimes"
               @change="updateShowBestTimes"
-              color="#219653"
               hide-details
-            />
+            >
+              <template v-slot:label>
+                <div class="tw-text-sm tw-text-black">Show best times</div>
+              </template>
+            </v-switch>
           </div>
           <div
             v-if="isPhone"

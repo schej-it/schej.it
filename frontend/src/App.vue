@@ -84,6 +84,7 @@ html {
   text-transform: unset !important;
 }
 
+/** Buttons */
 .v-btn.v-btn--is-elevated {
   -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;
   -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;
@@ -115,6 +116,7 @@ html {
   border: 1px solid theme("colors.light-blue") !important;
 }
 
+/** Drop shadows */
 .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
   > .v-input__control
   > .v-input__slot {
@@ -122,12 +124,37 @@ html {
     drop-shadow(0 1px 1px rgb(0 0 0 / 0.06)) !important;
   box-shadow: none !important;
 }
-
 .v-menu__content {
   box-shadow: 0px 5px 5px -1px rgba(0, 0, 0, 0.1),
     0px 8px 10px 0.5px rgba(0, 0, 0, 0.07), 0px 3px 14px 1px rgba(0, 0, 0, 0.06) !important;
 }
 
+/** Switch  */
+.v-input--switch--inset .v-input--selection-controls__input {
+  margin-right: 0 !important;
+  transform: scale(80%) !important;
+}
+.v-input--switch__track.primary--text {
+  border: 2px theme("colors.light-green") solid !important;
+}
+.v-input--switch__track {
+  border: 2px theme("colors.light-gray") solid !important;
+  background-color: theme("colors.gray") !important;
+  box-shadow: 0px 0.74px 4.46px 0px rgba(0, 0, 0, 0.1) !important;
+}
+.v-input--is-label-active .v-input--switch__track {
+  background-color: currentColor !important;
+  box-shadow: 0px 1.5px 4.5px 0px rgba(0, 0, 0, 0.2) !important;
+}
+.v-input--switch--inset .v-input--switch__track,
+.v-input--switch--inset .v-input--selection-controls__input {
+  opacity: 1 !important;
+}
+.v-input--switch__thumb {
+  background-color: white !important;
+}
+
+/** Error color */
 .error--text .v-input__slot {
   outline: red solid;
   border-radius: 3px;
