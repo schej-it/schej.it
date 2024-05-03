@@ -70,7 +70,7 @@
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
-            class="tw-w-full tw-text-green"
+            class="tw-w-full tw-text-blue"
             @click="(e) => $emit('scheduleEvent', e)"
           >
             <span class="tw-mr-2">Schedule event</span>
@@ -92,7 +92,7 @@
           </v-btn>
           <v-btn
             :disabled="!allowScheduleEvent"
-            color="primary"
+            class="tw-bg-blue tw-text-white"
             @click="(e) => $emit('confirmScheduleEvent', e)"
           >
             Schedule
@@ -188,7 +188,7 @@ export default {
     hintText() {
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are used. Editing availability is disabled and determined from your calendar events each week."
+          return "Toggle which calendars are used. Tap and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
           return "Tap and drag to add your available times in green"
         case this.states.SCHEDULE_EVENT:

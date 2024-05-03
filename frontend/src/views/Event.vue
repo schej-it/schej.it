@@ -84,24 +84,21 @@
                 <div class="">
                   <v-chip
                     :small="isPhone"
-                    class="tw-pointer-events-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
+                    class="tw-cursor-pointer tw-select-none tw-rounded tw-bg-light-gray tw-px-2 tw-font-medium sm:tw-px-3"
+                    @click="helpDialog = true"
                     >Availability group</v-chip
                   >
-                  <v-btn icon @click="helpDialog = true">
-                    <v-icon>mdi-help-circle-outline</v-icon>
-                  </v-btn>
                 </div>
                 <HelpDialog v-model="helpDialog">
                   <template v-slot:header>Availability group</template>
                   <div class="mb-4">
-                    Use availability groups to see group members’ weekly
-                    calendar availabilities. Your actual calendar events are NOT
-                    visible to others.
+                    Use availability groups to see group members' weekly
+                    calendar availabilities. Your availability is updated in
+                    real-time from your Google Calendar, and you can manually
+                    edit your availability.
                   </div>
                   <div>
-                    Your availability is updated in real-time from your Google
-                    Calendar, and manually editing your availability is
-                    disabled.
+                    Your actual calendar events are NOT visible to others.
                   </div>
                 </HelpDialog>
               </template>
@@ -141,15 +138,13 @@
               <v-btn
                 :icon="isPhone"
                 :outlined="!isPhone"
-                class="tw-text-very-dark-gray"
+                class="tw-text-green"
                 @click="refreshCalendar"
                 :loading="loading"
               >
                 <v-icon class="tw-mr-1" v-if="!isPhone">mdi-refresh</v-icon>
                 <span v-if="!isPhone" class="tw-mr-2">Refresh</span>
-                <v-icon class="tw-text-very-dark-gray" v-else
-                  >mdi-refresh</v-icon
-                >
+                <v-icon class="tw-text-green" v-else>mdi-refresh</v-icon>
               </v-btn>
             </div>
             <div v-else>
@@ -183,15 +178,13 @@
                   v-else
                   width="10.25rem"
                   class="tw-text-white tw-transition-opacity"
-                  :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
+                  :class="'tw-bg-green'"
                   :disabled="loading && !userHasResponded"
                   :style="{ opacity: availabilityBtnOpacity }"
                   @click="addAvailability"
                 >
                   {{
-                    isGroup
-                      ? "Edit calendars"
-                      : userHasResponded
+                    userHasResponded || isGroup
                       ? "Edit availability"
                       : "Add availability"
                   }}
@@ -207,7 +200,7 @@
                 </v-btn>
                 <v-btn
                   class="tw-w-20 tw-text-white"
-                  :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
+                  :class="'tw-bg-green'"
                   @click="() => saveChanges()"
                 >
                   Save
@@ -270,7 +263,7 @@
     <div
       v-if="isPhone"
       class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-px-4"
-      :class="isGroup ? 'tw-bg-very-dark-gray' : 'tw-bg-green'"
+      :class="isScheduling ? 'tw-bg-blue' : 'tw-bg-green'"
     >
       <template v-if="!isEditing && !isScheduling">
         <v-btn
@@ -283,9 +276,7 @@
         <v-spacer />
         <v-btn
           v-if="!isGroup && !authUser && selectedGuestRespondent"
-          outlined
-          class="tw-bg-white tw-transition-opacity"
-          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
+          class="tw-bg-white tw-text-green tw-transition-opacity"
           :style="{ opacity: availabilityBtnOpacity }"
           @click="editGuestAvailability"
         >
@@ -293,20 +284,12 @@
         </v-btn>
         <v-btn
           v-else
-          outlined
-          class="tw-bg-white tw-transition-opacity"
-          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
+          class="tw-bg-white tw-text-green tw-transition-opacity"
           :disabled="loading && !userHasResponded"
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
         >
-          {{
-            isGroup
-              ? "Edit calendars"
-              : userHasResponded
-              ? "Edit availability"
-              : "Add availability"
-          }}
+          {{ userHasResponded ? "Edit availability" : "Add availability" }}
         </v-btn>
       </template>
       <template v-else-if="isEditing">
@@ -314,11 +297,7 @@
           Cancel
         </v-btn>
         <v-spacer />
-        <v-btn
-          class="tw-bg-white"
-          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
-          @click="() => saveChanges()"
-        >
+        <v-btn class="tw-bg-white tw-text-green" @click="() => saveChanges()">
           Save
         </v-btn>
       </template>
@@ -329,8 +308,7 @@
         <v-spacer />
         <v-btn
           :disabled="!allowScheduleEvent"
-          class="tw-bg-white"
-          :class="isGroup ? 'tw-text-very-dark-gray' : 'tw-text-green'"
+          class="tw-bg-white tw-text-blue"
           @click="confirmScheduleEvent"
         >
           Schedule

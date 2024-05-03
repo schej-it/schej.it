@@ -21,7 +21,7 @@
           <div class="mb-4">
             Use availability groups to see group members' weekly calendar
             availabilities. Your availability will be updated in real-time from
-            your Google Calendar.
+            your Google Calendar, and you can manually edit your availability.
           </div>
           <div>Your actual calendar events will NOT be visible to others.</div>
         </HelpDialog>
@@ -234,14 +234,17 @@ export default {
       return times
     },
     otherEventAttendees() {
-      return this.event && this.event.attendees ? this.event.attendees
+      return this.event && this.event.attendees
+        ? this.event.attendees
             .map((a) => a.email)
-            .filter((email) => email !== this.authUser.email) : []
+            .filter((email) => email !== this.authUser.email)
+        : []
     },
     addedEmails() {
-      if (Object.keys(this.contactsPayload).length > 0) return this.contactsPayload.emails
+      if (Object.keys(this.contactsPayload).length > 0)
+        return this.contactsPayload.emails
       return this.otherEventAttendees
-    }
+    },
   },
 
   mounted() {

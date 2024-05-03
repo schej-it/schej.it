@@ -74,10 +74,7 @@
                   >
                     <!-- Loader -->
                     <div
-                      v-if="
-                        (isGroup || alwaysShowCalendarEvents || editing) &&
-                        loadingCalendarEvents
-                      "
+                      v-if="showLoader"
                       class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                     >
                       <v-progress-circular
@@ -91,7 +88,9 @@
                       :key="d"
                       class="tw-relative tw-flex-1"
                       :class="
-                        isGroup && loadingCalendarEvents && 'tw-opacity-50'
+                        ((isGroup && loadingCalendarEvents) ||
+                          loadingResponses.loading) &&
+                        'tw-opacity-50'
                       "
                     >
                       <!-- Timeslots -->
@@ -137,17 +136,17 @@
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
                               :class="
                                 event.free
-                                  ? isGroup
+                                  ? isGroup && !editing
                                     ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
                                     : 'tw-border-dashed tw-border-blue'
-                                  : isGroup
+                                  : isGroup && !editing
                                   ? 'tw-border-white tw-bg-light-blue'
                                   : 'tw-border-blue'
                               "
                             >
                               <div
                                 :class="`tw-text-${
-                                  isGroup
+                                  isGroup && state !== states.EDIT_AVAILABILITY
                                     ? 'white'
                                     : noEventNames
                                     ? 'dark-gray'
@@ -348,7 +347,7 @@
                   @mouseLeaveRespondent="mouseLeaveRespondent"
                   @clickRespondent="clickRespondent"
                   @editGuestAvailability="editGuestAvailability"
-                  @refreshEvent="() => $emit('refreshEvent')"
+                  @refreshEvent="refreshEvent"
                 />
               </div>
             </v-expand-transition>
@@ -368,7 +367,7 @@
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
               @editGuestAvailability="editGuestAvailability"
-              @refreshEvent="() => $emit('refreshEvent')"
+              @refreshEvent="refreshEvent"
             />
           </template>
           <div ref="afterRespondentsList"></div>
@@ -500,6 +499,9 @@ export default {
       curRespondent: "", // Id of the active respondent (set on hover)
       curRespondents: [], // Id of currently selected respondents (set on click)
       sharedCalendarAccounts: {}, // The user's calendar accounts for changing calendar options for groups
+      fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
+      loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
+      responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -540,6 +542,9 @@ export default {
 
       /* Variables for hint */
       hintState: true,
+
+      /** Groups */
+      manualAvailability: {},
     }
   },
   computed: {
@@ -548,12 +553,11 @@ export default {
     allowScheduleEvent() {
       return !!this.curScheduledEvent
     },
+    /** Returns the availability as an array */
     availabilityArray() {
-      /* Returns the availibility as an array */
       return [...this.availability].map((item) => new Date(item))
     },
     allowDrag() {
-      if (this.isGroup) return this.state === this.states.SCHEDULE_EVENT
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.SCHEDULE_EVENT
@@ -728,11 +732,11 @@ export default {
     hintText() {
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are used. Editing availability is disabled and determined from your calendar events each week."
+          return "Toggle which calendars are used. Click and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
-          return "Click and drag to add your available times in green"
+          return "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
-          return "Click and drag on the calendar to schedule a Google Calendar event during those times"
+          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
         default:
           return ""
       }
@@ -784,8 +788,26 @@ export default {
         for (const userId in this.event.responses) {
           const calendarEventsByDay = this.groupCalendarEventsByDay[userId]
           if (calendarEventsByDay) {
-            const availability =
-              this.getAvailabilityFromCalendarEvents(calendarEventsByDay)
+            // Get manual availability and convert to DOW dates
+            const fetchedManualAvailability = this.getManualAvailabilityDow(
+              this.fetchedResponses[userId]?.manualAvailability
+            )
+            const curManualAvailability =
+              userId === this.authUser._id
+                ? this.getManualAvailabilityDow(this.manualAvailability)
+                : {}
+
+            // Get availability from calendar events and use manual availability on the
+            // "touched" days
+            const availability = this.getAvailabilityFromCalendarEvents(
+              calendarEventsByDay,
+              {
+                includeTouchedAvailability: true,
+                fetchedManualAvailability: fetchedManualAvailability ?? {},
+                curManualAvailability: curManualAvailability ?? {},
+              }
+            )
+
             parsed[userId] = {
               ...this.event.responses[userId],
               availability: [...availability],
@@ -808,30 +830,11 @@ export default {
         }
         parsed[k] = {
           ...this.event.responses[k],
+          availability: this.fetchedResponses[k]?.availability ?? [],
           user: newUser,
         }
       }
       return parsed
-    },
-    responsesFormatted() {
-      /* Formats the responses in a map where date/time is mapped to the people that are available then */
-      const formatted = new Map()
-      for (const day of this.allDays) {
-        for (const time of this.times) {
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-          formatted.set(date.getTime(), new Set())
-          for (const response of Object.values(this.parsedResponses)) {
-            const index = response.availability.findIndex(
-              (d) => dateCompare(d, date) === 0
-            )
-            if (index !== -1) {
-              // TODO: determine whether I should delete the index??
-              formatted.get(date.getTime()).add(response.user._id)
-            }
-          }
-        }
-      }
-      return formatted
     },
     max() {
       let max = 0
@@ -924,6 +927,17 @@ export default {
     hintStateLocalStorageKey() {
       return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
     },
+
+    /** Whether to show spinner on top of availability grid */
+    showLoader() {
+      return (
+        // Loading calendar events
+        ((this.isGroup || this.alwaysShowCalendarEvents || this.editing) &&
+          this.loadingCalendarEvents) ||
+        // Loading responses
+        this.loadingResponses.loading
+      )
+    },
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -1011,10 +1025,126 @@ export default {
     //#region Aggregate user availability
     // -----------------------------------
 
+    /** Fetches responses from server */
+    fetchResponses() {
+      if (this.calendarOnly) {
+        this.fetchedResponses = this.event.responses
+        return
+      }
+
+      let timeMin, timeMax
+      if (this.event.type === eventTypes.GROUP) {
+        if (this.event.dates.length > 0) {
+          // Fetch the date range for the current week
+          timeMin = new Date(this.event.dates[0])
+          timeMax = new Date(this.event.dates[this.event.dates.length - 1])
+          timeMax.setDate(timeMax.getDate() + 1)
+
+          // Convert dow dates to discrete dates
+          timeMin = dateToDowDate(
+            this.event.dates,
+            timeMin,
+            this.weekOffset,
+            true
+          )
+          timeMax = dateToDowDate(
+            this.event.dates,
+            timeMax,
+            this.weekOffset,
+            true
+          )
+        }
+      } else {
+        if (this.allDays.length > 0) {
+          // Fetch the entire time range of availabilities
+          timeMin = new Date(this.allDays[0].dateObject)
+          timeMax = new Date(this.allDays[this.allDays.length - 1].dateObject)
+          timeMax.setDate(timeMax.getDate() + 1)
+        }
+      }
+
+      if (!timeMin || !timeMax) return
+
+      // Fetch responses between timeMin and timeMax
+      const url = `/events/${
+        this.event._id
+      }/responses?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
+      get(url)
+        .then((responses) => {
+          this.fetchedResponses = responses
+          this.getResponsesFormatted()
+        })
+        .catch((err) => {
+          this.showError(
+            "There was an error fetching availability! Please refresh the page."
+          )
+        })
+    },
+    /** Formats the responses in a map where date/time is mapped to the people that are available then */
+    getResponsesFormatted() {
+      const lastFetched = new Date().getTime()
+      this.loadingResponses.loading = true
+      this.loadingResponses.lastFetched = lastFetched
+
+      this.$worker
+        .run(
+          (days, times, parsedResponses) => {
+            const dateCompare = (date1, date2) => {
+              date1 = new Date(date1)
+              date2 = new Date(date2)
+              return date1.getTime() - date2.getTime()
+            }
+            const splitTimeNum = (timeNum) => {
+              const hours = Math.floor(timeNum)
+              const minutes = Math.floor((timeNum - hours) * 60)
+              return { hours, minutes }
+            }
+            const getDateHoursOffset = (date, hoursOffset) => {
+              const { hours, minutes } = splitTimeNum(hoursOffset)
+              const newDate = new Date(date)
+              newDate.setHours(newDate.getHours() + hours)
+              newDate.setMinutes(newDate.getMinutes() + minutes)
+              return newDate
+            }
+            const formatted = new Map()
+            for (const day of days) {
+              for (const time of times) {
+                const date = getDateHoursOffset(
+                  day.dateObject,
+                  time.hoursOffset
+                )
+                formatted.set(date.getTime(), new Set())
+                for (const response of Object.values(parsedResponses)) {
+                  const index = response.availability.findIndex(
+                    (d) => dateCompare(d, date) === 0
+                  )
+                  if (index !== -1) {
+                    formatted.get(date.getTime()).add(response.user._id)
+                    response.availability.splice(index, 1)
+                  }
+                }
+              }
+            }
+            return formatted
+          },
+          [this.allDays, this.times, this.parsedResponses]
+        )
+        .then((formatted) => {
+          // Only set responses formatted for the latest request
+          if (lastFetched >= this.loadingResponses.lastFetched) {
+            this.responsesFormatted = formatted
+          }
+        })
+        .finally(() => {
+          if (this.loadingResponses.lastFetched === lastFetched) {
+            this.loadingResponses.loading = false
+          }
+        })
+    },
     /** Returns a set of respondents for the given date/time */
     getRespondentsForHoursOffset(date, hoursOffset) {
       const d = getDateHoursOffset(date, hoursOffset)
-      return this.responsesFormatted.get(d.getTime())
+      return this.responsesFormatted.get(d.getTime()) ?? new Set()
     },
     showAvailability(d, t) {
       if (this.state === this.states.EDIT_AVAILABILITY && this.isPhone) {
@@ -1058,28 +1188,70 @@ export default {
     resetCurUserAvailability() {
       if (this.event.type === eventTypes.GROUP) {
         this.initSharedCalendarAccounts()
-      } else {
-        this.availability = new Set()
-        if (this.userHasResponded) {
-          this.populateUserAvailability(this.authUser._id)
-        }
+        this.manualAvailability = {}
+      }
+
+      this.availability = new Set()
+      if (this.userHasResponded) {
+        this.populateUserAvailability(this.authUser._id)
       }
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.event.responses[id].availability?.forEach((item) =>
+      this.parsedResponses[id]?.availability?.forEach((item) =>
         this.availability.add(new Date(item).getTime())
       )
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
-    getAvailabilityFromCalendarEvents(calendarEventsByDay) {
+    getAvailabilityFromCalendarEvents(
+      calendarEventsByDay,
+      options = {
+        includeTouchedAvailability: false, // Whether to include manual availability for touched days
+        fetchedManualAvailability: {}, // Object mapping unix timestamp to array of manual availability (fetched from server)
+        curManualAvailability: {}, // Manual availability with edits (takes precedence over fetchedManualAvailability)
+      }
+    ) {
       const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
+
+        if (options.includeTouchedAvailability) {
+          const endDate = getDateHoursOffset(date, this.event.duration)
+
+          // Check if manual availability has been added for the current date
+          let manualAvailabilityAdded = false
+
+          for (const time in options.curManualAvailability) {
+            if (date.getTime() <= time && time <= endDate.getTime()) {
+              options.curManualAvailability[time].forEach((a) => {
+                availability.add(new Date(a).getTime())
+              })
+              delete options.curManualAvailability[time]
+              manualAvailabilityAdded = true
+              break
+            }
+          }
+
+          if (manualAvailabilityAdded) continue
+
+          for (const time in options.fetchedManualAvailability) {
+            if (date.getTime() <= time && time <= endDate.getTime()) {
+              options.fetchedManualAvailability[time].forEach((a) => {
+                availability.add(new Date(a).getTime())
+              })
+              delete options.fetchedManualAvailability[time]
+              manualAvailabilityAdded = true
+              break
+            }
+          }
+
+          if (manualAvailabilityAdded) continue
+        }
+
         for (const time of this.times) {
           // Check if there exists a calendar event that overlaps [time, time+0.5]
-          const startDate = getDateHoursOffset(date, time.hoursOffset)
+          let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
           const index = calendarEventsByDay[i].findIndex((e) => {
             const notIntersect =
@@ -1169,8 +1341,14 @@ export default {
       let type = ""
       // If this is a group submit enabled calendars, otherwise submit availability
       if (this.isGroup) {
-        type = "calendars"
+        type = "group availability and calendars"
         payload = generateEnabledCalendarsPayload(this.sharedCalendarAccounts)
+        payload.manualAvailability = {}
+        for (const day of Object.keys(this.manualAvailability)) {
+          payload.manualAvailability[day] = [
+            ...this.manualAvailability[day],
+          ].map((a) => new Date(a))
+        }
       } else {
         type = "availability"
         payload.availability = this.availabilityArray
@@ -1209,7 +1387,7 @@ export default {
         }
       }
 
-      this.$emit("refreshEvent")
+      this.refreshEvent()
       this.unsavedChanges = false
     },
     async deleteAvailability(name = "") {
@@ -1233,7 +1411,7 @@ export default {
       await _delete(`/events/${this.event._id}/response`, payload)
       this.availability = new Set()
       if (this.isGroup) this.$router.replace({ name: "home" })
-      else this.$emit("refreshEvent")
+      else this.refreshEvent()
     },
     //#endregion
 
@@ -1257,16 +1435,12 @@ export default {
         c += "animate-bg-color "
       }
 
-      const isEditingCalendars =
-        this.state === this.states.EDIT_AVAILABILITY && this.isGroup
-
       // Border style
       if (
         (this.respondents.length > 0 ||
           this.state === this.states.EDIT_AVAILABILITY) &&
         this.curTimeslot.dayIndex === d &&
-        this.curTimeslot.timeIndex === t &&
-        !isEditingCalendars
+        this.curTimeslot.timeIndex === t
       ) {
         // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
@@ -1301,21 +1475,10 @@ export default {
           }
         } else {
           // Otherwise just show the current availability
-          if (this.event.type === eventTypes.GROUP) {
-            // Show respondent availability from calendar events
-            const respondents = this.getRespondentsForHoursOffset(
-              day.dateObject,
-              time.hoursOffset
-            )
-            if (respondents.has(this.authUser._id)) {
-              s.backgroundColor = "#00994C88"
-            }
-          } else {
-            // Show current availability from availability set
-            const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-            if (this.availability.has(date.getTime())) {
-              s.backgroundColor = "#00994C88"
-            }
+          // Show current availability from availability set
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          if (this.availability.has(date.getTime())) {
+            s.backgroundColor = "#00994C88"
           }
         }
       }
@@ -1433,6 +1596,10 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
+      if (this.authUser) {
+        this.resetCurUserAvailability()
+      }
+      this.$nextTick(() => (this.unsavedChanges = false))
       this.pageHasChanged = false
     },
     stopEditing() {
@@ -1446,6 +1613,9 @@ export default {
       this.populateUserAvailability(id)
       this.$emit("setCurGuestId", id)
       this.startEditing()
+    },
+    refreshEvent() {
+      this.$emit("refreshEvent")
     },
     //#endregion
 
@@ -1568,11 +1738,63 @@ export default {
               this.days[d].dateObject,
               this.times[t].hoursOffset
             )
+
+            // Add / remove time from availability set
             if (this.dragType === this.DRAG_TYPES.ADD) {
               this.availability.add(date.getTime())
             } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
               this.availability.delete(date.getTime())
             }
+
+            // Edit manualAvailability set if event is a GROUP
+            if (this.event.type === eventTypes.GROUP) {
+              const discreteDate = dateToDowDate(
+                this.event.dates,
+                date,
+                this.weekOffset,
+                true
+              )
+              const startDateOfDay = dateToDowDate(
+                this.event.dates,
+                this.days[d].dateObject,
+                this.weekOffset,
+                true
+              )
+
+              // If date not touched, then add all of the existing calendar availabilities and mark it as touched
+              if (!(startDateOfDay.getTime() in this.manualAvailability)) {
+                // Create new set
+                this.manualAvailability[startDateOfDay.getTime()] = new Set()
+
+                // Add the existing calendar availabilities
+                const existingAvailability = this.getAvailabilityForDate(
+                  this.days[d].dateObject
+                )
+                for (const a of existingAvailability) {
+                  const convertedDate = dateToDowDate(
+                    this.event.dates,
+                    new Date(a),
+                    this.weekOffset,
+                    true
+                  )
+                  this.manualAvailability[startDateOfDay.getTime()].add(
+                    convertedDate.getTime()
+                  )
+                }
+              }
+
+              // Add / remove time from manual availability set
+              if (this.dragType === this.DRAG_TYPES.ADD) {
+                this.manualAvailability[startDateOfDay.getTime()].add(
+                  discreteDate.getTime()
+                )
+              } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
+                this.manualAvailability[startDateOfDay.getTime()].delete(
+                  discreteDate.getTime()
+                )
+              }
+            }
+
             t += timeInc
           }
           d += dayInc
@@ -1814,6 +2036,63 @@ export default {
       }
     },
 
+    /** Based on the date, determine whether it has been touched */
+    isTouched(date, availability = [...this.availability]) {
+      const start = new Date(date)
+      const end = new Date(date)
+      end.setHours(end.getHours() + this.event.duration)
+
+      for (const a of availability) {
+        const availableTime = new Date(a).getTime()
+        if (
+          start.getTime() <= availableTime &&
+          availableTime <= end.getTime()
+        ) {
+          return true
+        }
+      }
+
+      return false
+    },
+
+    /** Returns a subset of availability for the current date */
+    getAvailabilityForDate(date, availability = [...this.availability]) {
+      const start = new Date(date)
+      const end = new Date(date)
+      end.setHours(end.getHours() + this.event.duration)
+
+      const subset = new Set()
+      for (const a of availability) {
+        const availableTime = new Date(a).getTime()
+        if (
+          start.getTime() <= availableTime &&
+          availableTime <= end.getTime()
+        ) {
+          subset.add(availableTime)
+        }
+      }
+
+      return subset
+    },
+
+    /** Returns a copy of the manual availability, converted to dow dates */
+    getManualAvailabilityDow(manualAvailability = this.manualAvailability) {
+      if (!manualAvailability) return null
+
+      const manualAvailabilityDow = {}
+      for (const time in manualAvailability) {
+        const dowTime = dateToDowDate(
+          this.event.dates,
+          new Date(parseInt(time)),
+          this.weekOffset
+        ).getTime()
+        manualAvailabilityDow[dowTime] = [...manualAvailability[time]].map(
+          (a) => dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
+        )
+      }
+      return manualAvailabilityDow
+    },
+
     //#endregion
   },
   watch: {
@@ -1826,6 +2105,7 @@ export default {
       immediate: true,
       handler() {
         this.initSharedCalendarAccounts()
+        this.fetchResponses()
       },
     },
     state(nextState, prevState) {
@@ -1888,6 +2168,25 @@ export default {
       this.$nextTick(() => {
         this.setTimeslotSize()
       })
+    },
+    weekOffset() {
+      if (this.event.type === eventTypes.GROUP) {
+        this.fetchResponses()
+      }
+    },
+    parsedResponses() {
+      // Theoretically, parsed responses should only be changing for groups
+      this.getResponsesFormatted()
+
+      // Repopulate user availability when editing availability (this happens when switching weeks in a group)
+      if (
+        this.event.type === eventTypes.GROUP &&
+        this.state === this.states.EDIT_AVAILABILITY &&
+        this.authUser
+      ) {
+        this.availability = new Set()
+        this.populateUserAvailability(this.authUser._id)
+      }
     },
   },
   created() {

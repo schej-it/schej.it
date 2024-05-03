@@ -628,6 +628,15 @@ var doc = `{
                                         "guest": {
                                             "type": "boolean"
                                         },
+                                        "manualAvailability": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "$ref": "#/definitions/primitive.DateTime"
+                                                }
+                                            }
+                                        },
                                         "name": {
                                             "type": "string"
                                         },
@@ -693,6 +702,51 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {}
+                }
+            }
+        },
+        "/events/{eventId}/responses": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Gets responses for an event, filtering availability to be within the date ranges",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lower bound for start time to filter availability by",
+                        "name": "timeMin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upper bound for end time to filter availability by",
+                        "name": "timeMax",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/definitions/models.Response"
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -1198,13 +1252,19 @@ var doc = `{
                     "type": "string"
                 },
                 "endDate": {
-                    "type": "string"
+                    "type": "object",
+                    "$ref": "#/definitions/primitive.DateTime"
+                },
+                "free": {
+                    "description": "Whether the user is free during this event",
+                    "type": "boolean"
                 },
                 "id": {
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "object",
+                    "$ref": "#/definitions/primitive.DateTime"
                 },
                 "summary": {
                     "type": "string"
@@ -1228,7 +1288,10 @@ var doc = `{
                     "type": "string"
                 },
                 "dates": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/primitive.DateTime"
+                    }
                 },
                 "duration": {
                     "type": "number"
@@ -1313,7 +1376,10 @@ var doc = `{
             "type": "object",
             "properties": {
                 "availability": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/primitive.DateTime"
+                    }
                 },
                 "enabledCalendars": {
                     "description": "Maps email to an array of sub calendar ids",
@@ -1322,6 +1388,16 @@ var doc = `{
                         "type": "array",
                         "items": {
                             "type": "string"
+                        }
+                    }
+                },
+                "manualAvailability": {
+                    "description": "Mapping from the start date of a day to the available times for that day",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/primitive.DateTime"
                         }
                     }
                 },
@@ -1386,6 +1462,9 @@ var doc = `{
                     "type": "integer"
                 }
             }
+        },
+        "primitive.DateTime": {
+            "type": "integer"
         },
         "responses.Error": {
             "type": "object",

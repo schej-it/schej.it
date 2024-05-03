@@ -5,11 +5,10 @@
       class="tw-flex tw-h-full tw-flex-col tw-items-center tw-justify-center tw-p-2"
     >
       <div class="tw-mb-8 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center">
-        <v-img
-          :src="owner.picture"
-          :width="90"
-          :height="90"
-          class="tw-mb-4 tw-rounded-full tw-text-center"
+        <UserAvatarContent
+          :user="owner"
+          :size="90"
+          class="tw-mb-4 tw-text-center"
         />
         <h1 class="tw-mb-2 tw-text-center tw-text-xl tw-font-medium">
           {{ owner.firstName ?? "" }} invited you to join <br />"{{
@@ -52,6 +51,7 @@ import { get, isPhone, signInGoogle } from "@/utils"
 import { authTypes } from "@/constants"
 import CalendarPermissionsCard from "@/components/CalendarPermissionsCard"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog"
+import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import isWebview from "is-ua-webview"
 
 export default {
@@ -64,6 +64,7 @@ export default {
   components: {
     CalendarPermissionsCard,
     SignInNotSupportedDialog,
+    UserAvatarContent,
   },
 
   data() {
