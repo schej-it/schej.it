@@ -732,11 +732,11 @@ export default {
     hintText() {
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are used. Editing availability is disabled and determined from your calendar events each week."
+          return "Toggle which calendars are used. Click and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
-          return "Click and drag to add your available times in green"
+          return "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
-          return "Click and drag on the calendar to schedule a Google Calendar event during those times"
+          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
         default:
           return ""
       }
