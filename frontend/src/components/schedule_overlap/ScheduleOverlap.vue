@@ -789,24 +789,13 @@ export default {
           const calendarEventsByDay = this.groupCalendarEventsByDay[userId]
           if (calendarEventsByDay) {
             // Get manual availability and convert to DOW dates
-            const curManualAvailability = {
-              ...this.fetchedResponses[userId]?.manualAvailability,
-            }
-            if (curManualAvailability) {
-              for (const time in curManualAvailability) {
-                const dowTime = dateToDowDate(
-                  this.event.dates,
-                  new Date(parseInt(time)),
-                  this.weekOffset
-                ).getTime()
-                curManualAvailability[dowTime] = curManualAvailability[
-                  time
-                ].map((a) =>
-                  dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
-                )
-                delete curManualAvailability[time]
-              }
-            }
+            const fetchedManualAvailability = this.getManualAvailabilityDow(
+              this.fetchedResponses[userId]?.manualAvailability
+            )
+            const curManualAvailability =
+              this.editing && userId === this.authUser._id
+                ? this.getManualAvailabilityDow(this.manualAvailability)
+                : {}
 
             // Get availability from calendar events and use manual availability on the
             // "touched" days
@@ -814,7 +803,8 @@ export default {
               calendarEventsByDay,
               {
                 includeTouchedAvailability: true,
-                manualAvailability: curManualAvailability ?? {},
+                fetchedManualAvailability: fetchedManualAvailability ?? {},
+                curManualAvailability: curManualAvailability ?? {},
               }
             )
 
@@ -1218,7 +1208,8 @@ export default {
       calendarEventsByDay,
       options = {
         includeTouchedAvailability: false, // Whether to include manual availability for touched days
-        manualAvailability: {}, // Object mapping unix timestamp to array of manual availaility
+        fetchedManualAvailability: {}, // Object mapping unix timestamp to array of manual availability (fetched from server)
+        curManualAvailability: {}, // Manual availability with edits (takes precedence over fetchedManualAvailability)
       }
     ) {
       const availability = new Set()
@@ -1230,12 +1221,26 @@ export default {
 
           // Check if manual availability has been added for the current date
           let manualAvailabilityAdded = false
-          for (const time in options.manualAvailability) {
+
+          for (const time in options.curManualAvailability) {
             if (date.getTime() <= time && time <= endDate.getTime()) {
-              options.manualAvailability[time].forEach((a) => {
+              options.curManualAvailability[time].forEach((a) => {
                 availability.add(new Date(a).getTime())
               })
-              delete options.manualAvailability[time]
+              delete options.curManualAvailability[time]
+              manualAvailabilityAdded = true
+              break
+            }
+          }
+
+          if (manualAvailabilityAdded) continue
+
+          for (const time in options.fetchedManualAvailability) {
+            if (date.getTime() <= time && time <= endDate.getTime()) {
+              options.fetchedManualAvailability[time].forEach((a) => {
+                availability.add(new Date(a).getTime())
+              })
+              delete options.fetchedManualAvailability[time]
               manualAvailabilityAdded = true
               break
             }
@@ -1817,10 +1822,7 @@ export default {
       this.dragStart = null
       this.dragCur = null
 
-      // console.log(
-      //   "manual availability",
-      //   this.manualAvailability
-      // )
+      // console.log("manual availability", this.manualAvailability)
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
@@ -2076,6 +2078,24 @@ export default {
       }
 
       return subset
+    },
+
+    /** Returns a copy of the manual availability, converted to dow dates */
+    getManualAvailabilityDow(manualAvailability = this.manualAvailability) {
+      if (!manualAvailability) return null
+
+      const manualAvailabilityDow = {}
+      for (const time in manualAvailability) {
+        const dowTime = dateToDowDate(
+          this.event.dates,
+          new Date(parseInt(time)),
+          this.weekOffset
+        ).getTime()
+        manualAvailabilityDow[dowTime] = [...manualAvailability[time]].map(
+          (a) => dateToDowDate(this.event.dates, new Date(a), this.weekOffset)
+        )
+      }
+      return manualAvailabilityDow
     },
 
     //#endregion
