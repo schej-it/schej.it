@@ -495,6 +495,7 @@ export default {
       state: "best_times",
 
       availability: new Set(), // The current user's availability
+      ifNeeded: new Set(), // The current user's "if needed" availability
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
@@ -1476,7 +1477,11 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            s.backgroundColor = "#00994C88"
+            if (this.availabilityType === availabilityTypes.AVAILABLE) {
+              s.backgroundColor = "#00994C88"
+            } else if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              c += "tw-bg-yellow "
+            }
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
@@ -1485,6 +1490,8 @@ export default {
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
             s.backgroundColor = "#00994C88"
+          } else if (this.ifNeeded.has(date.getTime())) {
+            c += "tw-bg-yellow "
           }
         }
       }
@@ -1748,9 +1755,18 @@ export default {
 
             // Add / remove time from availability set
             if (this.dragType === this.DRAG_TYPES.ADD) {
-              this.availability.add(date.getTime())
+              if (this.availabilityType === availabilityTypes.AVAILABLE) {
+                this.availability.add(date.getTime())
+                this.ifNeeded.delete(date.getTime())
+              } else if (
+                this.availabilityType === availabilityTypes.IF_NEEDED
+              ) {
+                this.ifNeeded.add(date.getTime())
+                this.availability.delete(date.getTime())
+              }
             } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
               this.availability.delete(date.getTime())
+              this.ifNeeded.delete(date.getTime())
             }
 
             // Edit manualAvailability set if event is a GROUP
@@ -1877,7 +1893,12 @@ export default {
       this.dragStart = { dayIndex, timeIndex }
       this.dragCur = { dayIndex, timeIndex }
       // Set drag type
-      if (this.availability.has(date.getTime())) {
+      if (
+        (this.availabilityType === availabilityTypes.AVAILABLE &&
+          this.availability.has(date.getTime())) ||
+        (this.availabilityType === availabilityTypes.IF_NEEDED &&
+          this.ifNeeded.has(date.getTime()))
+      ) {
         this.dragType = this.DRAG_TYPES.REMOVE
       } else {
         this.dragType = this.DRAG_TYPES.ADD

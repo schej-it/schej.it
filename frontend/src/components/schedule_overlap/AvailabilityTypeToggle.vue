@@ -5,7 +5,10 @@
     <div
       class="tw-absolute tw-h-full tw-w-20 tw-rounded tw-outline tw-transition-all"
       :class="tabs[index].outlineClass"
-      :style="{ transform: `translateX(${index * 100}%)` }"
+      :style="{
+        ...tabs[index].outlineStyle,
+        transform: `translateX(${index * 100}%)`,
+      }"
     ></div>
     <template v-for="(tab, i) in tabs">
       <div
@@ -35,14 +38,16 @@ export default {
       tabs: [
         {
           text: "Available",
-          activeClass: "tw-text-green tw-bg-green/10",
+          activeClass: "tw-text-green tw-bg-green/5",
           outlineClass: "tw-outline-green",
+          outlineStyle: { boxShadow: "0px 2px 8px 0px #00994C80" },
           value: availabilityTypes.AVAILABLE,
         },
         {
           text: "If needed",
-          activeClass: "tw-text-dark-yellow tw-bg-yellow/10",
-          outlineClass: "tw-outline-dark-yellow",
+          activeClass: "tw-text-dark-yellow tw-bg-yellow/5",
+          outlineClass: "tw-outline-orange",
+          outlineStyle: { boxShadow: "0px 2px 8px 0px #FEDB9380" },
           value: availabilityTypes.IF_NEEDED,
         },
       ],
