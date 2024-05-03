@@ -70,7 +70,7 @@
         <template v-if="state !== states.SCHEDULE_EVENT">
           <v-btn
             outlined
-            class="tw-w-full tw-text-green"
+            class="tw-w-full tw-text-blue"
             @click="(e) => $emit('scheduleEvent', e)"
           >
             <span class="tw-mr-2">Schedule event</span>
@@ -92,7 +92,7 @@
           </v-btn>
           <v-btn
             :disabled="!allowScheduleEvent"
-            color="primary"
+            class="tw-bg-blue tw-text-white"
             @click="(e) => $emit('confirmScheduleEvent', e)"
           >
             Schedule
