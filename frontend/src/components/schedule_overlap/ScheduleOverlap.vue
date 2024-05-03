@@ -237,6 +237,8 @@
               @cancelScheduleEvent="cancelScheduleEvent"
               @confirmScheduleEvent="confirmScheduleEvent"
             />
+
+            <Advertisement></Advertisement>
           </div>
 
           <div
@@ -439,6 +441,7 @@ import { eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
+import Advertisement from "@/components/event/Advertisement.vue"
 import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
@@ -2231,6 +2234,7 @@ export default {
     ToolRow,
     CalendarAccounts,
     RespondentsList,
+    Advertisement,
   },
 }
 </script>
