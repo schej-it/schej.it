@@ -1599,6 +1599,7 @@ export default {
       if (this.authUser) {
         this.resetCurUserAvailability()
       }
+      this.$nextTick(() => (this.unsavedChanges = false))
       this.pageHasChanged = false
     },
     stopEditing() {
