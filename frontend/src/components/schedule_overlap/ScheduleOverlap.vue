@@ -1129,8 +1129,8 @@ export default {
                     (d) => dateCompare(d, date) === 0
                   )
                   if (index !== -1) {
-                    // TODO: determine whether I should delete the index??
                     formatted.get(date.getTime()).add(response.user._id)
+                    response.availability.splice(index, 1)
                   }
                 }
               }
