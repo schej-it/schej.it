@@ -28,6 +28,11 @@ export const eventTypes = Object.freeze({
   GROUP: "group",
 })
 
+export const availabilityTypes = Object.freeze({
+  AVAILABLE: "available",
+  IF_NEEDED: "if_needed",
+})
+
 export const dayIndexToDayString = Object.freeze([
   "2018-06-17", // Sunday
   "2018-06-18", // Monday

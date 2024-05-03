@@ -278,8 +278,12 @@
                 isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
               "
             ></CalendarAccounts>
+            <div class="tw-mb-1 tw-font-medium">Options</div>
+            <AvailabilityTypeToggle
+              class="tw-mb-4"
+              v-model="availabilityType"
+            />
             <div v-if="userHasResponded || curGuestId">
-              <div class="tw-mb-1 tw-font-medium">Options</div>
               <v-dialog
                 v-model="deleteAvailabilityDialog"
                 width="500"
@@ -435,7 +439,7 @@ import {
   generateEnabledCalendarsPayload,
   isTouchEnabled,
 } from "@/utils"
-import { eventTypes } from "@/constants"
+import { availabilityTypes, eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
@@ -447,6 +451,7 @@ import RespondentsList from "./RespondentsList.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
+import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -490,6 +495,7 @@ export default {
       state: "best_times",
 
       availability: new Set(), // The current user's availability
+      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -1596,6 +1602,7 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
+      this.availabilityType = availabilityTypes.AVAILABLE
       if (this.authUser) {
         this.resetCurUserAvailability()
       }
@@ -2225,6 +2232,7 @@ export default {
     removeEventListener("scroll", this.onScroll)
   },
   components: {
+    AvailabilityTypeToggle,
     UserAvatarContent,
     ZigZag,
     ConfirmDetailsDialog,

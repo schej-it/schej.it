@@ -20,6 +20,8 @@ module.exports = {
       "darkest-green": "#007F36",
       "light-blue": "#53A2FF",
       blue: "#2F80ED",
+      yellow: "#FFDE9A",
+      "dark-yellow": "#997700",
       white: "#FFFFFF",
       "off-white": "#F2F2F2",
       black: "#000000",
