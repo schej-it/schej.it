@@ -793,7 +793,7 @@ export default {
               this.fetchedResponses[userId]?.manualAvailability
             )
             const curManualAvailability =
-              this.editing && userId === this.authUser._id
+              userId === this.authUser._id
                 ? this.getManualAvailabilityDow(this.manualAvailability)
                 : {}
 
@@ -1359,7 +1359,6 @@ export default {
           payload.name = name
         }
       }
-      // console.log("payload: ", payload)
 
       await post(`/events/${this.event._id}/response`, payload)
 
@@ -1435,9 +1434,6 @@ export default {
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
         c += "animate-bg-color "
       }
-
-      const isEditingCalendars =
-        this.state === this.states.EDIT_AVAILABILITY && this.isGroup
 
       // Border style
       if (
@@ -1821,8 +1817,6 @@ export default {
       this.dragging = false
       this.dragStart = null
       this.dragCur = null
-
-      // console.log("manual availability", this.manualAvailability)
     },
     inDragRange(dayIndex, timeIndex) {
       /* Returns whether the given day and time index is within the drag range */
