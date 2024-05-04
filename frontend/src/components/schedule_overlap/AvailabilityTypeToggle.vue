@@ -1,18 +1,18 @@
 <template>
   <div
-    class="tw-relative tw-inline-flex tw-w-fit tw-items-center tw-rounded tw-border tw-border-light-gray"
+    class="tw-relative tw-flex tw-w-fit tw-items-center tw-rounded tw-border tw-border-light-gray"
   >
     <div
-      class="tw-absolute tw-h-full tw-w-20 tw-rounded tw-outline tw-transition-all"
-      :class="tabs[index].outlineClass"
+      class="tw-absolute tw-h-full tw-w-[50%] tw-rounded tw-border-2 tw-transition-all"
+      :class="tabs[index].borderClass"
       :style="{
-        ...tabs[index].outlineStyle,
+        ...tabs[index].borderStyle,
         transform: `translateX(${index * 100}%)`,
       }"
     ></div>
     <template v-for="(tab, i) in tabs">
       <div
-        class="tw-w-20 tw-cursor-pointer tw-px-2 tw-py-1 tw-text-center tw-text-sm tw-font-medium tw-transition-all"
+        class="tw-flex-1 tw-cursor-pointer tw-px-4 tw-py-2 tw-text-center tw-text-sm tw-font-medium tw-transition-all"
         :class="i === index ? tab.activeClass : inactiveClass"
         @click="$emit('input', tab.value)"
       >
@@ -39,15 +39,15 @@ export default {
         {
           text: "Available",
           activeClass: "tw-text-green tw-bg-green/5",
-          outlineClass: "tw-outline-green",
-          outlineStyle: { boxShadow: "0px 2px 8px 0px #00994C80" },
+          borderClass: "tw-border-green",
+          borderStyle: { boxShadow: "0px 2px 8px 0px #00994C80" },
           value: availabilityTypes.AVAILABLE,
         },
         {
           text: "If needed",
           activeClass: "tw-text-dark-yellow tw-bg-yellow/5",
-          outlineClass: "tw-outline-orange",
-          outlineStyle: { boxShadow: "0px 2px 8px 0px #FEDB9380" },
+          borderClass: "tw-border-orange",
+          borderStyle: { boxShadow: "0px 2px 8px 0px #FEDB9380" },
           value: availabilityTypes.IF_NEEDED,
         },
       ],

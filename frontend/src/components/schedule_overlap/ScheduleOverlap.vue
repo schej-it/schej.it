@@ -278,11 +278,29 @@
                 isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
               "
             ></CalendarAccounts>
-            <div class="tw-mb-1 tw-font-medium">Options</div>
-            <AvailabilityTypeToggle
-              class="tw-mb-4"
-              v-model="availabilityType"
-            />
+            <div>
+              <v-btn
+                class="tw-mb-2 tw-justify-between tw-px-0"
+                block
+                text
+                @click="toggleShowOptions"
+              >
+                <span class="tw-mr-1 tw-font-medium">Options</span>
+                <v-icon
+                  class="tw-mr-2"
+                  :class="`tw-rotate-${showOptions ? '180' : '0'}`"
+                  >mdi-chevron-down</v-icon
+                ></v-btn
+              >
+              <v-expand-transition>
+                <div v-show="showOptions">
+                  <AvailabilityTypeToggle
+                    class="tw-mb-4 tw-w-full"
+                    v-model="availabilityType"
+                  />
+                </div>
+              </v-expand-transition>
+            </div>
             <div v-if="userHasResponded || curGuestId">
               <v-dialog
                 v-model="deleteAvailabilityDialog"
@@ -531,6 +549,7 @@ export default {
       dragCur: null,
 
       /* Variables for options */
+      showOptions: localStorage["showAvailabilityOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
@@ -1946,6 +1965,10 @@ export default {
         this.state == this.states.HEATMAP
       )
         this.state = this.defaultState
+    },
+    toggleShowOptions() {
+      this.showOptions = !this.showOptions
+      localStorage["showAvailabilityOptions"] = this.showOptions
     },
     //#endregion
 
