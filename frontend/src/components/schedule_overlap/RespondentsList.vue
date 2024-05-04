@@ -22,7 +22,7 @@
       </div>
     </div>
     <div
-      class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-pb-4 tw-text-sm sm:tw-block sm:tw-overflow-visible"
+      class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-text-sm sm:tw-block sm:tw-overflow-visible"
       :style="
         maxHeight
           ? `max-height: ${maxHeight}px !important; overflow-y: auto !important;`

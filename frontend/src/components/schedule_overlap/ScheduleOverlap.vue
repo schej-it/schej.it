@@ -1,8 +1,8 @@
 <template>
   <span>
-    <div class="tw-m-4 tw-select-none" style="-webkit-touch-callout: none">
-      <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
-        <div class="tw-flex tw-grow">
+    <div class="tw-select-none tw-py-4" style="-webkit-touch-callout: none">
+      <div class="tw-flex tw-flex-col sm:tw-flex-row">
+        <div class="tw-flex tw-grow tw-px-4">
           <!-- Times -->
           <div class="tw-w-8 tw-flex-none sm:tw-w-12">
             <div
@@ -254,12 +254,15 @@
           </div>
         </div>
 
-        <div class="break" v-if="isPhone"></div>
-
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-12"
+          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 tw-transition-all sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+          :class="
+            delayedShowStickyRespondents
+              ? 'tw-sticky tw-bottom-16'
+              : 'tw-bottom-0'
+          "
         >
           <div
             class="tw-flex tw-flex-col tw-gap-2"
@@ -347,37 +350,8 @@
             </div>
           </div>
           <template v-else>
-            <v-expand-transition>
-              <div
-                v-if="delayedShowStickyRespondents"
-                class="tw-fixed tw-bottom-16 tw-left-0 tw-z-10 tw-w-full tw-bg-white"
-              >
-                <RespondentsList
-                  class="tw-mx-4 tw-mt-4"
-                  :max-height="100"
-                  :eventId="event._id"
-                  :day="days[curTimeslot.dayIndex]"
-                  :time="times[curTimeslot.timeIndex]"
-                  :curRespondent="curRespondent"
-                  :curRespondents="curRespondents"
-                  :curTimeslot="curTimeslot"
-                  :curTimeslotAvailability="curTimeslotAvailability"
-                  :respondents="respondents"
-                  :parsedResponses="parsedResponses"
-                  :isOwner="isOwner"
-                  :isGroup="isGroup"
-                  :attendees="event.attendees"
-                  :showCalendarEvents.sync="showCalendarEvents"
-                  @mouseOverRespondent="mouseOverRespondent"
-                  @mouseLeaveRespondent="mouseLeaveRespondent"
-                  @clickRespondent="clickRespondent"
-                  @editGuestAvailability="editGuestAvailability"
-                  @refreshEvent="refreshEvent"
-                />
-              </div>
-            </v-expand-transition>
-            <div ref="beforeRespondentsList"></div>
             <RespondentsList
+              :max-height="delayedShowStickyRespondents ? 100 : undefined"
               :eventId="event._id"
               :day="days[curTimeslot.dayIndex]"
               :time="times[curTimeslot.timeIndex]"
@@ -398,30 +372,31 @@
               @refreshEvent="refreshEvent"
             />
           </template>
-          <div ref="afterRespondentsList"></div>
         </div>
       </div>
 
-      <ToolRow
-        v-if="!calendarOnly && isPhone"
-        :state="state"
-        :states="states"
-        :cur-timezone.sync="curTimezone"
-        :show-best-times.sync="showBestTimes"
-        :cur-scheduled-event="curScheduledEvent"
-        :isGroup="isGroup"
-        :is-weekly="isWeekly"
-        :calendar-permission-granted="calendarPermissionGranted"
-        :week-offset="weekOffset"
-        :num-responses="respondents.length"
-        :mobile-num-days.sync="mobileNumDays"
-        :allow-schedule-event="allowScheduleEvent"
-        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-        @onShowBestTimesChange="onShowBestTimesChange"
-        @scheduleEvent="scheduleEvent"
-        @cancelScheduleEvent="cancelScheduleEvent"
-        @confirmScheduleEvent="confirmScheduleEvent"
-      />
+      <div class="tw-px-4">
+        <ToolRow
+          v-if="!calendarOnly && isPhone"
+          :state="state"
+          :states="states"
+          :cur-timezone.sync="curTimezone"
+          :show-best-times.sync="showBestTimes"
+          :cur-scheduled-event="curScheduledEvent"
+          :isGroup="isGroup"
+          :is-weekly="isWeekly"
+          :calendar-permission-granted="calendarPermissionGranted"
+          :week-offset="weekOffset"
+          :num-responses="respondents.length"
+          :mobile-num-days.sync="mobileNumDays"
+          :allow-schedule-event="allowScheduleEvent"
+          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+          @onShowBestTimesChange="onShowBestTimesChange"
+          @scheduleEvent="scheduleEvent"
+          @cancelScheduleEvent="cancelScheduleEvent"
+          @confirmScheduleEvent="confirmScheduleEvent"
+        />
+      </div>
     </div>
   </span>
 </template>
@@ -960,7 +935,7 @@ export default {
     showStickyRespondents() {
       return (
         this.isPhone &&
-        !this.scrolledToRespondents &&
+        // !this.scrolledToRespondents &&
         (this.curTimeslot.dayIndex !== -1 ||
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
@@ -1980,16 +1955,16 @@ export default {
       this.calendarScrollLeft = e.target.scrollLeft
     },
     onScroll(e) {
-      const afterEl = this.$refs.afterRespondentsList
-      const beforeEl = this.$refs.beforeRespondentsList
-      if (afterEl && beforeEl) {
-        const { bottom: beforeBottom } = beforeEl.getBoundingClientRect()
-        const { bottom: afterBottom } = afterEl.getBoundingClientRect()
-        // 64 is height of bottom bar, 100 is max height of sticky respondents section
-        this.scrolledToRespondents =
-          beforeBottom + 100 + 64 < window.innerHeight ||
-          afterBottom + 64 < window.innerHeight
-      }
+      // const afterEl = this.$refs.afterRespondentsList
+      // const beforeEl = this.$refs.beforeRespondentsList
+      // if (afterEl && beforeEl) {
+      //   const { bottom: beforeBottom } = beforeEl.getBoundingClientRect()
+      //   const { bottom: afterBottom } = afterEl.getBoundingClientRect()
+      //   // 64 is height of bottom bar, 100 is max height of sticky respondents section
+      //   this.scrolledToRespondents =
+      //     beforeBottom + 100 + 64 < window.innerHeight ||
+      //     afterBottom + 64 < window.innerHeight
+      // }
     },
     //#endregion
 
