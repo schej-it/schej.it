@@ -64,7 +64,12 @@
             class="tw-mr-1 tw-transition-all"
             :class="respondentClass(user._id)"
           >
-            {{ user.firstName + " " + user.lastName }}
+            {{
+              user.firstName +
+              " " +
+              user.lastName +
+              (respondentIfNeeded(user._id) ? "*" : "")
+            }}
           </div>
 
           <!-- <div v-if="isGroup" class="tw-ml-1">
@@ -93,6 +98,12 @@
           >
         </div>
       </template>
+      <div
+        class="tw-mt-2 tw-text-dark-gray"
+        :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
+      >
+        * if needed
+      </div>
     </div>
 
     <div
@@ -158,7 +169,7 @@
 </template>
 
 <script>
-import { _delete } from "@/utils"
+import { _delete, getDateHoursOffset } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
 
@@ -168,12 +179,15 @@ export default {
   components: { UserAvatarContent },
 
   props: {
+    day: { type: Object, required: false }, // Day of the current timeslot
+    time: { type: Object, required: false }, // Time of the current timeslot
     curRespondent: { type: String, required: true },
     curRespondents: { type: Array, required: true },
     curTimeslot: { type: Object, required: true },
     curTimeslotAvailability: { type: Object, required: true },
     eventId: { type: String, required: true },
     respondents: { type: Array, required: true },
+    parsedResponses: { type: Object, required: true },
     isOwner: { type: Boolean, required: true },
     maxHeight: { type: Number },
     isGroup: { type: Boolean, required: true },
@@ -230,14 +244,24 @@ export default {
         return false
       })
     },
+    showIfNeededStar() {
+      for (const user of this.respondents) {
+        if (this.respondentIfNeeded(user._id)) {
+          return true
+        }
+      }
+      return false
+    },
   },
 
   methods: {
     ...mapActions(["showError", "showInfo"]),
+    /** Emit clickRespondent event */
     clickRespondent(e, userId) {
       e.stopImmediatePropagation()
       this.$emit("clickRespondent", e, userId)
     },
+    /** Returns the class of the given respondent */
     respondentClass(id) {
       const c = []
       if (/*this.curRespondent == id ||*/ this.curRespondentsSet.has(id)) {
@@ -252,16 +276,30 @@ export default {
       }
       return c
     },
+    /** Returns whether the respondent has "ifNeeded" availability for the current timeslot */
+    respondentIfNeeded(id) {
+      if (!this.day || !this.time) return false
+
+      const date = getDateHoursOffset(
+        this.day.dateObject,
+        this.time.hoursOffset
+      )
+      return Boolean(this.parsedResponses[id]?.ifNeeded?.has(date.getTime()))
+    },
+    /** Returns whether the current respondent is selected (for subset avail) */
     respondentSelected(id) {
       return this.curRespondentsSet.has(id)
     },
+    /** Returns whether the user is a guest */
     isGuest(user) {
       return user._id == user.firstName
     },
+    /** Shows the delete availability dialog */
     showDeleteAvailabilityDialog(user) {
       this.deleteAvailabilityDialog = true
       this.userToDelete = user
     },
+    /** Deletes the user's availability on the server */
     async deleteAvailability(user) {
       try {
         await _delete(`/events/${this.eventId}/response`, {

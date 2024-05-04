@@ -338,11 +338,14 @@
                   class="tw-mx-4 tw-mt-4"
                   :max-height="100"
                   :eventId="event._id"
+                  :day="days[curTimeslot.dayIndex]"
+                  :time="times[curTimeslot.timeIndex]"
                   :curRespondent="curRespondent"
                   :curRespondents="curRespondents"
                   :curTimeslot="curTimeslot"
                   :curTimeslotAvailability="curTimeslotAvailability"
                   :respondents="respondents"
+                  :parsedResponses="parsedResponses"
                   :isOwner="isOwner"
                   :isGroup="isGroup"
                   :attendees="event.attendees"
@@ -358,11 +361,14 @@
             <div ref="beforeRespondentsList"></div>
             <RespondentsList
               :eventId="event._id"
+              :day="days[curTimeslot.dayIndex]"
+              :time="times[curTimeslot.timeIndex]"
               :curRespondent="curRespondent"
               :curRespondents="curRespondents"
               :curTimeslot="curTimeslot"
               :curTimeslotAvailability="curTimeslotAvailability"
               :respondents="respondents"
+              :parsedResponses="parsedResponses"
               :isOwner="isOwner"
               :isGroup="isGroup"
               :attendees="event.attendees"
@@ -563,6 +569,10 @@ export default {
     /** Returns the availability as an array */
     availabilityArray() {
       return [...this.availability].map((item) => new Date(item))
+    },
+    /** Returns the if needed availability as an array */
+    ifNeededArray() {
+      return [...this.ifNeeded].map((item) => new Date(item))
     },
     allowDrag() {
       return (
@@ -817,12 +827,12 @@ export default {
 
             parsed[userId] = {
               ...this.event.responses[userId],
-              availability: [...availability],
+              availability: availability,
             }
           } else {
             parsed[userId] = {
               ...this.event.responses[userId],
-              availability: [],
+              availability: new Set(),
             }
           }
         }
@@ -837,7 +847,16 @@ export default {
         }
         parsed[k] = {
           ...this.event.responses[k],
-          availability: this.fetchedResponses[k]?.availability ?? [],
+          availability: new Set(
+            this.fetchedResponses[k]?.availability?.map((a) =>
+              new Date(a).getTime()
+            )
+          ),
+          ifNeeded: new Set(
+            this.fetchedResponses[k]?.ifNeeded?.map((a) =>
+              new Date(a).getTime()
+            )
+          ),
           user: newUser,
         }
       }
@@ -1096,11 +1115,7 @@ export default {
       this.$worker
         .run(
           (days, times, parsedResponses) => {
-            const dateCompare = (date1, date2) => {
-              date1 = new Date(date1)
-              date2 = new Date(date2)
-              return date1.getTime() - date2.getTime()
-            }
+            // Define functions locally because we can't import functions
             const splitTimeNum = (timeNum) => {
               const hours = Math.floor(timeNum)
               const minutes = Math.floor((timeNum - hours) * 60)
@@ -1113,21 +1128,27 @@ export default {
               newDate.setMinutes(newDate.getMinutes() + minutes)
               return newDate
             }
+
+            // Create a map mapping time to the respondents available during that time
             const formatted = new Map()
             for (const day of days) {
               for (const time of times) {
+                // Iterate through all the times
                 const date = getDateHoursOffset(
                   day.dateObject,
                   time.hoursOffset
                 )
                 formatted.set(date.getTime(), new Set())
+
+                // Check every response and see if they are available for the given time
                 for (const response of Object.values(parsedResponses)) {
-                  const index = response.availability.findIndex(
-                    (d) => dateCompare(d, date) === 0
-                  )
-                  if (index !== -1) {
+                  // Check availability array
+                  if (
+                    response.availability.has(date.getTime()) ||
+                    response.ifNeeded.has(date.getTime())
+                  ) {
                     formatted.get(date.getTime()).add(response.user._id)
-                    response.availability.splice(index, 1)
+                    continue
                   }
                 }
               }
@@ -1199,15 +1220,15 @@ export default {
       }
 
       this.availability = new Set()
+      this.ifNeeded = new Set()
       if (this.userHasResponded) {
         this.populateUserAvailability(this.authUser._id)
       }
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.parsedResponses[id]?.availability?.forEach((item) =>
-        this.availability.add(new Date(item).getTime())
-      )
+      this.availability = this.parsedResponses[id]?.availability ?? new Set()
+      this.ifNeeded = this.parsedResponses[id]?.ifNeeded ?? new Set()
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
@@ -1359,6 +1380,7 @@ export default {
       } else {
         type = "availability"
         payload.availability = this.availabilityArray
+        payload.ifNeeded = this.ifNeededArray
         if (this.authUser) {
           payload.guest = false
         } else {
