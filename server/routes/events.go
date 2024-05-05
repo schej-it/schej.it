@@ -314,7 +314,9 @@ func editEvent(c *gin.Context) {
 			// Only delete response if it isn't the owner of the group
 			if removedEmail.Value != utils.Coalesce(owner).Email {
 				removedUser := db.GetUserByEmail(removedEmail.Value)
-				delete(event.Responses, removedUser.Id.Hex())
+				if removedUser != nil {
+					delete(event.Responses, removedUser.Id.Hex())
+				}
 			}
 		}
 

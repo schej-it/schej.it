@@ -132,7 +132,7 @@ func DeleteEmailTask(taskId string) {
 	})
 
 	if err != nil {
-		logger.StdErr.Println(err)
+		// logger.StdErr.Println(err)
 		return
 	}
 }
