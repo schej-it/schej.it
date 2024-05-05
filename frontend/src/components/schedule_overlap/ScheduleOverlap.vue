@@ -281,6 +281,19 @@
                 isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
               "
             ></CalendarAccounts>
+            <div v-else class="tw-text-sm tw-italic tw-text-dark-gray">
+              {{
+                userHasResponded || curGuestId ? "Editing" : "Adding"
+              }}
+              availability as
+              {{
+                authUser
+                  ? `${authUser.firstName} ${authUser.lastName}`
+                  : curGuestId?.length > 0
+                  ? curGuestId
+                  : "a guest"
+              }}
+            </div>
             <div>
               <v-btn
                 class="tw-mb-2 tw-justify-between tw-px-0"
