@@ -1138,8 +1138,8 @@ export default {
                 for (const response of Object.values(parsedResponses)) {
                   // Check availability array
                   if (
-                    response.availability.has(date.getTime()) ||
-                    response.ifNeeded.has(date.getTime())
+                    response.availability?.has(date.getTime()) ||
+                    response.ifNeeded?.has(date.getTime())
                   ) {
                     formatted.get(date.getTime()).add(response.user._id)
                     continue
