@@ -1,9 +1,9 @@
 <template>
   <div
-    class="tw-relative tw-flex tw-w-fit tw-items-center tw-rounded tw-border tw-border-light-gray"
+    class="tw-relative tw-flex tw-w-fit tw-items-center tw-rounded tw-border tw-border-light-gray-stroke"
   >
     <div
-      class="tw-absolute tw-h-full tw-w-[50%] tw-rounded tw-border-2 tw-transition-all"
+      class="tw-absolute tw-h-full tw-w-[50%] tw-rounded tw-border tw-transition-all"
       :class="tabs[index].borderClass"
       :style="{
         ...tabs[index].borderStyle,
@@ -40,14 +40,14 @@ export default {
           text: "Available",
           activeClass: "tw-text-green tw-bg-green/5",
           borderClass: "tw-border-green",
-          borderStyle: { boxShadow: "0px 2px 8px 0px #00994C80" },
+          borderStyle: { boxShadow: "0px 2px 8px 0px #00994C40" },
           value: availabilityTypes.AVAILABLE,
         },
         {
           text: "If needed",
           activeClass: "tw-text-dark-yellow tw-bg-yellow/5",
           borderClass: "tw-border-orange",
-          borderStyle: { boxShadow: "0px 2px 8px 0px #FEDB9380" },
+          borderStyle: { boxShadow: "0px 2px 8px 0px #FEDB9340" },
           value: availabilityTypes.IF_NEEDED,
         },
       ],
@@ -56,7 +56,7 @@ export default {
 
   computed: {
     inactiveClass() {
-      return "tw-text-dark-gray tw-bg-light-gray"
+      return "tw-text-dark-gray tw-bg-off-white"
     },
   },
 
