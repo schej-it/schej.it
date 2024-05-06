@@ -290,7 +290,7 @@
             </div>
 
             <!-- Options section -->
-            <div ref="optionsSection">
+            <div v-if="!isGroup" ref="optionsSection">
               <v-btn
                 class="tw-mb-2 tw-justify-between tw-px-0"
                 block
@@ -431,7 +431,7 @@
 
         <!-- Fixed pos availability toggle (mobile) -->
         <v-expand-transition>
-          <div v-if="!optionsVisible && showOptions && editing">
+          <div v-if="!isGroup && !optionsVisible && showOptions && editing">
             <div class="tw-bg-white tw-p-4">
               <AvailabilityTypeToggle
                 class="tw-w-full"
@@ -2066,16 +2066,6 @@ export default {
     },
     onScroll(e) {
       this.checkElementsVisible()
-      // const afterEl = this.$refs.afterRespondentsList
-      // const beforeEl = this.$refs.beforeRespondentsList
-      // if (afterEl && beforeEl) {
-      //   const { bottom: beforeBottom } = beforeEl.getBoundingClientRect()
-      //   const { bottom: afterBottom } = afterEl.getBoundingClientRect()
-      //   // 64 is height of bottom bar, 100 is max height of sticky respondents section
-      //   this.scrolledToRespondents =
-      //     beforeBottom + 100 + 64 < window.innerHeight ||
-      //     afterBottom + 64 < window.innerHeight
-      // }
     },
     /** Checks whether certain elements are visible and sets variables accoringly */
     checkElementsVisible() {
@@ -2086,7 +2076,7 @@ export default {
         })
       }
 
-      const respondentsListEl = this.$refs.respondentsList.$el
+      const respondentsListEl = this.$refs.respondentsList?.$el
       if (respondentsListEl) {
         this.scrolledToRespondents = isElementInViewport(respondentsListEl, {
           bottomOffset: -64,
