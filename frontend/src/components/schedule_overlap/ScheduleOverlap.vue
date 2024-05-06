@@ -224,12 +224,11 @@
               :states="states"
               :cur-timezone.sync="curTimezone"
               :show-best-times.sync="showBestTimes"
-              :cur-scheduled-event="curScheduledEvent"
-              :isGroup="isGroup"
               :is-weekly="isWeekly"
               :calendar-permission-granted="calendarPermissionGranted"
               :week-offset="weekOffset"
               :num-responses="respondents.length"
+              :mobile-num-days.sync="mobileNumDays"
               :allow-schedule-event="allowScheduleEvent"
               @update:weekOffset="(val) => $emit('update:weekOffset', val)"
               @onShowBestTimesChange="onShowBestTimesChange"
@@ -393,14 +392,11 @@
 
       <div class="tw-px-4">
         <ToolRow
-          ref="mobileToolRow"
           v-if="!calendarOnly && isPhone"
           :state="state"
           :states="states"
           :cur-timezone.sync="curTimezone"
           :show-best-times.sync="showBestTimes"
-          :cur-scheduled-event="curScheduledEvent"
-          :isGroup="isGroup"
           :is-weekly="isWeekly"
           :calendar-permission-granted="calendarPermissionGranted"
           :week-offset="weekOffset"
