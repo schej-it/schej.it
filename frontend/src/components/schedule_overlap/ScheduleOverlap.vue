@@ -257,12 +257,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 tw-transition-all sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
-          :class="
-            delayedShowStickyRespondents
-              ? 'tw-sticky tw-bottom-16'
-              : 'tw-bottom-0'
-          "
+          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-2"
@@ -367,6 +362,7 @@
           </div>
           <template v-else>
             <RespondentsList
+              ref="respondentsList"
               :max-height="delayedShowStickyRespondents ? 100 : undefined"
               :eventId="event._id"
               :day="days[curTimeslot.dayIndex]"
@@ -445,12 +441,42 @@
           </div>
         </v-expand-transition>
 
+        <!-- GCal week selector -->
         <v-expand-transition>
           <div v-if="isWeekly && editing && calendarPermissionGranted">
             <div class="tw-h-16 tw-text-sm">
               <GCalWeekSelector
                 :week-offset="weekOffset"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+              />
+            </div>
+          </div>
+        </v-expand-transition>
+
+        <!-- Respondents list -->
+        <v-expand-transition>
+          <div v-if="delayedShowStickyRespondents">
+            <div class="tw-bg-white tw-p-4">
+              <RespondentsList
+                :max-height="100"
+                :eventId="event._id"
+                :day="days[curTimeslot.dayIndex]"
+                :time="times[curTimeslot.timeIndex]"
+                :curRespondent="curRespondent"
+                :curRespondents="curRespondents"
+                :curTimeslot="curTimeslot"
+                :curTimeslotAvailability="curTimeslotAvailability"
+                :respondents="respondents"
+                :parsedResponses="parsedResponses"
+                :isOwner="isOwner"
+                :isGroup="isGroup"
+                :attendees="event.attendees"
+                :showCalendarEvents.sync="showCalendarEvents"
+                @mouseOverRespondent="mouseOverRespondent"
+                @mouseLeaveRespondent="mouseLeaveRespondent"
+                @clickRespondent="clickRespondent"
+                @editGuestAvailability="editGuestAvailability"
+                @refreshEvent="refreshEvent"
               />
             </div>
           </div>
@@ -1016,7 +1042,7 @@ export default {
     showStickyRespondents() {
       return (
         this.isPhone &&
-        // !this.scrolledToRespondents &&
+        !this.scrolledToRespondents &&
         (this.curTimeslot.dayIndex !== -1 ||
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
@@ -2056,7 +2082,14 @@ export default {
       const optionsSectionEl = this.$refs.optionsSection
       if (optionsSectionEl) {
         this.optionsVisible = isElementInViewport(optionsSectionEl, {
-          bottomOffset: -64 - (this.hintTextShown ? 32 : 0),
+          bottomOffset: -64,
+        })
+      }
+
+      const respondentsListEl = this.$refs.respondentsList.$el
+      if (respondentsListEl) {
+        this.scrolledToRespondents = isElementInViewport(respondentsListEl, {
+          bottomOffset: -64,
         })
       }
     },
