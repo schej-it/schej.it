@@ -99,7 +99,7 @@
         </div>
       </template>
       <div
-        class="tw-mt-2 tw-text-dark-gray"
+        class="tw-col-span-full tw-mt-2 tw-text-dark-gray"
         :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
       >
         * if needed
