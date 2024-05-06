@@ -415,13 +415,47 @@
         />
       </div>
 
-      <!-- Fixed pos options section -->
-      <div
-        v-if="!optionsVisible && isPhone && editing && showOptions"
-        class="tw-fixed tw-bottom-16 tw-z-20 tw-w-full tw-bg-white tw-p-4"
-        :class="hintTextShown ? 'tw-bottom-24' : 'tw-bottom-16'"
-      >
-        <AvailabilityTypeToggle class="tw-w-full" v-model="availabilityType" />
+      <!-- Fixed bottom section for mobile -->
+      <div v-if="isPhone" class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full">
+        <!-- Hint text (mobile) -->
+        <v-slide-y-reverse-transition>
+          <template v-if="hintTextShown">
+            <div
+              :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-dark-gray`"
+            >
+              <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
+                <v-icon small>mdi-information-outline</v-icon>
+                <div>
+                  {{ hintText }}
+                </div>
+              </div>
+              <v-icon small @click="closeHint">mdi-close</v-icon>
+            </div>
+          </template>
+        </v-slide-y-reverse-transition>
+
+        <!-- Fixed pos availability toggle (mobile) -->
+        <v-expand-transition>
+          <div v-if="!optionsVisible && showOptions && editing">
+            <div class="tw-bg-white tw-p-4">
+              <AvailabilityTypeToggle
+                class="tw-w-full"
+                v-model="availabilityType"
+              />
+            </div>
+          </div>
+        </v-expand-transition>
+
+        <v-expand-transition>
+          <div v-if="isWeekly && editing && calendarPermissionGranted">
+            <div class="tw-h-16 tw-text-sm">
+              <GCalWeekSelector
+                :week-offset="weekOffset"
+                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+              />
+            </div>
+          </div>
+        </v-expand-transition>
       </div>
     </div>
   </span>
@@ -473,6 +507,7 @@ import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
+import GCalWeekSelector from "./GCalWeekSelector.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -769,10 +804,29 @@ export default {
       return this.state === this.states.SCHEDULE_EVENT
     },
     hintText() {
+      if (this.isPhone) {
+        switch (this.state) {
+          case this.isGroup && this.states.EDIT_AVAILABILITY:
+            return "Toggle which calendars are used. Tap and drag to edit your availability."
+          case this.states.EDIT_AVAILABILITY:
+            if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              return "Tap and drag to add your if needed times in yellow"
+            }
+            return "Tap and drag to add your available times in green"
+          case this.states.SCHEDULE_EVENT:
+            return "Tap and drag on the calendar to schedule a Google Calendar event during those times"
+          default:
+            return ""
+        }
+      }
+
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
           return "Toggle which calendars are used. Click and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
+          if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+            return "Click and drag to add your if needed times in yellow."
+          }
           return "Click and drag to add your available times in green."
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times."
@@ -2323,6 +2377,7 @@ export default {
     ToolRow,
     CalendarAccounts,
     RespondentsList,
+    GCalWeekSelector,
   },
 }
 </script>
