@@ -203,7 +203,7 @@
             <!-- Hint text (desktop) -->
             <v-expand-transition>
               <div
-                v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
+                v-if="!isPhone && hintTextShown"
                 class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
               >
                 <div
@@ -268,6 +268,7 @@
             class="tw-flex tw-flex-col tw-gap-2"
             v-if="state == states.EDIT_AVAILABILITY"
           >
+            <!-- User's calendar accounts -->
             <CalendarAccounts
               v-if="calendarPermissionGranted"
               :toggleState="true"
@@ -282,9 +283,7 @@
               "
             ></CalendarAccounts>
             <div v-else class="tw-text-sm tw-italic tw-text-dark-gray">
-              {{
-                userHasResponded || curGuestId ? "Editing" : "Adding"
-              }}
+              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
               availability as
               {{
                 authUser
@@ -294,7 +293,9 @@
                   : "a guest"
               }}
             </div>
-            <div>
+
+            <!-- Options section -->
+            <div ref="optionsSection">
               <v-btn
                 class="tw-mb-2 tw-justify-between tw-px-0"
                 block
@@ -317,6 +318,8 @@
                 </div>
               </v-expand-transition>
             </div>
+
+            <!-- Delete availability button -->
             <div v-if="userHasResponded || curGuestId">
               <v-dialog
                 v-model="deleteAvailabilityDialog"
@@ -390,6 +393,7 @@
 
       <div class="tw-px-4">
         <ToolRow
+          ref="mobileToolRow"
           v-if="!calendarOnly && isPhone"
           :state="state"
           :states="states"
@@ -409,6 +413,15 @@
           @cancelScheduleEvent="cancelScheduleEvent"
           @confirmScheduleEvent="confirmScheduleEvent"
         />
+      </div>
+
+      <!-- Fixed pos options section -->
+      <div
+        v-if="!optionsVisible && isPhone && editing && showOptions"
+        class="tw-fixed tw-bottom-16 tw-z-20 tw-w-full tw-bg-white tw-p-4"
+        :class="hintTextShown ? 'tw-bottom-24' : 'tw-bottom-16'"
+      >
+        <AvailabilityTypeToggle class="tw-w-full" v-model="availabilityType" />
       </div>
     </div>
   </span>
@@ -450,6 +463,7 @@ import {
   isDateBetween,
   generateEnabledCalendarsPayload,
   isTouchEnabled,
+  isElementInViewport,
 } from "@/utils"
 import { availabilityTypes, eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -545,6 +559,7 @@ export default {
       showCalendarEvents: false,
 
       /* Variables for scrolling */
+      optionsVisible: false,
       calendarScrollLeft: 0, // The current scroll position of the calendar
       calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
       scrolledToRespondents: false, // whether we have scrolled to the respondents section
@@ -959,6 +974,9 @@ export default {
     },
     hintStateLocalStorageKey() {
       return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
+    },
+    hintTextShown() {
+      return this.showHintText && this.hintText != "" && !this.hintClosed
     },
 
     /** Whether to show spinner on top of availability grid */
@@ -1968,6 +1986,7 @@ export default {
       this.calendarScrollLeft = e.target.scrollLeft
     },
     onScroll(e) {
+      this.checkElementsVisible()
       // const afterEl = this.$refs.afterRespondentsList
       // const beforeEl = this.$refs.beforeRespondentsList
       // if (afterEl && beforeEl) {
@@ -1978,6 +1997,15 @@ export default {
       //     beforeBottom + 100 + 64 < window.innerHeight ||
       //     afterBottom + 64 < window.innerHeight
       // }
+    },
+    /** Checks whether certain elements are visible and sets variables accoringly */
+    checkElementsVisible() {
+      const optionsSectionEl = this.$refs.optionsSection
+      if (optionsSectionEl) {
+        this.optionsVisible = isElementInViewport(optionsSectionEl, {
+          bottomOffset: -64 - (this.hintTextShown ? 32 : 0),
+        })
+      }
     },
     //#endregion
 
@@ -2170,6 +2198,8 @@ export default {
       },
     },
     state(nextState, prevState) {
+      this.$nextTick(() => this.checkElementsVisible())
+
       // Reset scheduled event when exiting schedule event state
       if (prevState === this.states.SCHEDULE_EVENT) {
         this.curScheduledEvent = null

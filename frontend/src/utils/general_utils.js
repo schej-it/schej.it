@@ -138,3 +138,21 @@ export const isTouchEnabled = () => {
     navigator.msMaxTouchPoints > 0
   )
 }
+
+/** Returns whether the element is in the viewport */
+export const isElementInViewport = (
+  el,
+  { topOffset = 0, leftOffset = 0, rightOffset = 0, bottomOffset = 0 }
+) => {
+  var rect = el.getBoundingClientRect()
+
+  return (
+    rect.top >= topOffset &&
+    rect.left >= leftOffset &&
+    rect.bottom <=
+      (window.innerHeight || document.documentElement.clientHeight) +
+        bottomOffset &&
+    rect.right <=
+      (window.innerWidth || document.documentElement.clientWidth) + rightOffset
+  )
+}
