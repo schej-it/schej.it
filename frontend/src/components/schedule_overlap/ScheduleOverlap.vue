@@ -1625,12 +1625,17 @@ export default {
       if (this.state === this.states.SINGLE_AVAILABILITY) {
         // Show only the currently selected respondent's availability
         const respondent = this.curRespondent
+        const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
         const respondents = this.getRespondentsForHoursOffset(
           day.dateObject,
           time.hoursOffset
         )
         if (respondents.has(respondent)) {
-          s.backgroundColor = "#00994C88"
+          if (this.parsedResponses[respondent]?.ifNeeded?.has(date.getTime())) {
+            c += "tw-bg-yellow "
+          } else {
+            s.backgroundColor = "#00994C88"
+          }
         }
       }
 
