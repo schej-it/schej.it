@@ -1133,9 +1133,11 @@ export default {
     },
     deselectRespondents(e) {
       // Don't deselect respondents if toggled best times
+      // or if on mobile and this was fired by clicking on a timeslot
       if (
-        e.target?.previousElementSibling?.id === "show-best-times-toggle" ||
-        e.target?.firstChild?.firstChild?.id === "show-best-times-toggle"
+        e?.target?.previousElementSibling?.id === "show-best-times-toggle" ||
+        e?.target?.firstChild?.firstChild?.id === "show-best-times-toggle" ||
+        (e?.target?.classList?.contains("timeslot") && this.isPhone)
       )
         return
 
@@ -1729,6 +1731,9 @@ export default {
         this.curTimeslotAvailability[respondent._id] = true
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
+
+      // Deselect respondents if on mobile
+      if (this.isPhone) this.deselectRespondents()
 
       // End drag if mouse left time grid
       this.endDrag()
