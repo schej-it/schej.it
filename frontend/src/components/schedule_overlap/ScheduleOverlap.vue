@@ -203,6 +203,7 @@
             <!-- Hint text (desktop) -->
             <v-expand-transition>
               <div
+                :key="hintText"
                 v-if="!isPhone && hintTextShown"
                 class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
               >
@@ -215,8 +216,8 @@
                   </div>
                   <v-icon small @click="closeHint">mdi-close</v-icon>
                 </div>
-              </div></v-expand-transition
-            >
+              </div>
+            </v-expand-transition>
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
@@ -414,21 +415,23 @@
       <!-- Fixed bottom section for mobile -->
       <div v-if="isPhone" class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full">
         <!-- Hint text (mobile) -->
-        <v-slide-y-reverse-transition>
+        <v-expand-transition>
           <template v-if="hintTextShown">
-            <div
-              :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-dark-gray`"
-            >
-              <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
-                <v-icon small>mdi-information-outline</v-icon>
-                <div>
-                  {{ hintText }}
+            <div :key="hintText">
+              <div
+                :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-dark-gray`"
+              >
+                <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
+                  <v-icon small>mdi-information-outline</v-icon>
+                  <div>
+                    {{ hintText }}
+                  </div>
                 </div>
+                <v-icon small @click="closeHint">mdi-close</v-icon>
               </div>
-              <v-icon small @click="closeHint">mdi-close</v-icon>
             </div>
           </template>
-        </v-slide-y-reverse-transition>
+        </v-expand-transition>
 
         <!-- Fixed pos availability toggle (mobile) -->
         <v-expand-transition>
