@@ -163,56 +163,61 @@
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
-            <div v-if="!isPhone" class="tw-flex tw-w-40">
-              <template v-if="!isEditing">
-                <v-btn
-                  v-if="!isGroup && !authUser && selectedGuestRespondent"
-                  min-width="10.25rem"
-                  class="tw-bg-green tw-text-white tw-transition-opacity"
-                  :style="{ opacity: availabilityBtnOpacity }"
-                  @click="editGuestAvailability"
-                >
-                  {{ `Edit ${selectedGuestRespondent}'s availability` }}
-                </v-btn>
-                <v-btn
-                  v-else
-                  width="10.25rem"
-                  class="tw-text-white tw-transition-opacity"
-                  :class="'tw-bg-green'"
-                  :disabled="loading && !userHasResponded"
-                  :style="{ opacity: availabilityBtnOpacity }"
-                  @click="addAvailability"
-                >
-                  {{
-                    userHasResponded || isGroup
-                      ? "Edit availability"
-                      : "Add availability"
-                  }}
-                </v-btn>
-              </template>
-              <template v-else>
-                <v-btn
-                  class="tw-mr-1 tw-w-20 tw-text-red"
-                  @click="cancelEditing"
-                  outlined
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  class="tw-w-20 tw-text-white"
-                  :class="'tw-bg-green'"
-                  @click="() => saveChanges()"
-                >
-                  Save
-                </v-btn></template
-              >
-            </div>
+            <!-- Placeholder for add/edit/save/cancel buttons -->
+            <div class="tw-w-48"></div>
           </div>
         </div>
       </div>
 
-      <!-- Calendar -->
+      <!-- Add / edit / save / cancel buttons (STICKY) -->
+      <div
+        class="tw-sticky tw-top-[4.3rem] tw-z-10 -tw-mt-[3.45rem] tw-mr-4 tw-flex tw-justify-end"
+      >
+        <div v-if="!isPhone" class="tw-flex tw-w-48">
+          <template v-if="!isEditing">
+            <v-btn
+              v-if="!isGroup && !authUser && selectedGuestRespondent"
+              class="tw-w-[196px] tw-bg-green tw-text-white tw-transition-opacity"
+              :style="{ opacity: availabilityBtnOpacity }"
+              @click="editGuestAvailability"
+            >
+              {{ `Edit ${selectedGuestRespondent}'s availability` }}
+            </v-btn>
+            <v-btn
+              v-else
+              class="tw-w-[196px] tw-text-white tw-transition-opacity"
+              :class="'tw-bg-green'"
+              :disabled="loading && !userHasResponded"
+              :style="{ opacity: availabilityBtnOpacity }"
+              @click="addAvailability"
+            >
+              {{
+                userHasResponded || isGroup
+                  ? "Edit availability"
+                  : "Add availability"
+              }}
+            </v-btn>
+          </template>
+          <template v-else>
+            <v-btn
+              class="tw-mr-1 tw-w-24 tw-text-red"
+              @click="cancelEditing"
+              outlined
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              class="tw-w-24 tw-text-white"
+              :class="'tw-bg-green'"
+              @click="() => saveChanges()"
+            >
+              Save
+            </v-btn></template
+          >
+        </div>
+      </div>
 
+      <!-- Calendar -->
       <ScheduleOverlap
         ref="scheduleOverlap"
         :event="event"
