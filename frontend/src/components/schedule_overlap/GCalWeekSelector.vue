@@ -1,7 +1,6 @@
 <template>
   <div
-    v-if="calendarPermissionGranted"
-    class="sm:tw-w-initial tw-fixed tw-left-0 tw-bottom-16 tw-flex tw-h-16 tw-w-full tw-items-center tw-justify-between tw-bg-white tw-px-2 tw-drop-shadow sm:tw-relative sm:tw-bottom-0 sm:tw-h-[unset] sm:tw-flex-1 sm:tw-px-0 sm:tw-drop-shadow-none tw-z-50"
+    class="tw-flex tw-h-16 tw-items-center tw-justify-between tw-bg-white tw-px-2 tw-drop-shadow sm:tw-h-[unset] sm:tw-flex-1 sm:tw-px-0 sm:tw-drop-shadow-none"
   >
     <v-btn @click="prevWeek" icon><v-icon>mdi-chevron-left</v-icon></v-btn>
     <div class="tw-text-center sm:tw-w-72">
@@ -19,7 +18,6 @@ export default {
   name: "GCalWeekSelector",
 
   props: {
-    calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
   },
 

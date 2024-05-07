@@ -57,7 +57,7 @@
           <v-spacer />
           <div class="tw-min-w-fit">
             <GCalWeekSelector
-              :calendar-permission-granted="calendarPermissionGranted"
+              v-if="calendarPermissionGranted"
               :week-offset="weekOffset"
               @update:weekOffset="(val) => $emit('update:weekOffset', val)"
             />
@@ -104,40 +104,6 @@
       </div>
     </div>
 
-    <!-- GCal week selector when user is using phone view -->
-    <template v-if="isPhone && isWeekly && state === states.EDIT_AVAILABILITY">
-      <div class="tw-h-16 tw-text-sm">
-        <GCalWeekSelector
-          :calendar-permission-granted="calendarPermissionGranted"
-          :week-offset="weekOffset"
-          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-        />
-      </div>
-    </template>
-
-    <!-- Instructions when user is using phone view -->
-    <v-slide-y-reverse-transition>
-      <template v-if="isPhone && hintText != '' && showHintText">
-        <div
-          :class="`tw-fixed tw-left-0 tw-bottom-${
-            isWeekly &&
-            calendarPermissionGranted &&
-            state === states.EDIT_AVAILABILITY
-              ? 32
-              : 16
-          } tw-z-10 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-dark-gray`"
-        >
-          <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
-            <v-icon small>mdi-information-outline</v-icon>
-            <div>
-              {{ hintText }}
-            </div>
-          </div>
-          <v-icon small @click="closeHint">mdi-close</v-icon>
-        </div>
-      </template>
-    </v-slide-y-reverse-transition>
-
     <!-- force tailwind classes to compile -->
     <div class="tw-bottom-16 tw-bottom-32"></div>
   </div>
@@ -157,7 +123,6 @@ export default {
     curTimezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
-    isGroup: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
     numResponses: { type: Number, required: true },
@@ -171,7 +136,6 @@ export default {
   },
 
   data: () => ({
-    hintTextState: true,
     mobileNumDaysOptions: [
       { label: "3 days", value: 3 },
       { label: "7 days", value: 7 },
@@ -182,34 +146,12 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
-    hintStateLocalStorageKey() {
-      return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
-    },
-    showHintText() {
-      return this.hintTextState && !localStorage[this.hintStateLocalStorageKey]
-    },
-    hintText() {
-      switch (this.state) {
-        case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are used. Tap and drag to edit your availability."
-        case this.states.EDIT_AVAILABILITY:
-          return "Tap and drag to add your available times in green"
-        case this.states.SCHEDULE_EVENT:
-          return "Tap and drag on the calendar to schedule a Google Calendar event during those times"
-        default:
-          return ""
-      }
-    },
   },
 
   methods: {
     updateShowBestTimes(val) {
       this.$emit("update:showBestTimes", !!val)
       this.$emit("onShowBestTimesChange", !!val)
-    },
-    closeHint() {
-      this.hintTextState = false
-      localStorage[this.hintStateLocalStorageKey] = true
     },
   },
 }

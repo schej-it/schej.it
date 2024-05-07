@@ -411,6 +411,7 @@ func getEvent(c *gin.Context) {
 
 		// Remove availability arrays
 		event.Responses[userId].Availability = nil
+		event.Responses[userId].IfNeeded = nil
 		event.Responses[userId].ManualAvailability = nil
 	}
 
@@ -453,6 +454,14 @@ func getResponses(c *gin.Context) {
 		}
 		event.Responses[userId].Availability = subsetAvailability
 
+		subsetIfNeeded := make([]primitive.DateTime, 0)
+		for _, timestamp := range response.IfNeeded {
+			if timestamp.Time().Compare(payload.TimeMin) >= 0 && timestamp.Time().Compare(payload.TimeMax) <= 0 {
+				subsetIfNeeded = append(subsetIfNeeded, timestamp)
+			}
+		}
+		event.Responses[userId].IfNeeded = subsetIfNeeded
+
 		subsetManualAvailability := make(map[primitive.DateTime][]primitive.DateTime)
 		for timestamp := range utils.Coalesce(response.ManualAvailability) {
 			if timestamp.Time().Compare(payload.TimeMin) >= 0 && timestamp.Time().Compare(payload.TimeMax) <= 0 {
@@ -470,12 +479,13 @@ func getResponses(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[primitive.DateTime][]primitive.DateTime} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,ifNeeded=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[string][]string} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
 	payload := struct {
 		Availability []primitive.DateTime `json:"availability"`
+		IfNeeded     []primitive.DateTime `json:"ifNeeded"`
 		Guest        *bool                `json:"guest" binding:"required"`
 		Name         string               `json:"name"`
 
@@ -504,6 +514,7 @@ func updateEventResponse(c *gin.Context) {
 		response = models.Response{
 			Name:         payload.Name,
 			Availability: payload.Availability,
+			IfNeeded:     payload.IfNeeded,
 		}
 	} else {
 		userIdInterface := session.Get("userId")
@@ -517,6 +528,7 @@ func updateEventResponse(c *gin.Context) {
 		response = models.Response{
 			UserId:                  utils.StringToObjectID(userIdString),
 			Availability:            payload.Availability,
+			IfNeeded:                payload.IfNeeded,
 			UseCalendarAvailability: payload.UseCalendarAvailability,
 			EnabledCalendars:        payload.EnabledCalendars,
 		}
