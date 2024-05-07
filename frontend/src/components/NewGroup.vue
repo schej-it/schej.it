@@ -20,10 +20,14 @@
           <template v-slot:header>Availability groups</template>
           <div class="mb-4">
             Use availability groups to see group members' weekly calendar
-            availabilities. Your availability will be updated in real-time from
-            your Google Calendar, and you can manually edit your availability.
+            availabilities. Your actual calendar events will NOT be visible to
+            others.
           </div>
-          <div>Your actual calendar events will NOT be visible to others.</div>
+          <div
+            class="tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
+          >
+            Ideal for weekly recurring meetings
+          </div>
         </HelpDialog>
       </template>
     </v-card-title>

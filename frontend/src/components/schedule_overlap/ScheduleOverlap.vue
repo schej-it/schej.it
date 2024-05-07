@@ -1,8 +1,8 @@
 <template>
   <span>
-    <div class="tw-m-4 tw-select-none" style="-webkit-touch-callout: none">
-      <div class="tw-flex tw-flex-wrap sm:tw-flex-nowrap">
-        <div class="tw-flex tw-grow">
+    <div class="tw-select-none tw-py-4" style="-webkit-touch-callout: none">
+      <div class="tw-flex tw-flex-col sm:tw-flex-row">
+        <div class="tw-flex tw-grow tw-px-4">
           <!-- Times -->
           <div class="tw-w-8 tw-flex-none sm:tw-w-12">
             <div
@@ -203,7 +203,8 @@
             <!-- Hint text (desktop) -->
             <v-expand-transition>
               <div
-                v-if="!isPhone && showHintText && hintText != '' && !hintClosed"
+                :key="hintText"
+                v-if="!isPhone && hintTextShown"
                 class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
               >
                 <div
@@ -215,8 +216,8 @@
                   </div>
                   <v-icon small @click="closeHint">mdi-close</v-icon>
                 </div>
-              </div></v-expand-transition
-            >
+              </div>
+            </v-expand-transition>
 
             <ToolRow
               v-if="!calendarOnly && !isPhone"
@@ -224,12 +225,11 @@
               :states="states"
               :cur-timezone.sync="curTimezone"
               :show-best-times.sync="showBestTimes"
-              :cur-scheduled-event="curScheduledEvent"
-              :isGroup="isGroup"
               :is-weekly="isWeekly"
               :calendar-permission-granted="calendarPermissionGranted"
               :week-offset="weekOffset"
               :num-responses="respondents.length"
+              :mobile-num-days.sync="mobileNumDays"
               :allow-schedule-event="allowScheduleEvent"
               @update:weekOffset="(val) => $emit('update:weekOffset', val)"
               @onShowBestTimesChange="onShowBestTimesChange"
@@ -258,17 +258,16 @@
           </div>
         </div>
 
-        <div class="break" v-if="isPhone"></div>
-
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-12"
+          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-2"
             v-if="state == states.EDIT_AVAILABILITY"
           >
+            <!-- User's calendar accounts -->
             <CalendarAccounts
               v-if="calendarPermissionGranted"
               :toggleState="true"
@@ -282,8 +281,43 @@
                 isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
               "
             ></CalendarAccounts>
+            <div v-else class="tw-text-sm tw-italic tw-text-dark-gray">
+              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
+              availability as
+              {{
+                authUser
+                  ? `${authUser.firstName} ${authUser.lastName}`
+                  : curGuestId?.length > 0
+                  ? curGuestId
+                  : "a guest"
+              }}
+            </div>
+
+            <!-- Options section -->
+            <div v-if="!isGroup" ref="optionsSection">
+              <v-btn
+                class="-tw-ml-2 tw-mb-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
+                block
+                text
+                @click="toggleShowOptions"
+              >
+                <span class="tw-mr-1 tw-text-base tw-font-medium">Options</span>
+                <v-icon :class="`tw-rotate-${showOptions ? '180' : '0'}`"
+                  >mdi-chevron-down</v-icon
+                ></v-btn
+              >
+              <v-expand-transition>
+                <div v-show="showOptions">
+                  <AvailabilityTypeToggle
+                    class="tw-mb-4 tw-w-full"
+                    v-model="availabilityType"
+                  />
+                </div>
+              </v-expand-transition>
+            </div>
+
+            <!-- Delete availability button -->
             <div v-if="userHasResponded || curGuestId">
-              <div class="tw-mb-1 tw-font-medium">Options</div>
               <v-dialog
                 v-model="deleteAvailabilityDialog"
                 width="500"
@@ -329,40 +363,18 @@
             </div>
           </div>
           <template v-else>
-            <v-expand-transition>
-              <div
-                v-if="delayedShowStickyRespondents"
-                class="tw-fixed tw-bottom-16 tw-left-0 tw-z-10 tw-w-full tw-bg-white"
-              >
-                <RespondentsList
-                  class="tw-mx-4 tw-mt-4"
-                  :max-height="100"
-                  :eventId="event._id"
-                  :curRespondent="curRespondent"
-                  :curRespondents="curRespondents"
-                  :curTimeslot="curTimeslot"
-                  :curTimeslotAvailability="curTimeslotAvailability"
-                  :respondents="respondents"
-                  :isOwner="isOwner"
-                  :isGroup="isGroup"
-                  :attendees="event.attendees"
-                  :showCalendarEvents.sync="showCalendarEvents"
-                  @mouseOverRespondent="mouseOverRespondent"
-                  @mouseLeaveRespondent="mouseLeaveRespondent"
-                  @clickRespondent="clickRespondent"
-                  @editGuestAvailability="editGuestAvailability"
-                  @refreshEvent="refreshEvent"
-                />
-              </div>
-            </v-expand-transition>
-            <div ref="beforeRespondentsList"></div>
             <RespondentsList
+              ref="respondentsList"
+              :max-height="delayedShowStickyRespondents ? 100 : undefined"
               :eventId="event._id"
+              :day="days[curTimeslot.dayIndex]"
+              :time="times[curTimeslot.timeIndex]"
               :curRespondent="curRespondent"
               :curRespondents="curRespondents"
               :curTimeslot="curTimeslot"
               :curTimeslotAvailability="curTimeslotAvailability"
               :respondents="respondents"
+              :parsedResponses="parsedResponses"
               :isOwner="isOwner"
               :isGroup="isGroup"
               :attendees="event.attendees"
@@ -374,7 +386,6 @@
               @refreshEvent="refreshEvent"
             />
           </template>
-          <div ref="afterRespondentsList"></div>
         </div>
       </div>
 
@@ -401,6 +412,102 @@
 
       <div v-if="!calendarOnly && isPhone" class="tw-mt-5">
         <Advertisement></Advertisement>
+      </div>  
+      
+      <div class="tw-px-4">
+        <ToolRow
+          v-if="!calendarOnly && isPhone"
+          :state="state"
+          :states="states"
+          :cur-timezone.sync="curTimezone"
+          :show-best-times.sync="showBestTimes"
+          :is-weekly="isWeekly"
+          :calendar-permission-granted="calendarPermissionGranted"
+          :week-offset="weekOffset"
+          :num-responses="respondents.length"
+          :mobile-num-days.sync="mobileNumDays"
+          :allow-schedule-event="allowScheduleEvent"
+          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+          @onShowBestTimesChange="onShowBestTimesChange"
+          @scheduleEvent="scheduleEvent"
+          @cancelScheduleEvent="cancelScheduleEvent"
+          @confirmScheduleEvent="confirmScheduleEvent"
+        />
+      </div>
+
+      <!-- Fixed bottom section for mobile -->
+      <div v-if="isPhone" class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full">
+        <!-- Hint text (mobile) -->
+        <v-expand-transition>
+          <template v-if="hintTextShown">
+            <div :key="hintText">
+              <div
+                :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-dark-gray`"
+              >
+                <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
+                  <v-icon small>mdi-information-outline</v-icon>
+                  <div>
+                    {{ hintText }}
+                  </div>
+                </div>
+                <v-icon small @click="closeHint">mdi-close</v-icon>
+              </div>
+            </div>
+          </template>
+        </v-expand-transition>
+
+        <!-- Fixed pos availability toggle (mobile) -->
+        <v-expand-transition>
+          <div v-if="!isGroup && !optionsVisible && showOptions && editing">
+            <div class="tw-bg-white tw-p-4">
+              <AvailabilityTypeToggle
+                class="tw-w-full"
+                v-model="availabilityType"
+              />
+            </div>
+          </div>
+        </v-expand-transition>
+
+        <!-- GCal week selector -->
+        <v-expand-transition>
+          <div v-if="isWeekly && editing && calendarPermissionGranted">
+            <div class="tw-h-16 tw-text-sm">
+              <GCalWeekSelector
+                :week-offset="weekOffset"
+                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+              />
+            </div>
+          </div>
+        </v-expand-transition>
+
+        <!-- Respondents list -->
+        <v-expand-transition>
+          <div v-if="delayedShowStickyRespondents">
+            <div class="tw-bg-white tw-p-4">
+              <RespondentsList
+                :max-height="100"
+                :eventId="event._id"
+                :day="days[curTimeslot.dayIndex]"
+                :time="times[curTimeslot.timeIndex]"
+                :curRespondent="curRespondent"
+                :curRespondents="curRespondents"
+                :curTimeslot="curTimeslot"
+                :curTimeslotAvailability="curTimeslotAvailability"
+                :respondents="respondents"
+                :parsedResponses="parsedResponses"
+                :isOwner="isOwner"
+                :isGroup="isGroup"
+                :attendees="event.attendees"
+                :showCalendarEvents.sync="showCalendarEvents"
+                @mouseOverRespondent="mouseOverRespondent"
+                @mouseLeaveRespondent="mouseLeaveRespondent"
+                @clickRespondent="clickRespondent"
+                @editGuestAvailability="editGuestAvailability"
+                @refreshEvent="refreshEvent"
+              />
+            </div>
+          </div>
+        </v-expand-transition>
       </div>
     </div>
   </span>
@@ -442,8 +549,9 @@ import {
   isDateBetween,
   generateEnabledCalendarsPayload,
   isTouchEnabled,
+  isElementInViewport,
 } from "@/utils"
-import { eventTypes } from "@/constants"
+import { availabilityTypes, eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
@@ -452,10 +560,12 @@ import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
+import GCalWeekSelector from "./GCalWeekSelector.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
+import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -499,6 +609,8 @@ export default {
       state: "best_times",
 
       availability: new Set(), // The current user's availability
+      ifNeeded: new Set(), // The current user's "if needed" availability
+      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -527,6 +639,7 @@ export default {
       dragCur: null,
 
       /* Variables for options */
+      showOptions: localStorage["showAvailabilityOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
@@ -534,6 +647,7 @@ export default {
       showCalendarEvents: false,
 
       /* Variables for scrolling */
+      optionsVisible: false,
       calendarScrollLeft: 0, // The current scroll position of the calendar
       calendarMaxScroll: 0, // The maximum scroll amount of the calendar, scrolling to this point means we have scrolled to the end
       scrolledToRespondents: false, // whether we have scrolled to the respondents section
@@ -565,6 +679,10 @@ export default {
     /** Returns the availability as an array */
     availabilityArray() {
       return [...this.availability].map((item) => new Date(item))
+    },
+    /** Returns the if needed availability as an array */
+    ifNeededArray() {
+      return [...this.ifNeeded].map((item) => new Date(item))
     },
     allowDrag() {
       return (
@@ -739,11 +857,30 @@ export default {
       return this.state === this.states.SCHEDULE_EVENT
     },
     hintText() {
+      if (this.isPhone) {
+        switch (this.state) {
+          case this.isGroup && this.states.EDIT_AVAILABILITY:
+            return "Toggle which calendars are used. Tap and drag to edit your availability."
+          case this.states.EDIT_AVAILABILITY:
+            if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              return 'Tap and drag to add your "if needed" times in yellow.'
+            }
+            return 'Tap and drag to add your "available" times in green.'
+          case this.states.SCHEDULE_EVENT:
+            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
+          default:
+            return ""
+        }
+      }
+
       switch (this.state) {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
           return "Toggle which calendars are used. Click and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
-          return "Click and drag to add your available times in green."
+          if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+            return 'Click and drag to add your "if needed" times in yellow.'
+          }
+          return 'Click and drag to add your "available" times in green.'
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times."
         default:
@@ -819,12 +956,12 @@ export default {
 
             parsed[userId] = {
               ...this.event.responses[userId],
-              availability: [...availability],
+              availability: availability,
             }
           } else {
             parsed[userId] = {
               ...this.event.responses[userId],
-              availability: [],
+              availability: new Set(),
             }
           }
         }
@@ -839,7 +976,16 @@ export default {
         }
         parsed[k] = {
           ...this.event.responses[k],
-          availability: this.fetchedResponses[k]?.availability ?? [],
+          availability: new Set(
+            this.fetchedResponses[k]?.availability?.map((a) =>
+              new Date(a).getTime()
+            )
+          ),
+          ifNeeded: new Set(
+            this.fetchedResponses[k]?.ifNeeded?.map((a) =>
+              new Date(a).getTime()
+            )
+          ),
           user: newUser,
         }
       }
@@ -936,6 +1082,9 @@ export default {
     hintStateLocalStorageKey() {
       return `closedHintText${this.state}` + ("&isGroup" ? this.isGroup : "")
     },
+    hintTextShown() {
+      return this.showHintText && this.hintText != "" && !this.hintClosed
+    },
 
     /** Whether to show spinner on top of availability grid */
     showLoader() {
@@ -1012,9 +1161,11 @@ export default {
     },
     deselectRespondents(e) {
       // Don't deselect respondents if toggled best times
+      // or if on mobile and this was fired by clicking on a timeslot
       if (
-        e.target?.previousElementSibling?.id === "show-best-times-toggle" ||
-        e.target?.firstChild?.firstChild?.id === "show-best-times-toggle"
+        e?.target?.previousElementSibling?.id === "show-best-times-toggle" ||
+        e?.target?.firstChild?.firstChild?.id === "show-best-times-toggle" ||
+        (e?.target?.classList?.contains("timeslot") && this.isPhone)
       )
         return
 
@@ -1098,11 +1249,7 @@ export default {
       this.$worker
         .run(
           (days, times, parsedResponses) => {
-            const dateCompare = (date1, date2) => {
-              date1 = new Date(date1)
-              date2 = new Date(date2)
-              return date1.getTime() - date2.getTime()
-            }
+            // Define functions locally because we can't import functions
             const splitTimeNum = (timeNum) => {
               const hours = Math.floor(timeNum)
               const minutes = Math.floor((timeNum - hours) * 60)
@@ -1115,21 +1262,27 @@ export default {
               newDate.setMinutes(newDate.getMinutes() + minutes)
               return newDate
             }
+
+            // Create a map mapping time to the respondents available during that time
             const formatted = new Map()
             for (const day of days) {
               for (const time of times) {
+                // Iterate through all the times
                 const date = getDateHoursOffset(
                   day.dateObject,
                   time.hoursOffset
                 )
                 formatted.set(date.getTime(), new Set())
+
+                // Check every response and see if they are available for the given time
                 for (const response of Object.values(parsedResponses)) {
-                  const index = response.availability.findIndex(
-                    (d) => dateCompare(d, date) === 0
-                  )
-                  if (index !== -1) {
+                  // Check availability array
+                  if (
+                    response.availability?.has(date.getTime()) ||
+                    response.ifNeeded?.has(date.getTime())
+                  ) {
                     formatted.get(date.getTime()).add(response.user._id)
-                    response.availability.splice(index, 1)
+                    continue
                   }
                 }
               }
@@ -1201,15 +1354,15 @@ export default {
       }
 
       this.availability = new Set()
+      this.ifNeeded = new Set()
       if (this.userHasResponded) {
         this.populateUserAvailability(this.authUser._id)
       }
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.parsedResponses[id]?.availability?.forEach((item) =>
-        this.availability.add(new Date(item).getTime())
-      )
+      this.availability = this.parsedResponses[id]?.availability ?? new Set()
+      this.ifNeeded = this.parsedResponses[id]?.ifNeeded ?? new Set()
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
@@ -1361,6 +1514,7 @@ export default {
       } else {
         type = "availability"
         payload.availability = this.availabilityArray
+        payload.ifNeeded = this.ifNeededArray
         if (this.authUser) {
           payload.guest = false
         } else {
@@ -1372,14 +1526,17 @@ export default {
       await post(`/events/${this.event._id}/response`, payload)
 
       // Update analytics
+      const addedIfNeededTimes = this.ifNeededArray.length > 0
       if (this.authUser) {
         if (this.authUser._id in this.parsedResponses) {
           this.$posthog?.capture(`Edited ${type}`, {
             eventId: this.event._id,
+            addedIfNeededTimes,
           })
         } else {
           this.$posthog?.capture(`Added ${type}`, {
             eventId: this.event._id,
+            addedIfNeededTimes,
           })
         }
       } else {
@@ -1387,11 +1544,13 @@ export default {
           this.$posthog?.capture(`Edited ${type} as guest`, {
             eventId: this.event._id,
             name,
+            addedIfNeededTimes,
           })
         } else {
           this.$posthog?.capture(`Added ${type} as guest`, {
             eventId: this.event._id,
             name,
+            addedIfNeededTimes,
           })
         }
       }
@@ -1479,7 +1638,11 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            s.backgroundColor = "#00994C88"
+            if (this.availabilityType === availabilityTypes.AVAILABLE) {
+              s.backgroundColor = "#00994C88"
+            } else if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              c += "tw-bg-yellow "
+            }
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
@@ -1488,6 +1651,8 @@ export default {
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
             s.backgroundColor = "#00994C88"
+          } else if (this.ifNeeded.has(date.getTime())) {
+            c += "tw-bg-yellow "
           }
         }
       }
@@ -1495,12 +1660,17 @@ export default {
       if (this.state === this.states.SINGLE_AVAILABILITY) {
         // Show only the currently selected respondent's availability
         const respondent = this.curRespondent
+        const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
         const respondents = this.getRespondentsForHoursOffset(
           day.dateObject,
           time.hoursOffset
         )
         if (respondents.has(respondent)) {
-          s.backgroundColor = "#00994C88"
+          if (this.parsedResponses[respondent]?.ifNeeded?.has(date.getTime())) {
+            c += "tw-bg-yellow "
+          } else {
+            s.backgroundColor = "#00994C88"
+          }
         }
       }
 
@@ -1595,6 +1765,9 @@ export default {
       }
       this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
 
+      // Deselect respondents if on mobile
+      if (this.isPhone) this.deselectRespondents()
+
       // End drag if mouse left time grid
       this.endDrag()
     },
@@ -1605,6 +1778,7 @@ export default {
     // -----------------------------------
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
+      this.availabilityType = availabilityTypes.AVAILABLE
       if (this.authUser) {
         this.resetCurUserAvailability()
       }
@@ -1750,9 +1924,18 @@ export default {
 
             // Add / remove time from availability set
             if (this.dragType === this.DRAG_TYPES.ADD) {
-              this.availability.add(date.getTime())
+              if (this.availabilityType === availabilityTypes.AVAILABLE) {
+                this.availability.add(date.getTime())
+                this.ifNeeded.delete(date.getTime())
+              } else if (
+                this.availabilityType === availabilityTypes.IF_NEEDED
+              ) {
+                this.ifNeeded.add(date.getTime())
+                this.availability.delete(date.getTime())
+              }
             } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
               this.availability.delete(date.getTime())
+              this.ifNeeded.delete(date.getTime())
             }
 
             // Edit manualAvailability set if event is a GROUP
@@ -1879,7 +2062,12 @@ export default {
       this.dragStart = { dayIndex, timeIndex }
       this.dragCur = { dayIndex, timeIndex }
       // Set drag type
-      if (this.availability.has(date.getTime())) {
+      if (
+        (this.availabilityType === availabilityTypes.AVAILABLE &&
+          this.availability.has(date.getTime())) ||
+        (this.availabilityType === availabilityTypes.IF_NEEDED &&
+          this.ifNeeded.has(date.getTime()))
+      ) {
         this.dragType = this.DRAG_TYPES.REMOVE
       } else {
         this.dragType = this.DRAG_TYPES.ADD
@@ -1906,6 +2094,10 @@ export default {
       )
         this.state = this.defaultState
     },
+    toggleShowOptions() {
+      this.showOptions = !this.showOptions
+      localStorage["showAvailabilityOptions"] = this.showOptions
+    },
     //#endregion
 
     // -----------------------------------
@@ -1916,15 +2108,22 @@ export default {
       this.calendarScrollLeft = e.target.scrollLeft
     },
     onScroll(e) {
-      const afterEl = this.$refs.afterRespondentsList
-      const beforeEl = this.$refs.beforeRespondentsList
-      if (afterEl && beforeEl) {
-        const { bottom: beforeBottom } = beforeEl.getBoundingClientRect()
-        const { bottom: afterBottom } = afterEl.getBoundingClientRect()
-        // 64 is height of bottom bar, 100 is max height of sticky respondents section
-        this.scrolledToRespondents =
-          beforeBottom + 100 + 64 < window.innerHeight ||
-          afterBottom + 64 < window.innerHeight
+      this.checkElementsVisible()
+    },
+    /** Checks whether certain elements are visible and sets variables accoringly */
+    checkElementsVisible() {
+      const optionsSectionEl = this.$refs.optionsSection
+      if (optionsSectionEl) {
+        this.optionsVisible = isElementInViewport(optionsSectionEl, {
+          bottomOffset: -64,
+        })
+      }
+
+      const respondentsListEl = this.$refs.respondentsList?.$el
+      if (respondentsListEl) {
+        this.scrolledToRespondents = isElementInViewport(respondentsListEl, {
+          bottomOffset: -64,
+        })
       }
     },
     //#endregion
@@ -2118,6 +2317,8 @@ export default {
       },
     },
     state(nextState, prevState) {
+      this.$nextTick(() => this.checkElementsVisible())
+
       // Reset scheduled event when exiting schedule event state
       if (prevState === this.states.SCHEDULE_EVENT) {
         this.curScheduledEvent = null
@@ -2234,6 +2435,7 @@ export default {
     removeEventListener("scroll", this.onScroll)
   },
   components: {
+    AvailabilityTypeToggle,
     UserAvatarContent,
     ZigZag,
     ConfirmDetailsDialog,
@@ -2241,6 +2443,7 @@ export default {
     CalendarAccounts,
     RespondentsList,
     Advertisement,
+    GCalWeekSelector,
   },
 }
 </script>

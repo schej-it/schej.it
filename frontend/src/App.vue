@@ -85,6 +85,10 @@ html {
 }
 
 /** Buttons */
+.v-btn:not(.v-btn--round).v-size--default {
+  height: 38px !important;
+}
+
 .v-btn.v-btn--is-elevated {
   -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;
   -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.15) !important;

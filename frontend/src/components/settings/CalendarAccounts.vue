@@ -8,7 +8,11 @@
       class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-off-white tw-pb-1 tw-align-middle"
     >
       <div class="tw-font-medium">My calendars</div>
-      <v-btn v-if="allowAddCalendarAccount" @click="addCalendarAccount" icon
+      <v-btn
+        v-if="allowAddCalendarAccount"
+        @click="addCalendarAccount"
+        class="-tw-mr-2"
+        icon
         ><v-icon class="tw-text-very-dark-gray">mdi-plus</v-icon></v-btn
       >
     </div>
