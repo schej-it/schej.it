@@ -13,11 +13,7 @@
                 :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
                 class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
               >
-                <v-btn
-                  class="tw-border-gray sm:-tw-right-4"
-                  outlined
-                  icon
-                  @click="prevPage"
+                <v-btn class="tw-border-gray" outlined icon @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
                 >
               </div>
@@ -251,11 +247,7 @@
               :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
               class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
             >
-              <v-btn
-                class="tw-border-gray sm:-tw-left-4"
-                outlined
-                icon
-                @click="nextPage"
+              <v-btn class="tw-border-gray" outlined icon @click="nextPage"
                 ><v-icon>mdi-chevron-right</v-icon></v-btn
               >
             </div>
@@ -265,7 +257,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-20 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-4 sm:tw-pt-14"
+          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-2"
@@ -306,9 +298,7 @@
                 @click="toggleShowOptions"
               >
                 <span class="tw-mr-1 tw-text-base tw-font-medium">Options</span>
-                <v-icon
-                  class="-tw-mr-[2px]"
-                  :class="`tw-rotate-${showOptions ? '180' : '0'}`"
+                <v-icon :class="`tw-rotate-${showOptions ? '180' : '0'}`"
                   >mdi-chevron-down</v-icon
                 ></v-btn
               >
