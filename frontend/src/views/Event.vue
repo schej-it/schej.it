@@ -164,16 +164,17 @@
               </v-btn>
             </div>
             <!-- Placeholder for add/edit/save/cancel buttons -->
-            <div class="tw-w-48"></div>
+            <div v-if="!isPhone" class="tw-w-48"></div>
           </div>
         </div>
       </div>
 
       <!-- Add / edit / save / cancel buttons (STICKY) -->
       <div
+        v-if="!isPhone"
         class="tw-sticky tw-top-[4.3rem] tw-z-10 -tw-mt-[3.45rem] tw-mr-4 tw-flex tw-justify-end"
       >
-        <div v-if="!isPhone" class="tw-flex tw-w-48">
+        <div class="tw-flex tw-w-48">
           <template v-if="!isEditing">
             <v-btn
               v-if="!isGroup && !authUser && selectedGuestRespondent"
