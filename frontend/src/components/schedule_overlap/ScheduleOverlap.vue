@@ -238,7 +238,9 @@
               @confirmScheduleEvent="confirmScheduleEvent"
             />
 
-            <Advertisement></Advertisement>
+            <div v-if="!calendarOnly && !isPhone" class="tw-mt-10">
+              <Advertisement></Advertisement>
+            </div>
           </div>
 
           <div
@@ -396,6 +398,10 @@
         @cancelScheduleEvent="cancelScheduleEvent"
         @confirmScheduleEvent="confirmScheduleEvent"
       />
+
+      <div v-if="!calendarOnly && isPhone" class="tw-mt-5">
+        <Advertisement></Advertisement>
+      </div>
     </div>
   </span>
 </template>
