@@ -1,9 +1,5 @@
 <template>
-  <div
-    v-if="showAd"
-    class="tw-cursor-pointer"
-    @click="navigateToAd"
-  >
+  <div v-if="showAd" class="tw-cursor-pointer" @click="navigateToAd">
     <v-img
       alt="tomotime ad"
       :src="
@@ -12,18 +8,18 @@
           : require('@/assets/ads/tomotime.png')
       "
       transition="fade-transition"
-      class="tw-max-w-[44rem] tw-shadow-md sm:tw-shadow-none tw-relative"
-    ><div
-      class="tw-absolute tw-left-0 tw-top-0 tw-ml-0 tw-mt-0 tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-br-lg sm:tw-rounded-tl-lg tw-bg-gray tw-bg-opacity-60 tw-text-xs sm:tw-ml-[6px] sm:tw-mt-[5px] sm:tw-h-10 sm:tw-w-10"
+      class="tw-relative tw-max-w-[44rem] tw-shadow-md sm:tw-shadow-none"
+      ><div
+        class="tw-absolute tw-left-0 tw-top-0 tw-ml-0 tw-mt-0 tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-br-lg tw-bg-gray tw-bg-opacity-60 tw-text-xs sm:tw-ml-[6px] sm:tw-mt-[5px] sm:tw-h-10 sm:tw-w-10 sm:tw-rounded-tl-lg"
+      >
+        AD
+      </div></v-img
     >
-      AD
-    </div></v-img>
-    
   </div>
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex"
+import { mapState } from "vuex"
 import { isPhone } from "@/utils"
 
 export default {
