@@ -18,12 +18,12 @@
         </v-btn>
         <HelpDialog v-model="helpDialog">
           <template v-slot:header>Events</template>
-          <div>
+          <div class="tw-mb-4">
             Use events to collect people's availabilities and compare them
             across certain days.
           </div>
           <div
-            class="tw-mt-4 tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
+            class="tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
           >
             Ideal for one-time meetings
           </div>

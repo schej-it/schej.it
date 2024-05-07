@@ -24,7 +24,7 @@
             others.
           </div>
           <div
-            class="tw-mt-4 tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
+            class="tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
           >
             Ideal for weekly recurring meetings
           </div>
