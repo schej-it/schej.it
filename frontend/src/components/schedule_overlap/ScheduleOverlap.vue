@@ -237,6 +237,10 @@
               @cancelScheduleEvent="cancelScheduleEvent"
               @confirmScheduleEvent="confirmScheduleEvent"
             />
+
+            <div v-if="!calendarOnly && !isPhone" class="tw-mt-10">
+              <Advertisement></Advertisement>
+            </div>
           </div>
 
           <div
@@ -385,6 +389,31 @@
         </div>
       </div>
 
+      <ToolRow
+        v-if="!calendarOnly && isPhone"
+        :state="state"
+        :states="states"
+        :cur-timezone.sync="curTimezone"
+        :show-best-times.sync="showBestTimes"
+        :cur-scheduled-event="curScheduledEvent"
+        :isGroup="isGroup"
+        :is-weekly="isWeekly"
+        :calendar-permission-granted="calendarPermissionGranted"
+        :week-offset="weekOffset"
+        :num-responses="respondents.length"
+        :mobile-num-days.sync="mobileNumDays"
+        :allow-schedule-event="allowScheduleEvent"
+        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+        @onShowBestTimesChange="onShowBestTimesChange"
+        @scheduleEvent="scheduleEvent"
+        @cancelScheduleEvent="cancelScheduleEvent"
+        @confirmScheduleEvent="confirmScheduleEvent"
+      />
+
+      <div v-if="!calendarOnly && isPhone" class="tw-mt-5">
+        <Advertisement></Advertisement>
+      </div>  
+      
       <div class="tw-px-4">
         <ToolRow
           v-if="!calendarOnly && isPhone"
@@ -526,6 +555,7 @@ import { availabilityTypes, eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
+import Advertisement from "@/components/event/Advertisement.vue"
 import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
@@ -2412,6 +2442,7 @@ export default {
     ToolRow,
     CalendarAccounts,
     RespondentsList,
+    Advertisement,
     GCalWeekSelector,
   },
 }
