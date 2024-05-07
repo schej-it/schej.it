@@ -238,8 +238,8 @@
               @confirmScheduleEvent="confirmScheduleEvent"
             />
 
-            <div v-if="!calendarOnly && !isPhone" class="tw-mt-10">
-              <Advertisement></Advertisement>
+            <div v-if="!calendarOnly && !isPhone">
+              <Advertisement class="tw-mt-10"></Advertisement>
             </div>
           </div>
 
@@ -388,31 +388,6 @@
           </template>
         </div>
       </div>
-
-      <ToolRow
-        v-if="!calendarOnly && isPhone"
-        :state="state"
-        :states="states"
-        :cur-timezone.sync="curTimezone"
-        :show-best-times.sync="showBestTimes"
-        :cur-scheduled-event="curScheduledEvent"
-        :isGroup="isGroup"
-        :is-weekly="isWeekly"
-        :calendar-permission-granted="calendarPermissionGranted"
-        :week-offset="weekOffset"
-        :num-responses="respondents.length"
-        :mobile-num-days.sync="mobileNumDays"
-        :allow-schedule-event="allowScheduleEvent"
-        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-        @onShowBestTimesChange="onShowBestTimesChange"
-        @scheduleEvent="scheduleEvent"
-        @cancelScheduleEvent="cancelScheduleEvent"
-        @confirmScheduleEvent="confirmScheduleEvent"
-      />
-
-      <div v-if="!calendarOnly && isPhone" class="tw-mt-5">
-        <Advertisement></Advertisement>
-      </div>  
       
       <div class="tw-px-4">
         <ToolRow
@@ -433,6 +408,12 @@
           @cancelScheduleEvent="cancelScheduleEvent"
           @confirmScheduleEvent="confirmScheduleEvent"
         />
+
+
+
+      <div v-if="!calendarOnly && isPhone">
+        <Advertisement class="tw-mt-5"></Advertisement>
+      </div>  
       </div>
 
       <!-- Fixed bottom section for mobile -->
