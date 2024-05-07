@@ -292,15 +292,13 @@
             <!-- Options section -->
             <div v-if="!isGroup" ref="optionsSection">
               <v-btn
-                class="tw-mb-2 tw-justify-between tw-px-0"
+                class="-tw-ml-2 tw-mb-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
                 block
                 text
                 @click="toggleShowOptions"
               >
-                <span class="tw-mr-1 tw-font-medium">Options</span>
-                <v-icon
-                  class="tw-mr-2"
-                  :class="`tw-rotate-${showOptions ? '180' : '0'}`"
+                <span class="tw-mr-1 tw-text-base tw-font-medium">Options</span>
+                <v-icon :class="`tw-rotate-${showOptions ? '180' : '0'}`"
                   >mdi-chevron-down</v-icon
                 ></v-btn
               >
@@ -835,11 +833,11 @@ export default {
             return "Toggle which calendars are used. Tap and drag to edit your availability."
           case this.states.EDIT_AVAILABILITY:
             if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-              return "Tap and drag to add your if needed times in yellow"
+              return 'Tap and drag to add your "if needed" times in yellow.'
             }
-            return "Tap and drag to add your available times in green"
+            return 'Tap and drag to add your "available" times in green.'
           case this.states.SCHEDULE_EVENT:
-            return "Tap and drag on the calendar to schedule a Google Calendar event during those times"
+            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
           default:
             return ""
         }
@@ -850,9 +848,9 @@ export default {
           return "Toggle which calendars are used. Click and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
           if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-            return "Click and drag to add your if needed times in yellow."
+            return 'Click and drag to add your "if needed" times in yellow.'
           }
-          return "Click and drag to add your available times in green."
+          return 'Click and drag to add your "available" times in green.'
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times."
         default:

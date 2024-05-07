@@ -20,6 +20,14 @@
           }}
         </template>
       </div>
+      <v-spacer />
+      <div
+        v-if="isPhone"
+        class="tw-mt-2 tw-text-sm tw-font-normal tw-text-dark-gray"
+        :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
+      >
+        * if needed
+      </div>
     </div>
     <div
       class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-text-sm sm:tw-block sm:tw-overflow-visible"
@@ -99,6 +107,7 @@
         </div>
       </template>
       <div
+        v-if="!isPhone"
         class="tw-col-span-full tw-mt-2 tw-text-dark-gray"
         :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
       >
@@ -169,7 +178,7 @@
 </template>
 
 <script>
-import { _delete, getDateHoursOffset } from "@/utils"
+import { _delete, getDateHoursOffset, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
 
@@ -251,6 +260,9 @@ export default {
         }
       }
       return false
+    },
+    isPhone() {
+      return isPhone(this.$vuetify)
     },
   },
 
