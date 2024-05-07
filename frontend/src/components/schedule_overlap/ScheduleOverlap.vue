@@ -1496,14 +1496,17 @@ export default {
       await post(`/events/${this.event._id}/response`, payload)
 
       // Update analytics
+      const addedIfNeededTimes = this.ifNeededArray.length > 0
       if (this.authUser) {
         if (this.authUser._id in this.parsedResponses) {
           this.$posthog?.capture(`Edited ${type}`, {
             eventId: this.event._id,
+            addedIfNeededTimes,
           })
         } else {
           this.$posthog?.capture(`Added ${type}`, {
             eventId: this.event._id,
+            addedIfNeededTimes,
           })
         }
       } else {
@@ -1511,11 +1514,13 @@ export default {
           this.$posthog?.capture(`Edited ${type} as guest`, {
             eventId: this.event._id,
             name,
+            addedIfNeededTimes,
           })
         } else {
           this.$posthog?.capture(`Added ${type} as guest`, {
             eventId: this.event._id,
             name,
+            addedIfNeededTimes,
           })
         }
       }
