@@ -18,8 +18,15 @@
         </v-btn>
         <HelpDialog v-model="helpDialog">
           <template v-slot:header>Events</template>
-          Use events to collect people's availabilities and compare them across
-          certain days.
+          <div>
+            Use events to collect people's availabilities and compare them
+            across certain days.
+          </div>
+          <div
+            class="tw-mt-4 tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
+          >
+            Ideal for one-time meetings
+          </div>
         </HelpDialog>
       </template>
     </v-card-title>
