@@ -55,9 +55,10 @@ func createEvent(c *gin.Context) {
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
 
-		// Only for discrete events
-		NotificationsEnabled *bool    `json:"notificationsEnabled"`
-		Remindees            []string `json:"remindees"`
+		// Only for events (not groups)
+		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
+		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
+		Remindees                []string `json:"remindees"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -81,14 +82,15 @@ func createEvent(c *gin.Context) {
 
 	// Construct event object
 	event := models.Event{
-		Id:                   primitive.NewObjectID(),
-		OwnerId:              ownerId,
-		Name:                 payload.Name,
-		Duration:             payload.Duration,
-		Dates:                payload.Dates,
-		NotificationsEnabled: payload.NotificationsEnabled,
-		Type:                 payload.Type,
-		Responses:            make(map[string]*models.Response),
+		Id:                       primitive.NewObjectID(),
+		OwnerId:                  ownerId,
+		Name:                     payload.Name,
+		Duration:                 payload.Duration,
+		Dates:                    payload.Dates,
+		NotificationsEnabled:     payload.NotificationsEnabled,
+		BlindAvailabilityEnabled: payload.BlindAvailabilityEnabled,
+		Type:                     payload.Type,
+		Responses:                make(map[string]*models.Response),
 	}
 
 	// Generate short id
@@ -205,9 +207,10 @@ func editEvent(c *gin.Context) {
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
 
-		// Only for discrete events
-		NotificationsEnabled *bool    `json:"notificationsEnabled"`
-		Remindees            []string `json:"remindees"`
+		// Only for events (not groups)
+		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
+		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
+		Remindees                []string `json:"remindees"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -247,6 +250,7 @@ func editEvent(c *gin.Context) {
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
 	event.NotificationsEnabled = payload.NotificationsEnabled
+	event.BlindAvailabilityEnabled = payload.BlindAvailabilityEnabled
 	event.Type = payload.Type
 
 	// Update remindees
