@@ -388,7 +388,7 @@
           </template>
         </div>
       </div>
-      
+
       <div class="tw-px-4">
         <ToolRow
           v-if="!calendarOnly && isPhone"
@@ -409,11 +409,9 @@
           @confirmScheduleEvent="confirmScheduleEvent"
         />
 
-
-
-      <div v-if="!calendarOnly && isPhone">
-        <Advertisement class="tw-mt-5"></Advertisement>
-      </div>  
+        <div v-if="!calendarOnly && isPhone">
+          <Advertisement class="tw-mt-5"></Advertisement>
+        </div>
       </div>
 
       <!-- Fixed bottom section for mobile -->
@@ -944,6 +942,33 @@ export default {
               ...this.event.responses[userId],
               availability: new Set(),
             }
+          }
+        }
+        return parsed
+      }
+
+      // Return only current user availability if using blind availabilities and user is not owner
+      if (!this.isOwner) {
+        const guestName = "TODO"
+        const userId = this.authUser?._id ?? guestName
+        if (userId in this.event.responses) {
+          const user = {
+            ...this.event.responses[userId].user,
+            _id: userId,
+          }
+          parsed[userId] = {
+            ...this.event.responses[userId],
+            availability: new Set(
+              this.fetchedResponses[userId]?.availability?.map((a) =>
+                new Date(a).getTime()
+              )
+            ),
+            ifNeeded: new Set(
+              this.fetchedResponses[userId]?.ifNeeded?.map((a) =>
+                new Date(a).getTime()
+              )
+            ),
+            user: user,
           }
         }
         return parsed
