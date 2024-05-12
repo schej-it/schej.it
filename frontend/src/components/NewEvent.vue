@@ -147,6 +147,18 @@
           <v-expand-transition>
             <div v-show="showAdvancedOptions">
               <div class="tw-my-2 tw-space-y-4">
+                <v-checkbox
+                  v-show="authUser"
+                  v-model="blindAvailabilityEnabled"
+                  label="Only show responses to event owner"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <span class="tw-text-sm tw-text-very-dark-gray"
+                      >Only show responses to event owner</span
+                    >
+                  </template>
+                </v-checkbox>
                 <TimezoneSelector v-model="timezone" label="Timezone" />
                 <EmailInput
                   v-show="authUser"
@@ -261,6 +273,7 @@ export default {
     selectedDays: [],
     selectedDaysOfWeek: [],
     notificationsEnabled: false,
+    blindAvailabilityEnabled: false,
 
     // Date options
     dateOptions: Object.freeze({
@@ -399,6 +412,7 @@ export default {
 
       const name = this.name
       const notificationsEnabled = this.notificationsEnabled
+      const blindAvailabilityEnabled = this.blindAvailabilityEnabled
       const remindees = this.emails
       if (!this.edit) {
         // Create new event on backend
@@ -407,6 +421,7 @@ export default {
           duration,
           dates,
           notificationsEnabled,
+          blindAvailabilityEnabled,
           remindees,
           type,
         })
@@ -428,6 +443,7 @@ export default {
               eventDuration: duration,
               eventDates: JSON.stringify(dates),
               eventNotificationsEnabled: notificationsEnabled,
+              eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
               eventRemindees: remindees,
               eventType: type,
             })
@@ -448,6 +464,7 @@ export default {
             duration,
             dates,
             notificationsEnabled,
+            blindAvailabilityEnabled,
             remindees,
             type,
           })
@@ -458,6 +475,7 @@ export default {
                 eventDuration: duration,
                 eventDates: JSON.stringify(dates),
                 eventNotificationsEnabled: notificationsEnabled,
+                eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
                 eventRemindees: remindees,
                 eventType: type,
               })
