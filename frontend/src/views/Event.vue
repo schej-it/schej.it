@@ -285,7 +285,11 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
         >
-          {{ userHasResponded ? "Edit availability" : "Add availability" }}
+          {{
+            userHasResponded || showGuestEditAvailability
+              ? "Edit availability"
+              : "Add availability"
+          }}
         </v-btn>
       </template>
       <template v-else-if="isEditing">
