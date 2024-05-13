@@ -1,25 +1,34 @@
 <template>
   <div>
     <div class="tw-flex tw-items-center tw-font-medium">
-      <div class="tw-mr-1 tw-text-lg">
-        {{ !isGroup ? "Responses" : "Members" }}
-      </div>
-      <div class="tw-font-normal">
-        <template v-if="curRespondents.length === 0">
-          {{
-            isCurTimeslotSelected
-              ? `(${numUsersAvailable}/${respondents.length})`
-              : `(${respondents.length})`
-          }}
-        </template>
-        <template v-else>
-          {{
-            isCurTimeslotSelected
-              ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
-              : `(${curRespondents.length})`
-          }}
-        </template>
-      </div>
+      <template v-if="!isOwner && event.blindAvailabilityEnabled">
+        {{
+          respondents.length === 0
+            ? "Enter your availability..."
+            : "Your response"
+        }}
+      </template>
+      <template v-else>
+        <div class="tw-mr-1 tw-text-lg">
+          {{ !isGroup ? "Responses" : "Members" }}
+        </div>
+        <div class="tw-font-normal">
+          <template v-if="curRespondents.length === 0">
+            {{
+              isCurTimeslotSelected
+                ? `(${numUsersAvailable}/${respondents.length})`
+                : `(${respondents.length})`
+            }}
+          </template>
+          <template v-else>
+            {{
+              isCurTimeslotSelected
+                ? `(${numCurRespondentsAvailable}/${curRespondents.length})`
+                : `(${curRespondents.length})`
+            }}
+          </template>
+        </div>
+      </template>
       <v-spacer />
       <div
         v-if="isPhone"
@@ -37,7 +46,12 @@
           : ''
       "
     >
-      <template v-if="respondents.length === 0">
+      <template
+        v-if="
+          respondents.length === 0 &&
+          !(!isOwner && event.blindAvailabilityEnabled)
+        "
+      >
         <div class="tw-text-very-dark-gray">No responses yet!</div>
       </template>
       <template v-else>
@@ -107,12 +121,19 @@
         </div>
       </template>
       <div
-        v-if="!isPhone"
+        v-if="!isPhone && respondents.length > 0"
         class="tw-col-span-full tw-mt-2 tw-text-dark-gray"
         :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
       >
         * if needed
       </div>
+    </div>
+
+    <div
+      v-if="event.blindAvailabilityEnabled"
+      class="tw-mt-2 tw-text-xs tw-italic tw-text-very-dark-gray"
+    >
+      Responses are only visible to event creator
     </div>
 
     <div
@@ -195,6 +216,7 @@ export default {
     curTimeslot: { type: Object, required: true },
     curTimeslotAvailability: { type: Object, required: true },
     eventId: { type: String, required: true },
+    event: { type: Object, required: true },
     respondents: { type: Array, required: true },
     parsedResponses: { type: Object, required: true },
     isOwner: { type: Boolean, required: true },

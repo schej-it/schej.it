@@ -365,7 +365,7 @@
           <template v-else>
             <RespondentsList
               ref="respondentsList"
-              :max-height="delayedShowStickyRespondents ? 100 : undefined"
+              :event="event"
               :eventId="event._id"
               :day="days[curTimeslot.dayIndex]"
               :time="times[curTimeslot.timeIndex]"
@@ -465,6 +465,7 @@
             <div class="tw-bg-white tw-p-4">
               <RespondentsList
                 :max-height="100"
+                :event="event"
                 :eventId="event._id"
                 :day="days[curTimeslot.dayIndex]"
                 :time="times[curTimeslot.timeIndex]"

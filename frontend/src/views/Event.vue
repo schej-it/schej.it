@@ -434,11 +434,13 @@ export default {
 
     /** Whether to show "Edit availability" for a guest, and allow them to edit their availability with the main button */
     showGuestEditAvailability() {
+      const c = this.scheduleOverlapComponent
       return (
         !this.authUser &&
         this.event?.blindAvailabilityEnabled &&
-        !this.scheduleOverlapComponent?.isOwner &&
-        this.scheduleOverlapComponent?.guestName?.length > 0
+        !c?.isOwner &&
+        c?.guestName?.length > 0 &&
+        c?.guestName in c?.parsedResponses
       )
     },
   },
