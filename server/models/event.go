@@ -25,6 +25,9 @@ type Event struct {
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
+	// Whether to enable blind availability
+	BlindAvailabilityEnabled *bool `json:"blindAvailabilityEnabled" bons:"blindAvailabilityEnabled,omitempty"`
+
 	// Availability responses
 	Responses map[string]*Response `json:"responses" bson:"responses"`
 

@@ -365,7 +365,7 @@
           <template v-else>
             <RespondentsList
               ref="respondentsList"
-              :max-height="delayedShowStickyRespondents ? 100 : undefined"
+              :event="event"
               :eventId="event._id"
               :day="days[curTimeslot.dayIndex]"
               :time="times[curTimeslot.timeIndex]"
@@ -388,7 +388,7 @@
           </template>
         </div>
       </div>
-      
+
       <div class="tw-px-4">
         <ToolRow
           v-if="!calendarOnly && isPhone"
@@ -409,11 +409,9 @@
           @confirmScheduleEvent="confirmScheduleEvent"
         />
 
-
-
-      <div v-if="!calendarOnly && isPhone">
-        <Advertisement class="tw-mt-5"></Advertisement>
-      </div>  
+        <div v-if="!calendarOnly && isPhone">
+          <Advertisement class="tw-mt-5"></Advertisement>
+        </div>
       </div>
 
       <!-- Fixed bottom section for mobile -->
@@ -467,6 +465,7 @@
             <div class="tw-bg-white tw-p-4">
               <RespondentsList
                 :max-height="100"
+                :event="event"
                 :eventId="event._id"
                 :day="days[curTimeslot.dayIndex]"
                 :time="times[curTimeslot.timeIndex]"
@@ -949,6 +948,33 @@ export default {
         return parsed
       }
 
+      // Return only current user availability if using blind availabilities and user is not owner
+      if (this.event.blindAvailabilityEnabled && !this.isOwner) {
+        const guestName = localStorage[this.guestNameKey]
+        const userId = this.authUser?._id ?? guestName
+        if (userId in this.event.responses) {
+          const user = {
+            ...this.event.responses[userId].user,
+            _id: userId,
+          }
+          parsed[userId] = {
+            ...this.event.responses[userId],
+            availability: new Set(
+              this.fetchedResponses[userId]?.availability?.map((a) =>
+                new Date(a).getTime()
+              )
+            ),
+            ifNeeded: new Set(
+              this.fetchedResponses[userId]?.ifNeeded?.map((a) =>
+                new Date(a).getTime()
+              )
+            ),
+            user: user,
+          }
+        }
+        return parsed
+      }
+
       // Otherwise, parse responses so that if _id is null (i.e. guest user), then it is set to the guest user's name
       for (const k of Object.keys(this.event.responses)) {
         const newUser = {
@@ -1076,6 +1102,15 @@ export default {
         // Loading responses
         this.loadingResponses.loading
       )
+    },
+
+    /** Localstorage key containing the guest's name */
+    guestNameKey() {
+      return `${this.event._id}.guestName`
+    },
+    /** The guest name stored in localstorage */
+    guestName() {
+      return localStorage[this.guestNameKey]
     },
   },
   methods: {
@@ -1501,6 +1536,7 @@ export default {
         } else {
           payload.guest = true
           payload.name = name
+          localStorage[this.guestNameKey] = name
         }
       }
 

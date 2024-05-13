@@ -180,7 +180,7 @@
                   @click="addAvailability"
                 >
                   {{
-                    userHasResponded || isGroup
+                    userHasResponded || isGroup || showGuestEditAvailability
                       ? "Edit availability"
                       : "Add availability"
                   }}
@@ -285,7 +285,11 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="addAvailability"
         >
-          {{ userHasResponded ? "Edit availability" : "Add availability" }}
+          {{
+            userHasResponded || showGuestEditAvailability
+              ? "Edit availability"
+              : "Add availability"
+          }}
         </v-btn>
       </template>
       <template v-else-if="isEditing">
@@ -431,14 +435,35 @@ export default {
     numResponses() {
       return this.scheduleOverlapComponent?.respondents.length
     },
+
+    /** Whether to show "Edit availability" for a guest, and allow them to edit their availability with the main button */
+    showGuestEditAvailability() {
+      const c = this.scheduleOverlapComponent
+      return (
+        !this.authUser &&
+        this.event?.blindAvailabilityEnabled &&
+        !c?.isOwner &&
+        c?.guestName?.length > 0 &&
+        c?.guestName in c?.parsedResponses
+      )
+    },
   },
 
   methods: {
     ...mapActions(["showError", "showInfo"]),
+    /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
     addAvailability() {
-      /* Show choice dialog if not signed in, otherwise, immediately start editing availability */
       if (!this.scheduleOverlapComponent) return
 
+      // Edit guest availability if guest edit availability enabled
+      if (this.showGuestEditAvailability) {
+        this.curGuestId = this.scheduleOverlapComponent?.guestName
+        this.scheduleOverlapComponent.populateUserAvailability(this.curGuestId)
+        this.scheduleOverlapComponent?.startEditing()
+        return
+      }
+
+      // Start editing if calendar permission granted or user has responded, otherwise show choice dialog
       if (
         (this.authUser && this.calendarPermissionGranted) ||
         this.userHasResponded

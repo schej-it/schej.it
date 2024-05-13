@@ -30,9 +30,11 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 	} else {
 		eventInfoText += fmt.Sprintf(
 			"\n*Notifications Enabled*: %v\n"+
-				"*Num remindees*: %v",
+				"*Num remindees*: %v\n"+
+				"*Blind availability*: %v",
 			utils.Coalesce(event.NotificationsEnabled),
 			len(utils.Coalesce(event.Remindees)),
+			utils.Coalesce(event.BlindAvailabilityEnabled),
 		)
 	}
 
