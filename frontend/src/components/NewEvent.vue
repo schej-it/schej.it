@@ -548,6 +548,7 @@ export default {
           this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
           this.endTime = (this.startTime + this.event.duration) % 24
           this.notificationsEnabled = this.event.notificationsEnabled
+          this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
 
           if (this.event.type === eventTypes.SPECIFIC_DATES) {
             this.selectedDateOption = this.dateOptions.SPECIFIC
