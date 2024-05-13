@@ -948,7 +948,7 @@ export default {
       }
 
       // Return only current user availability if using blind availabilities and user is not owner
-      if (!this.isOwner) {
+      if (this.event.blindAvailabilityEnabled && !this.isOwner) {
         const guestName = localStorage[this.guestNameKey]
         const userId = this.authUser?._id ?? guestName
         if (userId in this.event.responses) {

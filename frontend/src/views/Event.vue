@@ -180,7 +180,7 @@
                   @click="addAvailability"
                 >
                   {{
-                    userHasResponded || isGroup
+                    userHasResponded || isGroup || showGuestEditAvailability
                       ? "Edit availability"
                       : "Add availability"
                   }}
@@ -431,14 +431,32 @@ export default {
     numResponses() {
       return this.scheduleOverlapComponent?.respondents.length
     },
+
+    /** Whether to show "Edit availability" for a guest, and allow them to edit their availability with the main button */
+    showGuestEditAvailability() {
+      return (
+        this.event?.blindAvailabilityEnabled &&
+        !this.scheduleOverlapComponent?.isOwner &&
+        this.scheduleOverlapComponent?.guestName?.length > 0
+      )
+    },
   },
 
   methods: {
     ...mapActions(["showError", "showInfo"]),
+    /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
     addAvailability() {
-      /* Show choice dialog if not signed in, otherwise, immediately start editing availability */
       if (!this.scheduleOverlapComponent) return
 
+      // Edit guest availability if guest edit availability enabled
+      if (this.showGuestEditAvailability) {
+        this.curGuestId = this.scheduleOverlapComponent?.guestName
+        this.scheduleOverlapComponent.populateUserAvailability(this.curGuestId)
+        this.scheduleOverlapComponent?.startEditing()
+        return
+      }
+
+      // Start editing if calendar permission granted or user has responded, otherwise show choice dialog
       if (
         (this.authUser && this.calendarPermissionGranted) ||
         this.userHasResponded
