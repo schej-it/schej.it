@@ -949,7 +949,7 @@ export default {
 
       // Return only current user availability if using blind availabilities and user is not owner
       if (!this.isOwner) {
-        const guestName = "TODO"
+        const guestName = localStorage[this.guestNameKey]
         const userId = this.authUser?._id ?? guestName
         if (userId in this.event.responses) {
           const user = {
@@ -1101,6 +1101,15 @@ export default {
         // Loading responses
         this.loadingResponses.loading
       )
+    },
+
+    /** Localstorage key containing the guest's name */
+    guestNameKey() {
+      return `${this.event._id}.guestName`
+    },
+    /** The guest name stored in localstorage */
+    guestName() {
+      return localStorage[this.guestNameKey]
     },
   },
   methods: {
@@ -1526,6 +1535,7 @@ export default {
         } else {
           payload.guest = true
           payload.name = name
+          localStorage[this.guestNameKey] = name
         }
       }
 
