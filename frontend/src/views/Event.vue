@@ -105,17 +105,26 @@
               >
                 {{ dateString }}
               </div>
-              <v-btn
-                v-if="canEdit"
-                id="edit-event-btn"
-                @click="editEvent"
-                icon
-                dense
-                class="tw-min-w-0 tw-px-2 tw-text-sm tw-text-green sm:tw-text-base"
-              >
-                <v-icon v-if="!isPhone" small>mdi-pencil</v-icon>
-                <span v-else class="tw-underline">Edit</span>
-              </v-btn>
+              <template v-if="canEdit">
+                <v-btn
+                  v-if="isPhone"
+                  id="edit-event-btn"
+                  @click="editEvent"
+                  class="tw-px-2 tw-text-sm tw-text-green tw-underline"
+                  text
+                  >Edit event</v-btn
+                >
+                <v-btn
+                  v-else
+                  id="edit-event-btn"
+                  @click="editEvent"
+                  icon
+                  dense
+                  class="tw-min-w-0 tw-px-2 tw-text-sm tw-text-green sm:tw-text-base"
+                >
+                  <v-icon small>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
             </div>
           </div>
           <v-spacer />
