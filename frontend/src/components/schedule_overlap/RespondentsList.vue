@@ -2,11 +2,7 @@
   <div>
     <div class="tw-flex tw-items-center tw-font-medium">
       <template v-if="!isOwner && event.blindAvailabilityEnabled">
-        {{
-          respondents.length === 0
-            ? "Enter your availability..."
-            : "Your response"
-        }}
+        Your response
       </template>
       <template v-else>
         <div class="tw-mr-1 tw-text-lg">
@@ -46,14 +42,15 @@
           : ''
       "
     >
-      <template
-        v-if="
-          respondents.length === 0 &&
-          !(!isOwner && event.blindAvailabilityEnabled)
-        "
-      >
-        <div class="tw-text-very-dark-gray">No responses yet!</div>
-      </template>
+      <div v-if="respondents.length === 0" class="tw-mb-6">
+        <span
+          class="tw-text-very-dark-gray"
+          v-if="!isOwner && event.blindAvailabilityEnabled"
+        >
+          No response yet!
+        </span>
+        <span class="tw-text-very-dark-gray" v-else>No responses yet!</span>
+      </div>
       <template v-else>
         <div
           v-for="(user, i) in respondents"
