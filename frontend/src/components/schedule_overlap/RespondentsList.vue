@@ -130,7 +130,7 @@
       v-if="event.blindAvailabilityEnabled"
       class="tw-mt-2 tw-text-xs tw-italic tw-text-very-dark-gray"
     >
-      Responses are only visible to event creator
+      Responses are only visible to {{ isOwner ? "you" : "event creator" }}
     </div>
 
     <div
