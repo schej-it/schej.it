@@ -155,7 +155,7 @@
                 >
                   <template v-slot:label>
                     <span class="tw-text-sm tw-text-very-dark-gray"
-                      >Only show responses to event owner</span
+                      >Only show responses to event creator</span
                     >
                   </template>
                 </v-checkbox>
