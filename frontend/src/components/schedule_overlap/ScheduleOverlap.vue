@@ -619,7 +619,10 @@ export default {
       dragCur: null,
 
       /* Variables for options */
-      showOptions: localStorage["showAvailabilityOptions"] == "true",
+      showOptions:
+        localStorage["showAvailabilityOptions"] == undefined
+          ? true
+          : localStorage["showAvailabilityOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
