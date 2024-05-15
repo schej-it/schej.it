@@ -126,40 +126,29 @@
             </v-input>
           </v-expand-transition>
         </div>
-        <v-checkbox
-          v-if="allowNotifications"
-          v-model="notificationsEnabled"
-          label="Email me each time someone joins my event"
-          hide-details
-          class="tw-mt-2"
-        />
+
         <div>
           <v-btn
-            class="tw-justify-start tw-pl-0"
+            class="tw-flex tw-justify-start tw-items-end tw-p-1 tw-text-lg"
             block
             text
-            @click="() => toggleAdvancedOptions()"
-            ><span class="tw-mr-1">Advanced options</span>
-            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
+            @click="() => toggleEmailReminders()"
+            ><span class="tw-mr-1">Email reminders</span>
+            <v-icon :class="`tw-rotate-${showEmailReminders ? '180' : '0'}`" :size="30"
               >mdi-chevron-down</v-icon
             ></v-btn
           >
           <v-expand-transition>
-            <div v-show="showAdvancedOptions">
-              <div class="tw-my-2 tw-space-y-4">
+            <div v-show="showEmailReminders">
+              <div class="tw-my-2 tw-space-y-5">
                 <v-checkbox
-                  v-show="authUser"
-                  v-model="blindAvailabilityEnabled"
-                  label="Only show responses to event owner"
+                  v-if="allowNotifications"
+                  v-model="notificationsEnabled"
+                  label="Email me each time someone joins my event"
                   hide-details
-                >
-                  <template v-slot:label>
-                    <span class="tw-text-sm tw-text-very-dark-gray"
-                      >Only show responses to event creator</span
-                    >
-                  </template>
-                </v-checkbox>
-                <TimezoneSelector v-model="timezone" label="Timezone" />
+                  class="tw-mt-2"
+                />
+
                 <EmailInput
                   v-show="authUser"
                   ref="emailReminders"
@@ -193,7 +182,40 @@
               </div>
             </div>
           </v-expand-transition>
-          <div class="tw-bg-red" ref="advancedOpenScrollTo"></div>
+          <div ref="emailRemindersOpenScrollTo"></div>
+        </div>
+
+        <div>
+          <v-btn
+          class="tw-flex tw-justify-start tw-items-end tw-p-1 tw-text-lg -tw-mt-2"
+            block
+            text
+            @click="() => toggleAdvancedOptions()"
+            ><span class="tw-mr-1">Advanced options</span>
+            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`" :size="30"
+              >mdi-chevron-down</v-icon
+            ></v-btn
+          >
+          <v-expand-transition>
+            <div v-show="showAdvancedOptions">
+              <div class="tw-my-2 tw-space-y-5">
+                <v-checkbox
+                  v-show="authUser"
+                  v-model="blindAvailabilityEnabled"
+                  label="Only show responses to event owner"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <span class="tw-text-very-dark-gray"
+                      >Only show responses to event creator</span
+                    >
+                  </template>
+                </v-checkbox>
+                <TimezoneSelector v-model="timezone" label="Timezone" />
+              </div>
+            </div>
+          </v-expand-transition>
+          <div ref="advancedOpenScrollTo"></div>
         </div>
       </v-form>
     </v-card-text>
@@ -284,6 +306,7 @@ export default {
 
     // Advanced options
     showAdvancedOptions: false,
+    showEmailReminders: false,
     timezone: {},
     emails: [], // For email reminders
 
@@ -292,7 +315,7 @@ export default {
 
   mounted() {
     if (Object.keys(this.contactsPayload).length > 0) {
-      this.toggleAdvancedOptions(true)
+      this.toggleEmailReminders(true)
 
       /** Get previously filled out data after enabling contacts  */
       this.name = this.contactsPayload.name
@@ -496,10 +519,17 @@ export default {
     },
     toggleAdvancedOptions(delayed = false) {
       this.showAdvancedOptions = !this.showAdvancedOptions
+      if (this.showAdvancedOptions) this.scrollToElement(this.$refs.advancedOpenScrollTo, delayed)
+    },
 
-      const openScrollEl = this.$refs.advancedOpenScrollTo
+    toggleEmailReminders(delayed = false) {
+      this.showEmailReminders = !this.showEmailReminders
+      if (this.showEmailReminders) this.scrollToElement(this.$refs.emailRemindersOpenScrollTo, delayed)
+    },
 
-      if (this.dialog && openScrollEl && this.showAdvancedOptions) {
+    scrollToElement(element, delayed = false) {
+      const openScrollEl = element
+      if (this.dialog && openScrollEl) {
         setTimeout(
           () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
           delayed ? 500 : 200
