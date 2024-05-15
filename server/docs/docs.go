@@ -628,12 +628,18 @@ var doc = `{
                                         "guest": {
                                             "type": "boolean"
                                         },
+                                        "ifNeeded": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "manualAvailability": {
                                             "type": "object",
                                             "additionalProperties": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/primitive.DateTime"
+                                                    "type": "string"
                                                 }
                                             }
                                         },
@@ -1142,6 +1148,37 @@ var doc = `{
                 "tags": [
                     "users"
                 ],
+                "summary": "Returns users that match the search query",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query matching users' names/emails",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of user profile objects",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.User"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userId}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
                 "summary": "Returns the user by their user id",
                 "parameters": [
                     {
@@ -1252,8 +1289,7 @@ var doc = `{
                     "type": "string"
                 },
                 "endDate": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
+                    "type": "string"
                 },
                 "free": {
                     "description": "Whether the user is free during this event",
@@ -1263,8 +1299,7 @@ var doc = `{
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "object",
-                    "$ref": "#/definitions/primitive.DateTime"
+                    "type": "string"
                 },
                 "summary": {
                     "type": "string"
@@ -1284,14 +1319,15 @@ var doc = `{
                         "$ref": "#/definitions/models.Attendee"
                     }
                 },
+                "blindAvailabilityEnabled": {
+                    "description": "Whether to enable blind availability",
+                    "type": "boolean"
+                },
                 "calendarEventId": {
                     "type": "string"
                 },
                 "dates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/primitive.DateTime"
-                    }
+                    "type": "string"
                 },
                 "duration": {
                     "type": "number"
@@ -1376,10 +1412,7 @@ var doc = `{
             "type": "object",
             "properties": {
                 "availability": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/primitive.DateTime"
-                    }
+                    "type": "string"
                 },
                 "enabledCalendars": {
                     "description": "Maps email to an array of sub calendar ids",
@@ -1390,6 +1423,9 @@ var doc = `{
                             "type": "string"
                         }
                     }
+                },
+                "ifNeeded": {
+                    "type": "string"
                 },
                 "manualAvailability": {
                     "description": "Mapping from the start date of a day to the available times for that day",
@@ -1462,9 +1498,6 @@ var doc = `{
                     "type": "integer"
                 }
             }
-        },
-        "primitive.DateTime": {
-            "type": "integer"
         },
         "responses.Error": {
             "type": "object",

@@ -86,7 +86,7 @@ func searchUsers(c *gin.Context) {
 // @Produce json
 // @Param userId path string true "User ID"
 // @Success 200 {object} models.User "A user profile object"
-// @Router /users [get]
+// @Router /users/{userId} [get]
 func getUser(c *gin.Context) {
 	userId := c.Param("userId")
 	user := db.GetUserById(userId)
