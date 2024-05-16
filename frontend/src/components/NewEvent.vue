@@ -129,12 +129,14 @@
 
         <div>
           <v-btn
-            class="tw-flex tw-justify-start tw-items-end tw-p-1 tw-text-lg"
+            class="tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-lg"
             block
             text
             @click="() => toggleEmailReminders()"
             ><span class="tw-mr-1">Email reminders</span>
-            <v-icon :class="`tw-rotate-${showEmailReminders ? '180' : '0'}`" :size="30"
+            <v-icon
+              :class="`tw-rotate-${showEmailReminders ? '180' : '0'}`"
+              :size="30"
               >mdi-chevron-down</v-icon
             ></v-btn
           >
@@ -144,10 +146,15 @@
                 <v-checkbox
                   v-if="allowNotifications"
                   v-model="notificationsEnabled"
-                  label="Email me each time someone joins my event"
                   hide-details
                   class="tw-mt-2"
-                />
+                >
+                  <template v-slot:label>
+                    <span class="tw-text-sm tw-text-very-dark-gray"
+                      >Email me each time someone joins my event</span
+                    >
+                  </template>
+                </v-checkbox>
 
                 <EmailInput
                   v-show="authUser"
@@ -187,12 +194,14 @@
 
         <div>
           <v-btn
-          class="tw-flex tw-justify-start tw-items-end tw-p-1 tw-text-lg -tw-mt-2"
+            class="-tw-mt-2 tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-lg"
             block
             text
             @click="() => toggleAdvancedOptions()"
             ><span class="tw-mr-1">Advanced options</span>
-            <v-icon :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`" :size="30"
+            <v-icon
+              :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
+              :size="30"
               >mdi-chevron-down</v-icon
             ></v-btn
           >
@@ -202,11 +211,10 @@
                 <v-checkbox
                   v-show="authUser"
                   v-model="blindAvailabilityEnabled"
-                  label="Only show responses to event owner"
                   hide-details
                 >
                   <template v-slot:label>
-                    <span class="tw-text-very-dark-gray"
+                    <span class="tw-text-sm tw-text-very-dark-gray"
                       >Only show responses to event creator</span
                     >
                   </template>
@@ -519,12 +527,14 @@ export default {
     },
     toggleAdvancedOptions(delayed = false) {
       this.showAdvancedOptions = !this.showAdvancedOptions
-      if (this.showAdvancedOptions) this.scrollToElement(this.$refs.advancedOpenScrollTo, delayed)
+      if (this.showAdvancedOptions)
+        this.scrollToElement(this.$refs.advancedOpenScrollTo, delayed)
     },
 
     toggleEmailReminders(delayed = false) {
       this.showEmailReminders = !this.showEmailReminders
-      if (this.showEmailReminders) this.scrollToElement(this.$refs.emailRemindersOpenScrollTo, delayed)
+      if (this.showEmailReminders)
+        this.scrollToElement(this.$refs.emailRemindersOpenScrollTo, delayed)
     },
 
     scrollToElement(element, delayed = false) {
