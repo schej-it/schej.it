@@ -3,40 +3,59 @@
     :class="toggleState ? '' : 'tw-w-fit tw-min-w-[288px] tw-drop-shadow'"
     class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-text-black tw-transition-all"
   >
-    <div
-      :class="toggleState ? '' : 'tw-border-b-[1px] tw-px-4 tw-pt-1'"
-      class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-border-off-white tw-pb-1 tw-align-middle"
+    <v-btn
+      v-if="toggleState"
+      class="-tw-ml-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
+      block
+      text
+      @click="toggleShowCalendars"
     >
-      <div class="tw-font-medium">My calendars</div>
-      <v-btn
-        v-if="allowAddCalendarAccount"
-        @click="addCalendarAccount"
-        class="-tw-mr-2"
-        icon
-        ><v-icon class="tw-text-very-dark-gray">mdi-plus</v-icon></v-btn
-      >
+      <span class="tw-mr-1 tw-text-base tw-font-medium">My calendars</span>
+      <v-icon :class="`tw-rotate-${showCalendars ? '180' : '0'}`"
+        >mdi-chevron-down</v-icon
+      ></v-btn
+    >
+    <div
+      v-else
+      class="tw-border-b tw-border-off-white tw-px-4 tw-py-3 tw-font-medium"
+    >
+      My calendars
     </div>
-    <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'" class="">
-      <CalendarAccount
-        v-for="account in calendarAccounts"
-        :key="account.email"
-        :syncWithBackend="syncWithBackend"
-        :toggleState="toggleState"
-        :account="account"
-        :eventId="eventId"
-        :openRemoveDialog="openRemoveDialog"
-        :calendarEventsMap="calendarEventsMap"
-        :removeDialog="removeDialog"
-        :selectedRemoveEmail="selectedRemoveEmail"
-        :fillSpace="fillSpace"
-        @toggleCalendarAccount="
-          (payload) => $emit('toggleCalendarAccount', payload)
-        "
-        @toggleSubCalendarAccount="
-          (payload) => $emit('toggleSubCalendarAccount', payload)
-        "
-      ></CalendarAccount>
-    </div>
+    <v-expand-transition>
+      <span v-if="showCalendars">
+        <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'">
+          <CalendarAccount
+            v-for="account in calendarAccounts"
+            :key="account.email"
+            :syncWithBackend="syncWithBackend"
+            :toggleState="toggleState"
+            :account="account"
+            :eventId="eventId"
+            :openRemoveDialog="openRemoveDialog"
+            :calendarEventsMap="calendarEventsMap"
+            :removeDialog="removeDialog"
+            :selectedRemoveEmail="selectedRemoveEmail"
+            :fillSpace="fillSpace"
+            @toggleCalendarAccount="
+              (payload) => $emit('toggleCalendarAccount', payload)
+            "
+            @toggleSubCalendarAccount="
+              (payload) => $emit('toggleSubCalendarAccount', payload)
+            "
+          ></CalendarAccount>
+        </div>
+        <v-btn
+          v-if="allowAddCalendarAccount"
+          text
+          color="primary"
+          :class="
+            toggleState ? '-tw-ml-2 tw-mt-0 tw-w-min tw-px-2' : 'tw-w-full'
+          "
+          @click="addCalendarAccount"
+          >+ Add calendar</v-btn
+        >
+      </span>
+    </v-expand-transition>
     <v-dialog v-model="removeDialog" width="500" persistent>
       <v-card>
         <v-card-title>Are you sure?</v-card-title>
@@ -77,6 +96,10 @@ export default {
     removeDialog: false,
     selectedRemoveEmail: "",
     calendarAccounts: {},
+    showCalendars:
+      localStorage["showCalendars"] == undefined
+        ? true
+        : localStorage["showCalendars"] == "true",
   }),
 
   computed: {
@@ -126,6 +149,10 @@ export default {
             "There was a problem removing this account! Please try again later."
           )
         })
+    },
+    toggleShowCalendars() {
+      this.showCalendars = !this.showCalendars
+      localStorage["showCalendars"] = this.showCalendars
     },
   },
 
