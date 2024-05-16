@@ -8,7 +8,7 @@
     <v-select
       id="timezone-select"
       :value="value"
-      @input="$emit('input', $event)"
+      @input="onChange"
       :items="timezones"
       :menu-props="{ auto: true }"
       class="-tw-mt-px tw-w-52 tw-text-sm"
@@ -34,6 +34,9 @@
         </div>
       </template>
     </v-select>
+    <v-btn v-if="timezoneModified" @click="resetTimezone" icon color="primary"
+      ><v-icon>mdi-refresh</v-icon></v-btn
+    >
   </div>
 </template>
 
@@ -47,25 +50,31 @@ export default {
   props: {
     value: { type: Object, required: true },
     label: { type: String, default: "Shown in" },
-    labelColor: {type: String, default: ""}
+    labelColor: { type: String, default: "" },
   },
 
   created() {
     if (this.value.value) return // Timezone has already been set
 
-    // Set timezone to local timezone if timezone not already set
-    const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    let timezoneObject = this.timezones.find((t) => t.value === localTimezone)
-
-    if (!timezoneObject) {
-      const offset = spacetime.now(localTimezone).timezone().current.offset * 60
-      timezoneObject = this.timezones.find((t) => t.offset === offset)
+    // Set timezone to localstorage timezone if localstorage is set
+    if (localStorage["timezone"]) {
+      this.$emit("input", JSON.parse(localStorage["timezone"]))
+      this.timezoneModified = true
+      return
     }
 
-    this.$emit("input", timezoneObject)
+    // Otherwise, set timezone to local timezone
+    this.$emit("input", this.getLocalTimezone())
+  },
+
+  data() {
+    return {
+      timezoneModified: false, // Whether the timezone has been modified from the local timezone
+    }
   },
 
   computed: {
+    /** Returns an array of all supported timezones */
     timezones() {
       // ===============================================================================
       // Source: https://github.com/ndom91/react-timezone-select/blob/main/src/index.tsx
@@ -98,6 +107,33 @@ export default {
         .filter(Boolean)
         .sort((a, b) => a.offset - b.offset)
       return t
+    },
+  },
+
+  methods: {
+    /** Updates local storage and emits the new timezone */
+    onChange(val) {
+      localStorage["timezone"] = JSON.stringify(val)
+      this.$emit("input", val)
+      this.timezoneModified = true
+    },
+    /** Returns a timezone object for the local timezone */
+    getLocalTimezone() {
+      const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      let timezoneObject = this.timezones.find((t) => t.value === localTimezone)
+
+      if (!timezoneObject) {
+        const offset =
+          spacetime.now(localTimezone).timezone().current.offset * 60
+        timezoneObject = this.timezones.find((t) => t.offset === offset)
+      }
+      return timezoneObject
+    },
+    /** Resets timezone to the local timezone and clears localstorage as well */
+    resetTimezone() {
+      this.$emit("input", this.getLocalTimezone())
+      localStorage.removeItem("timezone")
+      this.timezoneModified = false
     },
   },
 }
