@@ -576,36 +576,53 @@ export default {
       this.$refs.confirmDetailsDialog?.setData(data)
       this.confirmDetailsDialog = true
     },
+
+    /** Populates the form fields based on this.event */
+    updateFieldsFromEvent() {
+      if (this.event) {
+        this.name = this.event.name
+
+        // Set start time, accounting for the timezone
+        this.startTime = Math.floor(
+          dateToTimeNum(this.event.dates[0], true) + this.timezone.offset / 60
+        )
+        this.startTime %= 24
+
+        this.endTime = (this.startTime + this.event.duration) % 24
+        this.notificationsEnabled = this.event.notificationsEnabled
+        this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
+
+        // TODO: need to make sure these dates take into account the timezone offset
+        if (this.event.type === eventTypes.SPECIFIC_DATES) {
+          this.selectedDateOption = this.dateOptions.SPECIFIC
+          const selectedDays = []
+          for (const date of this.event.dates) {
+            selectedDays.push(getISODateString(date))
+          }
+          this.selectedDays = selectedDays
+        } else if (this.event.type === eventTypes.DOW) {
+          this.selectedDateOption = this.dateOptions.DOW
+          const selectedDaysOfWeek = []
+          for (const date of this.event.dates) {
+            selectedDaysOfWeek.push(new Date(date).getDay())
+          }
+          this.selectedDaysOfWeek = selectedDaysOfWeek
+        }
+      }
+    },
   },
 
   watch: {
     event: {
       immediate: true,
       handler() {
-        // Populate event fields if this.event exists
-        if (this.event) {
-          this.name = this.event.name
-          this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
-          this.endTime = (this.startTime + this.event.duration) % 24
-          this.notificationsEnabled = this.event.notificationsEnabled
-          this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
-
-          if (this.event.type === eventTypes.SPECIFIC_DATES) {
-            this.selectedDateOption = this.dateOptions.SPECIFIC
-            const selectedDays = []
-            for (const date of this.event.dates) {
-              selectedDays.push(getISODateString(date))
-            }
-            this.selectedDays = selectedDays
-          } else if (this.event.type === eventTypes.DOW) {
-            this.selectedDateOption = this.dateOptions.DOW
-            const selectedDaysOfWeek = []
-            for (const date of this.event.dates) {
-              selectedDaysOfWeek.push(new Date(date).getDay())
-            }
-            this.selectedDaysOfWeek = selectedDaysOfWeek
-          }
-        }
+        this.updateFieldsFromEvent()
+      },
+    },
+    timezone: {
+      immediate: true,
+      handler() {
+        this.updateFieldsFromEvent()
       },
     },
     selectedDateOption() {

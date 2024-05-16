@@ -54,12 +54,15 @@ export default {
   },
 
   created() {
+    if (localStorage["timezone"]) {
+      this.timezoneModified = true
+    }
+
     if (this.value.value) return // Timezone has already been set
 
     // Set timezone to localstorage timezone if localstorage is set
     if (localStorage["timezone"]) {
       this.$emit("input", JSON.parse(localStorage["timezone"]))
-      this.timezoneModified = true
       return
     }
 
