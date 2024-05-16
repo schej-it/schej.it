@@ -127,7 +127,7 @@
           </v-expand-transition>
         </div>
 
-        <div>
+        <div v-if="authUser">
           <v-btn
             class="tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-lg"
             block

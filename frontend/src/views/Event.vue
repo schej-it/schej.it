@@ -186,7 +186,7 @@
                   :class="'tw-bg-green'"
                   :disabled="loading && !userHasResponded"
                   :style="{ opacity: availabilityBtnOpacity }"
-                  @click="addAvailability"
+                  @click="() => addAvailability()"
                 >
                   {{
                     userHasResponded || isGroup || showGuestEditAvailability
@@ -228,6 +228,8 @@
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
+        :showGuestEditAvailability="showGuestEditAvailability"
+        @addAvailability="addAvailability"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"
@@ -292,7 +294,7 @@
           class="tw-bg-white tw-text-green tw-transition-opacity"
           :disabled="loading && !userHasResponded"
           :style="{ opacity: availabilityBtnOpacity }"
-          @click="addAvailability"
+          @click="() => addAvailability()"
         >
           {{
             userHasResponded || showGuestEditAvailability
@@ -450,8 +452,8 @@ export default {
       const c = this.scheduleOverlapComponent
       return (
         !this.authUser &&
-        this.event?.blindAvailabilityEnabled &&
-        !c?.isOwner &&
+        // this.event?.blindAvailabilityEnabled &&
+        // !c?.isOwner &&
         c?.guestName?.length > 0 &&
         c?.guestName in c?.parsedResponses
       )
@@ -461,11 +463,11 @@ export default {
   methods: {
     ...mapActions(["showError", "showInfo"]),
     /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
-    addAvailability() {
+    addAvailability(ignoreGuestEdit = false) {
       if (!this.scheduleOverlapComponent) return
 
       // Edit guest availability if guest edit availability enabled
-      if (this.showGuestEditAvailability) {
+      if (!ignoreGuestEdit && this.showGuestEditAvailability) {
         this.curGuestId = this.scheduleOverlapComponent?.guestName
         this.scheduleOverlapComponent.populateUserAvailability(this.curGuestId)
         this.scheduleOverlapComponent?.startEditing()

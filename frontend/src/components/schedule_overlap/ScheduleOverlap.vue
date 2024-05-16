@@ -385,6 +385,14 @@
               @editGuestAvailability="editGuestAvailability"
               @refreshEvent="refreshEvent"
             />
+            <v-btn
+              v-if="showGuestEditAvailability"
+              text
+              color="primary"
+              class="-tw-ml-2 tw-mt-2 tw-px-2"
+              @click="() => $emit('addAvailability', true)"
+              >+ Add availability</v-btn
+            >
           </template>
         </div>
       </div>
@@ -568,6 +576,7 @@ export default {
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
     showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
+    showGuestEditAvailability: { type: Boolean, default: false }, // Whether to show edit button for a guest
 
     curGuestId: { type: String, default: "" }, // Id of the current guest being edited
 
