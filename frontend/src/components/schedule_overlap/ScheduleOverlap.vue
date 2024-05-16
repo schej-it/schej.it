@@ -386,7 +386,9 @@
               @refreshEvent="refreshEvent"
             />
             <v-btn
-              v-if="showGuestEditAvailability"
+              v-if="
+                showGuestEditAvailability && !event.blindAvailabilityEnabled
+              "
               text
               color="primary"
               class="-tw-ml-2 tw-mt-2 tw-px-2"
