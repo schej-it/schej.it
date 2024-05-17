@@ -11,10 +11,7 @@
         class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
-        <TimezoneSelector
-          :value="curTimezone"
-          @input="(val) => $emit('update:curTimezone', val)"
-        />
+        <TimezoneSelector :value="curTimezone" @input="updateCurTimezone" />
 
         <template v-if="state !== states.EDIT_AVAILABILITY">
           <div
@@ -152,6 +149,9 @@ export default {
     updateShowBestTimes(val) {
       this.$emit("update:showBestTimes", !!val)
       this.$emit("onShowBestTimesChange", !!val)
+    },
+    updateCurTimezone(val) {
+      this.$emit("update:curTimezone", val)
     },
   },
 }

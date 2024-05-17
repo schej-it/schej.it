@@ -85,7 +85,7 @@ html {
 }
 
 /** Buttons */
-.v-btn:not(.v-btn--round).v-size--default {
+.v-btn:not(.v-btn--round, .v-btn-toggle > .v-btn).v-size--default {
   height: 38px !important;
 }
 
