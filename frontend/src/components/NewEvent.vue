@@ -319,6 +319,8 @@ export default {
     emails: [], // For email reminders
 
     helpDialog: false,
+
+    eventPopulated: false, // Whether the form fields have been populated from the existing event (so we dont populate twice)
   }),
 
   mounted() {
@@ -579,7 +581,9 @@ export default {
 
     /** Populates the form fields based on this.event */
     updateFieldsFromEvent() {
-      if (this.event) {
+      if (!this.eventPopulated && this.event && "offset" in this.timezone) {
+        this.eventPopulated = true
+
         this.name = this.event.name
 
         // Set start time, accounting for the timezone
@@ -596,8 +600,12 @@ export default {
         if (this.event.type === eventTypes.SPECIFIC_DATES) {
           this.selectedDateOption = this.dateOptions.SPECIFIC
           const selectedDays = []
-          for (const date of this.event.dates) {
-            selectedDays.push(getISODateString(date))
+          for (let date of this.event.dates) {
+            // Convert date to the correct timezone
+            date = new Date(date)
+            date.setTime(date.getTime() + this.timezone.offset * 60 * 1000)
+
+            selectedDays.push(getISODateString(date, true))
           }
           this.selectedDays = selectedDays
         } else if (this.event.type === eventTypes.DOW) {
