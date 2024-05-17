@@ -6,8 +6,11 @@ import { isBetween } from "./general_utils"
 */
 
 /** Returns a string representation of the given date, i.e. May 14th is "5/14" */
-export const getDateString = (date) => {
+export const getDateString = (date, utc = false) => {
   date = new Date(date)
+  if (utc) {
+    return `${date.getUTCMonth() + 1}/${date.getUTCDate()}`
+  }
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
@@ -25,37 +28,60 @@ export const getISODateString = (date, utc = false) => {
 }
 
 /** Returns a string representing date range from date1 to date2, i.e. "5/14 - 5/27" */
-export const getDateRangeString = (date1, date2) => {
+export const getDateRangeString = (date1, date2, utc = false) => {
   date1 = new Date(date1)
   date2 = new Date(date2)
 
   // Correct date2 if time is 12am (because ending at 12am doesn't begin the next day)
-  if (date2.getHours() == 0) {
+  if ((utc && date2.getUTCHours() == 0) || (!utc && date2.getHours() == 0)) {
     date2 = getDateDayOffset(date2, -1)
   }
 
-  return getDateString(date1) + " - " + getDateString(date2)
+  return getDateString(date1, utc) + " - " + getDateString(date2, utc)
 }
 
 /** Returns a string representing the date range for the provided event */
 export const getDateRangeStringForEvent = (event) => {
+  let timezone = localStorage["timezone"]
+  if (timezone) timezone = JSON.parse(timezone)
+
   if (event.type === eventTypes.DOW || event.type === eventTypes.GROUP) {
     let s = ""
 
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    for (const date of event.dates) {
-      const abbr = dayAbbreviations[new Date(date).getDay()]
+    for (let date of event.dates) {
+      date = getDateWithTimezone(date)
+
+      const abbr = dayAbbreviations[date.getUTCDay()]
       s += abbr + ", "
     }
     s = s.substring(0, s.length - 2)
     return s
   } else if (event.type === eventTypes.SPECIFIC_DATES) {
-    const startDate = new Date(event.dates[0])
-    const endDate = new Date(event.dates[event.dates.length - 1])
-    return getDateRangeString(startDate, endDate)
+    const startDate = getDateWithTimezone(new Date(event.dates[0]))
+    const endDate = getDateWithTimezone(
+      new Date(event.dates[event.dates.length - 1])
+    )
+    return getDateRangeString(startDate, endDate, true)
   }
 
   return ""
+}
+
+/** Returns a a new date, offset by the timezone in local storage if it exists, offset by local timezone if not */
+export const getDateWithTimezone = (date) => {
+  date = new Date(date)
+
+  let timezone = localStorage["timezone"]
+  if (timezone) timezone = JSON.parse(timezone)
+
+  if (timezone) {
+    date.setTime(date.getTime() + timezone.offset * 60 * 1000)
+  } else {
+    date.setTime(date.getTime() - new Date().getTimezoneOffset() * 60 * 1000)
+  }
+
+  return date
 }
 
 /** Returns a new date object with the given date (e.g. 5/2/2022) and the specified time (e.g. "11:30") */

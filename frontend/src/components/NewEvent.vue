@@ -611,8 +611,12 @@ export default {
         } else if (this.event.type === eventTypes.DOW) {
           this.selectedDateOption = this.dateOptions.DOW
           const selectedDaysOfWeek = []
-          for (const date of this.event.dates) {
-            selectedDaysOfWeek.push(new Date(date).getDay())
+          for (let date of this.event.dates) {
+            // Convert date to the correct timezone
+            date = new Date(date)
+            date.setTime(date.getTime() + this.timezone.offset * 60 * 1000)
+
+            selectedDaysOfWeek.push(date.getUTCDay())
           }
           this.selectedDaysOfWeek = selectedDaysOfWeek
         }
