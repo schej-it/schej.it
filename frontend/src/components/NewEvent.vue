@@ -261,6 +261,7 @@ import {
   isPhone,
   validateEmail,
   signInGoogle,
+  getDateWithTimezone,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
@@ -319,8 +320,6 @@ export default {
     emails: [], // For email reminders
 
     helpDialog: false,
-
-    eventPopulated: false, // Whether the form fields have been populated from the existing event (so we dont populate twice)
   }),
 
   mounted() {
@@ -581,14 +580,12 @@ export default {
 
     /** Populates the form fields based on this.event */
     updateFieldsFromEvent() {
-      if (!this.eventPopulated && this.event && "offset" in this.timezone) {
-        this.eventPopulated = true
-
+      if (this.event) {
         this.name = this.event.name
 
         // Set start time, accounting for the timezone
         this.startTime = Math.floor(
-          dateToTimeNum(this.event.dates[0], true) + this.timezone.offset / 60
+          dateToTimeNum(getDateWithTimezone(this.event.dates[0]), true)
         )
         this.startTime %= 24
 
@@ -601,9 +598,7 @@ export default {
           this.selectedDateOption = this.dateOptions.SPECIFIC
           const selectedDays = []
           for (let date of this.event.dates) {
-            // Convert date to the correct timezone
-            date = new Date(date)
-            date.setTime(date.getTime() + this.timezone.offset * 60 * 1000)
+            date = getDateWithTimezone(date)
 
             selectedDays.push(getISODateString(date, true))
           }
@@ -612,9 +607,7 @@ export default {
           this.selectedDateOption = this.dateOptions.DOW
           const selectedDaysOfWeek = []
           for (let date of this.event.dates) {
-            // Convert date to the correct timezone
-            date = new Date(date)
-            date.setTime(date.getTime() + this.timezone.offset * 60 * 1000)
+            date = getDateWithTimezone(date)
 
             selectedDaysOfWeek.push(date.getUTCDay())
           }
@@ -626,12 +619,6 @@ export default {
 
   watch: {
     event: {
-      immediate: true,
-      handler() {
-        this.updateFieldsFromEvent()
-      },
-    },
-    timezone: {
       immediate: true,
       handler() {
         this.updateFieldsFromEvent()
