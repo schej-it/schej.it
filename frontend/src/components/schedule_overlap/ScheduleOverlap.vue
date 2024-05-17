@@ -387,12 +387,14 @@
             />
             <v-btn
               v-if="
-                showGuestEditAvailability && !event.blindAvailabilityEnabled
+                !authUser &&
+                guestAddedAvailability &&
+                !event.blindAvailabilityEnabled
               "
               text
               color="primary"
               class="-tw-ml-2 tw-mt-2 tw-px-2"
-              @click="() => $emit('addAvailability', true)"
+              @click="() => $emit('addAvailability')"
               >+ Add availability</v-btn
             >
           </template>
@@ -578,7 +580,6 @@ export default {
     showSnackbar: { type: Boolean, default: true }, // Whether to show snackbar when availability is automatically filled in
     animateTimeslotAlways: { type: Boolean, default: false }, // Whether to animate timeslots all the time
     showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
-    showGuestEditAvailability: { type: Boolean, default: false }, // Whether to show edit button for a guest
 
     curGuestId: { type: String, default: "" }, // Id of the current guest being edited
 
@@ -900,6 +901,8 @@ export default {
       return Object.values(this.parsedResponses).map((r) => r.user)
     },
     selectedGuestRespondent() {
+      if (this.guestAddedAvailability) return this.guestName
+
       if (this.curRespondents.length !== 1) return ""
 
       const user = this.parsedResponses[this.curRespondents[0]].user
@@ -1125,6 +1128,12 @@ export default {
     /** The guest name stored in localstorage */
     guestName() {
       return localStorage[this.guestNameKey]
+    },
+    /** Whether a guest has added their availability (saved in localstorage) */
+    guestAddedAvailability() {
+      return (
+        this.guestName?.length > 0 && this.guestName in this.parsedResponses
+      )
     },
   },
   methods: {

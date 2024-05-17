@@ -170,7 +170,11 @@
                   :style="{ opacity: availabilityBtnOpacity }"
                   @click="editGuestAvailability"
                 >
-                  {{ `Edit ${selectedGuestRespondent}'s availability` }}
+                  {{
+                    event.blindAvailabilityEnabled
+                      ? "Edit availability"
+                      : `Edit ${selectedGuestRespondent}'s availability`
+                  }}
                 </v-btn>
                 <v-btn
                   v-else
@@ -182,7 +186,7 @@
                   @click="() => addAvailability()"
                 >
                   {{
-                    userHasResponded || isGroup || showGuestEditAvailability
+                    userHasResponded || isGroup
                       ? "Edit availability"
                       : "Add availability"
                   }}
@@ -221,7 +225,6 @@
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
-        :showGuestEditAvailability="showGuestEditAvailability"
         @addAvailability="addAvailability"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
@@ -280,7 +283,11 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="editGuestAvailability"
         >
-          {{ `Edit ${selectedGuestRespondent}'s availability` }}
+          {{
+            event.blindAvailabilityEnabled
+              ? "Edit availability"
+              : `Edit ${selectedGuestRespondent}'s availability`
+          }}
         </v-btn>
         <v-btn
           v-else
@@ -289,11 +296,7 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="() => addAvailability()"
         >
-          {{
-            userHasResponded || showGuestEditAvailability
-              ? "Edit availability"
-              : "Add availability"
-          }}
+          {{ userHasResponded ? "Edit availability" : "Add availability" }}
         </v-btn>
       </template>
       <template v-else-if="isEditing">
@@ -439,33 +442,13 @@ export default {
     numResponses() {
       return this.scheduleOverlapComponent?.respondents.length
     },
-
-    /** Whether to show "Edit availability" for a guest, and allow them to edit their availability with the main button */
-    showGuestEditAvailability() {
-      const c = this.scheduleOverlapComponent
-      return (
-        !this.authUser &&
-        // this.event?.blindAvailabilityEnabled &&
-        // !c?.isOwner &&
-        c?.guestName?.length > 0 &&
-        c?.guestName in c?.parsedResponses
-      )
-    },
   },
 
   methods: {
     ...mapActions(["showError", "showInfo"]),
     /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
-    addAvailability(ignoreGuestEdit = false) {
+    addAvailability() {
       if (!this.scheduleOverlapComponent) return
-
-      // Edit guest availability if guest edit availability enabled
-      if (!ignoreGuestEdit && this.showGuestEditAvailability) {
-        this.curGuestId = this.scheduleOverlapComponent?.guestName
-        this.scheduleOverlapComponent.populateUserAvailability(this.curGuestId)
-        this.scheduleOverlapComponent?.startEditing()
-        return
-      }
 
       // Start editing if calendar permission granted or user has responded, otherwise show choice dialog
       if (
