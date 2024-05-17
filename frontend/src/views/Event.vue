@@ -107,22 +107,15 @@
               </div>
               <template v-if="canEdit">
                 <v-btn
-                  v-if="isPhone"
                   id="edit-event-btn"
                   @click="editEvent"
-                  class="tw-px-2 tw-text-sm tw-text-green tw-underline"
+                  class="tw-px-2 tw-text-sm tw-text-green"
                   text
-                  >Edit event</v-btn
                 >
-                <v-btn
-                  v-else
-                  id="edit-event-btn"
-                  @click="editEvent"
-                  icon
-                  dense
-                  class="tw-min-w-0 tw-px-2 tw-text-sm tw-text-green sm:tw-text-base"
-                >
-                  <v-icon small>mdi-pencil</v-icon>
+                  <v-icon v-if="!isPhone" class="tw-mr-1" small
+                    >mdi-pencil</v-icon
+                  >
+                  Edit event
                 </v-btn>
               </template>
             </div>
