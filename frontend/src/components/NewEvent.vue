@@ -129,7 +129,7 @@
 
         <div v-if="authUser">
           <v-btn
-            class="tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-lg"
+            class="tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-base"
             block
             text
             @click="() => toggleEmailReminders()"
@@ -194,7 +194,7 @@
 
         <div>
           <v-btn
-            class="-tw-mt-2 tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-lg"
+            class="-tw-mt-2 tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-base"
             block
             text
             @click="() => toggleAdvancedOptions()"
