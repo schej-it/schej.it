@@ -4,9 +4,17 @@
     :class="{ 'tw-py-4': !dialog, 'tw-flex-1': dialog }"
     class="tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-overflow-hidden tw-rounded-lg tw-transition-all"
   >
-    <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
+    <v-card-title class="tw-mb-2 tw-flex tw-gap-2 tw-px-4 sm:tw-px-8">
       <div>
-        {{ edit ? "Edit event" : "New event" }}
+        <div class="tw-mb-1">
+          {{ edit ? "Edit event" : "New event" }}
+        </div>
+        <div
+          v-if="dialog && showHelp"
+          class="tw-text-xs tw-font-normal tw-italic tw-text-dark-gray"
+        >
+          Ideal for one-time / recurring meetings
+        </div>
       </div>
       <v-spacer />
       <template v-if="dialog">
@@ -21,11 +29,6 @@
           <div class="tw-mb-4">
             Use events to collect people's availabilities and compare them
             across certain days.
-          </div>
-          <div
-            class="tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
-          >
-            Ideal for one-time meetings
           </div>
         </HelpDialog>
       </template>

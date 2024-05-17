@@ -4,9 +4,17 @@
     :class="{ 'tw-py-4': !dialog, 'tw-flex-1': dialog }"
     class="tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-overflow-hidden tw-rounded-lg tw-transition-all"
   >
-    <v-card-title class="tw-mb-2 tw-flex tw-px-4 sm:tw-px-8">
+    <v-card-title class="tw-mb-2 tw-flex tw-gap-2 tw-px-4 sm:tw-px-8">
       <div>
-        {{ edit ? "Edit group" : "New group" }}
+        <div class="tw-mb-1">
+          {{ edit ? "Edit group" : "New group" }}
+        </div>
+        <div
+          v-if="dialog && showHelp"
+          class="tw-text-xs tw-font-normal tw-italic tw-text-dark-gray"
+        >
+          Ideal for viewing weekly calendar availability
+        </div>
       </div>
       <v-spacer />
       <template v-if="dialog">
@@ -20,13 +28,8 @@
           <template v-slot:header>Availability groups</template>
           <div class="mb-4">
             Use availability groups to see group members' weekly calendar
-            availabilities. Your actual calendar events will NOT be visible to
-            others.
-          </div>
-          <div
-            class="tw-inline-block tw-rounded tw-border tw-border-green tw-px-2 tw-py-1 tw-text-green"
-          >
-            Ideal for weekly recurring meetings
+            availabilities from Google Calendar. Your actual calendar events
+            will NOT be visible to others.
           </div>
         </HelpDialog>
       </template>

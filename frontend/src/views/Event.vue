@@ -93,8 +93,8 @@
                   <template v-slot:header>Availability group</template>
                   <div class="mb-4">
                     Use availability groups to see group members' weekly
-                    calendar availabilities. Your actual calendar events are NOT
-                    visible to others.
+                    calendar availabilities from Google Calendar. Your actual
+                    calendar events are NOT visible to others.
                   </div>
                 </HelpDialog>
               </template>
