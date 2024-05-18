@@ -239,7 +239,7 @@
             />
 
             <div v-if="!calendarOnly && !isPhone">
-              <Advertisement class="tw-mt-10"></Advertisement>
+              <Advertisement class="tw-mt-10" :ownerId="event.ownerId"></Advertisement>
             </div>
           </div>
 
@@ -422,7 +422,7 @@
         />
 
         <div v-if="!calendarOnly && isPhone">
-          <Advertisement class="tw-mt-5"></Advertisement>
+          <Advertisement class="tw-mt-5" :ownerId="event.ownerId"></Advertisement>
         </div>
       </div>
 
