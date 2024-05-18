@@ -1,5 +1,9 @@
 <template>
-  <SlideToggle :value="value" @input="(e) => $emit('input', e)" :tabs="tabs" />
+  <SlideToggle
+    :value="value"
+    @input="(e) => $emit('input', e)"
+    :options="options"
+  />
 </template>
 
 <script>
@@ -17,7 +21,7 @@ export default {
 
   data() {
     return {
-      tabs: [
+      options: [
         {
           text: "Available",
           activeClass: "tw-text-green tw-bg-green/5",
@@ -32,7 +36,6 @@ export default {
           borderStyle: { boxShadow: "0px 2px 8px 0px #FEDB9340" },
           value: availabilityTypes.IF_NEEDED,
         },
-        { text: "hello", value: "woah there" },
       ],
     }
   },

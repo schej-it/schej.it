@@ -4,14 +4,14 @@
   >
     <div
       class="tw-absolute tw-h-full tw-rounded tw-border tw-transition-all"
-      :class="tabs[index].borderClass ?? defaultBorderClass"
+      :class="options[index].borderClass ?? defaultBorderClass"
       :style="{
-        ...(tabs[index].borderStyle ?? defaultBorderStyle),
+        ...(options[index].borderStyle ?? defaultBorderStyle),
         transform: `translateX(${index * 100}%)`,
-        width: `${100 / tabs.length}%`,
+        width: `${100 / options.length}%`,
       }"
     ></div>
-    <template v-for="(tab, i) in tabs">
+    <template v-for="(tab, i) in options">
       <div
         class="tw-line-clamp-1 tw-flex-1 tw-cursor-pointer tw-overflow-hidden tw-px-4 tw-py-2 tw-text-center tw-text-sm tw-font-medium tw-transition-all"
         :class="
@@ -42,7 +42,7 @@ export default {
     //   borderStyle?: Object,
     //   value: String,
     // }
-    tabs: { type: Array, required: true },
+    options: { type: Array, required: true },
   },
 
   data() {
@@ -60,7 +60,7 @@ export default {
     value: {
       immediate: true,
       handler() {
-        this.index = this.tabs.findIndex((tab) => tab.value === this.value)
+        this.index = this.options.findIndex((tab) => tab.value === this.value)
         if (this.index === -1) this.index = 0
       },
     },
