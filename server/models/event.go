@@ -10,7 +10,6 @@ const (
 	SPECIFIC_DATES EventType = "specific_dates"
 	DOW            EventType = "dow"
 	GROUP          EventType = "group"
-	DAYS_ONLY      EventType = "days_only"
 )
 
 // Representation of an Event in the mongoDB database
@@ -27,7 +26,10 @@ type Event struct {
 	Type EventType `json:"type" bson:"type,omitempty"`
 
 	// Whether to enable blind availability
-	BlindAvailabilityEnabled *bool `json:"blindAvailabilityEnabled" bons:"blindAvailabilityEnabled,omitempty"`
+	BlindAvailabilityEnabled *bool `json:"blindAvailabilityEnabled" bson:"blindAvailabilityEnabled,omitempty"`
+
+	// Whether to only poll for days, not times
+	DaysOnly *bool `json:"daysOnly" bson:"daysOnly,omitempty"`
 
 	// Availability responses
 	Responses map[string]*Response `json:"responses" bson:"responses"`

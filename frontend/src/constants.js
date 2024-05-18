@@ -26,7 +26,6 @@ export const eventTypes = Object.freeze({
   SPECIFIC_DATES: "specific_dates",
   DOW: "dow",
   GROUP: "group",
-  DAYS_ONLY: "days_only",
 })
 
 export const availabilityTypes = Object.freeze({
