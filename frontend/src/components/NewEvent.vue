@@ -38,7 +38,7 @@
         ref="form"
         v-model="formValid"
         lazy-validation
-        class="tw-flex tw-flex-col tw-space-y-6"
+        class="tw-flex tw-flex-col tw-gap-y-6"
         :disabled="loading"
       >
         <v-text-field
@@ -52,30 +52,40 @@
           required
         />
 
-        <div>
-          <div class="tw-mb-2 tw-text-lg tw-text-black">
-            What times might work?
-          </div>
-          <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
-            <v-select
-              v-model="startTime"
-              menu-props="auto"
-              :items="times"
-              hide-details
-              solo
-            ></v-select>
-            <div>to</div>
-            <v-select
-              v-model="endTime"
-              menu-props="auto"
-              :items="times"
-              hide-details
-              solo
-            ></v-select>
-          </div>
-        </div>
+        <SlideToggle
+          class="tw-w-full"
+          v-model="daysOnly"
+          :options="daysOnlyOptions"
+        />
 
         <div>
+          <v-expand-transition>
+            <div v-if="!daysOnly">
+              <div class="tw-mb-2 tw-text-lg tw-text-black">
+                What times might work?
+              </div>
+              <div
+                class="tw-mb-6 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
+              >
+                <v-select
+                  v-model="startTime"
+                  menu-props="auto"
+                  :items="times"
+                  hide-details
+                  solo
+                ></v-select>
+                <div>to</div>
+                <v-select
+                  v-model="endTime"
+                  menu-props="auto"
+                  :items="times"
+                  hide-details
+                  solo
+                ></v-select>
+              </div>
+            </div>
+          </v-expand-transition>
+
           <div class="tw-mb-2 tw-text-lg tw-text-black">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
@@ -271,6 +281,8 @@ import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
+import SlideToggle from "./SlideToggle.vue"
+
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -296,6 +308,7 @@ export default {
     HelpDialog,
     EmailInput,
     DatePicker,
+    SlideToggle,
   },
 
   data: () => ({
@@ -308,6 +321,12 @@ export default {
     selectedDaysOfWeek: [],
     notificationsEnabled: false,
     blindAvailabilityEnabled: false,
+
+    daysOnly: false,
+    daysOnlyOptions: Object.freeze([
+      { text: "Specific times", value: false },
+      { text: "Dates only", value: true },
+    ]),
 
     // Date options
     dateOptions: Object.freeze({
