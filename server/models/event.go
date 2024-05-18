@@ -10,6 +10,7 @@ const (
 	SPECIFIC_DATES EventType = "specific_dates"
 	DOW            EventType = "dow"
 	GROUP          EventType = "group"
+	DAYS_ONLY      EventType = "days_only"
 )
 
 // Representation of an Event in the mongoDB database
