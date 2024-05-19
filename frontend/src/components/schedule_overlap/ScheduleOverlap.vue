@@ -25,7 +25,7 @@
                 </div>
                 <div
                   v-for="day in monthDays"
-                  :key="day.date"
+                  :key="day.time"
                   class="tw-aspect-square tw-border tw-border-gray tw-p-2"
                   :class="
                     day.included
@@ -842,21 +842,6 @@ export default {
     /** Returns all the days that are encompassed by startDate and endDate */
     allDays() {
       const days = []
-      const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
-      const months = [
-        "jan",
-        "feb",
-        "mar",
-        "apr",
-        "may",
-        "jun",
-        "jul",
-        "aug",
-        "sep",
-        "oct",
-        "nov",
-        "dec",
-      ]
 
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
@@ -903,27 +888,42 @@ export default {
       const allDaysSet = new Set(
         this.allDays.map((d) => d.dateObject.getTime())
       )
+
+      // Calculate monthIndex and year from event start date and page num
       const date = new Date(this.event.dates[0])
       date.setUTCMonth(date.getUTCMonth() + this.page)
+      const monthIndex = date.getUTCMonth()
+      const year = date.getUTCFullYear()
 
-      for (
-        let i = 1;
-        i <= getDaysInMonth(date.getUTCMonth() + 1, date.getUTCFullYear());
-        ++i
-      ) {
-        const dateObject = new Date(
-          Date.UTC(
-            date.getUTCFullYear(),
-            date.getUTCMonth(),
-            i,
-            this.event.startTime
-          )
+      const lastDayOfPrevMonth = new Date(Date.UTC(year, monthIndex, 0))
+      const lastDayOfCurMonth = new Date(Date.UTC(year, monthIndex + 1, 0))
+
+      // Calculate num days from prev month, cur month, and next month to show
+      const curDate = new Date(lastDayOfPrevMonth)
+      let numDaysFromPrevMonth = 0
+      const numDaysInCurMonth = lastDayOfCurMonth.getDate()
+      const numDaysFromNextMonth = 6 - lastDayOfCurMonth.getDay()
+      if (lastDayOfPrevMonth.getUTCDay() < 6) {
+        curDate.setUTCDate(
+          curDate.getUTCDate() - lastDayOfPrevMonth.getUTCDay()
         )
+        numDaysFromPrevMonth = lastDayOfPrevMonth.getUTCDay() + 1
+      } else {
+        curDate.setUTCDate(curDate.getUTCDate() + 1)
+      }
+      curDate.setUTCHours(this.event.startTime)
+
+      // Add all days from prev month, cur month, and next month
+      const totalDays =
+        numDaysFromPrevMonth + numDaysInCurMonth + numDaysFromNextMonth
+      for (let i = 0; i < totalDays; ++i) {
         monthDays.push({
-          date: i,
-          dateObject,
-          included: allDaysSet.has(dateObject.getTime()),
+          date: curDate.getDate(),
+          time: curDate.getTime(),
+          dateObject: curDate,
+          included: allDaysSet.has(curDate.getTime()),
         })
+        curDate.setDate(curDate.getDate() + 1)
       }
 
       return monthDays
