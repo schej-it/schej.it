@@ -9,7 +9,9 @@
                 <v-btn class="tw-border-gray" outlined icon @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
                 >
-                <div class="tw-text-xl tw-font-medium">May 2024</div>
+                <div class="tw-text-xl tw-font-medium tw-capitalize">
+                  {{ curMonthText }}
+                </div>
                 <v-btn class="tw-border-gray" outlined icon @click="nextPage"
                   ><v-icon>mdi-chevron-right</v-icon></v-btn
                 >
@@ -705,6 +707,20 @@ export default {
 
       /** Constants */
       daysOfWeek: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],
+      months: [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+      ],
     }
   },
   computed: {
@@ -850,7 +866,7 @@ export default {
         let dateString = ""
         if (this.isSpecificDates) {
           dateString = `${
-            months[offsetDate.getUTCMonth()]
+            this.months[offsetDate.getUTCMonth()]
           } ${offsetDate.getUTCDate()}`
         } else if (this.isGroup) {
           const tmpDate = dateToDowDate(
@@ -861,12 +877,12 @@ export default {
           )
 
           dateString = `${
-            months[tmpDate.getUTCMonth()]
+            this.months[tmpDate.getUTCMonth()]
           } ${tmpDate.getUTCDate()}`
         }
 
         days.push({
-          dayText: daysOfWeek[offsetDate.getUTCDay()],
+          dayText: this.daysOfWeek[offsetDate.getUTCDay()],
           dateString,
           dateObject: date,
         })
@@ -887,9 +903,22 @@ export default {
       const allDaysSet = new Set(
         this.allDays.map((d) => d.dateObject.getTime())
       )
-      for (let i = 1; i <= getDaysInMonth(5, 2024); ++i) {
-        const dateObject = new Date(Date.UTC(2024, 4, i, this.event.startTime))
-        // console.log("dateobject", this.event.startTime, dateObject)
+      const date = new Date(this.event.dates[0])
+      date.setUTCMonth(date.getUTCMonth() + this.page)
+
+      for (
+        let i = 1;
+        i <= getDaysInMonth(date.getUTCMonth() + 1, date.getUTCFullYear());
+        ++i
+      ) {
+        const dateObject = new Date(
+          Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            i,
+            this.event.startTime
+          )
+        )
         monthDays.push({
           date: i,
           dateObject,
@@ -898,6 +927,14 @@ export default {
       }
 
       return monthDays
+    },
+    /** Returns the text to show for the current month */
+    curMonthText() {
+      const date = new Date(this.event.dates[0])
+      date.setUTCMonth(date.getUTCMonth() + this.page)
+      const monthText = this.months[date.getUTCMonth()]
+      const yearText = date.getUTCFullYear()
+      return `${monthText} ${yearText}`
     },
     defaultState() {
       // Either the heatmap or the best_times state, depending on the toggle
