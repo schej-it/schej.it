@@ -26,13 +26,11 @@
 </template>
 
 <script>
-import { availabilityTypes } from "@/constants"
-
 export default {
   name: "AvailabilityTypeToggle",
 
   props: {
-    value: { type: String, required: true },
+    value: { required: true },
 
     // Array of objects of the following structure:
     // {

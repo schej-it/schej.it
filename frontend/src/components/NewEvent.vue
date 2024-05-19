@@ -467,6 +467,7 @@ export default {
       const name = this.name
       const notificationsEnabled = this.notificationsEnabled
       const blindAvailabilityEnabled = this.blindAvailabilityEnabled
+      const daysOnly = this.daysOnly
       const remindees = this.emails
       if (!this.edit) {
         // Create new event on backend
@@ -476,6 +477,7 @@ export default {
           dates,
           notificationsEnabled,
           blindAvailabilityEnabled,
+          daysOnly,
           remindees,
           type,
         })
@@ -498,6 +500,7 @@ export default {
               eventDates: JSON.stringify(dates),
               eventNotificationsEnabled: notificationsEnabled,
               eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
+              eventDaysOnly: daysOnly,
               eventRemindees: remindees,
               eventType: type,
             })
@@ -519,6 +522,7 @@ export default {
             dates,
             notificationsEnabled,
             blindAvailabilityEnabled,
+            daysOnly,
             remindees,
             type,
           })
@@ -530,6 +534,7 @@ export default {
                 eventDates: JSON.stringify(dates),
                 eventNotificationsEnabled: notificationsEnabled,
                 eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
+                eventDaysOnly: daysOnly,
                 eventRemindees: remindees,
                 eventType: type,
               })
