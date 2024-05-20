@@ -53,6 +53,7 @@
         />
 
         <SlideToggle
+          v-if="!edit"
           class="tw-w-full"
           v-model="daysOnly"
           :options="daysOnlyOptions"
@@ -92,7 +93,7 @@
             might work?
           </div>
           <v-select
-            v-if="!edit"
+            v-if="!edit && !daysOnly"
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
@@ -102,7 +103,7 @@
 
           <v-expand-transition>
             <v-input
-              v-if="selectedDateOption === dateOptions.SPECIFIC"
+              v-if="selectedDateOption === dateOptions.SPECIFIC || daysOnly"
               v-model="selectedDays"
               hint="Drag to select multiple dates"
               persistent-hint
@@ -433,32 +434,41 @@ export default {
       let duration = this.endTime - this.startTime
       if (duration < 0) duration += 24
 
+      // Get date objects for each selected day
       let dates = []
       let type = ""
-
-      // Get date objects for each selected day
-      const startTimeString = timeNumToTimeString(this.startTime)
-      if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+      if (this.daysOnly) {
+        duration = 0
         type = eventTypes.SPECIFIC_DATES
 
         for (const day of this.selectedDays) {
-          const date = dayjs.tz(
-            `${day} ${startTimeString}`,
-            this.timezone.value
-          )
-          dates.push(date.toDate())
+          const date = new Date(`${day} 00:00:00Z`)
+          dates.push(date)
         }
-      } else if (this.selectedDateOption === this.dateOptions.DOW) {
-        type = eventTypes.DOW
+      } else {
+        const startTimeString = timeNumToTimeString(this.startTime)
+        if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+          type = eventTypes.SPECIFIC_DATES
 
-        this.selectedDaysOfWeek.sort((a, b) => a - b)
-        for (const dayIndex of this.selectedDaysOfWeek) {
-          const day = dayIndexToDayString[dayIndex]
-          const date = dayjs.tz(
-            `${day} ${startTimeString}`,
-            this.timezone.value
-          )
-          dates.push(date.toDate())
+          for (const day of this.selectedDays) {
+            const date = dayjs.tz(
+              `${day} ${startTimeString}`,
+              this.timezone.value
+            )
+            dates.push(date.toDate())
+          }
+        } else if (this.selectedDateOption === this.dateOptions.DOW) {
+          type = eventTypes.DOW
+
+          this.selectedDaysOfWeek.sort((a, b) => a - b)
+          for (const dayIndex of this.selectedDaysOfWeek) {
+            const day = dayIndexToDayString[dayIndex]
+            const date = dayjs.tz(
+              `${day} ${startTimeString}`,
+              this.timezone.value
+            )
+            dates.push(date.toDate())
+          }
         }
       }
 
@@ -619,6 +629,7 @@ export default {
         this.endTime = (this.startTime + this.event.duration) % 24
         this.notificationsEnabled = this.event.notificationsEnabled
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
+        this.daysOnly = this.event.daysOnly
 
         // TODO: need to make sure these dates take into account the timezone offset
         if (this.event.type === eventTypes.SPECIFIC_DATES) {
