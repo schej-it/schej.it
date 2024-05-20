@@ -126,7 +126,7 @@
                       </div>
 
                       <div
-                        v-for="d in days.length"
+                        v-for="(_, d) in days"
                         :key="d"
                         class="tw-relative tw-flex-1"
                         :class="
@@ -136,24 +136,16 @@
                         "
                       >
                         <!-- Timeslots -->
-                        <div
-                          v-for="t in times.length"
-                          :key="t"
-                          class="tw-w-full"
-                        >
+                        <div v-for="(_, t) in times" :key="t" class="tw-w-full">
                           <div
                             class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
                             :class="
-                              timeslotClassStyle[
-                                (d - 1) * times.length + (t - 1)
-                              ]?.class
+                              timeslotClassStyle[d * times.length + t]?.class
                             "
                             :style="
-                              timeslotClassStyle[
-                                (d - 1) * times.length + (t - 1)
-                              ]?.style
+                              timeslotClassStyle[d * times.length + t]?.style
                             "
-                            v-on="timeslotVon[(d - 1) * times.length + (t - 1)]"
+                            v-on="timeslotVon[d * times.length + t]"
                           ></div>
                         </div>
 
@@ -216,10 +208,10 @@
                         <div v-if="state === states.SCHEDULE_EVENT">
                           <div
                             v-if="
-                              (dragStart && dragStart.dayIndex === d) ||
+                              (dragStart && dragStart.col === d) ||
                               (!dragStart &&
                                 curScheduledEvent &&
-                                curScheduledEvent.dayIndex === d)
+                                curScheduledEvent.col === d)
                             "
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="scheduledEventStyle"
@@ -419,8 +411,8 @@
               ref="respondentsList"
               :event="event"
               :eventId="event._id"
-              :day="days[curTimeslot.dayIndex]"
-              :time="times[curTimeslot.timeIndex]"
+              :day="days[curTimeslot.col]"
+              :time="times[curTimeslot.row]"
               :curRespondent="curRespondent"
               :curRespondents="curRespondents"
               :curTimeslot="curTimeslot"
@@ -531,8 +523,8 @@
                 :max-height="100"
                 :event="event"
                 :eventId="event._id"
-                :day="days[curTimeslot.dayIndex]"
-                :time="times[curTimeslot.timeIndex]"
+                :day="days[curTimeslot.col]"
+                :time="times[curTimeslot.row]"
                 :curRespondent="curRespondent"
                 :curRespondents="curRespondents"
                 :curTimeslot="curTimeslot"
@@ -660,7 +652,7 @@ export default {
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
       unsavedChanges: false, // If there are unsaved availability changes
-      curTimeslot: { dayIndex: -1, timeIndex: -1 }, // The currently highlighted timeslot
+      curTimeslot: { row: -1, col: -1 }, // The currently highlighted timeslot
       curTimeslotAvailability: {}, // The users available for the current timeslot
       curRespondent: "", // Id of the active respondent (set on hover)
       curRespondents: [], // Id of currently selected respondents (set on click)
@@ -990,8 +982,8 @@ export default {
       const style = {}
       let top, height
       if (this.dragging) {
-        top = this.dragStart.timeIndex
-        height = this.dragCur.timeIndex - this.dragStart.timeIndex + 1
+        top = this.dragStart.col
+        height = this.dragCur.col - this.dragStart.col + 1
       } else {
         top = this.curScheduledEvent.hoursOffset * 4
         height = this.curScheduledEvent.hoursLength * 4
@@ -1173,7 +1165,7 @@ export default {
       return (
         this.isPhone &&
         !this.scrolledToRespondents &&
-        (this.curTimeslot.dayIndex !== -1 ||
+        (this.curTimeslot.row !== -1 ||
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
       )
@@ -1227,8 +1219,15 @@ export default {
         const day = this.days[d]
         for (let t = 0; t < this.times.length; ++t) {
           const time = this.times[t]
-          classStyles.push(this.getTimeslotClassStyle(day, time, d, t))
+          classStyles.push(this.getTimeTimeslotClassStyle(day, time, d, t))
         }
+      }
+      return classStyles
+    },
+    dayTimeslotClassStyle() {
+      const classStyles = []
+      for (let i = 0; i < this.monthDays.length; ++i) {
+        classStyles.push(this.getDayTimeslotClassStyle(this.monthDays[i], i))
       }
       return classStyles
     },
@@ -1236,7 +1235,7 @@ export default {
       const vons = []
       for (let d = 0; d < this.days.length; ++d) {
         for (let t = 0; t < this.times.length; ++t) {
-          vons.push(this.getTimeslotVon(d, t))
+          vons.push(this.getTimeslotVon(t, d))
         }
       }
       return vons
@@ -1479,14 +1478,14 @@ export default {
       const d = getDateHoursOffset(date, hoursOffset)
       return this.responsesFormatted.get(d.getTime()) ?? new Set()
     },
-    showAvailability(d, t) {
+    showAvailability(row, col) {
       if (this.state === this.states.EDIT_AVAILABILITY && this.isPhone) {
         // Don't show currently selected timeslot when on phone and editing
         return
       }
 
       // Update current timeslot (the timeslot that has a dotted border around it)
-      this.curTimeslot = { dayIndex: d, timeIndex: t }
+      this.curTimeslot = { row, col }
 
       if (this.state === this.states.EDIT_AVAILABILITY || this.curRespondent) {
         // Don't show availability when editing or when respondent is selected
@@ -1766,38 +1765,51 @@ export default {
           timeslotEl.getBoundingClientRect())
       }
     },
-    getTimeslotClassStyle(day, time, d, t) {
-      /* Returns a class string and style object for the given timeslot div */
-      let c = ""
-      const s = {}
+    /** Returns a class string and style object for the given time timeslot div */
+    getTimeTimeslotClassStyle(day, time, d, t) {
+      const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+      const classStyle = this.getTimeslotClassStyle(date, t, d)
+
+      // Add time timeslot specific stuff
+
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
-        c += "animate-bg-color "
+        classStyle.class += "animate-bg-color "
       }
+
+      // Border for times
+      const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+      if (fractionalTime === 0.25) {
+        classStyle.class += "tw-border-b "
+        classStyle.style.borderBottomStyle = "dashed"
+      } else if (fractionalTime === 0.75) {
+        classStyle.class += "tw-border-b "
+      }
+      return classStyle
+    },
+    /** Returns the shared class string and style object for the given timeslot (either time timeslot or day timeslot) */
+    getTimeslotClassStyle(date, row, col) {
+      let c = ""
+      const s = {}
+
+      const timeslotRespondents =
+        this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Border style
       if (
         (this.respondents.length > 0 ||
           this.state === this.states.EDIT_AVAILABILITY) &&
-        this.curTimeslot.dayIndex === d &&
-        this.curTimeslot.timeIndex === t
+        this.curTimeslot.row === row &&
+        this.curTimeslot.col === col
       ) {
         // Dashed border for currently selected timeslot
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
-        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-        if (fractionalTime === 0.25) {
-          c += "tw-border-b "
-          s.borderBottomStyle = "dashed"
-        } else if (fractionalTime === 0.75) {
-          c += "tw-border-b "
-        }
-
-        if (d === 0) c += "tw-border-l tw-border-l-gray "
-        if (d === this.days.length - 1) c += "tw-border-r-gray "
-        if (t === 0) c += "tw-border-t tw-border-t-gray "
-        if (t === this.times.length - 1) c += "tw-border-b-gray "
+        if (col === 0) c += "tw-border-l tw-border-l-gray "
+        if (col === this.days.length - 1) c += "tw-border-r-gray "
+        if (row === 0) c += "tw-border-t tw-border-t-gray "
+        if (row === this.times.length - 1) c += "tw-border-b-gray "
       }
 
       // Fill style
@@ -1806,7 +1818,7 @@ export default {
         s.backgroundColor = "#E523230D"
 
         // Show only current user availability
-        const inDragRange = this.inDragRange(d, t)
+        const inDragRange = this.inDragRange(row, col)
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
@@ -1820,7 +1832,6 @@ export default {
         } else {
           // Otherwise just show the current availability
           // Show current availability from availability set
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
             s.backgroundColor = "#00994C88"
           } else if (this.ifNeeded.has(date.getTime())) {
@@ -1832,12 +1843,7 @@ export default {
       if (this.state === this.states.SINGLE_AVAILABILITY) {
         // Show only the currently selected respondent's availability
         const respondent = this.curRespondent
-        const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-        const respondents = this.getRespondentsForHoursOffset(
-          day.dateObject,
-          time.hoursOffset
-        )
-        if (respondents.has(respondent)) {
+        if (timeslotRespondents.has(respondent)) {
           if (this.parsedResponses[respondent]?.ifNeeded?.has(date.getTime())) {
             c += "tw-bg-yellow "
           } else {
@@ -1860,18 +1866,12 @@ export default {
           this.state === this.states.HEATMAP ||
           this.state === this.states.SCHEDULE_EVENT
         ) {
-          numRespondents = this.getRespondentsForHoursOffset(
-            day.dateObject,
-            time.hoursOffset
-          ).size
+          numRespondents = timeslotRespondents.size
           max = this.max
         } else if (this.state === this.states.SUBSET_AVAILABILITY) {
-          numRespondents = [
-            ...this.getRespondentsForHoursOffset(
-              day.dateObject,
-              time.hoursOffset
-            ),
-          ].filter((r) => this.curRespondentsSet.has(r)).length
+          numRespondents = [...timeslotRespondents].filter((r) =>
+            this.curRespondentsSet.has(r)
+          ).length
 
           max = this.curRespondentsMax
         }
@@ -1914,11 +1914,13 @@ export default {
 
       return { class: c, style: s }
     },
-    getDayTimeslotClassStyle(date, i) {},
-    getTimeslotVon(d, t) {
+    getDayTimeslotClassStyle(date, i) {
+      const classStyle = this.getTimeslotClassStyle(date, t, d)
+    },
+    getTimeslotVon(row, col) {
       if (this.interactable) {
         return {
-          click: () => this.showAvailability(d, t),
+          click: () => this.showAvailability(row, col),
           mousedown: () => {
             if (
               this.state === this.defaultState &&
@@ -1926,7 +1928,7 @@ export default {
             )
               this.highlightAvailabilityBtn()
           },
-          mouseover: () => this.showAvailability(d, t),
+          mouseover: () => this.showAvailability(row, col),
         }
       }
       return {}
@@ -1936,7 +1938,7 @@ export default {
       for (const respondent of this.respondents) {
         this.curTimeslotAvailability[respondent._id] = true
       }
-      this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
+      this.curTimeslot = { row: -1, col: -1 }
 
       // Deselect respondents if on mobile
       if (this.isPhone) this.deselectRespondents()
@@ -2055,20 +2057,26 @@ export default {
       const y = pageY - top - window.scrollY
       return { x, y }
     },
-    getDateFromXY(x, y) {
+    getRowColFromXY(x, y) {
       /* Returns a date for the timeslot we are currently hovering over given the x and y position */
       const { width, height } = this.timeslot
-      let dayIndex = Math.floor(x / width)
-      let timeIndex = Math.floor(y / height)
-      dayIndex = clamp(dayIndex, 0, this.days.length - 1)
-      timeIndex = clamp(timeIndex, 0, this.times.length - 1)
+      let col = Math.floor(x / width)
+      let row = Math.floor(y / height)
+      // dayIndex = clamp(dayIndex, 0, this.days.length - 1)
+      // timeIndex = clamp(timeIndex, 0, this.times.length - 1)
       return {
-        dayIndex,
-        timeIndex,
-        date: getDateHoursOffset(
-          this.days[dayIndex].dateObject,
-          this.times[timeIndex].hoursOffset
-        ),
+        row,
+        col,
+      }
+    },
+    getDateFromRowCol(row, col) {
+      if (this.event.daysOnly) {
+        // TODO
+      } else {
+        return getDateHoursOffset(
+          this.days[col].dateObject,
+          this.times[row].hoursOffset
+        )
       }
     },
     endDrag() {
@@ -2078,22 +2086,19 @@ export default {
 
       if (this.state === this.states.EDIT_AVAILABILITY) {
         // Update availability set based on drag region
-        let dayInc =
-          (this.dragCur.dayIndex - this.dragStart.dayIndex) /
-          Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
-        let timeInc =
-          (this.dragCur.timeIndex - this.dragStart.timeIndex) /
-          Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
-        if (isNaN(dayInc)) dayInc = 1
-        if (isNaN(timeInc)) timeInc = 1
-        let d = this.dragStart.dayIndex
-        while (d != this.dragCur.dayIndex + dayInc) {
-          let t = this.dragStart.timeIndex
-          while (t != this.dragCur.timeIndex + timeInc) {
-            const date = getDateHoursOffset(
-              this.days[d].dateObject,
-              this.times[t].hoursOffset
-            )
+        let colInc =
+          (this.dragCur.col - this.dragStart.col) /
+          Math.abs(this.dragCur.col - this.dragStart.col)
+        let rowInc =
+          (this.dragCur.row - this.dragStart.row) /
+          Math.abs(this.dragCur.row - this.dragStart.row)
+        if (isNaN(colInc)) colInc = 1
+        if (isNaN(rowInc)) rowInc = 1
+        let r = this.dragStart.row
+        while (r != this.dragCur.row + rowInc) {
+          let c = this.dragStart.col
+          while (c != this.dragCur.col + colInc) {
+            const date = this.getDateFromRowCol(r, c)
 
             // Add / remove time from availability set
             if (this.dragType === this.DRAG_TYPES.ADD) {
@@ -2121,7 +2126,7 @@ export default {
               )
               const startDateOfDay = dateToDowDate(
                 this.event.dates,
-                this.days[d].dateObject,
+                this.days[c].dateObject,
                 this.weekOffset,
                 true
               )
@@ -2133,7 +2138,7 @@ export default {
 
                 // Add the existing calendar availabilities
                 const existingAvailability = this.getAvailabilityForDate(
-                  this.days[d].dateObject
+                  this.days[c].dateObject
                 )
                 for (const a of existingAvailability) {
                   const convertedDate = dateToDowDate(
@@ -2160,17 +2165,16 @@ export default {
               }
             }
 
-            t += timeInc
+            c += colInc
           }
-          d += dayInc
+          r += rowInc
         }
         this.availability = new Set(this.availability)
       } else if (this.state === this.states.SCHEDULE_EVENT) {
         // Update scheduled event
-        const dayIndex = this.dragStart.dayIndex
-        const hoursOffset = this.dragStart.timeIndex / 4
-        const hoursLength =
-          (this.dragCur.timeIndex - this.dragStart.timeIndex + 1) / 4
+        const dayIndex = this.dragStart.col
+        const hoursOffset = this.dragStart.row / 4
+        const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
 
         if (hoursLength > 0) {
           this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
@@ -2184,30 +2188,14 @@ export default {
       this.dragStart = null
       this.dragCur = null
     },
-    inDragRange(dayIndex, timeIndex) {
+    inDragRange(row, col) {
       /* Returns whether the given day and time index is within the drag range */
       if (this.dragging) {
         return (
-          (isBetween(
-            dayIndex,
-            this.dragStart.dayIndex,
-            this.dragCur.dayIndex
-          ) ||
-            isBetween(
-              dayIndex,
-              this.dragCur.dayIndex,
-              this.dragStart.dayIndex
-            )) &&
-          (isBetween(
-            timeIndex,
-            this.dragStart.timeIndex,
-            this.dragCur.timeIndex
-          ) ||
-            isBetween(
-              timeIndex,
-              this.dragCur.timeIndex,
-              this.dragStart.timeIndex
-            ))
+          (isBetween(row, this.dragStart.row, this.dragCur.row) ||
+            isBetween(row, this.dragCur.row, this.dragStart.row)) &&
+          (isBetween(col, this.dragStart.col, this.dragCur.col) ||
+            isBetween(col, this.dragCur.col, this.dragStart.col))
         )
       }
     },
@@ -2216,10 +2204,10 @@ export default {
       if (e.touches?.length > 1) return // If dragging with more than one finger
 
       e.preventDefault()
-      const { dayIndex, timeIndex, date } = this.getDateFromXY(
+      const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
-      this.dragCur = { dayIndex, timeIndex }
+      this.dragCur = { row, col }
     },
     startDrag(e) {
       if (!this.allowDrag) return
@@ -2229,11 +2217,12 @@ export default {
 
       this.dragging = true
 
-      const { dayIndex, timeIndex, date } = this.getDateFromXY(
+      const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
-      this.dragStart = { dayIndex, timeIndex }
-      this.dragCur = { dayIndex, timeIndex }
+      this.dragStart = { row, col }
+      this.dragCur = { row, col }
+      const date = this.getDateFromRowCol(row, col)
       // Set drag type
       if (
         (this.availabilityType === availabilityTypes.AVAILABLE &&
