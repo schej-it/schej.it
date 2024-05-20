@@ -16,17 +16,21 @@
                   ><v-icon>mdi-chevron-right</v-icon></v-btn
                 >
               </div>
-              <div class="tw-grid tw-grid-cols-7">
+              <!-- Header -->
+              <div class="tw-flex tw-w-full">
                 <div
                   v-for="day in daysOfWeek"
-                  class="tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-dark-gray"
+                  class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-dark-gray"
                 >
                   {{ day }}
                 </div>
+              </div>
+              <!-- Days grid -->
+              <div id="drag-section" class="tw-grid tw-grid-cols-7">
                 <div
                   v-for="day in monthDays"
                   :key="day.time"
-                  class="tw-aspect-square tw-border tw-border-gray tw-p-2"
+                  class="timeslot tw-aspect-square tw-border tw-border-gray tw-p-2"
                   :class="
                     day.included
                       ? 'tw-bg-white'
@@ -105,7 +109,7 @@
                 <div class="tw-flex tw-flex-col">
                   <div class="tw-flex-1">
                     <div
-                      id="times"
+                      id="drag-section"
                       data-long-press-delay="500"
                       class="tw-relative tw-flex"
                       @mouseleave="resetCurTimeslot"
@@ -122,7 +126,7 @@
                       </div>
 
                       <div
-                        v-for="(day, d) in days"
+                        v-for="d in days.length"
                         :key="d"
                         class="tw-relative tw-flex-1"
                         :class="
@@ -133,15 +137,23 @@
                       >
                         <!-- Timeslots -->
                         <div
-                          v-for="(time, t) in times"
+                          v-for="t in times.length"
                           :key="t"
                           class="tw-w-full"
                         >
                           <div
                             class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
-                            :class="timeslotClassStyle(day, time, d, t).class"
-                            :style="timeslotClassStyle(day, time, d, t).style"
-                            v-on="timeslotVon(d, t)"
+                            :class="
+                              timeslotClassStyle[
+                                (d - 1) * times.length + (t - 1)
+                              ]?.class
+                            "
+                            :style="
+                              timeslotClassStyle[
+                                (d - 1) * times.length + (t - 1)
+                              ]?.style
+                            "
+                            v-on="timeslotVon[(d - 1) * times.length + (t - 1)]"
                           ></div>
                         </div>
 
@@ -948,37 +960,6 @@ export default {
       // Returns whether currently in the scheduling state
       return this.state === this.states.SCHEDULE_EVENT
     },
-    hintText() {
-      if (this.isPhone) {
-        switch (this.state) {
-          case this.isGroup && this.states.EDIT_AVAILABILITY:
-            return "Toggle which calendars are used. Tap and drag to edit your availability."
-          case this.states.EDIT_AVAILABILITY:
-            if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-              return 'Tap and drag to add your "if needed" times in yellow.'
-            }
-            return 'Tap and drag to add your "available" times in green.'
-          case this.states.SCHEDULE_EVENT:
-            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
-          default:
-            return ""
-        }
-      }
-
-      switch (this.state) {
-        case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are used. Click and drag to edit your availability."
-        case this.states.EDIT_AVAILABILITY:
-          if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-            return 'Click and drag to add your "if needed" times in yellow.'
-          }
-          return 'Click and drag to add your "available" times in green.'
-        case this.states.SCHEDULE_EVENT:
-          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
-        default:
-          return ""
-      }
-    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -1197,6 +1178,39 @@ export default {
           this.curRespondents.length > 0)
       )
     },
+
+    // Hint stuff
+    hintText() {
+      if (this.isPhone) {
+        switch (this.state) {
+          case this.isGroup && this.states.EDIT_AVAILABILITY:
+            return "Toggle which calendars are used. Tap and drag to edit your availability."
+          case this.states.EDIT_AVAILABILITY:
+            if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              return 'Tap and drag to add your "if needed" times in yellow.'
+            }
+            return 'Tap and drag to add your "available" times in green.'
+          case this.states.SCHEDULE_EVENT:
+            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
+          default:
+            return ""
+        }
+      }
+
+      switch (this.state) {
+        case this.isGroup && this.states.EDIT_AVAILABILITY:
+          return "Toggle which calendars are used. Click and drag to edit your availability."
+        case this.states.EDIT_AVAILABILITY:
+          if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+            return 'Click and drag to add your "if needed" times in yellow.'
+          }
+          return 'Click and drag to add your "available" times in green.'
+        case this.states.SCHEDULE_EVENT:
+          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
+        default:
+          return ""
+      }
+    },
     hintClosed() {
       return !this.hintState || localStorage[this.hintStateLocalStorageKey]
     },
@@ -1205,6 +1219,27 @@ export default {
     },
     hintTextShown() {
       return this.showHintText && this.hintText != "" && !this.hintClosed
+    },
+
+    timeslotClassStyle() {
+      const classStyles = []
+      for (let d = 0; d < this.days.length; ++d) {
+        const day = this.days[d]
+        for (let t = 0; t < this.times.length; ++t) {
+          const time = this.times[t]
+          classStyles.push(this.getTimeslotClassStyle(day, time, d, t))
+        }
+      }
+      return classStyles
+    },
+    timeslotVon() {
+      const vons = []
+      for (let d = 0; d < this.days.length; ++d) {
+        for (let t = 0; t < this.times.length; ++t) {
+          vons.push(this.getTimeslotVon(d, t))
+        }
+      }
+      return vons
     },
 
     /** Whether to show spinner on top of availability grid */
@@ -1731,7 +1766,7 @@ export default {
           timeslotEl.getBoundingClientRect())
       }
     },
-    timeslotClassStyle(day, time, d, t) {
+    getTimeslotClassStyle(day, time, d, t) {
       /* Returns a class string and style object for the given timeslot div */
       let c = ""
       const s = {}
@@ -1879,7 +1914,8 @@ export default {
 
       return { class: c, style: s }
     },
-    timeslotVon(d, t) {
+    getDayTimeslotClassStyle(date, i) {},
+    getTimeslotVon(d, t) {
       if (this.interactable) {
         return {
           click: () => this.showAvailability(d, t),
@@ -2549,23 +2585,21 @@ export default {
     // this.calendarMaxScroll =
     //   this.$refs.calendar.scrollWidth - this.$refs.calendar.offsetWidth
 
-    if (!this.event.daysOnly) {
-      // Get timeslot size
-      this.setTimeslotSize()
-      addEventListener("resize", this.onResize)
-      addEventListener("scroll", this.onScroll)
-      if (!this.calendarOnly) {
-        const timesEl = document.getElementById("times")
-        if (isTouchEnabled()) {
-          timesEl.addEventListener("touchstart", this.startDrag)
-          timesEl.addEventListener("touchmove", this.moveDrag)
-          timesEl.addEventListener("touchend", this.endDrag)
-          timesEl.addEventListener("touchcancel", this.endDrag)
-        }
-        timesEl.addEventListener("mousedown", this.startDrag)
-        timesEl.addEventListener("mousemove", this.moveDrag)
-        timesEl.addEventListener("mouseup", this.endDrag)
+    // Get timeslot size
+    this.setTimeslotSize()
+    addEventListener("resize", this.onResize)
+    addEventListener("scroll", this.onScroll)
+    if (!this.calendarOnly) {
+      const timesEl = document.getElementById("drag-section")
+      if (isTouchEnabled()) {
+        timesEl.addEventListener("touchstart", this.startDrag)
+        timesEl.addEventListener("touchmove", this.moveDrag)
+        timesEl.addEventListener("touchend", this.endDrag)
+        timesEl.addEventListener("touchcancel", this.endDrag)
       }
+      timesEl.addEventListener("mousedown", this.startDrag)
+      timesEl.addEventListener("mousemove", this.moveDrag)
+      timesEl.addEventListener("mouseup", this.endDrag)
     }
   },
   beforeDestroy() {
