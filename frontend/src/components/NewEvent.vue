@@ -56,7 +56,9 @@
           <div class="tw-mb-2 tw-text-lg tw-text-black">
             What times might work?
           </div>
-          <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
+          <div
+            class="tw-mb-2 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
+          >
             <v-select
               v-model="startTime"
               menu-props="auto"
@@ -73,6 +75,7 @@
               solo
             ></v-select>
           </div>
+          <TimezoneSelector v-model="timezone" label="Timezone" solo no-label />
         </div>
 
         <div>
@@ -222,7 +225,6 @@
                     >
                   </template>
                 </v-checkbox>
-                <TimezoneSelector v-model="timezone" label="Timezone" />
               </div>
             </div>
           </v-expand-transition>

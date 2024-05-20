@@ -4,15 +4,18 @@
     class="tw-flex tw-items-center tw-justify-center"
     id="timezone-select-container"
   >
-    <div :class="`tw-mr-2 tw-mt-px ${labelColor}`">{{ label }}</div>
+    <div v-if="!noLabel" :class="`tw-mr-2 tw-mt-px ${labelColor}`">
+      {{ label }}
+    </div>
     <v-select
       id="timezone-select"
       :value="value"
       @input="onChange"
       :items="timezones"
       :menu-props="{ auto: true }"
-      class="-tw-mt-px tw-w-52 tw-text-sm"
-      dense
+      :solo="solo"
+      :class="solo && '-tw-mt-px tw-w-52 tw-text-sm'"
+      :dense="!solo"
       color="#219653"
       item-color="green"
       hide-details
@@ -51,6 +54,8 @@ export default {
     value: { type: Object, required: true },
     label: { type: String, default: "Shown in" },
     labelColor: { type: String, default: "" },
+    solo: { type: Boolean, default: false },
+    noLabel: { type: Boolean, default: false },
   },
 
   created() {
