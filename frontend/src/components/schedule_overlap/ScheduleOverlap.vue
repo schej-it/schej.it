@@ -901,8 +901,8 @@ export default {
       // Calculate num days from prev month, cur month, and next month to show
       const curDate = new Date(lastDayOfPrevMonth)
       let numDaysFromPrevMonth = 0
-      const numDaysInCurMonth = lastDayOfCurMonth.getDate()
-      const numDaysFromNextMonth = 6 - lastDayOfCurMonth.getDay()
+      const numDaysInCurMonth = lastDayOfCurMonth.getUTCDate()
+      const numDaysFromNextMonth = 6 - lastDayOfCurMonth.getUTCDay()
       if (lastDayOfPrevMonth.getUTCDay() < 6) {
         curDate.setUTCDate(
           curDate.getUTCDate() - lastDayOfPrevMonth.getUTCDay()
@@ -918,12 +918,12 @@ export default {
         numDaysFromPrevMonth + numDaysInCurMonth + numDaysFromNextMonth
       for (let i = 0; i < totalDays; ++i) {
         monthDays.push({
-          date: curDate.getDate(),
+          date: curDate.getUTCDate(),
           time: curDate.getTime(),
           dateObject: curDate,
           included: allDaysSet.has(curDate.getTime()),
         })
-        curDate.setDate(curDate.getDate() + 1)
+        curDate.setUTCDate(curDate.getUTCDate() + 1)
       }
 
       return monthDays

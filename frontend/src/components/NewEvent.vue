@@ -631,25 +631,33 @@ export default {
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
         this.daysOnly = this.event.daysOnly
 
-        // TODO: need to make sure these dates take into account the timezone offset
-        if (this.event.type === eventTypes.SPECIFIC_DATES) {
+        if (this.event.daysOnly) {
           this.selectedDateOption = this.dateOptions.SPECIFIC
           const selectedDays = []
           for (let date of this.event.dates) {
-            date = getDateWithTimezone(date)
-
             selectedDays.push(getISODateString(date, true))
           }
           this.selectedDays = selectedDays
-        } else if (this.event.type === eventTypes.DOW) {
-          this.selectedDateOption = this.dateOptions.DOW
-          const selectedDaysOfWeek = []
-          for (let date of this.event.dates) {
-            date = getDateWithTimezone(date)
+        } else {
+          if (this.event.type === eventTypes.SPECIFIC_DATES) {
+            this.selectedDateOption = this.dateOptions.SPECIFIC
+            const selectedDays = []
+            for (let date of this.event.dates) {
+              date = getDateWithTimezone(date)
 
-            selectedDaysOfWeek.push(date.getUTCDay())
+              selectedDays.push(getISODateString(date, true))
+            }
+            this.selectedDays = selectedDays
+          } else if (this.event.type === eventTypes.DOW) {
+            this.selectedDateOption = this.dateOptions.DOW
+            const selectedDaysOfWeek = []
+            for (let date of this.event.dates) {
+              date = getDateWithTimezone(date)
+
+              selectedDaysOfWeek.push(date.getUTCDay())
+            }
+            this.selectedDaysOfWeek = selectedDaysOfWeek
           }
-          this.selectedDaysOfWeek = selectedDaysOfWeek
         }
       }
     },
