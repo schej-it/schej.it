@@ -211,7 +211,7 @@
                               (dragStart && dragStart.col === d) ||
                               (!dragStart &&
                                 curScheduledEvent &&
-                                curScheduledEvent.col === d)
+                                curScheduledEvent.dayIndex === d)
                             "
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="scheduledEventStyle"
@@ -982,8 +982,8 @@ export default {
       const style = {}
       let top, height
       if (this.dragging) {
-        top = this.dragStart.col
-        height = this.dragCur.col - this.dragStart.col + 1
+        top = this.dragStart.row
+        height = this.dragCur.row - this.dragStart.row + 1
       } else {
         top = this.curScheduledEvent.hoursOffset * 4
         height = this.curScheduledEvent.hoursLength * 4
@@ -1493,10 +1493,10 @@ export default {
       }
 
       // Update current timeslot availability to show who is available for the given timeslot
-      const available = this.getRespondentsForHoursOffset(
-        this.days[d].dateObject,
-        this.times[t].hoursOffset
-      )
+      const available =
+        this.responsesFormatted.get(
+          this.getDateFromRowCol(row, col).getTime()
+        ) ?? new Set()
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
           this.curTimeslotAvailability[respondent._id] = true
@@ -2178,6 +2178,7 @@ export default {
 
         if (hoursLength > 0) {
           this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
+          console.log(this.curScheduledEvent)
         } else {
           this.curScheduledEvent = null
         }
