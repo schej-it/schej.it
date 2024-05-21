@@ -822,16 +822,27 @@ export default {
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
       let max = 0
-      for (const day of this.allDays) {
-        for (const time of this.times) {
+      if (this.event.daysOnly) {
+        for (const day of this.allDays) {
           const num = [
-            ...this.getRespondentsForHoursOffset(
-              day.dateObject,
-              time.hoursOffset
-            ),
+            ...(this.responsesFormatted.get(day.dateObject.getTime()) ??
+              new Set()),
           ].filter((r) => this.curRespondentsSet.has(r)).length
 
           if (num > max) max = num
+        }
+      } else {
+        for (const day of this.allDays) {
+          for (const time of this.times) {
+            const num = [
+              ...this.getRespondentsForHoursOffset(
+                day.dateObject,
+                time.hoursOffset
+              ),
+            ].filter((r) => this.curRespondentsSet.has(r)).length
+
+            if (num > max) max = num
+          }
         }
       }
       return max
@@ -1559,8 +1570,9 @@ export default {
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.availability = this.parsedResponses[id]?.availability ?? new Set()
-      this.ifNeeded = this.parsedResponses[id]?.ifNeeded ?? new Set()
+      this.availability =
+        new Set(this.parsedResponses[id]?.availability) ?? new Set()
+      this.ifNeeded = new Set(this.parsedResponses[id]?.ifNeeded) ?? new Set()
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
