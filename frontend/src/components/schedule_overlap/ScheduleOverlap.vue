@@ -409,8 +409,7 @@
               ref="respondentsList"
               :event="event"
               :eventId="event._id"
-              :day="days[curTimeslot.col]"
-              :time="times[curTimeslot.row]"
+              :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
               :curRespondent="curRespondent"
               :curRespondents="curRespondents"
               :curTimeslot="curTimeslot"
@@ -2152,8 +2151,9 @@ export default {
     },
     getDateFromRowCol(row, col) {
       if (this.event.daysOnly) {
-        return this.monthDays[row * 7 + col].dateObject
+        return this.monthDays[row * 7 + col]?.dateObject
       } else {
+        if (!this.days[col] || !this.times[row]) return null
         return getDateHoursOffset(
           this.days[col].dateObject,
           this.times[row].hoursOffset
