@@ -1416,8 +1416,9 @@ export default {
     },
     /** Populates the availability set for the auth user from the responses object stored on the server */
     populateUserAvailability(id) {
-      this.availability = this.parsedResponses[id]?.availability ?? new Set()
-      this.ifNeeded = this.parsedResponses[id]?.ifNeeded ?? new Set()
+      this.availability =
+        new Set(this.parsedResponses[id]?.availability) ?? new Set()
+      this.ifNeeded = new Set(this.parsedResponses[id]?.ifNeeded) ?? new Set()
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
