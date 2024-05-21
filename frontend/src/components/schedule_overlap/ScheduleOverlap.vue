@@ -14,7 +14,9 @@
                   @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
                 >
-                <div class="tw-text-xl tw-font-medium tw-capitalize">
+                <div
+                  class="tw-text-lg tw-font-medium tw-capitalize sm:tw-text-xl"
+                >
                   {{ curMonthText }}
                 </div>
                 <v-btn
@@ -44,7 +46,7 @@
                 <div
                   v-for="(day, i) in monthDays"
                   :key="day.time"
-                  class="timeslot tw-aspect-square tw-p-2"
+                  class="timeslot tw-aspect-square tw-p-2 tw-text-sm sm:tw-text-base"
                   :class="dayTimeslotClassStyle[i].class"
                   :style="dayTimeslotClassStyle[i].style"
                   v-on="dayTimeslotVon[i]"
@@ -550,8 +552,7 @@
                 :max-height="100"
                 :event="event"
                 :eventId="event._id"
-                :day="days[curTimeslot.col]"
-                :time="times[curTimeslot.row]"
+                :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
                 :curRespondent="curRespondent"
                 :curRespondents="curRespondents"
                 :curTimeslot="curTimeslot"
