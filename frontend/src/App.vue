@@ -231,7 +231,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setAuthUser", "setGroupsEnabled"]),
+    ...mapMutations(["setAuthUser", "setGroupsEnabled", "setDaysOnlyEnabled"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
@@ -262,6 +262,12 @@ export default {
           selectAccount: true,
         })
       }
+    },
+    setFeatureFlags() {
+      if (!this.$posthog) return
+
+      this.setGroupsEnabled(this.$posthog.isFeatureEnabled("avail-groups"))
+      this.setDaysOnlyEnabled(this.$posthog.isFeatureEnabled("days-only"))
     },
   },
 
@@ -330,17 +336,9 @@ export default {
           this.$posthog?.setPersonPropertiesForFlags({
             email: this.authUser?.email,
           })
-          if (this.$posthog?.isFeatureEnabled("avail-groups")) {
-            this.setGroupsEnabled(true)
-          } else {
-            this.setGroupsEnabled(false)
-          }
+          this.setFeatureFlags()
           this.$posthog?.onFeatureFlags(() => {
-            if (this.$posthog?.isFeatureEnabled("avail-groups")) {
-              this.setGroupsEnabled(true)
-            } else {
-              this.setGroupsEnabled(false)
-            }
+            this.setFeatureFlags()
           })
         }
       },

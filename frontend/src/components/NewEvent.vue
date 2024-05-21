@@ -53,7 +53,7 @@
         />
 
         <SlideToggle
-          v-if="!edit"
+          v-if="daysOnlyEnabled && !edit"
           class="tw-w-full"
           v-model="daysOnly"
           :options="daysOnlyOptions"
@@ -364,7 +364,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "daysOnlyEnabled"]),
     nameRules() {
       return [(v) => !!v || "Event name is required"]
     },
