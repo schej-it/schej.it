@@ -33,6 +33,7 @@
                   class="timeslot tw-aspect-square tw-p-2"
                   :class="dayTimeslotClassStyle[i].class"
                   :style="dayTimeslotClassStyle[i].style"
+                  v-on="dayTimeslotVon[i]"
                 >
                   {{ day.date }}
                 </div>
@@ -1247,6 +1248,15 @@ export default {
       }
       return vons
     },
+    dayTimeslotVon() {
+      const vons = []
+      for (let i = 0; i < this.monthDays.length; ++i) {
+        const row = Math.floor(i / 7)
+        const col = i % 7
+        vons.push(this.getTimeslotVon(row, col))
+      }
+      return vons
+    },
 
     /** Whether to show spinner on top of availability grid */
     showLoader() {
@@ -1425,7 +1435,7 @@ export default {
 
       this.$worker
         .run(
-          (days, times, parsedResponses) => {
+          (days, times, parsedResponses, daysOnly) => {
             // Define functions locally because we can't import functions
             const splitTimeNum = (timeNum) => {
               const hours = Math.floor(timeNum)
@@ -1440,33 +1450,45 @@ export default {
               return newDate
             }
 
+            // Create array of all dates in the event
+            const dates = []
+            if (daysOnly) {
+              for (const day of days) {
+                dates.push(day.dateObject)
+              }
+            } else {
+              for (const day of days) {
+                for (const time of times) {
+                  // Iterate through all the times
+                  const date = getDateHoursOffset(
+                    day.dateObject,
+                    time.hoursOffset
+                  )
+                  dates.push(date)
+                }
+              }
+            }
+
             // Create a map mapping time to the respondents available during that time
             const formatted = new Map()
-            for (const day of days) {
-              for (const time of times) {
-                // Iterate through all the times
-                const date = getDateHoursOffset(
-                  day.dateObject,
-                  time.hoursOffset
-                )
-                formatted.set(date.getTime(), new Set())
+            for (const date of dates) {
+              formatted.set(date.getTime(), new Set())
 
-                // Check every response and see if they are available for the given time
-                for (const response of Object.values(parsedResponses)) {
-                  // Check availability array
-                  if (
-                    response.availability?.has(date.getTime()) ||
-                    response.ifNeeded?.has(date.getTime())
-                  ) {
-                    formatted.get(date.getTime()).add(response.user._id)
-                    continue
-                  }
+              // Check every response and see if they are available for the given time
+              for (const response of Object.values(parsedResponses)) {
+                // Check availability array
+                if (
+                  response.availability?.has(date.getTime()) ||
+                  response.ifNeeded?.has(date.getTime())
+                ) {
+                  formatted.get(date.getTime()).add(response.user._id)
+                  continue
                 }
               }
             }
             return formatted
           },
-          [this.allDays, this.times, this.parsedResponses]
+          [this.allDays, this.times, this.parsedResponses, this.event.daysOnly]
         )
         .then((formatted) => {
           // Only set responses formatted for the latest request
@@ -1794,7 +1816,8 @@ export default {
         this.curTimeslot.col === col
       ) {
         // Dashed border for currently selected timeslot
-        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
+        classStyle.class +=
+          "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
         const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
@@ -1930,13 +1953,22 @@ export default {
       const col = i % 7
 
       let classStyle
+      // Only compute class style for days that are included
       if (this.monthDayIncluded.get(date.getTime())) {
         classStyle = this.getTimeslotClassStyle(date, row, col)
+        if (this.state === this.states.EDIT_AVAILABILITY) {
+          classStyle.class += "tw-cursor-pointer "
+        }
       } else {
         classStyle = {
           class: "tw-bg-off-white tw-text-gray ",
           style: {},
         }
+      }
+
+      // Change default red:
+      if (classStyle.style.backgroundColor === "#E523230D") {
+        classStyle.style.backgroundColor = "#E523231A"
       }
 
       // Border style
@@ -1947,14 +1979,21 @@ export default {
         this.curTimeslot.col === col
       ) {
         // Dashed border for currently selected timeslot
-        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
+        classStyle.class +=
+          "tw-outline tw-outline-dashed tw-outline-black tw-z-10 "
       } else {
         // Normal border
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-        if (col === 7 - 1) classStyle.class += "tw-border-r tw-border-r-gray "
+        classStyle.class += "tw-border-r tw-border-r-gray "
+        if (col !== 7 - 1) {
+          classStyle.style.borderRightStyle = "dashed"
+        }
+
         if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-        if (row === Math.floor(this.monthDays.length / 7) - 1)
-          classStyle.class += "tw-border-b tw-border-b-gray "
+        classStyle.class += "tw-border-b tw-border-b-gray "
+        if (row !== Math.floor(this.monthDays.length / 7) - 1) {
+          classStyle.style.borderBottomStyle = "dashed"
+        }
       }
 
       return classStyle
