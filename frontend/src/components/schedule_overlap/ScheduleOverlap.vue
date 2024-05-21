@@ -6,13 +6,23 @@
           <template v-if="event.daysOnly">
             <div class="tw-grow">
               <div class="tw-flex tw-items-center tw-justify-between">
-                <v-btn class="tw-border-gray" outlined icon @click="prevPage"
+                <v-btn
+                  :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                  class="tw-border-gray"
+                  outlined
+                  icon
+                  @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
                 >
                 <div class="tw-text-xl tw-font-medium tw-capitalize">
                   {{ curMonthText }}
                 </div>
-                <v-btn class="tw-border-gray" outlined icon @click="nextPage"
+                <v-btn
+                  :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+                  class="tw-border-gray"
+                  outlined
+                  icon
+                  @click="nextPage"
                   ><v-icon>mdi-chevron-right</v-icon></v-btn
                 >
               </div>
@@ -1169,6 +1179,15 @@ export default {
       return this.isPhone ? this.mobileNumDays : 7
     },
     hasNextPage() {
+      if (this.event.daysOnly) {
+        const lastDay = new Date(this.event.dates[this.event.dates.length - 1])
+        const curDate = new Date(this.event.dates[0])
+        curDate.setUTCDate(0)
+        curDate.setUTCMonth(curDate.getUTCMonth() + this.page + 1)
+        console.log(curDate.toISOString())
+        return curDate.getTime() < lastDay.getTime()
+      }
+
       return (
         this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
         this.event.type === eventTypes.GROUP
