@@ -598,6 +598,8 @@ import {
   isTouchEnabled,
   isElementInViewport,
   getDaysInMonth,
+  lightOrDark,
+  removeTransparencyFromHex,
 } from "@/utils"
 import { availabilityTypes, eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -609,6 +611,7 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
+import Color from "color"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -1991,6 +1994,14 @@ export default {
         classStyle = this.getTimeslotClassStyle(date, row, col)
         if (this.state === this.states.EDIT_AVAILABILITY) {
           classStyle.class += "tw-cursor-pointer "
+        }
+
+        const backgroundColor = classStyle.style.backgroundColor
+        if (
+          backgroundColor &&
+          lightOrDark(removeTransparencyFromHex(backgroundColor)) === "dark"
+        ) {
+          classStyle.class += "tw-text-white "
         }
       } else {
         classStyle = {
