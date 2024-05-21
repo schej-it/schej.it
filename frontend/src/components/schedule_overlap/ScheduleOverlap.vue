@@ -1184,7 +1184,6 @@ export default {
         const curDate = new Date(this.event.dates[0])
         curDate.setUTCDate(0)
         curDate.setUTCMonth(curDate.getUTCMonth() + this.page + 1)
-        console.log(curDate.toISOString())
         return curDate.getTime() < lastDay.getTime()
       }
 
