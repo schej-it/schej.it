@@ -26,7 +26,11 @@
                 </div>
               </div>
               <!-- Days grid -->
-              <div id="drag-section" class="tw-grid tw-grid-cols-7">
+              <div
+                id="drag-section"
+                class="tw-grid tw-grid-cols-7"
+                @mouseleave="resetCurTimeslot"
+              >
                 <div
                   v-for="(day, i) in monthDays"
                   :key="day.time"
