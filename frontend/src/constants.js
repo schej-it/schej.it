@@ -124,3 +124,5 @@ export const allTimezones = Object.freeze({
   "Pacific/Auckland": "Auckland, Wellington",
   "Pacific/Tongatapu": "Nuku'alofa",
 })
+
+export const guestUserId = "000000000000000000000000"

@@ -21,16 +21,26 @@
 <script>
 import { mapState } from "vuex"
 import { isPhone } from "@/utils"
+import { get } from "@/utils"
+import { guestUserId } from "@/constants"
 
 export default {
   name: "Advertisement",
 
-  props: {},
+  props: {
+    ownerId: { type: String, default: "" },
+  },
 
   data: () => ({
     link: "https://tomotime.app",
     eduOnly: true,
+    owner: null,
   }),
+
+  async mounted() {
+    if (this.ownerId !== guestUserId)
+      this.owner = await get(`/users/${this.ownerId}`)
+  },
 
   computed: {
     isPhone() {
@@ -45,6 +55,10 @@ export default {
       })
       window.open(this.link, "_blank")
     },
+    isEduEmail(email) {
+      const split = email.split(".")
+      return split[split.length - 1] === "edu"
+    },
   },
 
   watch: {},
@@ -55,13 +69,14 @@ export default {
       return isPhone(this.$vuetify)
     },
     showAd() {
-      if (this.eduOnly && this.authUser) {
-        const split = this.authUser.email.split(".")
-        if (split[split.length - 1] === "edu") {
-          return true
-        }
+      if (this.eduOnly) {
+        return (
+          (this.authUser && this.isEduEmail(this.authUser.email)) ||
+          (this.owner && this.isEduEmail(this.owner.email))
+        )
+      } else {
+        return true
       }
-      return false
     },
   },
 

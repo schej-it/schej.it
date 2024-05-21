@@ -55,29 +55,35 @@
             </div>
           </template>
           <template v-else>
-            <!-- Times -->
-            <div class="tw-w-8 tw-flex-none sm:tw-w-12">
+          <!-- Times -->
+          <div
+            :class="calendarOnly ? 'tw-w-12' : ''"
+            class="tw-w-8 tw-flex-none sm:tw-w-12"
+          >
+            <div
+              :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
+              class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
+            >
               <div
-                :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-                class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
+                :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
               >
-                <div
-                  :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                  class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
-                >
-                  <v-btn class="tw-border-gray" outlined icon @click="prevPage"
+                <v-btn class="tw-border-gray" outlined icon @click="prevPage"
                     ><v-icon>mdi-chevron-left</v-icon></v-btn
                   >
                 </div>
               </div>
 
-              <div class="-tw-ml-3 -tw-mt-[8px] sm:tw-ml-0">
+              <div
+                :class="calendarOnly ? '' : '-tw-ml-3'"
+                class="-tw-mt-[8px] sm:tw-ml-0"
+              >
                 <div
                   v-for="(time, i) in times"
                   :key="i"
                   class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
                 >
-                  {{ time.text }}
+                {{ time.text }}
                 </div>
               </div>
             </div>
@@ -293,12 +299,15 @@
                 @confirmScheduleEvent="confirmScheduleEvent"
               />
 
-              <div v-if="!calendarOnly && !isPhone">
-                <Advertisement class="tw-mt-10"></Advertisement>
-              </div>
+            <div v-if="!calendarOnly && !isPhone">
+              <Advertisement
+                class="tw-mt-10"
+                :ownerId="event.ownerId"
+              ></Advertisement>
             </div>
 
             <div
+              v-if="!calendarOnly"
               :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
               class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
             >
@@ -477,12 +486,18 @@
         />
 
         <div v-if="!calendarOnly && isPhone">
-          <Advertisement class="tw-mt-5"></Advertisement>
+          <Advertisement
+            class="tw-mt-5"
+            :ownerId="event.ownerId"
+          ></Advertisement>
         </div>
       </div>
 
       <!-- Fixed bottom section for mobile -->
-      <div v-if="isPhone" class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full">
+      <div
+        v-if="isPhone && !calendarOnly"
+        class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full"
+      >
         <!-- Hint text (mobile) -->
         <v-expand-transition>
           <template v-if="hintTextShown">
