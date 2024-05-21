@@ -28,14 +28,11 @@
               <!-- Days grid -->
               <div id="drag-section" class="tw-grid tw-grid-cols-7">
                 <div
-                  v-for="day in monthDays"
+                  v-for="(day, i) in monthDays"
                   :key="day.time"
-                  class="timeslot tw-aspect-square tw-border tw-border-gray tw-p-2"
-                  :class="
-                    day.included
-                      ? 'tw-bg-white'
-                      : 'tw-bg-off-white tw-text-gray'
-                  "
+                  class="timeslot tw-aspect-square tw-p-2"
+                  :class="dayTimeslotClassStyle[i].class"
+                  :style="dayTimeslotClassStyle[i].style"
                 >
                   {{ day.date }}
                 </div>
@@ -924,13 +921,21 @@ export default {
         monthDays.push({
           date: curDate.getUTCDate(),
           time: curDate.getTime(),
-          dateObject: curDate,
+          dateObject: new Date(curDate),
           included: allDaysSet.has(curDate.getTime()),
         })
         curDate.setUTCDate(curDate.getUTCDate() + 1)
       }
 
       return monthDays
+    },
+    /** Map from datetime to whether that month day is included  */
+    monthDayIncluded() {
+      const includedMap = new Map()
+      for (const monthDay of this.monthDays) {
+        includedMap.set(monthDay.dateObject.getTime(), monthDay.included)
+      }
+      return includedMap
     },
     /** Returns the text to show for the current month */
     curMonthText() {
@@ -1227,7 +1232,9 @@ export default {
     dayTimeslotClassStyle() {
       const classStyles = []
       for (let i = 0; i < this.monthDays.length; ++i) {
-        classStyles.push(this.getDayTimeslotClassStyle(this.monthDays[i], i))
+        classStyles.push(
+          this.getDayTimeslotClassStyle(this.monthDays[i].dateObject, i)
+        )
       }
       return classStyles
     },
@@ -1768,7 +1775,9 @@ export default {
     /** Returns a class string and style object for the given time timeslot div */
     getTimeTimeslotClassStyle(day, time, d, t) {
       const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-      const classStyle = this.getTimeslotClassStyle(date, t, d)
+      const row = t
+      const col = d
+      const classStyle = this.getTimeslotClassStyle(date, row, col)
 
       // Add time timeslot specific stuff
 
@@ -1776,24 +1785,6 @@ export default {
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
         classStyle.class += "animate-bg-color "
       }
-
-      // Border for times
-      const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-      if (fractionalTime === 0.25) {
-        classStyle.class += "tw-border-b "
-        classStyle.style.borderBottomStyle = "dashed"
-      } else if (fractionalTime === 0.75) {
-        classStyle.class += "tw-border-b "
-      }
-      return classStyle
-    },
-    /** Returns the shared class string and style object for the given timeslot (either time timeslot or day timeslot) */
-    getTimeslotClassStyle(date, row, col) {
-      let c = ""
-      const s = {}
-
-      const timeslotRespondents =
-        this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Border style
       if (
@@ -1806,11 +1797,31 @@ export default {
         c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
-        if (col === 0) c += "tw-border-l tw-border-l-gray "
-        if (col === this.days.length - 1) c += "tw-border-r-gray "
-        if (row === 0) c += "tw-border-t tw-border-t-gray "
-        if (row === this.times.length - 1) c += "tw-border-b-gray "
+        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+        if (fractionalTime === 0.25) {
+          classStyle.class += "tw-border-b "
+          classStyle.style.borderBottomStyle = "dashed"
+        } else if (fractionalTime === 0.75) {
+          classStyle.class += "tw-border-b "
+        }
+
+        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
+        if (col === this.days.length - 1)
+          classStyle.class += "tw-border-r tw-border-r-gray "
+        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+        if (row === this.times.length - 1)
+          classStyle.class += "tw-border-b tw-border-b-gray "
       }
+
+      return classStyle
+    },
+    /** Returns the shared class string and style object for the given timeslot (either time timeslot or day timeslot) */
+    getTimeslotClassStyle(date, row, col) {
+      let c = ""
+      const s = {}
+
+      const timeslotRespondents =
+        this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Fill style
       if (this.state === this.states.EDIT_AVAILABILITY) {
@@ -1915,7 +1926,38 @@ export default {
       return { class: c, style: s }
     },
     getDayTimeslotClassStyle(date, i) {
-      const classStyle = this.getTimeslotClassStyle(date, t, d)
+      const row = Math.floor(i / 7)
+      const col = i % 7
+
+      let classStyle
+      if (this.monthDayIncluded.get(date.getTime())) {
+        classStyle = this.getTimeslotClassStyle(date, row, col)
+      } else {
+        classStyle = {
+          class: "tw-bg-off-white tw-text-gray ",
+          style: {},
+        }
+      }
+
+      // Border style
+      if (
+        (this.respondents.length > 0 ||
+          this.state === this.states.EDIT_AVAILABILITY) &&
+        this.curTimeslot.row === row &&
+        this.curTimeslot.col === col
+      ) {
+        // Dashed border for currently selected timeslot
+        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
+      } else {
+        // Normal border
+        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
+        if (col === 7 - 1) classStyle.class += "tw-border-r tw-border-r-gray "
+        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+        if (row === Math.floor(this.monthDays.length / 7) - 1)
+          classStyle.class += "tw-border-b tw-border-b-gray "
+      }
+
+      return classStyle
     },
     getTimeslotVon(row, col) {
       if (this.interactable) {
@@ -2071,7 +2113,7 @@ export default {
     },
     getDateFromRowCol(row, col) {
       if (this.event.daysOnly) {
-        // TODO
+        return this.monthDays[row * 7 + col].dateObject
       } else {
         return getDateHoursOffset(
           this.days[col].dateObject,
@@ -2100,8 +2142,17 @@ export default {
           while (c != this.dragCur.col + colInc) {
             const date = this.getDateFromRowCol(r, c)
 
-            // Add / remove time from availability set
+            // Don't add to availability set if month day is not included
+            if (
+              this.event.daysOnly &&
+              !this.monthDayIncluded.get(date.getTime())
+            ) {
+              c += colInc
+              continue
+            }
+
             if (this.dragType === this.DRAG_TYPES.ADD) {
+              // Add / remove time from availability set
               if (this.availabilityType === availabilityTypes.AVAILABLE) {
                 this.availability.add(date.getTime())
                 this.ifNeeded.delete(date.getTime())
@@ -2178,7 +2229,6 @@ export default {
 
         if (hoursLength > 0) {
           this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
-          console.log(this.curScheduledEvent)
         } else {
           this.curScheduledEvent = null
         }
