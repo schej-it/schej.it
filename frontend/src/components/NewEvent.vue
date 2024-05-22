@@ -38,7 +38,7 @@
         ref="form"
         v-model="formValid"
         lazy-validation
-        class="tw-flex tw-flex-col tw-space-y-6"
+        class="tw-flex tw-flex-col tw-gap-y-6"
         :disabled="loading"
       >
         <v-text-field
@@ -52,37 +52,48 @@
           required
         />
 
-        <div>
-          <div class="tw-mb-2 tw-text-lg tw-text-black">
-            What times might work?
-          </div>
-          <div class="tw-flex tw-items-baseline tw-justify-center tw-space-x-2">
-            <v-select
-              v-model="startTime"
-              menu-props="auto"
-              :items="times"
-              hide-details
-              solo
-            ></v-select>
-            <div>to</div>
-            <v-select
-              v-model="endTime"
-              menu-props="auto"
-              :items="times"
-              hide-details
-              solo
-            ></v-select>
-          </div>
-        </div>
+        <SlideToggle
+          v-if="daysOnlyEnabled && !edit"
+          class="tw-w-full"
+          v-model="daysOnly"
+          :options="daysOnlyOptions"
+        />
 
         <div>
+          <v-expand-transition>
+            <div v-if="!daysOnly">
+              <div class="tw-mb-2 tw-text-lg tw-text-black">
+                What times might work?
+              </div>
+              <div
+                class="tw-mb-6 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
+              >
+                <v-select
+                  v-model="startTime"
+                  menu-props="auto"
+                  :items="times"
+                  hide-details
+                  solo
+                ></v-select>
+                <div>to</div>
+                <v-select
+                  v-model="endTime"
+                  menu-props="auto"
+                  :items="times"
+                  hide-details
+                  solo
+                ></v-select>
+              </div>
+            </div>
+          </v-expand-transition>
+
           <div class="tw-mb-2 tw-text-lg tw-text-black">
             What
             {{ selectedDateOption === dateOptions.SPECIFIC ? "dates" : "days" }}
             might work?
           </div>
           <v-select
-            v-if="!edit"
+            v-if="!edit && !daysOnly"
             v-model="selectedDateOption"
             :items="Object.values(dateOptions)"
             solo
@@ -92,7 +103,7 @@
 
           <v-expand-transition>
             <v-input
-              v-if="selectedDateOption === dateOptions.SPECIFIC"
+              v-if="selectedDateOption === dateOptions.SPECIFIC || daysOnly"
               v-model="selectedDays"
               hint="Drag to select multiple dates"
               persistent-hint
@@ -271,6 +282,8 @@ import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
+import SlideToggle from "./SlideToggle.vue"
+
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -296,6 +309,7 @@ export default {
     HelpDialog,
     EmailInput,
     DatePicker,
+    SlideToggle,
   },
 
   data: () => ({
@@ -308,6 +322,12 @@ export default {
     selectedDaysOfWeek: [],
     notificationsEnabled: false,
     blindAvailabilityEnabled: false,
+
+    daysOnly: false,
+    daysOnlyOptions: Object.freeze([
+      { text: "Specific times", value: false },
+      { text: "Dates only", value: true },
+    ]),
 
     // Date options
     dateOptions: Object.freeze({
@@ -344,7 +364,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "daysOnlyEnabled"]),
     nameRules() {
       return [(v) => !!v || "Event name is required"]
     },
@@ -414,32 +434,41 @@ export default {
       let duration = this.endTime - this.startTime
       if (duration < 0) duration += 24
 
+      // Get date objects for each selected day
       let dates = []
       let type = ""
-
-      // Get date objects for each selected day
-      const startTimeString = timeNumToTimeString(this.startTime)
-      if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+      if (this.daysOnly) {
+        duration = 0
         type = eventTypes.SPECIFIC_DATES
 
         for (const day of this.selectedDays) {
-          const date = dayjs.tz(
-            `${day} ${startTimeString}`,
-            this.timezone.value
-          )
-          dates.push(date.toDate())
+          const date = new Date(`${day} 00:00:00Z`)
+          dates.push(date)
         }
-      } else if (this.selectedDateOption === this.dateOptions.DOW) {
-        type = eventTypes.DOW
+      } else {
+        const startTimeString = timeNumToTimeString(this.startTime)
+        if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
+          type = eventTypes.SPECIFIC_DATES
 
-        this.selectedDaysOfWeek.sort((a, b) => a - b)
-        for (const dayIndex of this.selectedDaysOfWeek) {
-          const day = dayIndexToDayString[dayIndex]
-          const date = dayjs.tz(
-            `${day} ${startTimeString}`,
-            this.timezone.value
-          )
-          dates.push(date.toDate())
+          for (const day of this.selectedDays) {
+            const date = dayjs.tz(
+              `${day} ${startTimeString}`,
+              this.timezone.value
+            )
+            dates.push(date.toDate())
+          }
+        } else if (this.selectedDateOption === this.dateOptions.DOW) {
+          type = eventTypes.DOW
+
+          this.selectedDaysOfWeek.sort((a, b) => a - b)
+          for (const dayIndex of this.selectedDaysOfWeek) {
+            const day = dayIndexToDayString[dayIndex]
+            const date = dayjs.tz(
+              `${day} ${startTimeString}`,
+              this.timezone.value
+            )
+            dates.push(date.toDate())
+          }
         }
       }
 
@@ -448,6 +477,7 @@ export default {
       const name = this.name
       const notificationsEnabled = this.notificationsEnabled
       const blindAvailabilityEnabled = this.blindAvailabilityEnabled
+      const daysOnly = this.daysOnly
       const remindees = this.emails
       if (!this.edit) {
         // Create new event on backend
@@ -457,6 +487,7 @@ export default {
           dates,
           notificationsEnabled,
           blindAvailabilityEnabled,
+          daysOnly,
           remindees,
           type,
         })
@@ -479,6 +510,7 @@ export default {
               eventDates: JSON.stringify(dates),
               eventNotificationsEnabled: notificationsEnabled,
               eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
+              eventDaysOnly: daysOnly,
               eventRemindees: remindees,
               eventType: type,
             })
@@ -500,6 +532,7 @@ export default {
             dates,
             notificationsEnabled,
             blindAvailabilityEnabled,
+            daysOnly,
             remindees,
             type,
           })
@@ -511,6 +544,7 @@ export default {
                 eventDates: JSON.stringify(dates),
                 eventNotificationsEnabled: notificationsEnabled,
                 eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
+                eventDaysOnly: daysOnly,
                 eventRemindees: remindees,
                 eventType: type,
               })
@@ -595,26 +629,35 @@ export default {
         this.endTime = (this.startTime + this.event.duration) % 24
         this.notificationsEnabled = this.event.notificationsEnabled
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
+        this.daysOnly = this.event.daysOnly
 
-        // TODO: need to make sure these dates take into account the timezone offset
-        if (this.event.type === eventTypes.SPECIFIC_DATES) {
+        if (this.event.daysOnly) {
           this.selectedDateOption = this.dateOptions.SPECIFIC
           const selectedDays = []
           for (let date of this.event.dates) {
-            date = getDateWithTimezone(date)
-
             selectedDays.push(getISODateString(date, true))
           }
           this.selectedDays = selectedDays
-        } else if (this.event.type === eventTypes.DOW) {
-          this.selectedDateOption = this.dateOptions.DOW
-          const selectedDaysOfWeek = []
-          for (let date of this.event.dates) {
-            date = getDateWithTimezone(date)
+        } else {
+          if (this.event.type === eventTypes.SPECIFIC_DATES) {
+            this.selectedDateOption = this.dateOptions.SPECIFIC
+            const selectedDays = []
+            for (let date of this.event.dates) {
+              date = getDateWithTimezone(date)
 
-            selectedDaysOfWeek.push(date.getUTCDay())
+              selectedDays.push(getISODateString(date, true))
+            }
+            this.selectedDays = selectedDays
+          } else if (this.event.type === eventTypes.DOW) {
+            this.selectedDateOption = this.dateOptions.DOW
+            const selectedDaysOfWeek = []
+            for (let date of this.event.dates) {
+              date = getDateWithTimezone(date)
+
+              selectedDaysOfWeek.push(date.getUTCDay())
+            }
+            this.selectedDaysOfWeek = selectedDaysOfWeek
           }
-          this.selectedDaysOfWeek = selectedDaysOfWeek
         }
       }
     },

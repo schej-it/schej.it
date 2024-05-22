@@ -450,6 +450,12 @@ export default {
     addAvailability() {
       if (!this.scheduleOverlapComponent) return
 
+      // Start editing immediately if days only
+      if (this.event?.daysOnly) {
+        this.scheduleOverlapComponent.startEditing()
+        return
+      }
+
       // Start editing if calendar permission granted or user has responded, otherwise show choice dialog
       if (
         (this.authUser && this.calendarPermissionGranted) ||

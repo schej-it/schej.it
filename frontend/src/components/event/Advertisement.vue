@@ -8,7 +8,7 @@
           : require('@/assets/ads/tomotime.png')
       "
       transition="fade-transition"
-      class="tw-relative tw-max-w-[44rem] tw-shadow-md sm:tw-shadow-none"
+      class="tw-relative tw-w-full tw-shadow-md sm:tw-shadow-none"
       ><div
         class="tw-absolute tw-left-0 tw-top-0 tw-ml-0 tw-mt-0 tw-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-br-lg tw-bg-gray tw-bg-opacity-60 tw-text-xs sm:tw-ml-[6px] sm:tw-mt-[5px] sm:tw-h-10 sm:tw-w-10 sm:tw-rounded-tl-lg"
       >

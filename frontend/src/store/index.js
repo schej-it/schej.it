@@ -16,6 +16,7 @@ export default new Vuex.Store({
 
     // Feature flags
     groupsEnabled: true,
+    daysOnlyEnabled: false,
   },
   getters: {},
   mutations: {
@@ -39,6 +40,9 @@ export default new Vuex.Store({
 
     setGroupsEnabled(state, enabled) {
       state.groupsEnabled = enabled
+    },
+    setDaysOnlyEnabled(state, enabled) {
+      state.daysOnlyEnabled = enabled
     },
   },
   actions: {
