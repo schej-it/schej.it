@@ -1217,10 +1217,11 @@ export default {
           case this.isGroup && this.states.EDIT_AVAILABILITY:
             return "Toggle which calendars are used. Tap and drag to edit your availability."
           case this.states.EDIT_AVAILABILITY:
+            const daysOrTimes = this.event.daysOnly ? "days" : "times"
             if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-              return 'Tap and drag to add your "if needed" times in yellow.'
+              return `Tap and drag to add your "if needed" ${daysOrTimes} in yellow.`
             }
-            return 'Tap and drag to add your "available" times in green.'
+            return `Tap and drag to add your "available" ${daysOrTimes} in green.`
           case this.states.SCHEDULE_EVENT:
             return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
           default:
@@ -1232,10 +1233,11 @@ export default {
         case this.isGroup && this.states.EDIT_AVAILABILITY:
           return "Toggle which calendars are used. Click and drag to edit your availability."
         case this.states.EDIT_AVAILABILITY:
+          const daysOrTimes = this.event.daysOnly ? "days" : "times"
           if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-            return 'Click and drag to add your "if needed" times in yellow.'
+            return `Click and drag to add your "if needed" ${daysOrTimes} in yellow.`
           }
-          return 'Click and drag to add your "available" times in green.'
+          return `Click and drag to add your "available" ${daysOrTimes} in green.`
         case this.states.SCHEDULE_EVENT:
           return "Click and drag on the calendar to schedule a Google Calendar event during those times."
         default:
@@ -2012,6 +2014,11 @@ export default {
       if (classStyle.style.backgroundColor === "#E523230D") {
         classStyle.style.backgroundColor = "#E5232333"
       }
+
+      // Change edit green
+      // if (classStyle.style.backgroundColor === "#00994C88") {
+      //   classStyle.style.backgroundColor = "#29BC6880"
+      // }
 
       // Border style
       if (
