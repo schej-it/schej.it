@@ -453,6 +453,7 @@
         v-if="!calendarOnly"
       >
         <ToolRow
+          :event="event"
           :state="state"
           :states="states"
           :cur-timezone.sync="curTimezone"
