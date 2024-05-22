@@ -262,51 +262,6 @@
                   class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
                 />
               </div>
-
-              <!-- Hint text (desktop) -->
-              <v-expand-transition>
-                <div
-                  :key="hintText"
-                  v-if="!isPhone && hintTextShown"
-                  class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
-                >
-                  <div
-                    class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-dark-gray"
-                  >
-                    <div class="tw-flex tw-items-center tw-gap-1">
-                      <v-icon small>mdi-information-outline</v-icon>
-                      {{ hintText }}
-                    </div>
-                    <v-icon small @click="closeHint">mdi-close</v-icon>
-                  </div>
-                </div>
-              </v-expand-transition>
-
-              <ToolRow
-                v-if="!calendarOnly && !isPhone"
-                :state="state"
-                :states="states"
-                :cur-timezone.sync="curTimezone"
-                :show-best-times.sync="showBestTimes"
-                :is-weekly="isWeekly"
-                :calendar-permission-granted="calendarPermissionGranted"
-                :week-offset="weekOffset"
-                :num-responses="respondents.length"
-                :mobile-num-days.sync="mobileNumDays"
-                :allow-schedule-event="allowScheduleEvent"
-                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @onShowBestTimesChange="onShowBestTimesChange"
-                @scheduleEvent="scheduleEvent"
-                @cancelScheduleEvent="cancelScheduleEvent"
-                @confirmScheduleEvent="confirmScheduleEvent"
-              />
-
-              <div v-if="!calendarOnly && !isPhone">
-                <Advertisement
-                  class="tw-mt-10"
-                  :ownerId="event.ownerId"
-                ></Advertisement>
-              </div>
             </div>
 
             <div
@@ -337,7 +292,7 @@
           >
             <!-- User's calendar accounts -->
             <CalendarAccounts
-              v-if="calendarPermissionGranted"
+              v-if="calendarPermissionGranted && !event.daysOnly"
               :toggleState="true"
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
@@ -468,9 +423,36 @@
         </div>
       </div>
 
-      <div class="tw-px-4">
+      <!-- Hint text (desktop) -->
+      <v-expand-transition>
+        <div
+          :key="hintText"
+          v-if="!isPhone && hintTextShown"
+          class="tw-sticky tw-bottom-4 tw-z-10 tw-flex tw-px-4"
+          :class="
+            event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
+          "
+        >
+          <div
+            class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-dark-gray"
+          >
+            <div class="tw-flex tw-items-center tw-gap-1">
+              <v-icon small>mdi-information-outline</v-icon>
+              {{ hintText }}
+            </div>
+            <v-icon small @click="closeHint">mdi-close</v-icon>
+          </div>
+        </div>
+      </v-expand-transition>
+
+      <div
+        class="tw-px-4"
+        :class="
+          event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
+        "
+        v-if="!calendarOnly"
+      >
         <ToolRow
-          v-if="!calendarOnly && isPhone"
           :state="state"
           :states="states"
           :cur-timezone.sync="curTimezone"
@@ -488,12 +470,10 @@
           @confirmScheduleEvent="confirmScheduleEvent"
         />
 
-        <div v-if="!calendarOnly && isPhone">
-          <Advertisement
-            class="tw-mt-5"
-            :ownerId="event.ownerId"
-          ></Advertisement>
-        </div>
+        <Advertisement
+          class="tw-mt-5 sm:tw-mt-10"
+          :ownerId="event.ownerId"
+        ></Advertisement>
       </div>
 
       <!-- Fixed bottom section for mobile -->
@@ -2029,7 +2009,7 @@ export default {
 
       // Change default red:
       if (classStyle.style.backgroundColor === "#E523230D") {
-        classStyle.style.backgroundColor = "#E523231A"
+        classStyle.style.backgroundColor = "#E5232333"
       }
 
       // Border style
