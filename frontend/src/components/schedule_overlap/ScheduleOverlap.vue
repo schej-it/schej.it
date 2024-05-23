@@ -2012,7 +2012,7 @@ export default {
 
       // Change default red:
       if (classStyle.style.backgroundColor === "#E523230D") {
-        classStyle.style.backgroundColor = "#E5232333"
+        classStyle.style.backgroundColor = "#E523233B"
       }
 
       // Change edit green
@@ -2029,7 +2029,7 @@ export default {
       ) {
         // Dashed border for currently selected timeslot
         classStyle.class +=
-          "tw-outline tw-outline-dashed tw-outline-black tw-z-10 "
+          "tw-outline-1 tw-outline-dashed tw-outline-black tw-z-10 "
       } else {
         // Normal border
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "

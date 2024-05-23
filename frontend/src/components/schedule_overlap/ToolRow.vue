@@ -28,7 +28,9 @@
               hide-details
             >
               <template v-slot:label>
-                <div class="tw-text-sm tw-text-black">Show best times</div>
+                <div class="tw-text-sm tw-text-black">
+                  Show best {{ event.daysOnly ? "days" : "times" }}
+                </div>
               </template>
             </v-switch>
           </div>
