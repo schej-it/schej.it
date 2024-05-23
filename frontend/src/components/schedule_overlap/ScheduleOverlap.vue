@@ -2215,18 +2215,29 @@ export default {
       const y = pageY - top - window.scrollY
       return { x, y }
     },
+    clampRow(row) {
+      if (this.event.daysOnly) {
+        row = clamp(row, 0, Math.floor(this.monthDays.length / 7) - 1)
+      } else {
+        row = clamp(row, 0, this.times.length - 1)
+      }
+      return row
+    },
+    clampCol(col) {
+      if (this.event.daysOnly) {
+        col = clamp(col, 0, 7 - 1)
+      } else {
+        col = clamp(col, 0, this.days.length - 1)
+      }
+      return col
+    },
+    /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
     getRowColFromXY(x, y) {
-      /* Returns a date for the timeslot we are currently hovering over given the x and y position */
       const { width, height } = this.timeslot
       let col = Math.floor(x / width)
       let row = Math.floor(y / height)
-      if (this.event.daysOnly) {
-        col = clamp(col, 0, 7 - 1)
-        row = clamp(row, 0, Math.floor(this.monthDays / 7) - 1)
-      } else {
-        col = clamp(col, 0, this.days.length - 1)
-        row = clamp(row, 0, this.times.length - 1)
-      }
+      row = this.clampRow(row)
+      col = this.clampCol(col)
       return {
         row,
         col,
@@ -2375,6 +2386,7 @@ export default {
     moveDrag(e) {
       if (!this.allowDrag) return
       if (e.touches?.length > 1) return // If dragging with more than one finger
+      if (!this.dragStart) return
 
       e.preventDefault()
       const { row, col } = this.getRowColFromXY(
@@ -2386,16 +2398,23 @@ export default {
       if (!this.allowDrag) return
       if (e.touches?.length > 1) return // If dragging with more than one finger
 
-      e.preventDefault()
-
-      this.dragging = true
-
       const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
+      const date = this.getDateFromRowCol(row, col)
+
+      // Dont start dragging if day not included in daysonly event
+      if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
+        return
+      }
+
+      this.dragging = true
       this.dragStart = { row, col }
       this.dragCur = { row, col }
-      const date = this.getDateFromRowCol(row, col)
+
+      // Prevent scroll
+      e.preventDefault()
+
       // Set drag type
       if (
         (this.availabilityType === availabilityTypes.AVAILABLE &&
