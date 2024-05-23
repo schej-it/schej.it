@@ -2220,8 +2220,13 @@ export default {
       const { width, height } = this.timeslot
       let col = Math.floor(x / width)
       let row = Math.floor(y / height)
-      // dayIndex = clamp(dayIndex, 0, this.days.length - 1)
-      // timeIndex = clamp(timeIndex, 0, this.times.length - 1)
+      if (this.event.daysOnly) {
+        col = clamp(col, 0, 7 - 1)
+        row = clamp(row, 0, Math.floor(this.monthDays / 7) - 1)
+      } else {
+        col = clamp(col, 0, this.days.length - 1)
+        row = clamp(row, 0, this.times.length - 1)
+      }
       return {
         row,
         col,
