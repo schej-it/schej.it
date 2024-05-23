@@ -665,6 +665,7 @@ export default {
       maxAnimTime: 1200, // Max amount of time for availability animation
       unsavedChanges: false, // If there are unsaved availability changes
       curTimeslot: { row: -1, col: -1 }, // The currently highlighted timeslot
+      timeslotSelected: false, // Whether a timeslot is selected (used to persist selection on desktop)
       curTimeslotAvailability: {}, // The users available for the current timeslot
       curRespondent: "", // Id of the active respondent (set on hover)
       curRespondents: [], // Id of currently selected respondents (set on click)
@@ -1383,11 +1384,11 @@ export default {
     },
     deselectRespondents(e) {
       // Don't deselect respondents if toggled best times
-      // or if on mobile and this was fired by clicking on a timeslot
+      // or if this was fired by clicking on a timeslot
       if (
         e?.target?.previousElementSibling?.id === "show-best-times-toggle" ||
         e?.target?.firstChild?.firstChild?.id === "show-best-times-toggle" ||
-        (e?.target?.classList?.contains("timeslot") && this.isPhone)
+        e?.target?.classList?.contains("timeslot") //&& this.isPhone)
       )
         return
 
@@ -1396,6 +1397,10 @@ export default {
       }
 
       this.curRespondents = []
+
+      // Stop persisting timeslot
+      this.timeslotSelected = false
+      this.resetCurTimeslot()
     },
 
     isGuest(user) {
@@ -2050,28 +2055,51 @@ export default {
     getTimeslotVon(row, col) {
       if (this.interactable) {
         return {
-          click: () => this.showAvailability(row, col),
+          click: () => {
+            if (this.timeslotSelected) {
+              // Get rid of persistent timeslot selection if clicked on the same timeslot that is currently being persisted
+              if (
+                row === this.curTimeslot.row &&
+                col === this.curTimeslot.col
+              ) {
+                this.timeslotSelected = false
+              }
+            } else if (this.userHasResponded || this.guestAddedAvailability) {
+              // Persist timeslot selection if user has already responded
+              this.timeslotSelected = true
+            }
+
+            this.showAvailability(row, col)
+          },
           mousedown: () => {
+            // Highlight availability button
             if (
               this.state === this.defaultState &&
-              (!this.isPhone || this.respondents.length == 0)
+              ((!this.isPhone &&
+                !(this.userHasResponded || this.guestAddedAvailability)) ||
+                this.respondents.length == 0)
             )
               this.highlightAvailabilityBtn()
           },
-          mouseover: () => this.showAvailability(row, col),
+          mouseover: () => {
+            // Only show availability on hover if timeslot is not being persisted
+            if (!this.timeslotSelected) {
+              this.showAvailability(row, col)
+            }
+          },
         }
       }
       return {}
     },
     resetCurTimeslot() {
+      // Only reset cur timeslot if it isn't being persisted
+      if (this.timeslotSelected) return
+
       this.curTimeslotAvailability = {}
       for (const respondent of this.respondents) {
         this.curTimeslotAvailability[respondent._id] = true
       }
       this.curTimeslot = { row: -1, col: -1 }
-
-      // Deselect respondents if on mobile
-      if (this.isPhone) this.deselectRespondents()
 
       // End drag if mouse left time grid
       this.endDrag()
