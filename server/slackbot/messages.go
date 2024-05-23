@@ -16,13 +16,15 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 			"*Short url*: https://schej.it/e/%s\n"+
 			"*Creator*: %s\n"+
 			"*Num days*: %v\n"+
-			"*Type*: %s",
+			"*Type*: %s\n"+
+			"*Days only*: %v",
 		event.Name,
 		insertedId,
 		utils.Coalesce(event.ShortId),
 		creator,
 		len(event.Dates),
 		event.Type,
+		utils.Coalesce(event.DaysOnly),
 	)
 
 	if event.Type == models.GROUP {
