@@ -2031,11 +2031,12 @@ export default {
         (this.respondents.length > 0 ||
           this.state === this.states.EDIT_AVAILABILITY) &&
         this.curTimeslot.row === row &&
-        this.curTimeslot.col === col
+        this.curTimeslot.col === col &&
+        this.monthDayIncluded.get(date.getTime())
       ) {
         // Dashed border for currently selected timeslot
         classStyle.class +=
-          "tw-outline-1 tw-outline-dashed tw-outline-black tw-z-10 "
+          "tw-outline-2 tw-outline-dashed tw-outline-black tw-z-10 "
       } else {
         // Normal border
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
