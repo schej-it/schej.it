@@ -1975,10 +1975,11 @@ export default {
               // Determine color of timeslot based on number of people available
               const frac = numRespondents / max
               const green = "#00994C"
-              let alpha = (frac * (255 - 30))
+              let alpha = Math.floor(frac * (255 - 30))
                 .toString(16)
                 .toUpperCase()
                 .substring(0, 2)
+                .padStart(2, "0")
               if (frac == 1) alpha = "FF"
 
               s.backgroundColor = green + alpha
