@@ -4,6 +4,8 @@
     :class="{ 'tw-py-4': !dialog, 'tw-flex-1': dialog }"
     class="tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-overflow-hidden tw-rounded-lg tw-transition-all"
   >
+      <SaveProgressDialog v-model="saveProgressDialog">
+        </SaveProgressDialog>
     <v-card-title class="tw-mb-2 tw-flex tw-gap-2 tw-px-4 sm:tw-px-8">
       <div>
         <div class="tw-mb-1">
@@ -271,6 +273,7 @@ import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
+import SaveProgressDialog from "@/components/general/SaveProgressDialog.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -296,6 +299,7 @@ export default {
     HelpDialog,
     EmailInput,
     DatePicker,
+    SaveProgressDialog,
   },
 
   data: () => ({
@@ -323,6 +327,7 @@ export default {
     emails: [], // For email reminders
 
     helpDialog: false,
+    saveProgressDialog: false,
   }),
 
   mounted() {
@@ -406,6 +411,8 @@ export default {
       this.$refs.form.resetValidation()
     },
     submit() {
+      console.log("whats up")
+      console.log(this.$refs.form)
       if (!this.$refs.form.validate()) return
 
       this.selectedDays.sort()

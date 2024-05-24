@@ -1,7 +1,9 @@
 <template>
   <v-dialog
     :value="value"
-    @input="(e) => $emit('input', e)"
+    @click:outside="handleDialogInput"
+    no-click-animation
+    persistent
     content-class="tw-max-w-[28rem]"
     :fullscreen="isPhone"
     scrollable
@@ -108,6 +110,13 @@ export default {
         return this.noTabs
       }
     },
+  },
+
+  methods: {
+    handleDialogInput() {
+      console.log("dialog input")
+      this.$emit('input', false)
+    }
   },
 
   watch: {
