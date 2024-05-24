@@ -4,6 +4,7 @@
 
 import { eventTypes } from "@/constants"
 import { dateToDowDate, dateToTimeNum } from "./date_utils"
+import Color from "color"
 
 var timeoutId
 /** Calls callback() on long press */
@@ -155,4 +156,55 @@ export const isElementInViewport = (
     rect.right <=
       (window.innerWidth || document.documentElement.clientWidth) + rightOffset
   )
+}
+
+/** Converts hex with transparency to equivalent hex without transparency (on white background) */
+export const removeTransparencyFromHex = (hexColor) => {
+  const color = Color(hexColor)
+
+  // Y=255 - P*(255-X) : https://graphicdesign.stackexchange.com/questions/113007/how-to-determine-the-equivalent-opaque-rgb-color-for-a-given-partially-transpare
+  const red = 255 - color.alpha() * (255 - color.red())
+  const green = 255 - color.alpha() * (255 - color.green())
+  const blue = 255 - color.alpha() * (255 - color.blue())
+
+  const newColor = Color.rgb(red, green, blue)
+  return newColor.hex()
+}
+
+/**
+ * Returns whether a color is light or dark
+ * Source: https://awik.io/determine-color-bright-dark-using-javascript/
+ */
+export const lightOrDark = (color) => {
+  // Variables for red, green, blue values
+  var r, g, b, hsp
+
+  // Check the format of the color, HEX or RGB?
+  if (color.match(/^rgb/)) {
+    // If RGB --> store the red, green, blue values in separate variables
+    color = color.match(
+      /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/
+    )
+
+    r = color[1]
+    g = color[2]
+    b = color[3]
+  } else {
+    // If hex --> Convert it to RGB: http://gist.github.com/983661
+    color = +("0x" + color.slice(1).replace(color.length < 5 && /./g, "$&$&"))
+
+    r = color >> 16
+    g = (color >> 8) & 255
+    b = color & 255
+  }
+
+  // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
+  hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b))
+
+  // Using the HSP value, determine whether the color is light or dark
+  if (hsp > 127.5) {
+    return "light"
+  } else {
+    return "dark"
+  }
 }

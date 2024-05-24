@@ -14,6 +14,7 @@
       :items="timezones"
       :menu-props="{ auto: true }"
       :solo="solo"
+      class="tw-z-20"
       :class="solo && '-tw-mt-px tw-w-52 tw-text-sm'"
       :dense="!solo"
       color="#219653"

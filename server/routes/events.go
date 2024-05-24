@@ -58,6 +58,7 @@ func createEvent(c *gin.Context) {
 		// Only for events (not groups)
 		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
 		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
+		DaysOnly                 *bool    `json:"daysOnly"`
 		Remindees                []string `json:"remindees"`
 
 		// Only for availability groups
@@ -89,6 +90,7 @@ func createEvent(c *gin.Context) {
 		Dates:                    payload.Dates,
 		NotificationsEnabled:     payload.NotificationsEnabled,
 		BlindAvailabilityEnabled: payload.BlindAvailabilityEnabled,
+		DaysOnly:                 payload.DaysOnly,
 		Type:                     payload.Type,
 		Responses:                make(map[string]*models.Response),
 	}
@@ -210,6 +212,7 @@ func editEvent(c *gin.Context) {
 		// Only for events (not groups)
 		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
 		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
+		DaysOnly                 *bool    `json:"daysOnly"`
 		Remindees                []string `json:"remindees"`
 
 		// Only for availability groups
@@ -251,6 +254,7 @@ func editEvent(c *gin.Context) {
 	event.Dates = payload.Dates
 	event.NotificationsEnabled = payload.NotificationsEnabled
 	event.BlindAvailabilityEnabled = payload.BlindAvailabilityEnabled
+	event.DaysOnly = payload.DaysOnly
 	event.Type = payload.Type
 
 	// Update remindees
