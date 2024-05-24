@@ -415,7 +415,7 @@
               "
               text
               color="primary"
-              class="-tw-ml-2 tw-mt-2 tw-px-2"
+              class="-tw-ml-2 tw-px-2"
               @click="() => $emit('addAvailability')"
               >+ Add availability</v-btn
             >
