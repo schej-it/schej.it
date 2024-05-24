@@ -141,6 +141,19 @@
           </v-expand-transition>
         </div>
 
+        <v-checkbox
+          v-if="allowNotifications"
+          v-model="notificationsEnabled"
+          hide-details
+          class="tw-mt-2"
+        >
+          <template v-slot:label>
+            <span class="tw-text-sm tw-text-very-dark-gray"
+              >Email me each time someone joins my event</span
+            >
+          </template>
+        </v-checkbox>
+
         <div v-if="authUser">
           <v-btn
             class="tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-base"
@@ -157,19 +170,6 @@
           <v-expand-transition>
             <div v-show="showEmailReminders">
               <div class="tw-my-2 tw-space-y-5">
-                <v-checkbox
-                  v-if="allowNotifications"
-                  v-model="notificationsEnabled"
-                  hide-details
-                  class="tw-mt-2"
-                >
-                  <template v-slot:label>
-                    <span class="tw-text-sm tw-text-very-dark-gray"
-                      >Email me each time someone joins my event</span
-                    >
-                  </template>
-                </v-checkbox>
-
                 <EmailInput
                   v-show="authUser"
                   ref="emailReminders"
