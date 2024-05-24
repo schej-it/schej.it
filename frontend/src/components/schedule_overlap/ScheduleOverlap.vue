@@ -944,12 +944,23 @@ export default {
       const totalDays =
         numDaysFromPrevMonth + numDaysInCurMonth + numDaysFromNextMonth
       for (let i = 0; i < totalDays; ++i) {
-        monthDays.push({
-          date: curDate.getUTCDate(),
-          time: curDate.getTime(),
-          dateObject: new Date(curDate),
-          included: allDaysSet.has(curDate.getTime()),
-        })
+        // Only include days from the current month
+        if (curDate.getUTCMonth() === lastDayOfCurMonth.getUTCMonth()) {
+          monthDays.push({
+            date: curDate.getUTCDate(),
+            time: curDate.getTime(),
+            dateObject: new Date(curDate),
+            included: allDaysSet.has(curDate.getTime()),
+          })
+        } else {
+          monthDays.push({
+            date: "",
+            time: curDate.getTime(),
+            dateObject: new Date(curDate),
+            included: false,
+          })
+        }
+
         curDate.setUTCDate(curDate.getUTCDate() + 1)
       }
 
