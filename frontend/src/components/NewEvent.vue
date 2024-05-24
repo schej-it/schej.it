@@ -4,8 +4,6 @@
     :class="{ 'tw-py-4': !dialog, 'tw-flex-1': dialog }"
     class="tw-relative tw-flex tw-max-w-[28rem] tw-flex-col tw-overflow-hidden tw-rounded-lg tw-transition-all"
   >
-      <SaveProgressDialog v-model="saveProgressDialog">
-        </SaveProgressDialog>
     <v-card-title class="tw-mb-2 tw-flex tw-gap-2 tw-px-4 sm:tw-px-8">
       <div>
         <div class="tw-mb-1">
@@ -273,7 +271,6 @@ import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
-import SaveProgressDialog from "@/components/general/SaveProgressDialog.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
@@ -299,7 +296,6 @@ export default {
     HelpDialog,
     EmailInput,
     DatePicker,
-    SaveProgressDialog,
   },
 
   data: () => ({
@@ -350,6 +346,13 @@ export default {
 
   computed: {
     ...mapState(["authUser"]),
+    formEmpty() {
+      return (
+        this.name === "" &&
+        this.selectedDays.length === 0 &&
+        this.selectedDaysOfWeek.length === 0
+      )
+    },
     nameRules() {
       return [(v) => !!v || "Event name is required"]
     },
@@ -642,6 +645,9 @@ export default {
         this.selectedDays = []
       }
     },
+    formEmpty(val) {
+      this.$emit("update:formEmpty", val)
+    }
   },
 }
 </script>

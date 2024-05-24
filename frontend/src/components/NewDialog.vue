@@ -9,6 +9,9 @@
     scrollable
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
+
+  <SaveProgressDialog v-model="saveProgressDialog">
+        </SaveProgressDialog>
     <v-card class="tw-pt-4">
       <div v-if="!_noTabs" class="tw-flex tw-rounded sm:-tw-mt-4 sm:tw-px-8">
         <v-tabs v-model="tab">
@@ -39,6 +42,7 @@
           :edit="edit"
           :allow-notifications="allowNotifications"
           @input="$emit('input', false)"
+          @update:formEmpty="(val) => formEmpty = val"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
         />
@@ -60,6 +64,7 @@
 <script>
 import { isPhone } from "@/utils"
 import NewEvent from "@/components/NewEvent.vue"
+import SaveProgressDialog from "@/components/general/SaveProgressDialog.vue"
 import NewGroup from "./NewGroup.vue"
 import { mapState } from "vuex"
 
@@ -82,6 +87,7 @@ export default {
   components: {
     NewEvent,
     NewGroup,
+    SaveProgressDialog,
   },
 
   data() {
@@ -95,6 +101,9 @@ export default {
         EVENT: "event",
         GROUP: "group",
       },
+
+      saveProgressDialog: false,
+      formEmpty: true,
     }
   },
 
@@ -114,8 +123,12 @@ export default {
 
   methods: {
     handleDialogInput() {
-      console.log("dialog input")
-      this.$emit('input', false)
+      if (this.formEmpty) {
+
+        this.$emit('input', false)
+      } else {
+        this.saveProgressDialog = true
+      }
     }
   },
 
