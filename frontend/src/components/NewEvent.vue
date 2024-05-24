@@ -66,7 +66,7 @@
                 What times might work?
               </div>
               <div
-                class="tw-mb-6 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
+                class="tw-mb-2 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
               >
                 <v-select
                   v-model="startTime"
@@ -84,12 +84,19 @@
                   solo
                 ></v-select>
               </div>
-              <TimezoneSelector
-                v-model="timezone"
+              <ExpandableSection
                 label="Timezone"
-                solo
-                no-label
-              />
+                labelClass="tw-text-sm"
+                iconClass="tw-text-base"
+                class="tw-mb-6"
+              >
+                <TimezoneSelector
+                  v-model="timezone"
+                  label="Timezone"
+                  solo
+                  no-label
+                />
+              </ExpandableSection>
             </div>
           </v-expand-transition>
 
@@ -288,6 +295,7 @@ import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
 import SlideToggle from "./SlideToggle.vue"
+import ExpandableSection from "./ExpandableSection.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -315,6 +323,7 @@ export default {
     EmailInput,
     DatePicker,
     SlideToggle,
+    ExpandableSection,
   },
 
   data: () => ({
