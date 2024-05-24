@@ -1197,9 +1197,12 @@ export default {
       if (this.event.daysOnly) {
         const lastDay = new Date(this.event.dates[this.event.dates.length - 1])
         const curDate = new Date(this.event.dates[0])
-        curDate.setUTCDate(0)
-        curDate.setUTCMonth(curDate.getUTCMonth() + this.page + 1)
-        return curDate.getTime() < lastDay.getTime()
+        const monthIndex = curDate.getUTCMonth() + this.page
+        const year = curDate.getUTCFullYear()
+
+        const lastDayOfCurMonth = new Date(Date.UTC(year, monthIndex + 1, 0))
+
+        return lastDayOfCurMonth.getTime() < lastDay.getTime()
       }
 
       return (
