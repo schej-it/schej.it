@@ -919,8 +919,7 @@ export default {
 
       // Calculate monthIndex and year from event start date and page num
       const date = new Date(this.event.dates[0])
-      date.setUTCMonth(date.getUTCMonth() + this.page)
-      const monthIndex = date.getUTCMonth()
+      const monthIndex = date.getUTCMonth() + this.page
       const year = date.getUTCFullYear()
 
       const lastDayOfPrevMonth = new Date(Date.UTC(year, monthIndex, 0))
@@ -967,9 +966,12 @@ export default {
     /** Returns the text to show for the current month */
     curMonthText() {
       const date = new Date(this.event.dates[0])
-      date.setUTCMonth(date.getUTCMonth() + this.page)
-      const monthText = this.months[date.getUTCMonth()]
-      const yearText = date.getUTCFullYear()
+      const monthIndex = date.getUTCMonth() + this.page
+      const year = date.getUTCFullYear()
+      const lastDayOfCurMonth = new Date(Date.UTC(year, monthIndex + 1, 0))
+
+      const monthText = this.months[lastDayOfCurMonth.getUTCMonth()]
+      const yearText = lastDayOfCurMonth.getUTCFullYear()
       return `${monthText} ${yearText}`
     },
     defaultState() {
