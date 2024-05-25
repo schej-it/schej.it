@@ -343,6 +343,7 @@ export default {
     emails: [], // For email reminders
 
     helpDialog: false,
+    saveProgressDialog: false,
   }),
 
   mounted() {
@@ -365,6 +366,13 @@ export default {
 
   computed: {
     ...mapState(["authUser", "daysOnlyEnabled"]),
+    formEmpty() {
+      return (
+        this.name === "" &&
+        this.selectedDays.length === 0 &&
+        this.selectedDaysOfWeek.length === 0
+      )
+    },
     nameRules() {
       return [(v) => !!v || "Event name is required"]
     },
@@ -678,6 +686,9 @@ export default {
         this.selectedDays = []
       }
     },
+    formEmpty(val) {
+      this.$emit("update:formEmpty", val)
+    }
   },
 }
 </script>

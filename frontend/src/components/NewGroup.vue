@@ -224,6 +224,13 @@ export default {
           selectedDays.length > 0 || "Please select at least one day",
       ]
     },
+    formEmpty() {
+      return (
+        this.name === "" &&
+        this.emails.length === 0 &&
+        this.selectedDaysOfWeek.length === 0
+      )
+    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -420,6 +427,9 @@ export default {
         }
       },
     },
+    formEmpty(val) {
+      this.$emit("update:formEmpty", val)
+    }
   },
 }
 </script>
