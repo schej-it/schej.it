@@ -19,9 +19,10 @@ type Event struct {
 	OwnerId primitive.ObjectID `json:"ownerId" bson:"ownerId,omitempty"`
 	Name    string             `json:"name" bson:"name,omitempty"`
 
-	Duration             *float32             `json:"duration" bson:"duration,omitempty"`
-	Dates                []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
-	NotificationsEnabled *bool                `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
+	Duration                 *float32             `json:"duration" bson:"duration,omitempty"`
+	Dates                    []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
+	NotificationsEnabled     *bool                `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
+	SendEmailAfterXResponses *int                 `json:"sendEmailAfterXResponses" bson:"sendEmailAfterXResponses,omitempty"`
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 

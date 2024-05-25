@@ -44,7 +44,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,remindees=[]string,attendees=[]string} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -60,6 +60,7 @@ func createEvent(c *gin.Context) {
 		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
 		DaysOnly                 *bool    `json:"daysOnly"`
 		Remindees                []string `json:"remindees"`
+		SendEmailAfterXResponses *int     `json:"sendEmailAfterXResponses"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -91,6 +92,7 @@ func createEvent(c *gin.Context) {
 		NotificationsEnabled:     payload.NotificationsEnabled,
 		BlindAvailabilityEnabled: payload.BlindAvailabilityEnabled,
 		DaysOnly:                 payload.DaysOnly,
+		SendEmailAfterXResponses: payload.SendEmailAfterXResponses,
 		Type:                     payload.Type,
 		Responses:                make(map[string]*models.Response),
 	}
@@ -198,7 +200,7 @@ func createEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,remindees=[]string,attendees=[]string} true "Object containing info about the event to update"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
@@ -214,6 +216,7 @@ func editEvent(c *gin.Context) {
 		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
 		DaysOnly                 *bool    `json:"daysOnly"`
 		Remindees                []string `json:"remindees"`
+		SendEmailAfterXResponses *int     `json:"sendEmailAfterXResponses"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -255,6 +258,7 @@ func editEvent(c *gin.Context) {
 	event.NotificationsEnabled = payload.NotificationsEnabled
 	event.BlindAvailabilityEnabled = payload.BlindAvailabilityEnabled
 	event.DaysOnly = payload.DaysOnly
+	event.SendEmailAfterXResponses = payload.SendEmailAfterXResponses
 	event.Type = payload.Type
 
 	// Update remindees
@@ -595,16 +599,8 @@ func updateEventResponse(c *gin.Context) {
 	// Check if user has responded to event before (edit response) or not (new response)
 	_, userHasResponded := event.Responses[userIdString]
 
-	// Update responses in mongodb
+	// Update event responses
 	event.Responses[userIdString] = &response
-	_, err := db.EventsCollection.UpdateByID(
-		context.Background(),
-		event.Id,
-		bson.M{"$set": event},
-	)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
 
 	// Send email to creator of event if creator enabled it
 	if (utils.Coalesce(event.NotificationsEnabled) || event.Type == models.GROUP) && !userHasResponded && userIdString != event.OwnerId.Hex() {
@@ -612,7 +608,6 @@ func updateEventResponse(c *gin.Context) {
 		go func() {
 			creator := db.GetUserById(event.OwnerId.Hex())
 			if creator == nil {
-				c.JSON(http.StatusOK, gin.H{})
 				return
 			}
 
@@ -642,6 +637,40 @@ func updateEventResponse(c *gin.Context) {
 				})
 			}
 		}()
+	}
+
+	// Send email after X responses
+	sendEmailAfterXResponses := utils.Coalesce(event.SendEmailAfterXResponses)
+	if sendEmailAfterXResponses > 0 && !userHasResponded && sendEmailAfterXResponses == len(event.Responses) {
+		// Set SendEmailAfterXResponses variable to 0 to prevent additional emails from being sent
+		*event.SendEmailAfterXResponses = 0
+
+		// Send email asynchronously
+		go func() {
+			creator := db.GetUserById(event.OwnerId.Hex())
+			if creator == nil {
+				return
+			}
+
+			sendEmailAfterXResponsesEmailId := 14
+			listmonk.SendEmail(creator.Email, sendEmailAfterXResponsesEmailId, bson.M{
+				"eventName":    event.Name,
+				"ownerName":    creator.FirstName,
+				"eventUrl":     fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
+				"numResponses": len(event.Responses),
+			})
+
+		}()
+	}
+
+	// Update event in mongodb
+	_, err := db.EventsCollection.UpdateByID(
+		context.Background(),
+		event.Id,
+		bson.M{"$set": event},
+	)
+	if err != nil {
+		logger.StdErr.Panicln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
