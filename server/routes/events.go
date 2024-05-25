@@ -642,8 +642,8 @@ func updateEventResponse(c *gin.Context) {
 	// Send email after X responses
 	sendEmailAfterXResponses := utils.Coalesce(event.SendEmailAfterXResponses)
 	if sendEmailAfterXResponses > 0 && !userHasResponded && sendEmailAfterXResponses == len(event.Responses) {
-		// Set SendEmailAfterXResponses variable to 0 to prevent additional emails from being sent
-		*event.SendEmailAfterXResponses = 0
+		// Set SendEmailAfterXResponses variable to -1 to prevent additional emails from being sent
+		*event.SendEmailAfterXResponses = -1
 
 		// Send email asynchronously
 		go func() {

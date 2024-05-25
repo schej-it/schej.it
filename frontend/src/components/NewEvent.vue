@@ -223,7 +223,7 @@
             <div v-show="showAdvancedOptions">
               <div class="tw-my-2 tw-space-y-5">
                 <v-checkbox
-                  v-show="authUser"
+                  v-if="authUser"
                   v-model="blindAvailabilityEnabled"
                   hide-details
                 >
@@ -234,6 +234,7 @@
                   </template>
                 </v-checkbox>
                 <v-checkbox
+                  v-if="authUser"
                   v-model="sendEmailAfterXResponsesEnabled"
                   hide-details
                 >
@@ -255,10 +256,10 @@
                         "
                         dense
                         class="-tw-mt-px tw-w-10"
-                        :value="0"
                         menu-props="auto"
                         hide-details
                         type="number"
+                        min="1"
                       ></v-text-field>
                       <div>responses</div>
                     </div>
@@ -509,23 +510,36 @@ export default {
 
       this.loading = true
 
-      const name = this.name
-      const notificationsEnabled = this.notificationsEnabled
-      const blindAvailabilityEnabled = this.blindAvailabilityEnabled
-      const daysOnly = this.daysOnly
-      const remindees = this.emails
+      const payload = {
+        name: this.name,
+        duration: duration,
+        dates: dates,
+        notificationsEnabled: this.notificationsEnabled,
+        blindAvailabilityEnabled: this.blindAvailabilityEnabled,
+        daysOnly: this.daysOnly,
+        remindees: this.emails,
+        type: type,
+        sendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
+          ? parseInt(this.sendEmailAfterXResponses)
+          : -1,
+      }
+      const posthogPayload = {
+        eventName: this.name,
+        eventDuration: duration,
+        eventDates: JSON.stringify(dates),
+        eventNotificationsEnabled: this.notificationsEnabled,
+        eventBlindAvailabilityEnabled: this.blindAvailabilityEnabled,
+        eventDaysOnly: this.daysOnly,
+        eventRemindees: this.emails,
+        eventType: type,
+        eventSendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
+          ? parseInt(this.sendEmailAfterXResponses)
+          : -1,
+      }
+
       if (!this.edit) {
         // Create new event on backend
-        post("/events", {
-          name,
-          duration,
-          dates,
-          notificationsEnabled,
-          blindAvailabilityEnabled,
-          daysOnly,
-          remindees,
-          type,
-        })
+        post("/events", payload)
           .then(({ eventId, shortId }) => {
             this.$router.push({
               name: "event",
@@ -538,17 +552,8 @@ export default {
             this.$emit("input", false)
             this.reset()
 
-            this.$posthog?.capture("Event created", {
-              eventId: eventId,
-              eventName: name,
-              eventDuration: duration,
-              eventDates: JSON.stringify(dates),
-              eventNotificationsEnabled: notificationsEnabled,
-              eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
-              eventDaysOnly: daysOnly,
-              eventRemindees: remindees,
-              eventType: type,
-            })
+            posthogPayload.eventId = eventId
+            this.$posthog?.capture("Event created", posthogPayload)
           })
           .catch((err) => {
             this.showError(
@@ -561,28 +566,11 @@ export default {
       } else {
         // Edit event on backend
         if (this.event) {
-          put(`/events/${this.event._id}`, {
-            name,
-            duration,
-            dates,
-            notificationsEnabled,
-            blindAvailabilityEnabled,
-            daysOnly,
-            remindees,
-            type,
-          })
+          put(`/events/${this.event._id}`, payload)
             .then(() => {
-              this.$posthog?.capture("Event edited", {
-                eventId: this.event._id,
-                eventName: name,
-                eventDuration: duration,
-                eventDates: JSON.stringify(dates),
-                eventNotificationsEnabled: notificationsEnabled,
-                eventBlindAvailabilityEnabled: blindAvailabilityEnabled,
-                eventDaysOnly: daysOnly,
-                eventRemindees: remindees,
-                eventType: type,
-              })
+              posthogPayload.eventId = this.event._id
+              this.$posthog?.capture("Event edited", posthogPayload)
+
               this.$emit("input", false)
               this.reset()
               window.location.reload()
@@ -665,6 +653,14 @@ export default {
         this.notificationsEnabled = this.event.notificationsEnabled
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
         this.daysOnly = this.event.daysOnly
+
+        if (
+          this.event.sendEmailAfterXResponses !== null &&
+          this.event.sendEmailAfterXResponses > 0
+        ) {
+          this.sendEmailAfterXResponsesEnabled = true
+          this.sendEmailAfterXResponses = this.event.sendEmailAfterXResponses
+        }
 
         if (this.event.daysOnly) {
           this.selectedDateOption = this.dateOptions.SPECIFIC
