@@ -3,188 +3,246 @@
     <div class="tw-select-none tw-py-4" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-col sm:tw-flex-row">
         <div class="tw-flex tw-grow tw-px-4">
-          <!-- Times -->
-          <div
-            :class="calendarOnly ? 'tw-w-12' : ''"
-            class="tw-w-8 tw-flex-none sm:tw-w-12"
-          >
-            <div
-              :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-              class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
-            >
-              <div
-                :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
-              >
-                <v-btn class="tw-border-gray" outlined icon @click="prevPage"
+          <template v-if="event.daysOnly">
+            <div class="tw-grow">
+              <div class="tw-flex tw-items-center tw-justify-between">
+                <v-btn
+                  :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                  class="tw-border-gray"
+                  outlined
+                  icon
+                  @click="prevPage"
                   ><v-icon>mdi-chevron-left</v-icon></v-btn
                 >
+                <div
+                  class="tw-text-lg tw-font-medium tw-capitalize sm:tw-text-xl"
+                >
+                  {{ curMonthText }}
+                </div>
+                <v-btn
+                  :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+                  class="tw-border-gray"
+                  outlined
+                  icon
+                  @click="nextPage"
+                  ><v-icon>mdi-chevron-right</v-icon></v-btn
+                >
               </div>
-            </div>
-
-            <div
-              :class="calendarOnly ? '' : '-tw-ml-3'"
-              class="-tw-mt-[8px] sm:tw-ml-0"
-            >
-              <div
-                v-for="(time, i) in times"
-                :key="i"
-                class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
-              >
-                {{ time.text }}
+              <!-- Header -->
+              <div class="tw-flex tw-w-full">
+                <div
+                  v-for="day in daysOfWeek"
+                  class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-dark-gray"
+                >
+                  {{ day }}
+                </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Middle section -->
-          <div class="tw-grow">
-            <div
-              ref="calendar"
-              @scroll="onCalendarScroll"
-              class="tw-relative tw-flex tw-flex-col"
-            >
-              <!-- Days -->
+              <!-- Days grid -->
               <div
-                :class="
-                  sampleCalendarEventsByDay ? undefined : 'tw-sticky tw-top-14'
-                "
-                class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
+                id="drag-section"
+                class="tw-grid tw-grid-cols-7"
+                @mouseleave="resetCurTimeslot"
               >
                 <div
-                  v-for="(day, i) in days"
-                  :key="i"
-                  class="tw-flex-1 tw-bg-white"
+                  v-for="(day, i) in monthDays"
+                  :key="day.time"
+                  class="timeslot tw-aspect-square tw-p-2 tw-text-sm sm:tw-text-base"
+                  :class="dayTimeslotClassStyle[i].class"
+                  :style="dayTimeslotClassStyle[i].style"
+                  v-on="dayTimeslotVon[i]"
                 >
-                  <div class="tw-text-center">
-                    <div
-                      v-if="isSpecificDates || isGroup"
-                      class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
-                    >
-                      {{ day.dateString }}
-                    </div>
-                    <div class="tw-text-base tw-capitalize sm:tw-text-lg">
-                      {{ day.dayText }}
-                    </div>
-                  </div>
+                  {{ day.date }}
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <!-- Times -->
+            <div
+              :class="calendarOnly ? 'tw-w-12' : ''"
+              class="tw-w-8 tw-flex-none sm:tw-w-12"
+            >
+              <div
+                :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
+                class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
+              >
+                <div
+                  :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                  class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
+                >
+                  <v-btn class="tw-border-gray" outlined icon @click="prevPage"
+                    ><v-icon>mdi-chevron-left</v-icon></v-btn
+                  >
                 </div>
               </div>
 
-              <!-- Calendar -->
-              <div class="tw-flex tw-flex-col">
-                <div class="tw-flex-1">
-                  <div
-                    id="times"
-                    data-long-press-delay="500"
-                    class="tw-relative tw-flex"
-                    @mouseleave="resetCurTimeslot"
-                  >
-                    <!-- Loader -->
-                    <div
-                      v-if="showLoader"
-                      class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
-                    >
-                      <v-progress-circular
-                        class="tw-text-green"
-                        indeterminate
-                      />
-                    </div>
+              <div
+                :class="calendarOnly ? '' : '-tw-ml-3'"
+                class="-tw-mt-[8px] sm:tw-ml-0"
+              >
+                <div
+                  v-for="(time, i) in times"
+                  :key="i"
+                  class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                >
+                  {{ time.text }}
+                </div>
+              </div>
+            </div>
 
-                    <div
-                      v-for="(day, d) in days"
-                      :key="d"
-                      class="tw-relative tw-flex-1"
-                      :class="
-                        ((isGroup && loadingCalendarEvents) ||
-                          loadingResponses.loading) &&
-                        'tw-opacity-50'
-                      "
-                    >
-                      <!-- Timeslots -->
+            <!-- Middle section -->
+            <div class="tw-grow">
+              <div
+                ref="calendar"
+                @scroll="onCalendarScroll"
+                class="tw-relative tw-flex tw-flex-col"
+              >
+                <!-- Days -->
+                <div
+                  :class="
+                    sampleCalendarEventsByDay
+                      ? undefined
+                      : 'tw-sticky tw-top-14'
+                  "
+                  class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
+                >
+                  <div
+                    v-for="(day, i) in days"
+                    :key="i"
+                    class="tw-flex-1 tw-bg-white"
+                  >
+                    <div class="tw-text-center">
                       <div
-                        v-for="(time, t) in times"
-                        :key="t"
-                        class="tw-w-full"
+                        v-if="isSpecificDates || isGroup"
+                        class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
                       >
-                        <div
-                          class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
-                          :class="timeslotClassStyle(day, time, d, t).class"
-                          :style="timeslotClassStyle(day, time, d, t).style"
-                          v-on="timeslotVon(d, t)"
-                        ></div>
+                        {{ day.dateString }}
+                      </div>
+                      <div class="tw-text-base tw-capitalize sm:tw-text-lg">
+                        {{ day.dayText }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Calendar -->
+                <div class="tw-flex tw-flex-col">
+                  <div class="tw-flex-1">
+                    <div
+                      id="drag-section"
+                      data-long-press-delay="500"
+                      class="tw-relative tw-flex"
+                      @mouseleave="resetCurTimeslot"
+                    >
+                      <!-- Loader -->
+                      <div
+                        v-if="showLoader"
+                        class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
+                      >
+                        <v-progress-circular
+                          class="tw-text-green"
+                          indeterminate
+                        />
                       </div>
 
-                      <!-- Calendar events -->
                       <div
-                        v-if="
-                          !loadingCalendarEvents &&
-                          (editing ||
-                            alwaysShowCalendarEvents ||
-                            showCalendarEvents)
+                        v-for="(_, d) in days"
+                        :key="d"
+                        class="tw-relative tw-flex-1"
+                        :class="
+                          ((isGroup && loadingCalendarEvents) ||
+                            loadingResponses.loading) &&
+                          'tw-opacity-50'
                         "
                       >
-                        <transition
-                          :name="isGroup ? '' : 'fade-transition'"
-                          v-for="event in calendarEventsByDay[
-                            d + page * maxDaysPerPage
-                          ]"
-                          :key="event.id"
-                          appear
-                        >
+                        <!-- Timeslots -->
+                        <div v-for="(_, t) in times" :key="t" class="tw-w-full">
                           <div
+                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                            :class="
+                              timeslotClassStyle[d * times.length + t]?.class
+                            "
+                            :style="
+                              timeslotClassStyle[d * times.length + t]?.style
+                            "
+                            v-on="timeslotVon[d * times.length + t]"
+                          ></div>
+                        </div>
+
+                        <!-- Calendar events -->
+                        <div
+                          v-if="
+                            !loadingCalendarEvents &&
+                            (editing ||
+                              alwaysShowCalendarEvents ||
+                              showCalendarEvents)
+                          "
+                        >
+                          <transition
+                            :name="isGroup ? '' : 'fade-transition'"
+                            v-for="event in calendarEventsByDay[
+                              d + page * maxDaysPerPage
+                            ]"
+                            :key="event.id"
+                            appear
+                          >
+                            <div
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              :style="{
+                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
+                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
+                              }"
+                              style="pointer-events: none"
+                            >
+                              <div
+                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
+                                :class="
+                                  event.free
+                                    ? isGroup && !editing
+                                      ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
+                                      : 'tw-border-dashed tw-border-blue'
+                                    : isGroup && !editing
+                                    ? 'tw-border-white tw-bg-light-blue'
+                                    : 'tw-border-blue'
+                                "
+                              >
+                                <div
+                                  :class="`tw-text-${
+                                    isGroup &&
+                                    state !== states.EDIT_AVAILABILITY
+                                      ? 'white'
+                                      : noEventNames
+                                      ? 'dark-gray'
+                                      : 'blue'
+                                  }`"
+                                  class="ph-no-capture tw-font-medium"
+                                >
+                                  {{ noEventNames ? "BUSY" : event.summary }}
+                                </div>
+                              </div>
+                            </div>
+                          </transition>
+                        </div>
+
+                        <!-- Scheduled event -->
+                        <div v-if="state === states.SCHEDULE_EVENT">
+                          <div
+                            v-if="
+                              (dragStart && dragStart.col === d) ||
+                              (!dragStart &&
+                                curScheduledEvent &&
+                                curScheduledEvent.dayIndex === d)
+                            "
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="{
-                              top: `calc(${event.hoursOffset} * 4 * 1rem)`,
-                              height: `calc(${event.hoursLength} * 4 * 1rem)`,
-                            }"
+                            :style="scheduledEventStyle"
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
-                              :class="
-                                event.free
-                                  ? isGroup && !editing
-                                    ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
-                                    : 'tw-border-dashed tw-border-blue'
-                                  : isGroup && !editing
-                                  ? 'tw-border-white tw-bg-light-blue'
-                                  : 'tw-border-blue'
-                              "
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
                             >
-                              <div
-                                :class="`tw-text-${
-                                  isGroup && state !== states.EDIT_AVAILABILITY
-                                    ? 'white'
-                                    : noEventNames
-                                    ? 'dark-gray'
-                                    : 'blue'
-                                }`"
-                                class="ph-no-capture tw-font-medium"
-                              >
-                                {{ noEventNames ? "BUSY" : event.summary }}
+                              <div class="tw-font-medium tw-text-white">
+                                {{ event.name }}
                               </div>
-                            </div>
-                          </div>
-                        </transition>
-                      </div>
-
-                      <!-- Scheduled event -->
-                      <div v-if="state === states.SCHEDULE_EVENT">
-                        <div
-                          v-if="
-                            (dragStart && dragStart.dayIndex === d) ||
-                            (!dragStart &&
-                              curScheduledEvent &&
-                              curScheduledEvent.dayIndex === d)
-                          "
-                          class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                          :style="scheduledEventStyle"
-                          style="pointer-events: none"
-                        >
-                          <div
-                            class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
-                          >
-                            <div class="tw-font-medium tw-text-white">
-                              {{ event.name }}
                             </div>
                           </div>
                         </div>
@@ -192,80 +250,35 @@
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <ZigZag
-                v-if="hasPrevPage"
-                left
-                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
-              />
-              <ZigZag
-                v-if="hasNextPage"
-                right
-                class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
-              />
+                <ZigZag
+                  v-if="hasPrevPage"
+                  left
+                  class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
+                />
+                <ZigZag
+                  v-if="hasNextPage"
+                  right
+                  class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
+                />
+              </div>
             </div>
 
-            <!-- Hint text (desktop) -->
-            <v-expand-transition>
-              <div
-                :key="hintText"
-                v-if="!isPhone && hintTextShown"
-                class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
-              >
-                <div
-                  class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-dark-gray"
-                >
-                  <div class="tw-flex tw-items-center tw-gap-1">
-                    <v-icon small>mdi-information-outline</v-icon>
-                    {{ hintText }}
-                  </div>
-                  <v-icon small @click="closeHint">mdi-close</v-icon>
-                </div>
-              </div>
-            </v-expand-transition>
-
-            <ToolRow
-              v-if="!calendarOnly && !isPhone"
-              :state="state"
-              :states="states"
-              :cur-timezone.sync="curTimezone"
-              :show-best-times.sync="showBestTimes"
-              :is-weekly="isWeekly"
-              :calendar-permission-granted="calendarPermissionGranted"
-              :week-offset="weekOffset"
-              :num-responses="respondents.length"
-              :mobile-num-days.sync="mobileNumDays"
-              :allow-schedule-event="allowScheduleEvent"
-              @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-              @onShowBestTimesChange="onShowBestTimesChange"
-              @scheduleEvent="scheduleEvent"
-              @cancelScheduleEvent="cancelScheduleEvent"
-              @confirmScheduleEvent="confirmScheduleEvent"
-            />
-
-            <div v-if="!calendarOnly && !isPhone">
-              <Advertisement
-                class="tw-mt-10"
-                :ownerId="event.ownerId"
-              ></Advertisement>
-            </div>
-          </div>
-
-          <div
-            v-if="!calendarOnly"
-            :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-            class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
-          >
             <div
-              :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-              class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
+              v-if="!calendarOnly"
+              :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
+              class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
             >
-              <v-btn class="tw-border-gray" outlined icon @click="nextPage"
-                ><v-icon>mdi-chevron-right</v-icon></v-btn
+              <div
+                :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+                class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
               >
+                <v-btn class="tw-border-gray" outlined icon @click="nextPage"
+                  ><v-icon>mdi-chevron-right</v-icon></v-btn
+                >
+              </div>
             </div>
-          </div>
+          </template>
         </div>
 
         <!-- Respondents -->
@@ -279,7 +292,7 @@
           >
             <!-- User's calendar accounts -->
             <CalendarAccounts
-              v-if="calendarPermissionGranted"
+              v-if="calendarPermissionGranted && !event.daysOnly"
               :toggleState="true"
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
@@ -377,8 +390,7 @@
               ref="respondentsList"
               :event="event"
               :eventId="event._id"
-              :day="days[curTimeslot.dayIndex]"
-              :time="times[curTimeslot.timeIndex]"
+              :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
               :curRespondent="curRespondent"
               :curRespondents="curRespondents"
               :curTimeslot="curTimeslot"
@@ -403,7 +415,7 @@
               "
               text
               color="primary"
-              class="-tw-ml-2 tw-mt-2 tw-px-2"
+              class="-tw-ml-2 tw-px-2"
               @click="() => $emit('addAvailability')"
               >+ Add availability</v-btn
             >
@@ -411,9 +423,37 @@
         </div>
       </div>
 
-      <div class="tw-px-4">
+      <!-- Hint text (desktop) -->
+      <v-expand-transition>
+        <div
+          :key="hintText"
+          v-if="!isPhone && hintTextShown"
+          class="tw-sticky tw-bottom-4 tw-z-10 tw-flex tw-px-4"
+          :class="
+            event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
+          "
+        >
+          <div
+            class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-dark-gray"
+          >
+            <div class="tw-flex tw-items-center tw-gap-1">
+              <v-icon small>mdi-information-outline</v-icon>
+              {{ hintText }}
+            </div>
+            <v-icon small @click="closeHint">mdi-close</v-icon>
+          </div>
+        </div>
+      </v-expand-transition>
+
+      <div
+        class="tw-px-4"
+        :class="
+          event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
+        "
+        v-if="!calendarOnly"
+      >
         <ToolRow
-          v-if="!calendarOnly && isPhone"
+          :event="event"
           :state="state"
           :states="states"
           :cur-timezone.sync="curTimezone"
@@ -431,12 +471,10 @@
           @confirmScheduleEvent="confirmScheduleEvent"
         />
 
-        <div v-if="!calendarOnly && isPhone">
-          <Advertisement
-            class="tw-mt-5"
-            :ownerId="event.ownerId"
-          ></Advertisement>
-        </div>
+        <Advertisement
+          class="tw-mt-5 sm:tw-mt-10"
+          :ownerId="event.ownerId"
+        ></Advertisement>
       </div>
 
       <!-- Fixed bottom section for mobile -->
@@ -495,8 +533,7 @@
                 :max-height="100"
                 :event="event"
                 :eventId="event._id"
-                :day="days[curTimeslot.dayIndex]"
-                :time="times[curTimeslot.timeIndex]"
+                :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
                 :curRespondent="curRespondent"
                 :curRespondents="curRespondents"
                 :curTimeslot="curTimeslot"
@@ -558,6 +595,9 @@ import {
   generateEnabledCalendarsPayload,
   isTouchEnabled,
   isElementInViewport,
+  getDaysInMonth,
+  lightOrDark,
+  removeTransparencyFromHex,
 } from "@/utils"
 import { availabilityTypes, eventTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -569,6 +609,7 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
+import Color from "color"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -623,7 +664,8 @@ export default {
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
       unsavedChanges: false, // If there are unsaved availability changes
-      curTimeslot: { dayIndex: -1, timeIndex: -1 }, // The currently highlighted timeslot
+      curTimeslot: { row: -1, col: -1 }, // The currently highlighted timeslot
+      timeslotSelected: false, // Whether a timeslot is selected (used to persist selection on desktop)
       curTimeslotAvailability: {}, // The users available for the current timeslot
       curRespondent: "", // Id of the active respondent (set on hover)
       curRespondents: [], // Id of currently selected respondents (set on click)
@@ -679,6 +721,23 @@ export default {
 
       /** Groups */
       manualAvailability: {},
+
+      /** Constants */
+      daysOfWeek: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],
+      months: [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+      ],
     }
   },
   computed: {
@@ -779,16 +838,27 @@ export default {
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
       let max = 0
-      for (const day of this.allDays) {
-        for (const time of this.times) {
+      if (this.event.daysOnly) {
+        for (const day of this.allDays) {
           const num = [
-            ...this.getRespondentsForHoursOffset(
-              day.dateObject,
-              time.hoursOffset
-            ),
+            ...(this.responsesFormatted.get(day.dateObject.getTime()) ??
+              new Set()),
           ].filter((r) => this.curRespondentsSet.has(r)).length
 
           if (num > max) max = num
+        }
+      } else {
+        for (const day of this.allDays) {
+          for (const time of this.times) {
+            const num = [
+              ...this.getRespondentsForHoursOffset(
+                day.dateObject,
+                time.hoursOffset
+              ),
+            ].filter((r) => this.curRespondentsSet.has(r)).length
+
+            if (num > max) max = num
+          }
         }
       }
       return max
@@ -800,21 +870,6 @@ export default {
     /** Returns all the days that are encompassed by startDate and endDate */
     allDays() {
       const days = []
-      const daysOfWeek = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
-      const months = [
-        "jan",
-        "feb",
-        "mar",
-        "apr",
-        "may",
-        "jun",
-        "jul",
-        "aug",
-        "sep",
-        "oct",
-        "nov",
-        "dec",
-      ]
 
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
@@ -824,7 +879,7 @@ export default {
         let dateString = ""
         if (this.isSpecificDates) {
           dateString = `${
-            months[offsetDate.getUTCMonth()]
+            this.months[offsetDate.getUTCMonth()]
           } ${offsetDate.getUTCDate()}`
         } else if (this.isGroup) {
           const tmpDate = dateToDowDate(
@@ -835,12 +890,12 @@ export default {
           )
 
           dateString = `${
-            months[tmpDate.getUTCMonth()]
+            this.months[tmpDate.getUTCMonth()]
           } ${tmpDate.getUTCDate()}`
         }
 
         days.push({
-          dayText: daysOfWeek[offsetDate.getUTCDay()],
+          dayText: this.daysOfWeek[offsetDate.getUTCDay()],
           dateString,
           dateObject: date,
         })
@@ -855,6 +910,81 @@ export default {
         Math.min(this.event.dates.length, (this.page + 1) * this.maxDaysPerPage)
       )
     },
+    /** Returns all the days of the month */
+    monthDays() {
+      const monthDays = []
+      const allDaysSet = new Set(
+        this.allDays.map((d) => d.dateObject.getTime())
+      )
+
+      // Calculate monthIndex and year from event start date and page num
+      const date = new Date(this.event.dates[0])
+      const monthIndex = date.getUTCMonth() + this.page
+      const year = date.getUTCFullYear()
+
+      const lastDayOfPrevMonth = new Date(Date.UTC(year, monthIndex, 0))
+      const lastDayOfCurMonth = new Date(Date.UTC(year, monthIndex + 1, 0))
+
+      // Calculate num days from prev month, cur month, and next month to show
+      const curDate = new Date(lastDayOfPrevMonth)
+      let numDaysFromPrevMonth = 0
+      const numDaysInCurMonth = lastDayOfCurMonth.getUTCDate()
+      const numDaysFromNextMonth = 6 - lastDayOfCurMonth.getUTCDay()
+      if (lastDayOfPrevMonth.getUTCDay() < 6) {
+        curDate.setUTCDate(
+          curDate.getUTCDate() - lastDayOfPrevMonth.getUTCDay()
+        )
+        numDaysFromPrevMonth = lastDayOfPrevMonth.getUTCDay() + 1
+      } else {
+        curDate.setUTCDate(curDate.getUTCDate() + 1)
+      }
+      curDate.setUTCHours(this.event.startTime)
+
+      // Add all days from prev month, cur month, and next month
+      const totalDays =
+        numDaysFromPrevMonth + numDaysInCurMonth + numDaysFromNextMonth
+      for (let i = 0; i < totalDays; ++i) {
+        // Only include days from the current month
+        if (curDate.getUTCMonth() === lastDayOfCurMonth.getUTCMonth()) {
+          monthDays.push({
+            date: curDate.getUTCDate(),
+            time: curDate.getTime(),
+            dateObject: new Date(curDate),
+            included: allDaysSet.has(curDate.getTime()),
+          })
+        } else {
+          monthDays.push({
+            date: "",
+            time: curDate.getTime(),
+            dateObject: new Date(curDate),
+            included: false,
+          })
+        }
+
+        curDate.setUTCDate(curDate.getUTCDate() + 1)
+      }
+
+      return monthDays
+    },
+    /** Map from datetime to whether that month day is included  */
+    monthDayIncluded() {
+      const includedMap = new Map()
+      for (const monthDay of this.monthDays) {
+        includedMap.set(monthDay.dateObject.getTime(), monthDay.included)
+      }
+      return includedMap
+    },
+    /** Returns the text to show for the current month */
+    curMonthText() {
+      const date = new Date(this.event.dates[0])
+      const monthIndex = date.getUTCMonth() + this.page
+      const year = date.getUTCFullYear()
+      const lastDayOfCurMonth = new Date(Date.UTC(year, monthIndex + 1, 0))
+
+      const monthText = this.months[lastDayOfCurMonth.getUTCMonth()]
+      const yearText = lastDayOfCurMonth.getUTCFullYear()
+      return `${monthText} ${yearText}`
+    },
     defaultState() {
       // Either the heatmap or the best_times state, depending on the toggle
       return this.showBestTimes ? this.states.BEST_TIMES : this.states.HEATMAP
@@ -866,37 +996,6 @@ export default {
     scheduling() {
       // Returns whether currently in the scheduling state
       return this.state === this.states.SCHEDULE_EVENT
-    },
-    hintText() {
-      if (this.isPhone) {
-        switch (this.state) {
-          case this.isGroup && this.states.EDIT_AVAILABILITY:
-            return "Toggle which calendars are used. Tap and drag to edit your availability."
-          case this.states.EDIT_AVAILABILITY:
-            if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-              return 'Tap and drag to add your "if needed" times in yellow.'
-            }
-            return 'Tap and drag to add your "available" times in green.'
-          case this.states.SCHEDULE_EVENT:
-            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
-          default:
-            return ""
-        }
-      }
-
-      switch (this.state) {
-        case this.isGroup && this.states.EDIT_AVAILABILITY:
-          return "Toggle which calendars are used. Click and drag to edit your availability."
-        case this.states.EDIT_AVAILABILITY:
-          if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-            return 'Click and drag to add your "if needed" times in yellow.'
-          }
-          return 'Click and drag to add your "available" times in green.'
-        case this.states.SCHEDULE_EVENT:
-          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
-        default:
-          return ""
-      }
     },
     isPhone() {
       return isPhone(this.$vuetify)
@@ -928,8 +1027,8 @@ export default {
       const style = {}
       let top, height
       if (this.dragging) {
-        top = this.dragStart.timeIndex
-        height = this.dragCur.timeIndex - this.dragStart.timeIndex + 1
+        top = this.dragStart.row
+        height = this.dragCur.row - this.dragStart.row + 1
       } else {
         top = this.curScheduledEvent.hoursOffset * 4
         height = this.curScheduledEvent.hoursLength * 4
@@ -1095,6 +1194,17 @@ export default {
       return this.isPhone ? this.mobileNumDays : 7
     },
     hasNextPage() {
+      if (this.event.daysOnly) {
+        const lastDay = new Date(this.event.dates[this.event.dates.length - 1])
+        const curDate = new Date(this.event.dates[0])
+        const monthIndex = curDate.getUTCMonth() + this.page
+        const year = curDate.getUTCFullYear()
+
+        const lastDayOfCurMonth = new Date(Date.UTC(year, monthIndex + 1, 0))
+
+        return lastDayOfCurMonth.getTime() < lastDay.getTime()
+      }
+
       return (
         this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
         this.event.type === eventTypes.GROUP
@@ -1111,10 +1221,45 @@ export default {
       return (
         this.isPhone &&
         !this.scrolledToRespondents &&
-        (this.curTimeslot.dayIndex !== -1 ||
+        (this.curTimeslot.row !== -1 ||
           this.curRespondent.length > 0 ||
           this.curRespondents.length > 0)
       )
+    },
+
+    // Hint stuff
+    hintText() {
+      if (this.isPhone) {
+        switch (this.state) {
+          case this.isGroup && this.states.EDIT_AVAILABILITY:
+            return "Toggle which calendars are used. Tap and drag to edit your availability."
+          case this.states.EDIT_AVAILABILITY:
+            const daysOrTimes = this.event.daysOnly ? "days" : "times"
+            if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              return `Tap and drag to add your "if needed" ${daysOrTimes} in yellow.`
+            }
+            return `Tap and drag to add your "available" ${daysOrTimes} in green.`
+          case this.states.SCHEDULE_EVENT:
+            return "Tap and drag on the calendar to schedule a Google Calendar event during those times."
+          default:
+            return ""
+        }
+      }
+
+      switch (this.state) {
+        case this.isGroup && this.states.EDIT_AVAILABILITY:
+          return "Toggle which calendars are used. Click and drag to edit your availability."
+        case this.states.EDIT_AVAILABILITY:
+          const daysOrTimes = this.event.daysOnly ? "days" : "times"
+          if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+            return `Click and drag to add your "if needed" ${daysOrTimes} in yellow.`
+          }
+          return `Click and drag to add your "available" ${daysOrTimes} in green.`
+        case this.states.SCHEDULE_EVENT:
+          return "Click and drag on the calendar to schedule a Google Calendar event during those times."
+        default:
+          return ""
+      }
     },
     hintClosed() {
       return !this.hintState || localStorage[this.hintStateLocalStorageKey]
@@ -1124,6 +1269,45 @@ export default {
     },
     hintTextShown() {
       return this.showHintText && this.hintText != "" && !this.hintClosed
+    },
+
+    timeslotClassStyle() {
+      const classStyles = []
+      for (let d = 0; d < this.days.length; ++d) {
+        const day = this.days[d]
+        for (let t = 0; t < this.times.length; ++t) {
+          const time = this.times[t]
+          classStyles.push(this.getTimeTimeslotClassStyle(day, time, d, t))
+        }
+      }
+      return classStyles
+    },
+    dayTimeslotClassStyle() {
+      const classStyles = []
+      for (let i = 0; i < this.monthDays.length; ++i) {
+        classStyles.push(
+          this.getDayTimeslotClassStyle(this.monthDays[i].dateObject, i)
+        )
+      }
+      return classStyles
+    },
+    timeslotVon() {
+      const vons = []
+      for (let d = 0; d < this.days.length; ++d) {
+        for (let t = 0; t < this.times.length; ++t) {
+          vons.push(this.getTimeslotVon(t, d))
+        }
+      }
+      return vons
+    },
+    dayTimeslotVon() {
+      const vons = []
+      for (let i = 0; i < this.monthDays.length; ++i) {
+        const row = Math.floor(i / 7)
+        const col = i % 7
+        vons.push(this.getTimeslotVon(row, col))
+      }
+      return vons
     },
 
     /** Whether to show spinner on top of availability grid */
@@ -1216,11 +1400,11 @@ export default {
     },
     deselectRespondents(e) {
       // Don't deselect respondents if toggled best times
-      // or if on mobile and this was fired by clicking on a timeslot
+      // or if this was fired by clicking on a timeslot
       if (
         e?.target?.previousElementSibling?.id === "show-best-times-toggle" ||
         e?.target?.firstChild?.firstChild?.id === "show-best-times-toggle" ||
-        (e?.target?.classList?.contains("timeslot") && this.isPhone)
+        e?.target?.classList?.contains("timeslot") //&& this.isPhone)
       )
         return
 
@@ -1229,6 +1413,10 @@ export default {
       }
 
       this.curRespondents = []
+
+      // Stop persisting timeslot
+      this.timeslotSelected = false
+      this.resetCurTimeslot()
     },
 
     isGuest(user) {
@@ -1303,7 +1491,7 @@ export default {
 
       this.$worker
         .run(
-          (days, times, parsedResponses) => {
+          (days, times, parsedResponses, daysOnly) => {
             // Define functions locally because we can't import functions
             const splitTimeNum = (timeNum) => {
               const hours = Math.floor(timeNum)
@@ -1318,33 +1506,45 @@ export default {
               return newDate
             }
 
+            // Create array of all dates in the event
+            const dates = []
+            if (daysOnly) {
+              for (const day of days) {
+                dates.push(day.dateObject)
+              }
+            } else {
+              for (const day of days) {
+                for (const time of times) {
+                  // Iterate through all the times
+                  const date = getDateHoursOffset(
+                    day.dateObject,
+                    time.hoursOffset
+                  )
+                  dates.push(date)
+                }
+              }
+            }
+
             // Create a map mapping time to the respondents available during that time
             const formatted = new Map()
-            for (const day of days) {
-              for (const time of times) {
-                // Iterate through all the times
-                const date = getDateHoursOffset(
-                  day.dateObject,
-                  time.hoursOffset
-                )
-                formatted.set(date.getTime(), new Set())
+            for (const date of dates) {
+              formatted.set(date.getTime(), new Set())
 
-                // Check every response and see if they are available for the given time
-                for (const response of Object.values(parsedResponses)) {
-                  // Check availability array
-                  if (
-                    response.availability?.has(date.getTime()) ||
-                    response.ifNeeded?.has(date.getTime())
-                  ) {
-                    formatted.get(date.getTime()).add(response.user._id)
-                    continue
-                  }
+              // Check every response and see if they are available for the given time
+              for (const response of Object.values(parsedResponses)) {
+                // Check availability array
+                if (
+                  response.availability?.has(date.getTime()) ||
+                  response.ifNeeded?.has(date.getTime())
+                ) {
+                  formatted.get(date.getTime()).add(response.user._id)
+                  continue
                 }
               }
             }
             return formatted
           },
-          [this.allDays, this.times, this.parsedResponses]
+          [this.allDays, this.times, this.parsedResponses, this.event.daysOnly]
         )
         .then((formatted) => {
           // Only set responses formatted for the latest request
@@ -1363,14 +1563,14 @@ export default {
       const d = getDateHoursOffset(date, hoursOffset)
       return this.responsesFormatted.get(d.getTime()) ?? new Set()
     },
-    showAvailability(d, t) {
+    showAvailability(row, col) {
       if (this.state === this.states.EDIT_AVAILABILITY && this.isPhone) {
         // Don't show currently selected timeslot when on phone and editing
         return
       }
 
       // Update current timeslot (the timeslot that has a dotted border around it)
-      this.curTimeslot = { dayIndex: d, timeIndex: t }
+      this.curTimeslot = { row, col }
 
       if (this.state === this.states.EDIT_AVAILABILITY || this.curRespondent) {
         // Don't show availability when editing or when respondent is selected
@@ -1378,10 +1578,10 @@ export default {
       }
 
       // Update current timeslot availability to show who is available for the given timeslot
-      const available = this.getRespondentsForHoursOffset(
-        this.days[d].dateObject,
-        this.times[t].hoursOffset
-      )
+      const available =
+        this.responsesFormatted.get(
+          this.getDateFromRowCol(row, col).getTime()
+        ) ?? new Set()
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
           this.curTimeslotAvailability[respondent._id] = true
@@ -1651,39 +1851,57 @@ export default {
           timeslotEl.getBoundingClientRect())
       }
     },
-    timeslotClassStyle(day, time, d, t) {
-      /* Returns a class string and style object for the given timeslot div */
-      let c = ""
-      const s = {}
+    /** Returns a class string and style object for the given time timeslot div */
+    getTimeTimeslotClassStyle(day, time, d, t) {
+      const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+      const row = t
+      const col = d
+      const classStyle = this.getTimeslotClassStyle(date, row, col)
+
+      // Add time timeslot specific stuff
+
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
-        c += "animate-bg-color "
+        classStyle.class += "animate-bg-color "
       }
 
       // Border style
       if (
         (this.respondents.length > 0 ||
           this.state === this.states.EDIT_AVAILABILITY) &&
-        this.curTimeslot.dayIndex === d &&
-        this.curTimeslot.timeIndex === t
+        this.curTimeslot.row === row &&
+        this.curTimeslot.col === col
       ) {
         // Dashed border for currently selected timeslot
-        c += "tw-border tw-border-dashed tw-border-black tw-z-10 "
+        classStyle.class +=
+          "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
         const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
         if (fractionalTime === 0.25) {
-          c += "tw-border-b "
-          s.borderBottomStyle = "dashed"
+          classStyle.class += "tw-border-b "
+          classStyle.style.borderBottomStyle = "dashed"
         } else if (fractionalTime === 0.75) {
-          c += "tw-border-b "
+          classStyle.class += "tw-border-b "
         }
 
-        if (d === 0) c += "tw-border-l tw-border-l-gray "
-        if (d === this.days.length - 1) c += "tw-border-r-gray "
-        if (t === 0) c += "tw-border-t tw-border-t-gray "
-        if (t === this.times.length - 1) c += "tw-border-b-gray "
+        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
+        if (col === this.days.length - 1)
+          classStyle.class += "tw-border-r tw-border-r-gray "
+        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+        if (row === this.times.length - 1)
+          classStyle.class += "tw-border-b tw-border-b-gray "
       }
+
+      return classStyle
+    },
+    /** Returns the shared class string and style object for the given timeslot (either time timeslot or day timeslot) */
+    getTimeslotClassStyle(date, row, col) {
+      let c = ""
+      const s = {}
+
+      const timeslotRespondents =
+        this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Fill style
       if (this.state === this.states.EDIT_AVAILABILITY) {
@@ -1691,7 +1909,7 @@ export default {
         s.backgroundColor = "#E523230D"
 
         // Show only current user availability
-        const inDragRange = this.inDragRange(d, t)
+        const inDragRange = this.inDragRange(row, col)
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
@@ -1705,7 +1923,6 @@ export default {
         } else {
           // Otherwise just show the current availability
           // Show current availability from availability set
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
           if (this.availability.has(date.getTime())) {
             s.backgroundColor = "#00994C88"
           } else if (this.ifNeeded.has(date.getTime())) {
@@ -1717,12 +1934,7 @@ export default {
       if (this.state === this.states.SINGLE_AVAILABILITY) {
         // Show only the currently selected respondent's availability
         const respondent = this.curRespondent
-        const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
-        const respondents = this.getRespondentsForHoursOffset(
-          day.dateObject,
-          time.hoursOffset
-        )
-        if (respondents.has(respondent)) {
+        if (timeslotRespondents.has(respondent)) {
           if (this.parsedResponses[respondent]?.ifNeeded?.has(date.getTime())) {
             c += "tw-bg-yellow "
           } else {
@@ -1745,18 +1957,12 @@ export default {
           this.state === this.states.HEATMAP ||
           this.state === this.states.SCHEDULE_EVENT
         ) {
-          numRespondents = this.getRespondentsForHoursOffset(
-            day.dateObject,
-            time.hoursOffset
-          ).size
+          numRespondents = timeslotRespondents.size
           max = this.max
         } else if (this.state === this.states.SUBSET_AVAILABILITY) {
-          numRespondents = [
-            ...this.getRespondentsForHoursOffset(
-              day.dateObject,
-              time.hoursOffset
-            ),
-          ].filter((r) => this.curRespondentsSet.has(r)).length
+          numRespondents = [...timeslotRespondents].filter((r) =>
+            this.curRespondentsSet.has(r)
+          ).length
 
           max = this.curRespondentsMax
         }
@@ -1785,10 +1991,11 @@ export default {
               // Determine color of timeslot based on number of people available
               const frac = numRespondents / max
               const green = "#00994C"
-              let alpha = (frac * (255 - 30))
+              let alpha = Math.floor(frac * (255 - 30))
                 .toString(16)
                 .toUpperCase()
                 .substring(0, 2)
+                .padStart(2, "0")
               if (frac == 1) alpha = "FF"
 
               s.backgroundColor = green + alpha
@@ -1799,31 +2006,118 @@ export default {
 
       return { class: c, style: s }
     },
-    timeslotVon(d, t) {
+    getDayTimeslotClassStyle(date, i) {
+      const row = Math.floor(i / 7)
+      const col = i % 7
+
+      let classStyle
+      // Only compute class style for days that are included
+      if (this.monthDayIncluded.get(date.getTime())) {
+        classStyle = this.getTimeslotClassStyle(date, row, col)
+        if (this.state === this.states.EDIT_AVAILABILITY) {
+          classStyle.class += "tw-cursor-pointer "
+        }
+
+        const backgroundColor = classStyle.style.backgroundColor
+        if (
+          backgroundColor &&
+          lightOrDark(removeTransparencyFromHex(backgroundColor)) === "dark"
+        ) {
+          classStyle.class += "tw-text-white "
+        }
+      } else {
+        classStyle = {
+          class: "tw-bg-off-white tw-text-gray ",
+          style: {},
+        }
+      }
+
+      // Change default red:
+      if (classStyle.style.backgroundColor === "#E523230D") {
+        classStyle.style.backgroundColor = "#E523233B"
+      }
+
+      // Change edit green
+      // if (classStyle.style.backgroundColor === "#00994C88") {
+      //   classStyle.style.backgroundColor = "#29BC6880"
+      // }
+
+      // Border style
+      if (
+        (this.respondents.length > 0 ||
+          this.state === this.states.EDIT_AVAILABILITY) &&
+        this.curTimeslot.row === row &&
+        this.curTimeslot.col === col &&
+        this.monthDayIncluded.get(date.getTime())
+      ) {
+        // Dashed border for currently selected timeslot
+        classStyle.class +=
+          "tw-outline-2 tw-outline-dashed tw-outline-black tw-z-10 "
+      } else {
+        // Normal border
+        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
+        classStyle.class += "tw-border-r tw-border-r-gray "
+        if (col !== 7 - 1) {
+          classStyle.style.borderRightStyle = "dashed"
+        }
+
+        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+        classStyle.class += "tw-border-b tw-border-b-gray "
+        if (row !== Math.floor(this.monthDays.length / 7) - 1) {
+          classStyle.style.borderBottomStyle = "dashed"
+        }
+      }
+
+      return classStyle
+    },
+    getTimeslotVon(row, col) {
       if (this.interactable) {
         return {
-          click: () => this.showAvailability(d, t),
+          click: () => {
+            if (this.timeslotSelected) {
+              // Get rid of persistent timeslot selection if clicked on the same timeslot that is currently being persisted
+              if (
+                row === this.curTimeslot.row &&
+                col === this.curTimeslot.col
+              ) {
+                this.timeslotSelected = false
+              }
+            } else if (this.userHasResponded || this.guestAddedAvailability) {
+              // Persist timeslot selection if user has already responded
+              this.timeslotSelected = true
+            }
+
+            this.showAvailability(row, col)
+          },
           mousedown: () => {
+            // Highlight availability button
             if (
               this.state === this.defaultState &&
-              (!this.isPhone || this.respondents.length == 0)
+              ((!this.isPhone &&
+                !(this.userHasResponded || this.guestAddedAvailability)) ||
+                this.respondents.length == 0)
             )
               this.highlightAvailabilityBtn()
           },
-          mouseover: () => this.showAvailability(d, t),
+          mouseover: () => {
+            // Only show availability on hover if timeslot is not being persisted
+            if (!this.timeslotSelected) {
+              this.showAvailability(row, col)
+            }
+          },
         }
       }
       return {}
     },
     resetCurTimeslot() {
+      // Only reset cur timeslot if it isn't being persisted
+      if (this.timeslotSelected) return
+
       this.curTimeslotAvailability = {}
       for (const respondent of this.respondents) {
         this.curTimeslotAvailability[respondent._id] = true
       }
-      this.curTimeslot = { dayIndex: -1, timeIndex: -1 }
-
-      // Deselect respondents if on mobile
-      if (this.isPhone) this.deselectRespondents()
+      this.curTimeslot = { row: -1, col: -1 }
 
       // End drag if mouse left time grid
       this.endDrag()
@@ -1939,20 +2233,43 @@ export default {
       const y = pageY - top - window.scrollY
       return { x, y }
     },
-    getDateFromXY(x, y) {
-      /* Returns a date for the timeslot we are currently hovering over given the x and y position */
+    clampRow(row) {
+      if (this.event.daysOnly) {
+        row = clamp(row, 0, Math.floor(this.monthDays.length / 7) - 1)
+      } else {
+        row = clamp(row, 0, this.times.length - 1)
+      }
+      return row
+    },
+    clampCol(col) {
+      if (this.event.daysOnly) {
+        col = clamp(col, 0, 7 - 1)
+      } else {
+        col = clamp(col, 0, this.days.length - 1)
+      }
+      return col
+    },
+    /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
+    getRowColFromXY(x, y) {
       const { width, height } = this.timeslot
-      let dayIndex = Math.floor(x / width)
-      let timeIndex = Math.floor(y / height)
-      dayIndex = clamp(dayIndex, 0, this.days.length - 1)
-      timeIndex = clamp(timeIndex, 0, this.times.length - 1)
+      let col = Math.floor(x / width)
+      let row = Math.floor(y / height)
+      row = this.clampRow(row)
+      col = this.clampCol(col)
       return {
-        dayIndex,
-        timeIndex,
-        date: getDateHoursOffset(
-          this.days[dayIndex].dateObject,
-          this.times[timeIndex].hoursOffset
-        ),
+        row,
+        col,
+      }
+    },
+    getDateFromRowCol(row, col) {
+      if (this.event.daysOnly) {
+        return this.monthDays[row * 7 + col]?.dateObject
+      } else {
+        if (!this.days[col] || !this.times[row]) return null
+        return getDateHoursOffset(
+          this.days[col].dateObject,
+          this.times[row].hoursOffset
+        )
       }
     },
     endDrag() {
@@ -1962,25 +2279,31 @@ export default {
 
       if (this.state === this.states.EDIT_AVAILABILITY) {
         // Update availability set based on drag region
-        let dayInc =
-          (this.dragCur.dayIndex - this.dragStart.dayIndex) /
-          Math.abs(this.dragCur.dayIndex - this.dragStart.dayIndex)
-        let timeInc =
-          (this.dragCur.timeIndex - this.dragStart.timeIndex) /
-          Math.abs(this.dragCur.timeIndex - this.dragStart.timeIndex)
-        if (isNaN(dayInc)) dayInc = 1
-        if (isNaN(timeInc)) timeInc = 1
-        let d = this.dragStart.dayIndex
-        while (d != this.dragCur.dayIndex + dayInc) {
-          let t = this.dragStart.timeIndex
-          while (t != this.dragCur.timeIndex + timeInc) {
-            const date = getDateHoursOffset(
-              this.days[d].dateObject,
-              this.times[t].hoursOffset
-            )
+        let colInc =
+          (this.dragCur.col - this.dragStart.col) /
+          Math.abs(this.dragCur.col - this.dragStart.col)
+        let rowInc =
+          (this.dragCur.row - this.dragStart.row) /
+          Math.abs(this.dragCur.row - this.dragStart.row)
+        if (isNaN(colInc)) colInc = 1
+        if (isNaN(rowInc)) rowInc = 1
+        let r = this.dragStart.row
+        while (r != this.dragCur.row + rowInc) {
+          let c = this.dragStart.col
+          while (c != this.dragCur.col + colInc) {
+            const date = this.getDateFromRowCol(r, c)
 
-            // Add / remove time from availability set
+            // Don't add to availability set if month day is not included
+            if (
+              this.event.daysOnly &&
+              !this.monthDayIncluded.get(date.getTime())
+            ) {
+              c += colInc
+              continue
+            }
+
             if (this.dragType === this.DRAG_TYPES.ADD) {
+              // Add / remove time from availability set
               if (this.availabilityType === availabilityTypes.AVAILABLE) {
                 this.availability.add(date.getTime())
                 this.ifNeeded.delete(date.getTime())
@@ -2005,7 +2328,7 @@ export default {
               )
               const startDateOfDay = dateToDowDate(
                 this.event.dates,
-                this.days[d].dateObject,
+                this.days[c].dateObject,
                 this.weekOffset,
                 true
               )
@@ -2017,7 +2340,7 @@ export default {
 
                 // Add the existing calendar availabilities
                 const existingAvailability = this.getAvailabilityForDate(
-                  this.days[d].dateObject
+                  this.days[c].dateObject
                 )
                 for (const a of existingAvailability) {
                   const convertedDate = dateToDowDate(
@@ -2044,17 +2367,16 @@ export default {
               }
             }
 
-            t += timeInc
+            c += colInc
           }
-          d += dayInc
+          r += rowInc
         }
         this.availability = new Set(this.availability)
       } else if (this.state === this.states.SCHEDULE_EVENT) {
         // Update scheduled event
-        const dayIndex = this.dragStart.dayIndex
-        const hoursOffset = this.dragStart.timeIndex / 4
-        const hoursLength =
-          (this.dragCur.timeIndex - this.dragStart.timeIndex + 1) / 4
+        const dayIndex = this.dragStart.col
+        const hoursOffset = this.dragStart.row / 4
+        const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
 
         if (hoursLength > 0) {
           this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
@@ -2068,56 +2390,49 @@ export default {
       this.dragStart = null
       this.dragCur = null
     },
-    inDragRange(dayIndex, timeIndex) {
+    inDragRange(row, col) {
       /* Returns whether the given day and time index is within the drag range */
       if (this.dragging) {
         return (
-          (isBetween(
-            dayIndex,
-            this.dragStart.dayIndex,
-            this.dragCur.dayIndex
-          ) ||
-            isBetween(
-              dayIndex,
-              this.dragCur.dayIndex,
-              this.dragStart.dayIndex
-            )) &&
-          (isBetween(
-            timeIndex,
-            this.dragStart.timeIndex,
-            this.dragCur.timeIndex
-          ) ||
-            isBetween(
-              timeIndex,
-              this.dragCur.timeIndex,
-              this.dragStart.timeIndex
-            ))
+          (isBetween(row, this.dragStart.row, this.dragCur.row) ||
+            isBetween(row, this.dragCur.row, this.dragStart.row)) &&
+          (isBetween(col, this.dragStart.col, this.dragCur.col) ||
+            isBetween(col, this.dragCur.col, this.dragStart.col))
         )
       }
     },
     moveDrag(e) {
       if (!this.allowDrag) return
       if (e.touches?.length > 1) return // If dragging with more than one finger
+      if (!this.dragStart) return
 
       e.preventDefault()
-      const { dayIndex, timeIndex, date } = this.getDateFromXY(
+      const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
-      this.dragCur = { dayIndex, timeIndex }
+      this.dragCur = { row, col }
     },
     startDrag(e) {
       if (!this.allowDrag) return
       if (e.touches?.length > 1) return // If dragging with more than one finger
 
-      e.preventDefault()
-
-      this.dragging = true
-
-      const { dayIndex, timeIndex, date } = this.getDateFromXY(
+      const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
-      this.dragStart = { dayIndex, timeIndex }
-      this.dragCur = { dayIndex, timeIndex }
+      const date = this.getDateFromRowCol(row, col)
+
+      // Dont start dragging if day not included in daysonly event
+      if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
+        return
+      }
+
+      this.dragging = true
+      this.dragStart = { row, col }
+      this.dragCur = { row, col }
+
+      // Prevent scroll
+      e.preventDefault()
+
       // Set drag type
       if (
         (this.availabilityType === availabilityTypes.AVAILABLE &&
@@ -2466,15 +2781,15 @@ export default {
     this.state = this.showBestTimes ? "best_times" : "heatmap"
 
     // Set initial calendar max scroll
-    this.calendarMaxScroll =
-      this.$refs.calendar.scrollWidth - this.$refs.calendar.offsetWidth
+    // this.calendarMaxScroll =
+    //   this.$refs.calendar.scrollWidth - this.$refs.calendar.offsetWidth
 
     // Get timeslot size
     this.setTimeslotSize()
     addEventListener("resize", this.onResize)
     addEventListener("scroll", this.onScroll)
     if (!this.calendarOnly) {
-      const timesEl = document.getElementById("times")
+      const timesEl = document.getElementById("drag-section")
       if (isTouchEnabled()) {
         timesEl.addEventListener("touchstart", this.startDrag)
         timesEl.addEventListener("touchmove", this.moveDrag)

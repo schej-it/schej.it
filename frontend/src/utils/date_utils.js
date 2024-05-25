@@ -262,6 +262,11 @@ export const isDateBetween = (date, startDate, endDate) => {
   return date >= startDate && date <= endDate
 }
 
+/** Returns the number of days in the given month */
+export const getDaysInMonth = (month, year) => {
+  return new Date(year, month, 0).getDate()
+}
+
 /** returns -1 if a is before b, 1 if a is after b, 0 otherwise */
 export const compareDateDay = (a, b) => {
   a = new Date(a)

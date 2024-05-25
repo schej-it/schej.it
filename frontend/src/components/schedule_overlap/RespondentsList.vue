@@ -206,8 +206,7 @@ export default {
   components: { UserAvatarContent },
 
   props: {
-    day: { type: Object, required: false }, // Day of the current timeslot
-    time: { type: Object, required: false }, // Time of the current timeslot
+    curDate: { type: Date, required: false }, // Date of the current timeslot
     curRespondent: { type: String, required: true },
     curRespondents: { type: Array, required: true },
     curTimeslot: { type: Object, required: true },
@@ -309,13 +308,11 @@ export default {
     },
     /** Returns whether the respondent has "ifNeeded" availability for the current timeslot */
     respondentIfNeeded(id) {
-      if (!this.day || !this.time) return false
+      if (!this.curDate) return false
 
-      const date = getDateHoursOffset(
-        this.day.dateObject,
-        this.time.hoursOffset
+      return Boolean(
+        this.parsedResponses[id]?.ifNeeded?.has(this.curDate.getTime())
       )
-      return Boolean(this.parsedResponses[id]?.ifNeeded?.has(date.getTime()))
     },
     /** Returns whether the current respondent is selected (for subset avail) */
     respondentSelected(id) {

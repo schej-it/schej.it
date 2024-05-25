@@ -270,7 +270,7 @@
     >
       <template v-if="!isEditing && !isScheduling">
         <v-btn
-          v-if="numResponses > 0"
+          v-if="!event.daysOnly && numResponses > 0"
           text
           class="tw-text-white"
           @click="scheduleEvent"
@@ -449,6 +449,12 @@ export default {
     /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
     addAvailability() {
       if (!this.scheduleOverlapComponent) return
+
+      // Start editing immediately if days only
+      if (this.event?.daysOnly) {
+        this.scheduleOverlapComponent.startEditing()
+        return
+      }
 
       // Start editing if calendar permission granted or user has responded, otherwise show choice dialog
       if (

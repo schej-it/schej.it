@@ -11,9 +11,9 @@ import VueMeta from "vue-meta"
 import "./index.css"
 
 // Posthog
-if (process.env.NODE_ENV !== "development") {
-  Vue.use(posthogPlugin)
-}
+// if (process.env.NODE_ENV !== "development") {
+Vue.use(posthogPlugin)
+// }
 
 // Google Analytics
 Vue.use(VueGtm, {

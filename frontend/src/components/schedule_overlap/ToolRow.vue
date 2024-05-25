@@ -11,13 +11,14 @@
         class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
-        <TimezoneSelector :value="curTimezone" @input="updateCurTimezone" />
+        <TimezoneSelector
+          v-if="!event.daysOnly && !isPhone"
+          :value="curTimezone"
+          @input="updateCurTimezone"
+        />
 
         <template v-if="state !== states.EDIT_AVAILABILITY">
-          <div
-            v-if="numResponses > 1"
-            class="tw-flex tw-items-center tw-justify-center tw-gap-2"
-          >
+          <div v-if="numResponses > 1">
             <v-switch
               inset
               id="show-best-times-toggle"
@@ -27,12 +28,14 @@
               hide-details
             >
               <template v-slot:label>
-                <div class="tw-text-sm tw-text-black">Show best times</div>
+                <div class="tw-text-sm tw-text-black">
+                  Show best {{ event.daysOnly ? "days" : "times" }}
+                </div>
               </template>
             </v-switch>
           </div>
           <div
-            v-if="isPhone"
+            v-if="!event.daysOnly && isPhone"
             class="tw-flex tw-basis-full tw-items-center tw-gap-x-2"
           >
             Show
@@ -60,10 +63,20 @@
             />
           </div>
         </template>
+
+        <TimezoneSelector
+          v-if="!event.daysOnly && isPhone"
+          :value="curTimezone"
+          @input="updateCurTimezone"
+        />
       </div>
 
       <div
-        v-if="numResponses > 0 && state !== states.EDIT_AVAILABILITY"
+        v-if="
+          !event.daysOnly &&
+          numResponses > 0 &&
+          state !== states.EDIT_AVAILABILITY
+        "
         style="width: 181.5px"
         class="tw-hidden sm:tw-flex"
       >
@@ -100,9 +113,6 @@
         </template>
       </div>
     </div>
-
-    <!-- force tailwind classes to compile -->
-    <div class="tw-bottom-16 tw-bottom-32"></div>
   </div>
 </template>
 
@@ -115,6 +125,7 @@ export default {
   name: "ToolRow",
 
   props: {
+    event: { type: Object, required: true },
     state: { type: String, required: true },
     states: { type: Object, required: true },
     curTimezone: { type: Object, required: true },
