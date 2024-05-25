@@ -16,28 +16,37 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 			"*Short url*: https://schej.it/e/%s\n"+
 			"*Creator*: %s\n"+
 			"*Num days*: %v\n"+
-			"*Type*: %s\n"+
-			"*Days only*: %v",
+			"*Type*: %s\n",
 		event.Name,
 		insertedId,
 		utils.Coalesce(event.ShortId),
 		creator,
 		len(event.Dates),
 		event.Type,
-		utils.Coalesce(event.DaysOnly),
 	)
 
 	if event.Type == models.GROUP {
 		eventInfoText += fmt.Sprintf("\n*Num attendees*: %v", len(utils.Coalesce(event.Attendees)))
 	} else {
-		eventInfoText += fmt.Sprintf(
-			"\n*Notifications Enabled*: %v\n"+
-				"*Num remindees*: %v\n"+
-				"*Blind availability*: %v",
-			utils.Coalesce(event.NotificationsEnabled),
-			len(utils.Coalesce(event.Remindees)),
-			utils.Coalesce(event.BlindAvailabilityEnabled),
-		)
+		daysOnly := utils.Coalesce(event.DaysOnly)
+		notificationsEnabled := utils.Coalesce(event.NotificationsEnabled)
+		numRemindees := len(utils.Coalesce(event.Remindees))
+		blindAvailabilityEnabled := utils.Coalesce(event.BlindAvailabilityEnabled)
+		sendEmailAfterXResponses := utils.Coalesce(event.SendEmailAfterXResponses)
+
+		eventInfoText += fmt.Sprintln("*Days only*:", daysOnly)
+		if notificationsEnabled {
+			eventInfoText += fmt.Sprintln("*Notifications enabled*:", notificationsEnabled)
+		}
+		if numRemindees > 0 {
+			eventInfoText += fmt.Sprintln("*Num remindees*:", numRemindees)
+		}
+		if blindAvailabilityEnabled {
+			eventInfoText += fmt.Sprintln("*Blind availability*:", blindAvailabilityEnabled)
+		}
+		if sendEmailAfterXResponses > 0 {
+			eventInfoText += fmt.Sprintln("*Send email after X responses*:", sendEmailAfterXResponses)
+		}
 	}
 
 	response := commands.Response{Blocks: []bson.M{
