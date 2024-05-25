@@ -414,8 +414,6 @@ export default {
       this.$refs.form.resetValidation()
     },
     submit() {
-      console.log("whats up")
-      console.log(this.$refs.form)
       if (!this.$refs.form.validate()) return
 
       this.selectedDays.sort()

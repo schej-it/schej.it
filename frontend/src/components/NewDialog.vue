@@ -9,9 +9,8 @@
     scrollable
     :transition="isPhone ? `dialog-bottom-transition` : `dialog-transition`"
   >
-
-  <SaveProgressDialog v-model="saveProgressDialog">
-        </SaveProgressDialog>
+    <UnsavedChangesDialog v-model="unsavedChangesDialog" @leave="exitDialog">
+    </UnsavedChangesDialog>
     <v-card class="tw-pt-4">
       <div v-if="!_noTabs" class="tw-flex tw-rounded sm:-tw-mt-4 sm:tw-px-8">
         <v-tabs v-model="tab">
@@ -37,21 +36,24 @@
       <template>
         <NewEvent
           v-if="tab === 'event'"
+          ref="event"
           key="event"
           :event="event"
           :edit="edit"
           :allow-notifications="allowNotifications"
           @input="$emit('input', false)"
-          @update:formEmpty="(val) => formEmpty = val"
+          @update:formEmpty="(val) => (formEmpty = val)"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
         />
         <NewGroup
           v-else-if="tab === 'group'"
+          ref="group"
           key="group"
           :event="event"
           :edit="edit"
           @input="$emit('input', false)"
+          @update:formEmpty="(val) => (formEmpty = val)"
           :show-help="!_noTabs"
           :calendarPermissionGranted="calendarPermissionGranted"
           :contactsPayload="this.type == 'group' ? contactsPayload : {}"
@@ -64,7 +66,7 @@
 <script>
 import { isPhone } from "@/utils"
 import NewEvent from "@/components/NewEvent.vue"
-import SaveProgressDialog from "@/components/general/SaveProgressDialog.vue"
+import UnsavedChangesDialog from "@/components/general/UnsavedChangesDialog.vue"
 import NewGroup from "./NewGroup.vue"
 import { mapState } from "vuex"
 
@@ -87,7 +89,7 @@ export default {
   components: {
     NewEvent,
     NewGroup,
-    SaveProgressDialog,
+    UnsavedChangesDialog,
   },
 
   data() {
@@ -102,7 +104,7 @@ export default {
         GROUP: "group",
       },
 
-      saveProgressDialog: false,
+      unsavedChangesDialog: false,
       formEmpty: true,
     }
   },
@@ -124,12 +126,15 @@ export default {
   methods: {
     handleDialogInput() {
       if (this.formEmpty) {
-
-        this.$emit('input', false)
+        this.$emit("input", false)
       } else {
-        this.saveProgressDialog = true
+        this.unsavedChangesDialog = true
       }
-    }
+    },
+    exitDialog() {
+      this.$emit("input", false)
+      this.$refs[this.tab].reset()
+    },
   },
 
   watch: {
@@ -145,6 +150,9 @@ export default {
           this.tabs = [{ title: "Event", type: "event" }]
         }
       },
+    },
+    tab() {
+      this.formEmpty = true
     },
   },
 }
