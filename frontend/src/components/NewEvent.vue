@@ -233,6 +233,37 @@
                     >
                   </template>
                 </v-checkbox>
+                <v-checkbox
+                  v-model="sendEmailAfterXResponsesEnabled"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <div
+                      :class="
+                        !sendEmailAfterXResponsesEnabled && 'tw-opacity-50'
+                      "
+                      class="tw-flex tw-items-center tw-gap-x-2 tw-text-sm tw-text-very-dark-gray"
+                    >
+                      <div>Email me after</div>
+                      <v-text-field
+                        v-model="sendEmailAfterXResponses"
+                        @click="
+                          (e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                          }
+                        "
+                        dense
+                        class="-tw-mt-px tw-w-10"
+                        :value="0"
+                        menu-props="auto"
+                        hide-details
+                        type="number"
+                      ></v-text-field>
+                      <div>responses</div>
+                    </div>
+                  </template>
+                </v-checkbox>
                 <TimezoneSelector v-model="timezone" label="Timezone" />
               </div>
             </div>
@@ -321,7 +352,6 @@ export default {
     selectedDays: [],
     selectedDaysOfWeek: [],
     notificationsEnabled: false,
-    blindAvailabilityEnabled: false,
 
     daysOnly: false,
     daysOnlyOptions: Object.freeze([
@@ -336,11 +366,16 @@ export default {
     }),
     selectedDateOption: "Specific dates",
 
+    // Email reminders
+    showEmailReminders: false,
+    emails: [], // For email reminders
+
     // Advanced options
     showAdvancedOptions: false,
-    showEmailReminders: false,
+    blindAvailabilityEnabled: false,
     timezone: {},
-    emails: [], // For email reminders
+    sendEmailAfterXResponsesEnabled: false,
+    sendEmailAfterXResponses: 3,
 
     helpDialog: false,
   }),
