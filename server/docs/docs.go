@@ -236,11 +236,17 @@ var doc = `{
                                                 "type": "string"
                                             }
                                         },
+                                        "blindAvailabilityEnabled": {
+                                            "type": "boolean"
+                                        },
                                         "dates": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
                                             }
+                                        },
+                                        "daysOnly": {
+                                            "type": "boolean"
                                         },
                                         "duration": {
                                             "type": "number"
@@ -256,6 +262,9 @@ var doc = `{
                                             "items": {
                                                 "type": "string"
                                             }
+                                        },
+                                        "sendEmailAfterXResponses": {
+                                            "type": "integer"
                                         },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
@@ -350,11 +359,17 @@ var doc = `{
                                                 "type": "string"
                                             }
                                         },
+                                        "blindAvailabilityEnabled": {
+                                            "type": "boolean"
+                                        },
                                         "dates": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
                                             }
+                                        },
+                                        "daysOnly": {
+                                            "type": "boolean"
                                         },
                                         "duration": {
                                             "type": "number"
@@ -370,6 +385,9 @@ var doc = `{
                                             "items": {
                                                 "type": "string"
                                             }
+                                        },
+                                        "sendEmailAfterXResponses": {
+                                            "type": "integer"
                                         },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
@@ -1329,6 +1347,10 @@ var doc = `{
                 "dates": {
                     "type": "string"
                 },
+                "daysOnly": {
+                    "description": "Whether to only poll for days, not times",
+                    "type": "boolean"
+                },
                 "duration": {
                     "type": "number"
                 },
@@ -1359,6 +1381,9 @@ var doc = `{
                     "description": "Scheduled event",
                     "type": "object",
                     "$ref": "#/definitions/models.CalendarEvent"
+                },
+                "sendEmailAfterXResponses": {
+                    "type": "integer"
                 },
                 "shortId": {
                     "type": "string"

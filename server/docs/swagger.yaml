@@ -84,6 +84,9 @@ definitions:
         type: string
       dates:
         type: string
+      daysOnly:
+        description: Whether to only poll for days, not times
+        type: boolean
       duration:
         type: number
       name:
@@ -106,6 +109,8 @@ definitions:
         $ref: '#/definitions/models.CalendarEvent'
         description: Scheduled event
         type: object
+      sendEmailAfterXResponses:
+        type: integer
       shortId:
         type: string
       type:
@@ -347,10 +352,14 @@ paths:
                 items:
                   type: string
                 type: array
+              blindAvailabilityEnabled:
+                type: boolean
               dates:
                 items:
                   type: string
                 type: array
+              daysOnly:
+                type: boolean
               duration:
                 type: number
               name:
@@ -361,6 +370,8 @@ paths:
                 items:
                   type: string
                 type: array
+              sendEmailAfterXResponses:
+                type: integer
               type:
                 $ref: '#/definitions/models.EventType'
             type: object
@@ -430,10 +441,14 @@ paths:
                 items:
                   type: string
                 type: array
+              blindAvailabilityEnabled:
+                type: boolean
               dates:
                 items:
                   type: string
                 type: array
+              daysOnly:
+                type: boolean
               duration:
                 type: number
               name:
@@ -444,6 +459,8 @@ paths:
                 items:
                   type: string
                 type: array
+              sendEmailAfterXResponses:
+                type: integer
               type:
                 $ref: '#/definitions/models.EventType'
             type: object
