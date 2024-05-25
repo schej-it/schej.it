@@ -379,6 +379,7 @@ export default {
     sendEmailAfterXResponses: 3,
 
     helpDialog: false,
+    saveProgressDialog: false,
   }),
 
   mounted() {
@@ -389,6 +390,7 @@ export default {
       this.name = this.contactsPayload.name
       this.startTime = this.contactsPayload.startTime
       this.endTime = this.contactsPayload.endTime
+      this.daysOnly = this.contactsPayload.daysOnly
       this.selectedDaysOfWeek = this.contactsPayload.selectedDaysOfWeek
       this.selectedDays = this.contactsPayload.selectedDays
       this.selectedDateOption = this.contactsPayload.selectedDateOption
@@ -401,6 +403,13 @@ export default {
 
   computed: {
     ...mapState(["authUser", "daysOnlyEnabled"]),
+    formEmpty() {
+      return (
+        this.name === "" &&
+        this.selectedDays.length === 0 &&
+        this.selectedDaysOfWeek.length === 0
+      )
+    },
     nameRules() {
       return [(v) => !!v || "Event name is required"]
     },
@@ -615,6 +624,7 @@ export default {
         name: this.name,
         startTime: this.startTime,
         endTime: this.endTime,
+        daysOnly: this.daysOnly,
         selectedDays: this.selectedDays,
         selectedDaysOfWeek: this.selectedDaysOfWeek,
         selectedDateOption: this.selectedDateOption,
@@ -709,6 +719,9 @@ export default {
         this.selectedDays = []
       }
     },
+    formEmpty(val) {
+      this.$emit("update:formEmpty", val)
+    }
   },
 }
 </script>
