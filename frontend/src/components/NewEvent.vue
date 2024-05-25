@@ -66,7 +66,7 @@
                 What times might work?
               </div>
               <div
-                class="tw-mb-2 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
+                class="tw-mb-3 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
               >
                 <v-select
                   v-model="startTime"
@@ -83,20 +83,15 @@
                   hide-details
                   solo
                 ></v-select>
-              </div>
-              <ExpandableSection
-                label="Timezone"
-                labelClass="tw-text-sm"
-                iconClass="tw-text-base"
-                class="tw-mb-6"
-              >
-                <TimezoneSelector
+                <v-btn text class="tw-px-1 tw-text-xs">GMT+8:00</v-btn>
+                <!-- <TimezoneSelector
                   v-model="timezone"
                   label="Timezone"
                   solo
                   no-label
-                />
-              </ExpandableSection>
+                  short-selection-text
+                /> -->
+              </div>
             </div>
           </v-expand-transition>
 

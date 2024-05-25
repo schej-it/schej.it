@@ -15,7 +15,7 @@
       :menu-props="{ auto: true }"
       :solo="solo"
       class="tw-z-20"
-      :class="solo && '-tw-mt-px tw-w-52 tw-text-sm'"
+      :class="solo ? 'tw-text-xs' : '-tw-mt-px tw-w-52 tw-text-sm'"
       :dense="!solo"
       color="#219653"
       item-color="green"
@@ -34,7 +34,11 @@
       </template>
       <template v-slot:selection="{ item }">
         <div class="v-select__selection v-select__selection--comma">
-          {{ item.gmtString }} {{ item.label }}
+          {{
+            shortSelectionText
+              ? item.gmtString
+              : `${item.gmtString} ${item.label}`
+          }}
         </div>
       </template>
     </v-select>
@@ -57,6 +61,7 @@ export default {
     labelColor: { type: String, default: "" },
     solo: { type: Boolean, default: false },
     noLabel: { type: Boolean, default: false },
+    shortSelectionText: { type: Boolean, default: false }, // Whether to only show GMT string in the active selection
   },
 
   created() {
@@ -115,6 +120,7 @@ export default {
         })
         .filter(Boolean)
         .sort((a, b) => a.offset - b.offset)
+      console.log("timezones: ", t)
       return t
     },
   },
