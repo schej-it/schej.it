@@ -120,7 +120,6 @@ export default {
         })
         .filter(Boolean)
         .sort((a, b) => a.offset - b.offset)
-      console.log("timezones: ", t)
       return t
     },
   },
