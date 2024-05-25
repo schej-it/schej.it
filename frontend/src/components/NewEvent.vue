@@ -354,6 +354,7 @@ export default {
       this.name = this.contactsPayload.name
       this.startTime = this.contactsPayload.startTime
       this.endTime = this.contactsPayload.endTime
+      this.daysOnly = this.contactsPayload.daysOnly
       this.selectedDaysOfWeek = this.contactsPayload.selectedDaysOfWeek
       this.selectedDays = this.contactsPayload.selectedDays
       this.selectedDateOption = this.contactsPayload.selectedDateOption
@@ -600,6 +601,7 @@ export default {
         name: this.name,
         startTime: this.startTime,
         endTime: this.endTime,
+        daysOnly: this.daysOnly,
         selectedDays: this.selectedDays,
         selectedDaysOfWeek: this.selectedDaysOfWeek,
         selectedDateOption: this.selectedDateOption,
