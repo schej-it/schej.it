@@ -157,6 +157,9 @@ html {
 .v-input--switch__thumb {
   background-color: white !important;
 }
+.v-text-field__details {
+  padding: 0 !important;
+}
 
 /** Error color */
 .error--text .v-input__slot {
