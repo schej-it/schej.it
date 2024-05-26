@@ -335,6 +335,18 @@
                     class="tw-mb-4 tw-w-full"
                     v-model="availabilityType"
                   />
+                  <v-switch
+                    inset
+                    :input-value="overlayAvailability"
+                    @change="updateOverlayAvailability"
+                    hide-details
+                  >
+                    <template v-slot:label>
+                      <div class="tw-text-sm tw-text-black">
+                        Overlay everyone's availability
+                      </div>
+                    </template>
+                  </v-switch>
                 </div>
               </v-expand-transition>
             </div>
@@ -659,7 +671,6 @@ export default {
 
       availability: new Set(), // The current user's availability
       ifNeeded: new Set(), // The current user's "if needed" availability
-      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -673,6 +684,10 @@ export default {
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
+
+      /** Edit options */
+      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
+      overlayAvailability: localStorage["overlayAvailability"] == "true", // Whether to overlay everyone's availability when editing
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -1876,21 +1891,23 @@ export default {
         classStyle.class +=
           "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
-        // Normal border
-        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-        if (fractionalTime === 0.25) {
-          classStyle.class += "tw-border-b "
-          classStyle.style.borderBottomStyle = "dashed"
-        } else if (fractionalTime === 0.75) {
-          classStyle.class += "tw-border-b "
-        }
+        if (!this.overlayAvailability) {
+          // Normal border
+          const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+          if (fractionalTime === 0.25) {
+            classStyle.class += "tw-border-b "
+            classStyle.style.borderBottomStyle = "dashed"
+          } else if (fractionalTime === 0.75) {
+            classStyle.class += "tw-border-b "
+          }
 
-        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-        if (col === this.days.length - 1)
-          classStyle.class += "tw-border-r tw-border-r-gray "
-        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-        if (row === this.times.length - 1)
-          classStyle.class += "tw-border-b tw-border-b-gray "
+          if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
+          if (col === this.days.length - 1)
+            classStyle.class += "tw-border-r tw-border-r-gray "
+          if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+          if (row === this.times.length - 1)
+            classStyle.class += "tw-border-b tw-border-b-gray "
+        }
       }
 
       return classStyle
@@ -1913,20 +1930,58 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            if (this.availabilityType === availabilityTypes.AVAILABLE) {
-              s.backgroundColor = "#00994C88"
-            } else if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-              c += "tw-bg-yellow "
+            if (this.overlayAvailability) {
+              c += "tw-border-l tw-border-r tw-border-dark-green "
+              if (!this.inDragRange(row - 1, col)) {
+                c += "tw-border-t "
+              }
+              if (!this.inDragRange(row + 1, col)) {
+                c += "tw-border-b "
+              }
+            } else {
+              if (this.availabilityType === availabilityTypes.AVAILABLE) {
+                s.backgroundColor = "#00994C88"
+              } else if (
+                this.availabilityType === availabilityTypes.IF_NEEDED
+              ) {
+                c += "tw-bg-yellow "
+              }
             }
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
           // Otherwise just show the current availability
           // Show current availability from availability set
-          if (this.availability.has(date.getTime())) {
-            s.backgroundColor = "#00994C88"
-          } else if (this.ifNeeded.has(date.getTime())) {
-            c += "tw-bg-yellow "
+          if (this.overlayAvailability) {
+            if (
+              this.availability.has(date.getTime()) ||
+              this.ifNeeded.has(date.getTime())
+            ) {
+              c += "tw-border-l-2 tw-border-r-2 tw-border-dark-green "
+              const beforeDate = new Date(date)
+              beforeDate.setMinutes(beforeDate.getMinutes() - 15)
+              const afterDate = new Date(date)
+              afterDate.setMinutes(afterDate.getMinutes() + 15)
+
+              if (
+                !this.availability.has(beforeDate.getTime()) &&
+                !this.ifNeeded.has(beforeDate.getTime())
+              ) {
+                c += "tw-border-t-2 "
+              }
+              if (
+                !this.availability.has(afterDate.getTime()) &&
+                !this.ifNeeded.has(afterDate.getTime())
+              ) {
+                c += "tw-border-b-2 "
+              }
+            }
+          } else {
+            if (this.availability.has(date.getTime())) {
+              s.backgroundColor = "#00994C88"
+            } else if (this.ifNeeded.has(date.getTime())) {
+              c += "tw-bg-yellow "
+            }
           }
         }
       }
@@ -1944,6 +1999,7 @@ export default {
       }
 
       if (
+        this.overlayAvailability ||
         this.state === this.states.BEST_TIMES ||
         this.state === this.states.HEATMAP ||
         this.state === this.states.SCHEDULE_EVENT ||
@@ -1953,6 +2009,7 @@ export default {
         let max
 
         if (
+          this.overlayAvailability ||
           this.state === this.states.BEST_TIMES ||
           this.state === this.states.HEATMAP ||
           this.state === this.states.SCHEDULE_EVENT
@@ -2469,6 +2526,10 @@ export default {
     toggleShowOptions() {
       this.showOptions = !this.showOptions
       localStorage["showAvailabilityOptions"] = this.showOptions
+    },
+    updateOverlayAvailability(val) {
+      this.overlayAvailability = !!val
+      localStorage["overlayAvailability"] = !!val
     },
     //#endregion
 
