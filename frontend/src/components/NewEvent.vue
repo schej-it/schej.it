@@ -122,6 +122,7 @@
               hide-details="auto"
               :rules="selectedDaysRules"
               key="days-of-week"
+              class="tw-w-fit"
             >
               <v-btn-toggle
                 v-model="selectedDaysOfWeek"
@@ -721,7 +722,7 @@ export default {
     },
     formEmpty(val) {
       this.$emit("update:formEmpty", val)
-    }
+    },
   },
 }
 </script>
