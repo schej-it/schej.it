@@ -332,8 +332,14 @@
               <v-expand-transition>
                 <div v-show="showOptions">
                   <AvailabilityTypeToggle
-                    class="tw-mb-4 tw-w-full"
+                    class="tw-mb-2 tw-w-full"
                     v-model="availabilityType"
+                  />
+
+                  <BufferTimeSwitch
+                  v-if="calendarPermissionGranted"
+                    class="tw-w-full"
+                    v-model="bufferTimeActive"
                   />
                 </div>
               </v-expand-transition>
@@ -615,6 +621,7 @@ import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
 import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
+import BufferTimeSwitch from "./BufferTimeSwitch.vue"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -660,6 +667,7 @@ export default {
       availability: new Set(), // The current user's availability
       ifNeeded: new Set(), // The current user's "if needed" availability
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
+      bufferTime: false, // The current availability type
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -2808,6 +2816,7 @@ export default {
   },
   components: {
     AvailabilityTypeToggle,
+    BufferTimeSwitch,
     UserAvatarContent,
     ZigZag,
     ConfirmDetailsDialog,
