@@ -255,8 +255,9 @@
                             e.stopPropagation()
                           }
                         "
+                        :disabled="!sendEmailAfterXResponsesEnabled"
                         dense
-                        class="-tw-mt-px tw-w-10"
+                        class="email-me-after-text-field -tw-mt-[2px] tw-w-10"
                         menu-props="auto"
                         hide-details
                         type="number"
@@ -296,6 +297,12 @@
     </v-card-actions>
   </v-card>
 </template>
+
+<style>
+.email-me-after-text-field input {
+  padding: 0px !important;
+}
+</style>
 
 <script>
 import { eventTypes, dayIndexToDayString, authTypes } from "@/constants"
