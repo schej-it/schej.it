@@ -357,7 +357,7 @@ export default {
 
     daysOnly: false,
     daysOnlyOptions: Object.freeze([
-      { text: "Specific times", value: false },
+      { text: "Dates and times", value: false },
       { text: "Dates only", value: true },
     ]),
 
