@@ -570,7 +570,7 @@ export default {
         this.curGuestId.length === 0 &&
         !this.scheduleOverlapComponent.pageHasChanged &&
         !ignorePagesNotVisited &&
-        this.scheduleOverlapComponent.numPages > 1
+        this.scheduleOverlapComponent.hasPages
       ) {
         this.pagesNotVisitedDialog = true
         return
