@@ -246,6 +246,24 @@
                             </div>
                           </div>
                         </div>
+
+                        <!-- Overlaid availabilities -->
+                        <div v-if="overlayAvailability">
+                          <div
+                            v-for="(timeBlock, tb) in overlaidAvailability[d]"
+                            :key="tb"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                            :style="{
+                              top: `calc(${timeBlock.hoursOffset} * 4 * 1rem)`,
+                              height: `calc(${timeBlock.hoursLength} * 4 * 1rem)`,
+                            }"
+                            style="pointer-events: none"
+                          >
+                            <div
+                              class="tw-h-full tw-w-full tw-border-2 tw-border-dark-green tw-bg-[#ffffff33] tw-shadow-lg"
+                            ></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -687,7 +705,7 @@ export default {
 
       /** Edit options */
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
-      overlayAvailability: localStorage["overlayAvailability"] == "true", // Whether to overlay everyone's availability when editing
+      overlayAvailability: false, // Whether to overlay everyone's availability when editing
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -1350,6 +1368,45 @@ export default {
         this.guestName?.length > 0 && this.guestName in this.parsedResponses
       )
     },
+
+    /** Returns an array of time blocks representing the current user's availability
+     * (used for displaying current user's availability on top of everybody else's availability)
+     */
+    overlaidAvailability() {
+      const overlaidAvailability = []
+      this.days.forEach((day, d) => {
+        overlaidAvailability.push([])
+        let curBlockIndex = 0
+        this.times.forEach((time, t) => {
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          if (
+            (this.dragging &&
+              this.inDragRange(t, d) &&
+              this.dragType === this.DRAG_TYPES.ADD) ||
+            (!(
+              this.dragging &&
+              this.inDragRange(t, d) &&
+              this.dragType === this.DRAG_TYPES.REMOVE
+            ) &&
+              (this.availability.has(date.getTime()) ||
+                this.ifNeeded.has(date.getTime())))
+          ) {
+            if (overlaidAvailability[d].length - 1 === curBlockIndex) {
+              overlaidAvailability[d][curBlockIndex].hoursLength += 0.25
+            } else {
+              overlaidAvailability[d].push({
+                hoursOffset: time.hoursOffset,
+                hoursLength: 0.25,
+              })
+            }
+          } else if (curBlockIndex in overlaidAvailability[d]) {
+            // Only increment cur block index if block already exists at the current index
+            curBlockIndex++
+          }
+        })
+      })
+      return overlaidAvailability
+    },
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -1891,23 +1948,21 @@ export default {
         classStyle.class +=
           "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
-        if (!this.overlayAvailability) {
-          // Normal border
-          const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-          if (fractionalTime === 0.25) {
-            classStyle.class += "tw-border-b "
-            classStyle.style.borderBottomStyle = "dashed"
-          } else if (fractionalTime === 0.75) {
-            classStyle.class += "tw-border-b "
-          }
-
-          if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-          if (col === this.days.length - 1)
-            classStyle.class += "tw-border-r tw-border-r-gray "
-          if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-          if (row === this.times.length - 1)
-            classStyle.class += "tw-border-b tw-border-b-gray "
+        // Normal border
+        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+        if (fractionalTime === 0.25) {
+          classStyle.class += "tw-border-b "
+          classStyle.style.borderBottomStyle = "dashed"
+        } else if (fractionalTime === 0.75) {
+          classStyle.class += "tw-border-b "
         }
+
+        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
+        if (col === this.days.length - 1)
+          classStyle.class += "tw-border-r tw-border-r-gray "
+        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+        if (row === this.times.length - 1)
+          classStyle.class += "tw-border-b tw-border-b-gray "
       }
 
       return classStyle
@@ -1921,7 +1976,10 @@ export default {
         this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Fill style
-      if (this.state === this.states.EDIT_AVAILABILITY) {
+      if (
+        !this.overlayAvailability &&
+        this.state === this.states.EDIT_AVAILABILITY
+      ) {
         // Set default background color to red (unavailable)
         s.backgroundColor = "#E523230D"
 
@@ -1930,58 +1988,20 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            if (this.overlayAvailability) {
-              c += "tw-border-l tw-border-r tw-border-dark-green "
-              if (!this.inDragRange(row - 1, col)) {
-                c += "tw-border-t "
-              }
-              if (!this.inDragRange(row + 1, col)) {
-                c += "tw-border-b "
-              }
-            } else {
-              if (this.availabilityType === availabilityTypes.AVAILABLE) {
-                s.backgroundColor = "#00994C88"
-              } else if (
-                this.availabilityType === availabilityTypes.IF_NEEDED
-              ) {
-                c += "tw-bg-yellow "
-              }
+            if (this.availabilityType === availabilityTypes.AVAILABLE) {
+              s.backgroundColor = "#00994C88"
+            } else if (this.availabilityType === availabilityTypes.IF_NEEDED) {
+              c += "tw-bg-yellow "
             }
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
           }
         } else {
           // Otherwise just show the current availability
           // Show current availability from availability set
-          if (this.overlayAvailability) {
-            if (
-              this.availability.has(date.getTime()) ||
-              this.ifNeeded.has(date.getTime())
-            ) {
-              c += "tw-border-l-2 tw-border-r-2 tw-border-dark-green "
-              const beforeDate = new Date(date)
-              beforeDate.setMinutes(beforeDate.getMinutes() - 15)
-              const afterDate = new Date(date)
-              afterDate.setMinutes(afterDate.getMinutes() + 15)
-
-              if (
-                !this.availability.has(beforeDate.getTime()) &&
-                !this.ifNeeded.has(beforeDate.getTime())
-              ) {
-                c += "tw-border-t-2 "
-              }
-              if (
-                !this.availability.has(afterDate.getTime()) &&
-                !this.ifNeeded.has(afterDate.getTime())
-              ) {
-                c += "tw-border-b-2 "
-              }
-            }
-          } else {
-            if (this.availability.has(date.getTime())) {
-              s.backgroundColor = "#00994C88"
-            } else if (this.ifNeeded.has(date.getTime())) {
-              c += "tw-bg-yellow "
-            }
+          if (this.availability.has(date.getTime())) {
+            s.backgroundColor = "#00994C88"
+          } else if (this.ifNeeded.has(date.getTime())) {
+            c += "tw-bg-yellow "
           }
         }
       }
@@ -2009,7 +2029,6 @@ export default {
         let max
 
         if (
-          this.overlayAvailability ||
           this.state === this.states.BEST_TIMES ||
           this.state === this.states.HEATMAP ||
           this.state === this.states.SCHEDULE_EVENT
@@ -2022,6 +2041,10 @@ export default {
           ).length
 
           max = this.curRespondentsMax
+        } else if (this.overlayAvailability) {
+          // Subtract 1 because we do not want to include current user's availability
+          numRespondents = timeslotRespondents.size - 1
+          max = this.max - 1
         }
 
         const totalRespondents = this.respondents.length
@@ -2196,6 +2219,10 @@ export default {
     stopEditing() {
       this.state = this.defaultState
       this.stopAvailabilityAnim()
+
+      // Reset options
+      this.availabilityType = availabilityTypes.AVAILABLE
+      this.overlayAvailability = false
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
@@ -2529,7 +2556,6 @@ export default {
     },
     updateOverlayAvailability(val) {
       this.overlayAvailability = !!val
-      localStorage["overlayAvailability"] = !!val
     },
     //#endregion
 
