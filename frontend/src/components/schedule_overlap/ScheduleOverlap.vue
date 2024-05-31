@@ -2078,7 +2078,10 @@ export default {
               ) {
                 this.timeslotSelected = false
               }
-            } else if (this.userHasResponded || this.guestAddedAvailability) {
+            } else if (
+              this.state !== this.states.EDIT_AVAILABILITY &&
+              (this.userHasResponded || this.guestAddedAvailability)
+            ) {
               // Persist timeslot selection if user has already responded
               this.timeslotSelected = true
             }
