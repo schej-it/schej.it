@@ -354,13 +354,15 @@
                     v-model="availabilityType"
                   />
                   <v-switch
+                    class="tw-mb-4"
+                    v-if="!event.daysOnly"
                     inset
                     :input-value="overlayAvailability"
                     @change="updateOverlayAvailability"
                     hide-details
                   >
                     <template v-slot:label>
-                      <div class="tw-text-sm tw-text-black">
+                      <div class="tw-text-xs tw-text-black">
                         Overlay everyone's availability
                       </div>
                     </template>
