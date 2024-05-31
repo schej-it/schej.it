@@ -1907,7 +1907,7 @@ export default {
       // Fill style
       if (this.state === this.states.EDIT_AVAILABILITY) {
         // Set default background color to red (unavailable)
-        s.backgroundColor = "#E523233B"
+        s.backgroundColor = "#E523230D"
 
         // Show only current user availability
         const inDragRange = this.inDragRange(row, col)
@@ -2031,6 +2031,11 @@ export default {
           class: "tw-bg-off-white tw-text-gray ",
           style: {},
         }
+      }
+
+      // Change default red:
+      if (classStyle.style.backgroundColor === "#E523230D") {
+        classStyle.style.backgroundColor = "#E523233B"
       }
 
       // Change edit green
