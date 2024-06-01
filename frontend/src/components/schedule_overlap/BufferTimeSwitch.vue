@@ -1,6 +1,12 @@
 <template>
-  <div class="tw-flex tw-align-center">
-    <v-switch @input="(e) => $emit('input', e)"  inset class="tw-flex tw-items-center"> </v-switch>
+  <div class="tw-align-center tw-flex">
+    <v-switch
+      :value="value"
+      @change="emitItem"
+      inset
+      class="tw-flex tw-items-center"
+    >
+    </v-switch>
     <div
       class="tw-flex tw-items-center tw-justify-center tw-text-xs tw-text-black"
     >
@@ -21,7 +27,7 @@ export default {
   name: "BufferTimeToggle",
 
   props: {
-    value: { type: String, required: true },
+    value: { type: Boolean, required: true },
   },
 
   components: {},
@@ -32,5 +38,11 @@ export default {
       bufferTimes: [15, 30, 45],
     }
   },
+
+  methods: {
+    emitItem(e) {
+      this.$emit("input", e !== null)
+    },
+  }
 }
 </script>

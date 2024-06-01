@@ -337,7 +337,7 @@
                   />
 
                   <BufferTimeSwitch
-                  v-if="calendarPermissionGranted"
+                    v-if="calendarPermissionGranted"
                     class="tw-w-full"
                     v-model="bufferTimeActive"
                   />
@@ -667,7 +667,8 @@ export default {
       availability: new Set(), // The current user's availability
       ifNeeded: new Set(), // The current user's "if needed" availability
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
-      bufferTime: false, // The current availability type
+      bufferTimeActive: false, // Whether to buffer events when autofilling
+      bufferTime: 15, // Buffer time in minutes
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -1680,9 +1681,13 @@ export default {
           let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
           const index = calendarEventsByDay[i].findIndex((e) => {
+            const startDateBuffered = new Date(e.startDate.getTime() - this.bufferTime * 1000 * 60)
+            const endDateBuffered = new Date(e.endDate.getTime() + this.bufferTime * 1000 * 60)
+
+
             const notIntersect =
-              dateCompare(endDate, e.startDate) <= 0 ||
-              dateCompare(startDate, e.endDate) >= 0
+              dateCompare(endDate, startDateBuffered) <= 0 ||
+              dateCompare(startDate, endDateBuffered) >= 0
             return !notIntersect && !e.free
           })
           if (index === -1) {
@@ -2778,6 +2783,9 @@ export default {
         this.populateUserAvailability(this.authUser._id)
       }
     },
+    bufferTimeActive(val) {
+      console.log(val)
+    }
   },
   created() {
     this.resetCurUserAvailability()
