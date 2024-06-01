@@ -246,6 +246,24 @@
                             </div>
                           </div>
                         </div>
+
+                        <!-- Overlaid availabilities -->
+                        <div v-if="overlayAvailability">
+                          <div
+                            v-for="(timeBlock, tb) in overlaidAvailability[d]"
+                            :key="tb"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                            :style="{
+                              top: `calc(${timeBlock.hoursOffset} * 4 * 1rem)`,
+                              height: `calc(${timeBlock.hoursLength} * 4 * 1rem)`,
+                            }"
+                            style="pointer-events: none"
+                          >
+                            <div
+                              class="tw-h-full tw-w-full tw-border-2 tw-border-[#1C7D45CC] tw-bg-[#1C7D4533] tw-shadow-lg"
+                            ></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -335,6 +353,20 @@
                     class="tw-mb-4 tw-w-full"
                     v-model="availabilityType"
                   />
+                  <v-switch
+                    class="tw-mb-4"
+                    v-if="!event.daysOnly"
+                    inset
+                    :input-value="overlayAvailability"
+                    @change="updateOverlayAvailability"
+                    hide-details
+                  >
+                    <template v-slot:label>
+                      <div class="tw-text-xs tw-text-black">
+                        Overlay everyone's availability
+                      </div>
+                    </template>
+                  </v-switch>
                 </div>
               </v-expand-transition>
             </div>
@@ -659,7 +691,6 @@ export default {
 
       availability: new Set(), // The current user's availability
       ifNeeded: new Set(), // The current user's "if needed" availability
-      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -673,6 +704,10 @@ export default {
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
+
+      /** Edit options */
+      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
+      overlayAvailability: false, // Whether to overlay everyone's availability when editing
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -1336,6 +1371,45 @@ export default {
         this.guestName?.length > 0 && this.guestName in this.parsedResponses
       )
     },
+
+    /** Returns an array of time blocks representing the current user's availability
+     * (used for displaying current user's availability on top of everybody else's availability)
+     */
+    overlaidAvailability() {
+      const overlaidAvailability = []
+      this.days.forEach((day, d) => {
+        overlaidAvailability.push([])
+        let curBlockIndex = 0
+        this.times.forEach((time, t) => {
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          if (
+            (this.dragging &&
+              this.inDragRange(t, d) &&
+              this.dragType === this.DRAG_TYPES.ADD) ||
+            (!(
+              this.dragging &&
+              this.inDragRange(t, d) &&
+              this.dragType === this.DRAG_TYPES.REMOVE
+            ) &&
+              (this.availability.has(date.getTime()) ||
+                this.ifNeeded.has(date.getTime())))
+          ) {
+            if (overlaidAvailability[d].length - 1 === curBlockIndex) {
+              overlaidAvailability[d][curBlockIndex].hoursLength += 0.25
+            } else {
+              overlaidAvailability[d].push({
+                hoursOffset: time.hoursOffset,
+                hoursLength: 0.25,
+              })
+            }
+          } else if (curBlockIndex in overlaidAvailability[d]) {
+            // Only increment cur block index if block already exists at the current index
+            curBlockIndex++
+          }
+        })
+      })
+      return overlaidAvailability
+    },
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -1905,7 +1979,10 @@ export default {
         this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Fill style
-      if (this.state === this.states.EDIT_AVAILABILITY) {
+      if (
+        !this.overlayAvailability &&
+        this.state === this.states.EDIT_AVAILABILITY
+      ) {
         // Set default background color to red (unavailable)
         s.backgroundColor = "#E523230D"
 
@@ -1945,6 +2022,7 @@ export default {
       }
 
       if (
+        this.overlayAvailability ||
         this.state === this.states.BEST_TIMES ||
         this.state === this.states.HEATMAP ||
         this.state === this.states.SCHEDULE_EVENT ||
@@ -1966,6 +2044,18 @@ export default {
           ).length
 
           max = this.curRespondentsMax
+        } else if (this.overlayAvailability) {
+          if (
+            (this.userHasResponded || this.curGuestId?.length > 0) &&
+            timeslotRespondents.has(this.authUser?._id ?? this.curGuestId)
+          ) {
+            // Subtract 1 because we do not want to include current user's availability
+            numRespondents = timeslotRespondents.size - 1
+            max = this.max - 1
+          } else {
+            numRespondents = timeslotRespondents.size
+            max = this.max
+          }
         }
 
         const totalRespondents = this.respondents.length
@@ -2000,6 +2090,11 @@ export default {
               if (frac == 1) alpha = "FF"
 
               s.backgroundColor = green + alpha
+            }
+          } else {
+            // Set background color to red if overlaying availability and no one's available
+            if (this.overlayAvailability) {
+              s.backgroundColor = "#E523230D"
             }
           }
         }
@@ -2143,6 +2238,10 @@ export default {
     stopEditing() {
       this.state = this.defaultState
       this.stopAvailabilityAnim()
+
+      // Reset options
+      this.availabilityType = availabilityTypes.AVAILABLE
+      this.overlayAvailability = false
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
@@ -2473,6 +2572,9 @@ export default {
     toggleShowOptions() {
       this.showOptions = !this.showOptions
       localStorage["showAvailabilityOptions"] = this.showOptions
+    },
+    updateOverlayAvailability(val) {
+      this.overlayAvailability = !!val
     },
     //#endregion
 
