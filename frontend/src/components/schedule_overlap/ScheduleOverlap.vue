@@ -260,7 +260,7 @@
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-h-full tw-w-full tw-border-2 tw-border-dark-green tw-bg-[#ffffff33] tw-shadow-lg"
+                              class="tw-h-full tw-w-full tw-border-2 tw-border-dark-green tw-bg-[#1C7D4533] tw-shadow-lg"
                             ></div>
                           </div>
                         </div>
@@ -2082,6 +2082,11 @@ export default {
               if (frac == 1) alpha = "FF"
 
               s.backgroundColor = green + alpha
+            }
+          } else {
+            // Set background color to red if overlaying availability and no one's available
+            if (this.overlayAvailability) {
+              s.backgroundColor = "#E523230D"
             }
           }
         }
