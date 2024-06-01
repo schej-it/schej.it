@@ -2045,9 +2045,17 @@ export default {
 
           max = this.curRespondentsMax
         } else if (this.overlayAvailability) {
-          // Subtract 1 because we do not want to include current user's availability
-          numRespondents = timeslotRespondents.size - 1
-          max = this.max - 1
+          if (
+            (this.userHasResponded || this.curGuestId?.length > 0) &&
+            timeslotRespondents.has(this.authUser?._id ?? this.curGuestId)
+          ) {
+            // Subtract 1 because we do not want to include current user's availability
+            numRespondents = timeslotRespondents.size - 1
+            max = this.max - 1
+          } else {
+            numRespondents = timeslotRespondents.size
+            max = this.max
+          }
         }
 
         const totalRespondents = this.respondents.length
