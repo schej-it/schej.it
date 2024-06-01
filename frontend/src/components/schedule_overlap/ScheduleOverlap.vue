@@ -1681,9 +1681,9 @@ export default {
           let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
           const index = calendarEventsByDay[i].findIndex((e) => {
-            const startDateBuffered = new Date(e.startDate.getTime() - this.bufferTime * 1000 * 60)
-            const endDateBuffered = new Date(e.endDate.getTime() + this.bufferTime * 1000 * 60)
-
+            const bufferTimeInMS = this.bufferTimeActive ? this.bufferTime * 1000 * 60 : 0;
+            const startDateBuffered = new Date(e.startDate.getTime() - bufferTimeInMS)
+            const endDateBuffered = new Date(e.endDate.getTime() + bufferTimeInMS)
 
             const notIntersect =
               dateCompare(endDate, startDateBuffered) <= 0 ||
@@ -2784,6 +2784,18 @@ export default {
       }
     },
     bufferTimeActive(val) {
+      if (
+        this.state === this.states.EDIT_AVAILABILITY &&
+        this.authUser &&
+        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
+        !this.loadingCalendarEvents &&
+        (!this.unsavedChanges || this.availabilityAnimEnabled)
+      ) {
+        for (const timeout of this.availabilityAnimTimeouts) {
+          clearTimeout(timeout)
+        }
+        this.setAvailabilityAutomatically()
+      }
       console.log(val)
     }
   },
