@@ -54,6 +54,26 @@
                   {{ day.date }}
                 </div>
               </div>
+
+              <ToolRow
+                v-if="!isPhone && !calendarOnly"
+                :event="event"
+                :state="state"
+                :states="states"
+                :cur-timezone.sync="curTimezone"
+                :show-best-times.sync="showBestTimes"
+                :is-weekly="isWeekly"
+                :calendar-permission-granted="calendarPermissionGranted"
+                :week-offset="weekOffset"
+                :num-responses="respondents.length"
+                :mobile-num-days.sync="mobileNumDays"
+                :allow-schedule-event="allowScheduleEvent"
+                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                @onShowBestTimesChange="onShowBestTimesChange"
+                @scheduleEvent="scheduleEvent"
+                @cancelScheduleEvent="cancelScheduleEvent"
+                @confirmScheduleEvent="confirmScheduleEvent"
+              />
             </div>
           </template>
           <template v-else>
@@ -285,6 +305,26 @@
                   class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
                 />
               </div>
+
+              <ToolRow
+                v-if="!isPhone && !calendarOnly"
+                :event="event"
+                :state="state"
+                :states="states"
+                :cur-timezone.sync="curTimezone"
+                :show-best-times.sync="showBestTimes"
+                :is-weekly="isWeekly"
+                :calendar-permission-granted="calendarPermissionGranted"
+                :week-offset="weekOffset"
+                :num-responses="respondents.length"
+                :mobile-num-days.sync="mobileNumDays"
+                :allow-schedule-event="allowScheduleEvent"
+                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                @onShowBestTimesChange="onShowBestTimesChange"
+                @scheduleEvent="scheduleEvent"
+                @cancelScheduleEvent="cancelScheduleEvent"
+                @confirmScheduleEvent="confirmScheduleEvent"
+              />
             </div>
 
             <div
@@ -482,37 +522,26 @@
         </div>
       </v-expand-transition>
 
-      <div
+      <ToolRow
+        v-if="isPhone && !calendarOnly"
         class="tw-px-4"
-        :class="
-          event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
-        "
-        v-if="!calendarOnly"
-      >
-        <ToolRow
-          :event="event"
-          :state="state"
-          :states="states"
-          :cur-timezone.sync="curTimezone"
-          :show-best-times.sync="showBestTimes"
-          :is-weekly="isWeekly"
-          :calendar-permission-granted="calendarPermissionGranted"
-          :week-offset="weekOffset"
-          :num-responses="respondents.length"
-          :mobile-num-days.sync="mobileNumDays"
-          :allow-schedule-event="allowScheduleEvent"
-          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-          @onShowBestTimesChange="onShowBestTimesChange"
-          @scheduleEvent="scheduleEvent"
-          @cancelScheduleEvent="cancelScheduleEvent"
-          @confirmScheduleEvent="confirmScheduleEvent"
-        />
-
-        <Advertisement
-          class="tw-mt-5 sm:tw-mt-10"
-          :ownerId="event.ownerId"
-        ></Advertisement>
-      </div>
+        :event="event"
+        :state="state"
+        :states="states"
+        :cur-timezone.sync="curTimezone"
+        :show-best-times.sync="showBestTimes"
+        :is-weekly="isWeekly"
+        :calendar-permission-granted="calendarPermissionGranted"
+        :week-offset="weekOffset"
+        :num-responses="respondents.length"
+        :mobile-num-days.sync="mobileNumDays"
+        :allow-schedule-event="allowScheduleEvent"
+        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+        @onShowBestTimesChange="onShowBestTimesChange"
+        @scheduleEvent="scheduleEvent"
+        @cancelScheduleEvent="cancelScheduleEvent"
+        @confirmScheduleEvent="confirmScheduleEvent"
+      />
 
       <!-- Fixed bottom section for mobile -->
       <div
