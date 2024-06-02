@@ -2063,7 +2063,7 @@ export default {
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
             // Only set timeslot to green for the times that most people are available
-            if (totalRespondents === 1) {
+            if (totalRespondents === 1 || this.overlayAvailability) {
               // Make single responses less saturated
               const green = "#00994CAA"
               s.backgroundColor = green
@@ -2082,12 +2082,21 @@ export default {
               // Determine color of timeslot based on number of people available
               const frac = numRespondents / max
               const green = "#00994C"
-              let alpha = Math.floor(frac * (255 - 30))
-                .toString(16)
-                .toUpperCase()
-                .substring(0, 2)
-                .padStart(2, "0")
-              if (frac == 1) alpha = "FF"
+              let alpha
+              if (!this.overlayAvailability) {
+                alpha = Math.floor(frac * (255 - 30))
+                  .toString(16)
+                  .toUpperCase()
+                  .substring(0, 2)
+                  .padStart(2, "0")
+                if (frac == 1) alpha = "FF"
+              } else {
+                alpha = Math.floor(frac * (255 - 85))
+                  .toString(16)
+                  .toUpperCase()
+                  .substring(0, 2)
+                  .padStart(2, "0")
+              }
 
               s.backgroundColor = green + alpha
             }
