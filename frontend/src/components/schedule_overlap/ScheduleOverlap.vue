@@ -260,7 +260,7 @@
                             style="pointer-events: none"
                           >
                             <div
-                              class="tw-h-full tw-w-full tw-border-2 tw-border-[#1C7D45CC] tw-bg-[#1C7D4533] tw-shadow-lg"
+                              class="overlay-availabilities-shadow tw-h-full tw-w-full tw-border-2 tw-border-[#1C7D45CC] tw-bg-[#1C7D4533]"
                             ></div>
                           </div>
                         </div>
