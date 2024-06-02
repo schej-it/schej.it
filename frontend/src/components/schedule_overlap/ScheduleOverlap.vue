@@ -355,7 +355,7 @@
                   />
                   <v-switch
                     class="tw-mb-4"
-                    v-if="!event.daysOnly"
+                    v-if="overlayAvailabilitiesEnabled && !event.daysOnly"
                     inset
                     :input-value="overlayAvailability"
                     @change="updateOverlayAvailability"
@@ -776,7 +776,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "overlayAvailabilitiesEnabled"]),
     /** Only allow scheduling when a curScheduledEvent exists */
     allowScheduleEvent() {
       return !!this.curScheduledEvent

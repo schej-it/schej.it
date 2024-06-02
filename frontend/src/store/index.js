@@ -17,6 +17,7 @@ export default new Vuex.Store({
     // Feature flags
     groupsEnabled: true,
     daysOnlyEnabled: false,
+    overlayAvailabilitiesEnabled: false,
   },
   getters: {},
   mutations: {
@@ -43,6 +44,9 @@ export default new Vuex.Store({
     },
     setDaysOnlyEnabled(state, enabled) {
       state.daysOnlyEnabled = enabled
+    },
+    setOverlayAvailabilitiesEnabled(state, enabled) {
+      state.overlayAvailabilitiesEnabled = enabled
     },
   },
   actions: {

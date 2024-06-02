@@ -234,7 +234,12 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setAuthUser", "setGroupsEnabled", "setDaysOnlyEnabled"]),
+    ...mapMutations([
+      "setAuthUser",
+      "setGroupsEnabled",
+      "setDaysOnlyEnabled",
+      "setOverlayAvailabilitiesEnabled",
+    ]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
@@ -271,6 +276,9 @@ export default {
 
       this.setGroupsEnabled(this.$posthog.isFeatureEnabled("avail-groups"))
       this.setDaysOnlyEnabled(this.$posthog.isFeatureEnabled("days-only"))
+      this.setOverlayAvailabilitiesEnabled(
+        this.$posthog.isFeatureEnabled("overlay-availabilities")
+      )
     },
   },
 
