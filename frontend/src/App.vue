@@ -133,9 +133,7 @@ html {
     0px 8px 10px 0.5px rgba(0, 0, 0, 0.07), 0px 3px 14px 1px rgba(0, 0, 0, 0.06) !important;
 }
 .overlay-availabilities-shadow {
-  -webkit-box-shadow: 0px 8px 20px 0px rgba(0, 0, 0, 0.5) !important;
-  -moz-box-shadow: 0px 8px 20px 0px rgba(0, 0, 0, 0.5) !important;
-  box-shadow: 0px 8px 20px 0px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0px 2px 8px 0px #1c7d4566 !important;
 }
 
 /** Switch  */
