@@ -260,7 +260,12 @@
                             style="pointer-events: none"
                           >
                             <div
-                              class="overlay-availabilities-shadow tw-h-full tw-w-full tw-border-2 tw-border-[#1C7D45CC] tw-bg-[#1C7D4533]"
+                              class="tw-h-full tw-w-full tw-border-2"
+                              :class="
+                                timeBlock.type === 'available'
+                                  ? 'overlay-avail-shadow-green tw-border-[#1C7D45CC] tw-bg-[#1C7D4533]'
+                                  : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
+                              "
                             ></div>
                           </div>
                         </div>
@@ -641,7 +646,6 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
-import Color from "color"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -1382,24 +1386,51 @@ export default {
         let curBlockIndex = 0
         this.times.forEach((time, t) => {
           const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          const dragAdd =
+            this.dragging &&
+            this.inDragRange(t, d) &&
+            this.dragType === this.DRAG_TYPES.ADD
+          const dragRemove =
+            this.dragging &&
+            this.inDragRange(t, d) &&
+            this.dragType === this.DRAG_TYPES.REMOVE
+
+          // Check if timeslot is available or if needed or in the drag region
           if (
-            (this.dragging &&
-              this.inDragRange(t, d) &&
-              this.dragType === this.DRAG_TYPES.ADD) ||
-            (!(
-              this.dragging &&
-              this.inDragRange(t, d) &&
-              this.dragType === this.DRAG_TYPES.REMOVE
-            ) &&
+            dragAdd ||
+            (!dragRemove &&
               (this.availability.has(date.getTime()) ||
                 this.ifNeeded.has(date.getTime())))
           ) {
-            if (overlaidAvailability[d].length - 1 === curBlockIndex) {
-              overlaidAvailability[d][curBlockIndex].hoursLength += 0.25
+            // Determine whether to render as available or if needed block
+            let type = availabilityTypes.AVAILABLE
+            if (dragAdd) {
+              type = this.availabilityType
             } else {
+              type = this.availability.has(date.getTime())
+                ? availabilityTypes.AVAILABLE
+                : availabilityTypes.IF_NEEDED
+            }
+
+            if (curBlockIndex in overlaidAvailability[d]) {
+              if (overlaidAvailability[d][curBlockIndex].type === type) {
+                // Increase block length if matching type and curBlockIndex exists
+                overlaidAvailability[d][curBlockIndex].hoursLength += 0.25
+              } else {
+                // Add a new block because type is different
+                overlaidAvailability[d].push({
+                  hoursOffset: time.hoursOffset,
+                  hoursLength: 0.25,
+                  type,
+                })
+                curBlockIndex++
+              }
+            } else {
+              // Add a new block because block doesn't exist for current index
               overlaidAvailability[d].push({
                 hoursOffset: time.hoursOffset,
                 hoursLength: 0.25,
+                type,
               })
             }
           } else if (curBlockIndex in overlaidAvailability[d]) {
