@@ -8,7 +8,7 @@
     <div
       class="tw-flex tw-flex-row tw-content-center tw-justify-between sm:tw-text-lg"
     >
-      <div class="tw-mr-4 tw-font-medium">{{ question }}</div>
+      <div class="tw-mr-4 tw-font-medium" v-html="question"></div>
       <v-icon
         size="x-large"
         :class="`${
@@ -20,8 +20,8 @@
 
     <v-expand-transition>
       <div v-if="toggled">
-        <div class="tw-pt-4 sm:tw-pt-6 sm:tw-text-lg">
-          <div>{{ answer }}</div>
+        <div class="tw-pt-4 tw-text-base sm:tw-pt-6 sm:tw-text-lg">
+          <div v-html="answer"></div>
           <div class="tw-flex tw-flex-col tw-gap-2">
             <div
               v-for="(point, index) in points"
@@ -34,6 +34,12 @@
               </div>
               <div>{{ point }}</div>
             </div>
+          </div>
+          <div
+            v-if="authRequired"
+            class="tw-mt-6 tw-text-sm tw-font-medium tw-text-green"
+          >
+            *You must be signed in to your Google Account to use this feature
           </div>
         </div>
       </div>
@@ -49,6 +55,7 @@ export default {
     question: { type: String, required: true },
     answer: { type: String },
     points: { type: Array },
+    authRequired: { type: Boolean, default: false },
   },
 
   data: () => ({

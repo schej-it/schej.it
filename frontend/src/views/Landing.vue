@@ -305,7 +305,7 @@ export default {
         points: [
           "Much better UI (web and mobile)",
           "Seamless and working calendar integration",
-          "No ads :)",
+          "A slew of other features that we don't have space to list here",
         ],
       },
       {
@@ -322,6 +322,21 @@ export default {
         question: "How do I edit my availability?",
         answer:
           'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
+      },
+      {
+        question: `I want it so only I can see people's responses`,
+        answer: `Just check "Only show responses to event creator" under Advanced Options when creating your event! Other respondees will not be able to see each other's names or availability.`,
+        authRequired: true,
+      },
+      {
+        question: `Can I receive emails when someone fills out my event?`,
+        answer: `Absolutely! Check "Email me each time someone joins my event" when creating an event. <br><br>To receive email notifications after a specific number (X) of responses are added, check "Email me after X responses" in Advanced Options.`,
+        authRequired: true,
+      },
+      {
+        question: `How do I send reminders to people to fill out an event?`,
+        answer: `Open the "Email Reminders" section when creating an event and input everybody's email address. Reminder emails will be sent the day of event creation, one day after, and three days after. <br><br>You will also receive an email once everybody has filled out the Schej.`,
+        authRequired: true,
       },
     ],
     rive: null,
