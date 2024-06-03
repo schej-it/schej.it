@@ -2111,7 +2111,7 @@ export default {
           ) {
             // Subtract 1 because we do not want to include current user's availability
             numRespondents = timeslotRespondents.size - 1
-            max = this.max - 1
+            max = this.max
           } else {
             numRespondents = timeslotRespondents.size
             max = this.max
