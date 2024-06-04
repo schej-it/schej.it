@@ -2055,6 +2055,11 @@ export default {
         classStyle.class += "animate-bg-color "
       }
 
+      // Change default red:
+      if (classStyle.style.backgroundColor === "#E523230D") {
+        classStyle.style.backgroundColor = "#E523233B"
+      }
+
       return classStyle
     },
     /** Returns a class string and style object for the given time timeslot border */
