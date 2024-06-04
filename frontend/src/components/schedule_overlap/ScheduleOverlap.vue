@@ -178,7 +178,7 @@
                         <!-- Timeslots -->
                         <div v-for="(_, t) in times" :key="t" class="tw-w-full">
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                            class="timeslot tw-h-4"
                             :class="
                               timeslotClassStyle[d * times.length + t]?.class
                             "
@@ -187,6 +187,30 @@
                             "
                             v-on="timeslotVon[d * times.length + t]"
                           ></div>
+                        </div>
+
+                        <!-- Timeslot borders -->
+                        <div
+                          class="tw-absolute tw-top-0 tw-w-full"
+                          style="pointer-events: none"
+                        >
+                          <div
+                            v-for="(_, t) in times"
+                            :key="t"
+                            class="tw-w-full"
+                          >
+                            <div
+                              class="tw-h-4"
+                              :class="
+                                timeslotClassStyle[d * times.length + t]
+                                  ?.borderClass
+                              "
+                              :style="
+                                timeslotClassStyle[d * times.length + t]
+                                  ?.borderStyle
+                              "
+                            ></div>
+                          </div>
                         </div>
 
                         <!-- Calendar events -->
@@ -1998,6 +2022,8 @@ export default {
       const row = t
       const col = d
       const classStyle = this.getTimeslotClassStyle(date, row, col)
+      classStyle.borderStyle = {}
+      classStyle.borderClass = ""
 
       // Add time timeslot specific stuff
 
@@ -2014,24 +2040,24 @@ export default {
         this.curTimeslot.col === col
       ) {
         // Dashed border for currently selected timeslot
-        classStyle.class +=
+        classStyle.borderClass +=
           "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
         const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+        classStyle.borderClass += "tw-mix-blend-multiply tw-border-gray "
         if (fractionalTime === 0.25) {
-          classStyle.class += "tw-border-b "
-          classStyle.style.borderBottomStyle = "dashed"
+          classStyle.borderClass += "tw-border-b "
+          classStyle.borderStyle.borderBottomStyle = "dashed"
         } else if (fractionalTime === 0.75) {
-          classStyle.class += "tw-border-b "
+          classStyle.borderClass += "tw-border-b "
         }
 
-        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-        if (col === this.days.length - 1)
-          classStyle.class += "tw-border-r tw-border-r-gray "
-        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
+        if (col === 0) classStyle.borderClass += "tw-border-l "
+        classStyle.borderClass += "tw-border-r "
+        if (row === 0) classStyle.borderClass += "tw-border-t "
         if (row === this.times.length - 1)
-          classStyle.class += "tw-border-b tw-border-b-gray "
+          classStyle.borderClass += "tw-border-b "
       }
 
       return classStyle
