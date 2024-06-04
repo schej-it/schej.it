@@ -41,8 +41,7 @@
           :event="event"
           :edit="edit"
           :allow-notifications="allowNotifications"
-          @input="$emit('input', false)"
-          @update:formEmpty="(val) => (formEmpty = val)"
+          @input="handleDialogInput"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
         />
@@ -52,8 +51,7 @@
           key="group"
           :event="event"
           :edit="edit"
-          @input="$emit('input', false)"
-          @update:formEmpty="(val) => (formEmpty = val)"
+          @input="handleDialogInput"
           :show-help="!_noTabs"
           :calendarPermissionGranted="calendarPermissionGranted"
           :contactsPayload="this.type == 'group' ? contactsPayload : {}"
@@ -105,7 +103,6 @@ export default {
       },
 
       unsavedChangesDialog: false,
-      formEmpty: true,
     }
   },
 
@@ -125,15 +122,16 @@ export default {
 
   methods: {
     handleDialogInput() {
-      if (this.formEmpty) {
-        this.$emit("input", false)
+      if (!this.edit || !this.$refs[this.tab].hasEventBeenEdited()) {
+        this.exitDialog()
       } else {
         this.unsavedChangesDialog = true
       }
     },
     exitDialog() {
       this.$emit("input", false)
-      this.$refs[this.tab].reset()
+      if (this.edit) this.$refs[this.tab].resetToEventData()
+      else this.$refs[this.tab].reset()
     },
   },
 
@@ -150,9 +148,6 @@ export default {
           this.tabs = [{ title: "Event", type: "event" }]
         }
       },
-    },
-    tab() {
-      this.formEmpty = true
     },
   },
 }

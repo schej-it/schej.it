@@ -173,7 +173,7 @@
               <div class="tw-my-2 tw-space-y-5">
                 <EmailInput
                   v-show="authUser"
-                  ref="emailReminders"
+                  ref="emailInput"
                   @requestContactsAccess="requestContactsAccess"
                   labelColor="tw-text-very-dark-gray"
                   :addedEmails="addedEmails"
@@ -387,7 +387,9 @@ export default {
     sendEmailAfterXResponses: 3,
 
     helpDialog: false,
-    saveProgressDialog: false,
+
+    // Unsaved changes
+    initialEventData: {},
   }),
 
   mounted() {
@@ -399,9 +401,9 @@ export default {
       this.startTime = this.contactsPayload.startTime
       this.endTime = this.contactsPayload.endTime
       this.daysOnly = this.contactsPayload.daysOnly
+      this.selectedDateOption = this.contactsPayload.selectedDateOption
       this.selectedDaysOfWeek = this.contactsPayload.selectedDaysOfWeek
       this.selectedDays = this.contactsPayload.selectedDays
-      this.selectedDateOption = this.contactsPayload.selectedDateOption
       this.notificationsEnabled = this.contactsPayload.notificationsEnabled
       this.timezone = this.contactsPayload.timezone
 
@@ -411,13 +413,6 @@ export default {
 
   computed: {
     ...mapState(["authUser", "daysOnlyEnabled"]),
-    formEmpty() {
-      return (
-        this.name === "" &&
-        this.selectedDays.length === 0 &&
-        this.selectedDaysOfWeek.length === 0
-      )
-    },
     nameRules() {
       return [(v) => !!v || "Event name is required"]
     },
@@ -710,6 +705,42 @@ export default {
         }
       }
     },
+    resetToEventData() {
+      this.updateFieldsFromEvent()
+      this.$refs.emailInput.reset()
+    },
+    setInitialEventData() {
+      this.initialEventData = {
+        name: this.name,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        daysOnly: this.daysOnly,
+        selectedDays: this.selectedDays,
+        selectedDaysOfWeek: this.selectedDaysOfWeek,
+        selectedDateOption: this.selectedDateOption,
+        notificationsEnabled: this.notificationsEnabled,
+        emails: [...this.emails],
+        blindAvailabilityEnabled: this.blindAvailabilityEnabled,
+        sendEmailAfterXResponsesEnabled: this.sendEmailAfterXResponsesEnabled,
+        sendEmailAfterXResponses: this.sendEmailAfterXResponses,
+      }
+    },
+    hasEventBeenEdited() {
+      return (
+        this.name !== this.initialEventData.name ||
+        this.startTime !== this.initialEventData.startTime ||
+        this.endTime !== this.initialEventData.endTime ||
+        this.selectedDateOption !== this.initialEventData.selectedDateOption ||
+        JSON.stringify(this.selectedDays) !== JSON.stringify(this.initialEventData.selectedDays) ||
+        JSON.stringify(this.selectedDaysOfWeek) !== JSON.stringify(this.initialEventData.selectedDaysOfWeek) ||
+        this.daysOnly !== this.initialEventData.daysOnly ||
+        this.notificationsEnabled !== this.initialEventData.notificationsEnabled ||
+        JSON.stringify(this.emails) !== JSON.stringify(this.initialEventData.emails) ||
+        this.blindAvailabilityEnabled !== this.initialEventData.blindAvailabilityEnabled ||
+        this.sendEmailAfterXResponsesEnabled !== this.initialEventData.sendEmailAfterXResponsesEnabled ||
+        this.sendEmailAfterXResponses !== this.initialEventData.sendEmailAfterXResponses 
+      )
+    }
   },
 
   watch: {
@@ -717,6 +748,7 @@ export default {
       immediate: true,
       handler() {
         this.updateFieldsFromEvent()
+        this.setInitialEventData()
       },
     },
     selectedDateOption() {
@@ -726,9 +758,6 @@ export default {
       } else if (this.selectedDateOption === this.dateOptions.DOW) {
         this.selectedDays = []
       }
-    },
-    formEmpty(val) {
-      this.$emit("update:formEmpty", val)
     },
   },
 }
