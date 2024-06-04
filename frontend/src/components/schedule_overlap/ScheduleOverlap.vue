@@ -350,9 +350,28 @@
           class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
-            class="tw-flex tw-flex-col tw-gap-2"
+            class="tw-flex tw-flex-col tw-gap-3"
             v-if="state == states.EDIT_AVAILABILITY"
           >
+            <div
+              v-if="!(calendarPermissionGranted && !event.daysOnly)"
+              class="tw-text-sm tw-italic tw-text-dark-gray"
+            >
+              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
+              availability as
+              {{
+                authUser
+                  ? `${authUser.firstName} ${authUser.lastName}`
+                  : curGuestId?.length > 0
+                  ? curGuestId
+                  : "a guest"
+              }}
+            </div>
+            <AvailabilityTypeToggle
+              v-if="!isGroup && !isPhone"
+              class="tw-w-full"
+              v-model="availabilityType"
+            />
             <!-- User's calendar accounts -->
             <CalendarAccounts
               v-if="calendarPermissionGranted && !event.daysOnly"
@@ -367,22 +386,14 @@
                 isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
               "
             ></CalendarAccounts>
-            <div v-else class="tw-text-sm tw-italic tw-text-dark-gray">
-              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
-              availability as
-              {{
-                authUser
-                  ? `${authUser.firstName} ${authUser.lastName}`
-                  : curGuestId?.length > 0
-                  ? curGuestId
-                  : "a guest"
-              }}
-            </div>
 
             <!-- Options section -->
-            <div v-if="!isGroup" ref="optionsSection">
+            <div
+              v-if="!isGroup && !event.daysOnly && overlayAvailabilitiesEnabled"
+              ref="optionsSection"
+            >
               <v-btn
-                class="-tw-ml-2 tw-mb-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
+                class="-tw-ml-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
                 block
                 text
                 @click="toggleShowOptions"
@@ -394,13 +405,8 @@
               >
               <v-expand-transition>
                 <div v-show="showOptions">
-                  <AvailabilityTypeToggle
-                    class="tw-mb-4 tw-w-full"
-                    v-model="availabilityType"
-                  />
                   <v-switch
-                    class="tw-mb-4"
-                    v-if="overlayAvailabilitiesEnabled && !event.daysOnly"
+                    class="tw-mt-0 tw-py-1"
                     inset
                     :input-value="overlayAvailability"
                     @change="updateOverlayAvailability"
@@ -546,7 +552,7 @@
       <!-- Fixed bottom section for mobile -->
       <div
         v-if="isPhone && !calendarOnly"
-        class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full"
+        class="tw-fixed tw-bottom-16 tw-z-20 tw-w-full"
       >
         <!-- Hint text (mobile) -->
         <v-expand-transition>
@@ -569,7 +575,7 @@
 
         <!-- Fixed pos availability toggle (mobile) -->
         <v-expand-transition>
-          <div v-if="!isGroup && !optionsVisible && showOptions && editing">
+          <div v-if="!isGroup && editing">
             <div class="tw-bg-white tw-p-4">
               <AvailabilityTypeToggle
                 class="tw-w-full"
@@ -759,7 +765,7 @@ export default {
       /* Variables for options */
       showOptions:
         localStorage["showAvailabilityOptions"] == undefined
-          ? true
+          ? false
           : localStorage["showAvailabilityOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
