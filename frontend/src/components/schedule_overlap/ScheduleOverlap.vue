@@ -200,14 +200,24 @@
                             class="tw-w-full"
                           >
                             <div
+                              v-if="
+                                (respondents.length > 0 ||
+                                  state === this.states.EDIT_AVAILABILITY) &&
+                                curTimeslot.row === t &&
+                                curTimeslot.col === d
+                              "
+                              class="tw-z-10 tw-h-4 tw-border tw-border-dashed tw-border-black"
+                            ></div>
+                            <div
+                              v-else
                               class="tw-h-4"
                               :class="
-                                timeslotClassStyle[d * times.length + t]
-                                  ?.borderClass
+                                timeslotBorderClassStyle[d * times.length + t]
+                                  ?.class
                               "
                               :style="
-                                timeslotClassStyle[d * times.length + t]
-                                  ?.borderStyle
+                                timeslotBorderClassStyle[d * times.length + t]
+                                  ?.style
                               "
                             ></div>
                           </div>
@@ -1381,6 +1391,19 @@ export default {
       }
       return classStyles
     },
+    timeslotBorderClassStyle() {
+      const classStyles = []
+      for (let d = 0; d < this.days.length; ++d) {
+        const day = this.days[d]
+        for (let t = 0; t < this.times.length; ++t) {
+          const time = this.times[t]
+          classStyles.push(
+            this.getTimeTimeslotBorderClassStyle(day, time, d, t)
+          )
+        }
+      }
+      return classStyles
+    },
     dayTimeslotClassStyle() {
       const classStyles = []
       for (let i = 0; i < this.monthDays.length; ++i) {
@@ -2032,36 +2055,32 @@ export default {
         classStyle.class += "animate-bg-color "
       }
 
-      // Border style
-      if (
-        (this.respondents.length > 0 ||
-          this.state === this.states.EDIT_AVAILABILITY) &&
-        this.curTimeslot.row === row &&
-        this.curTimeslot.col === col
-      ) {
-        // Dashed border for currently selected timeslot
-        classStyle.borderClass +=
-          "tw-border tw-border-dashed tw-border-black tw-z-10 "
-      } else {
-        // Normal border
-        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-        classStyle.borderClass += "tw-mix-blend-multiply tw-border-gray "
-        if (fractionalTime === 0.25) {
-          classStyle.borderClass += "tw-border-b "
-          classStyle.borderStyle.borderBottomStyle = "dashed"
-        } else if (fractionalTime === 0.75) {
-          classStyle.borderClass += "tw-border-b "
-        }
+      return classStyle
+    },
+    /** Returns a class string and style object for the given time timeslot border */
+    getTimeTimeslotBorderClassStyle(day, time, d, t) {
+      const row = t
+      const col = d
 
-        if (col === 0) classStyle.borderClass += "tw-border-l "
-        classStyle.borderClass += "tw-border-r "
-        if (row === 0) classStyle.borderClass += "tw-border-t "
-        if (row === this.times.length - 1)
-          classStyle.borderClass += "tw-border-b "
+      const classStyle = { class: "", style: {} }
+
+      const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
+      classStyle.class += "tw-mix-blend-multiply tw-border-gray "
+      if (fractionalTime === 0.25) {
+        classStyle.class += "tw-border-b "
+        classStyle.style.borderBottomStyle = "dashed"
+      } else if (fractionalTime === 0.75) {
+        classStyle.class += "tw-border-b "
       }
+
+      if (col === 0) classStyle.class += "tw-border-l "
+      classStyle.class += "tw-border-r "
+      if (row === 0) classStyle.class += "tw-border-t "
+      if (row === this.times.length - 1) classStyle.class += "tw-border-b "
 
       return classStyle
     },
+
     /** Returns the shared class string and style object for the given timeslot (either time timeslot or day timeslot) */
     getTimeslotClassStyle(date, row, col) {
       let c = ""
