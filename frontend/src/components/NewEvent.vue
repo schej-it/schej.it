@@ -470,6 +470,14 @@ export default {
       this.endTime = 17
       this.selectedDays = []
       this.selectedDaysOfWeek = []
+      this.notificationsEnabled = false
+      this.daysOnly = false
+      this.selectedDateOption = "Specific dates",
+      this.emails = []
+      this.showAdvancedOptions = false
+      this.blindAvailabilityEnabled = false
+      this.sendEmailAfterXResponsesEnabled = false
+      this.sendEmailAfterXResponses = 3
 
       this.$refs.form.resetValidation()
     },
