@@ -337,9 +337,10 @@
                   />
 
                   <BufferTimeSwitch
-                    v-if="calendarPermissionGranted"
+                    v-if="calendarPermissionGranted && !userHasResponded"
                     class="tw-w-full"
                     v-model="bufferTimeActive"
+                    @update:bufferTime="(val) => bufferTime = val"
                   />
                 </div>
               </v-expand-transition>
@@ -2685,8 +2686,24 @@ export default {
       }
       return manualAvailabilityDow
     },
-
     //#endregion
+
+    /** Recalculate availability the calendar based on calendar events */
+    reanimateAvailability() {
+      if (
+        this.state === this.states.EDIT_AVAILABILITY &&
+        this.authUser &&
+        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
+        !this.loadingCalendarEvents &&
+        (!this.unsavedChanges || this.availabilityAnimEnabled)
+      ) {
+        for (const timeout of this.availabilityAnimTimeouts) {
+          clearTimeout(timeout)
+        }
+        this.setAvailabilityAutomatically()
+      }
+    }
+
   },
   watch: {
     availability() {
@@ -2721,18 +2738,7 @@ export default {
       },
     },
     calendarEventsByDay() {
-      if (
-        this.state === this.states.EDIT_AVAILABILITY &&
-        this.authUser &&
-        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
-        !this.loadingCalendarEvents &&
-        (!this.unsavedChanges || this.availabilityAnimEnabled)
-      ) {
-        for (const timeout of this.availabilityAnimTimeouts) {
-          clearTimeout(timeout)
-        }
-        this.setAvailabilityAutomatically()
-      }
+      this.reanimateAvailability()
     },
     page() {
       this.$nextTick(() => {
@@ -2783,20 +2789,8 @@ export default {
         this.populateUserAvailability(this.authUser._id)
       }
     },
-    bufferTimeActive(val) {
-      if (
-        this.state === this.states.EDIT_AVAILABILITY &&
-        this.authUser &&
-        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
-        !this.loadingCalendarEvents &&
-        (!this.unsavedChanges || this.availabilityAnimEnabled)
-      ) {
-        for (const timeout of this.availabilityAnimTimeouts) {
-          clearTimeout(timeout)
-        }
-        this.setAvailabilityAutomatically()
-      }
-      console.log(val)
+    bufferTimeActive() {
+      this.reanimateAvailability()
     }
   },
   created() {

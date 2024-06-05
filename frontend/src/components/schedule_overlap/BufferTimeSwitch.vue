@@ -43,6 +43,12 @@ export default {
     emitItem(e) {
       this.$emit("input", e !== null)
     },
+  },
+
+  watch: {
+    bufferTime() {
+      this.$emit("update:bufferTime", this.bufferTime)
+    }
   }
 }
 </script>
