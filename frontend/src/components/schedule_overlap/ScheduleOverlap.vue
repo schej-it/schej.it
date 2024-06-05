@@ -2057,7 +2057,7 @@ export default {
 
       // Change default red:
       if (classStyle.style.backgroundColor === "#E523230D") {
-        classStyle.style.backgroundColor = "#E523233B"
+        classStyle.style.backgroundColor = "#E5232326"
       }
 
       return classStyle
