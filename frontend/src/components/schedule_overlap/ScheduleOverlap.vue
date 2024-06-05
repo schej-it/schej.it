@@ -350,7 +350,7 @@
           class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
-            class="tw-flex tw-flex-col tw-gap-3"
+            class="tw-flex tw-flex-col tw-gap-5"
             v-if="state == states.EDIT_AVAILABILITY"
           >
             <div
@@ -389,7 +389,12 @@
 
             <!-- Options section -->
             <div
-              v-if="!isGroup && !event.daysOnly && overlayAvailabilitiesEnabled"
+              v-if="
+                !isGroup &&
+                !event.daysOnly &&
+                overlayAvailabilitiesEnabled &&
+                respondents.length > 0
+              "
               ref="optionsSection"
             >
               <v-btn
@@ -406,6 +411,7 @@
               <v-expand-transition>
                 <div v-show="showOptions">
                   <v-switch
+                    v-if="respondents.length > 0"
                     class="tw-mt-0 tw-py-1"
                     inset
                     :input-value="overlayAvailability"
@@ -2165,11 +2171,6 @@ export default {
               }
 
               s.backgroundColor = green + alpha
-            }
-          } else {
-            // Set background color to red if overlaying availability and no one's available
-            if (this.overlayAvailability) {
-              s.backgroundColor = "#E523230D"
             }
           }
         }
