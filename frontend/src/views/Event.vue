@@ -245,7 +245,7 @@
           href="https://forms.gle/9AgRy4PQfWfVuBnw8"
           target="_blank"
         >
-          Give feedback to the Schej team
+          Give feedback to Schej team
         </v-btn>
         <div class="tw-w-full tw-border-t tw-border-solid tw-border-gray"></div>
         <v-btn
