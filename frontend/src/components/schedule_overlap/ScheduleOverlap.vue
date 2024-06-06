@@ -340,7 +340,7 @@
                     v-if="calendarPermissionGranted && !userHasResponded"
                     class="tw-w-full"
                     v-model="bufferTimeActive"
-                    @update:bufferTime="(val) => bufferTime = val"
+                    @update:bufferTime="(val) => (bufferTime = val)"
                   />
                 </div>
               </v-expand-transition>
@@ -1682,9 +1682,15 @@ export default {
           let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
           const index = calendarEventsByDay[i].findIndex((e) => {
-            const bufferTimeInMS = this.bufferTimeActive ? this.bufferTime * 1000 * 60 : 0;
-            const startDateBuffered = new Date(e.startDate.getTime() - bufferTimeInMS)
-            const endDateBuffered = new Date(e.endDate.getTime() + bufferTimeInMS)
+            const bufferTimeInMS = this.bufferTimeActive
+              ? this.bufferTime * 1000 * 60
+              : 0
+            const startDateBuffered = new Date(
+              e.startDate.getTime() - bufferTimeInMS
+            )
+            const endDateBuffered = new Date(
+              e.endDate.getTime() + bufferTimeInMS
+            )
 
             const notIntersect =
               dateCompare(endDate, startDateBuffered) <= 0 ||
@@ -2702,8 +2708,7 @@ export default {
         }
         this.setAvailabilityAutomatically()
       }
-    }
-
+    },
   },
   watch: {
     availability() {
@@ -2791,7 +2796,12 @@ export default {
     },
     bufferTimeActive() {
       this.reanimateAvailability()
-    }
+    },
+    bufferTime() {
+      if (this.bufferTimeActive) {
+        this.reanimateAvailability()
+      }
+    },
   },
   created() {
     this.resetCurUserAvailability()
