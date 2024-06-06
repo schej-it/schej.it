@@ -86,7 +86,7 @@
               multiple
               solo
               color="primary"
-            >
+            >  
               <v-btn depressed> S </v-btn>
               <v-btn depressed> M </v-btn>
               <v-btn depressed> T </v-btn>
@@ -100,6 +100,7 @@
 
         <!-- <div v-if="!edit"> -->
         <EmailInput
+          ref="emailInput"
           :addedEmails="addedEmails"
           @update:emails="(newEmails) => (emails = newEmails)"
           @requestContactsAccess="requestContactsAccess"
@@ -211,6 +212,7 @@ export default {
     timezone: {},
 
     helpDialog: false,
+    initialEventData: {},
   }),
 
   computed: {
@@ -405,14 +407,9 @@ export default {
         requestContactsPermission: true,
       })
     },
-  },
-
-  watch: {
-    event: {
-      immediate: true,
-      handler() {
-        // Populate event fields if this.event exists
-        if (this.event) {
+    /** Populate fields with data from event */
+    updateFieldsFromEvent() {
+      if (this.event) {
           this.name = this.event.name
           this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
           this.endTime = (this.startTime + this.event.duration) % 24
@@ -425,6 +422,37 @@ export default {
 
           this.emails = this.otherEventAttendees
         }
+    },
+    resetToEventData() {
+      this.updateFieldsFromEvent()
+      this.$refs.emailInput.reset()
+    },
+    setInitialEventData() {
+      this.initialEventData = {
+        name: this.name,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        selectedDaysOfWeek: this.selectedDaysOfWeek,
+        emails: [...this.emails],
+      }
+    },
+    hasEventBeenEdited() {
+      return (
+        this.name !== this.initialEventData.name ||
+        this.startTime !== this.initialEventData.startTime ||
+        this.endTime !== this.initialEventData.endTime ||
+        JSON.stringify(this.selectedDaysOfWeek) !== JSON.stringify(this.initialEventData.selectedDaysOfWeek) ||
+        JSON.stringify(this.emails) !== JSON.stringify(this.initialEventData.emails)
+      )
+    }
+  },
+
+  watch: {
+    event: {
+      immediate: true,
+      handler() {
+        this.updateFieldsFromEvent()
+        this.setInitialEventData()
       },
     },
     formEmpty(val) {

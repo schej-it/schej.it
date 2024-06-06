@@ -66,6 +66,10 @@ export const isPhone = (vuetify) => {
   return vuetify.breakpoint.name === "xs"
 }
 
+export const isIOS = () => {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+}
+
 export const br = (vuetify, breakpoint) => {
   return vuetify.breakpoint.name === breakpoint
 }

@@ -245,7 +245,7 @@
           href="https://forms.gle/9AgRy4PQfWfVuBnw8"
           target="_blank"
         >
-          Give feedback
+          Give feedback to Schej team
         </v-btn>
         <div class="tw-w-full tw-border-t tw-border-solid tw-border-gray"></div>
         <v-btn
@@ -266,7 +266,9 @@
     <div
       v-if="isPhone"
       class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-px-4"
-      :class="isScheduling ? 'tw-bg-blue' : 'tw-bg-green'"
+      :class="`${isIOS ? 'tw-pb-2' : ''} ${
+        isScheduling ? 'tw-bg-blue' : 'tw-bg-green'
+      }`"
     >
       <template v-if="!isEditing && !isScheduling">
         <v-btn
@@ -333,6 +335,7 @@ import {
   processEvent,
   getCalendarEventsMap,
   getDateRangeStringForEvent,
+  isIOS,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
@@ -441,6 +444,9 @@ export default {
     },
     numResponses() {
       return this.scheduleOverlapComponent?.respondents.length
+    },
+    isIOS() {
+      return isIOS()
     },
   },
 
@@ -570,7 +576,7 @@ export default {
         this.curGuestId.length === 0 &&
         !this.scheduleOverlapComponent.pageHasChanged &&
         !ignorePagesNotVisited &&
-        this.scheduleOverlapComponent.numPages > 1
+        this.scheduleOverlapComponent.hasPages
       ) {
         this.pagesNotVisitedDialog = true
         return

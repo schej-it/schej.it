@@ -113,6 +113,11 @@
         </template>
       </div>
     </div>
+
+    <Advertisement
+      class="tw-mt-5 sm:tw-mt-10"
+      :ownerId="event.ownerId"
+    ></Advertisement>
   </div>
 </template>
 
@@ -120,6 +125,7 @@
 import TimezoneSelector from "./TimezoneSelector.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import { isPhone } from "@/utils"
+import Advertisement from "../event/Advertisement.vue"
 
 export default {
   name: "ToolRow",
@@ -141,6 +147,7 @@ export default {
   components: {
     TimezoneSelector,
     GCalWeekSelector,
+    Advertisement,
   },
 
   data: () => ({

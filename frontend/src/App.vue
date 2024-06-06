@@ -132,6 +132,12 @@ html {
   box-shadow: 0px 5px 5px -1px rgba(0, 0, 0, 0.1),
     0px 8px 10px 0.5px rgba(0, 0, 0, 0.07), 0px 3px 14px 1px rgba(0, 0, 0, 0.06) !important;
 }
+.overlay-avail-shadow-green {
+  box-shadow: 0px 3px 6px 0px #1c7d454d !important;
+}
+.overlay-avail-shadow-yellow {
+  box-shadow: 0px 2px 8px 0px #e5a8004d !important;
+}
 
 /** Switch  */
 .v-input--switch--inset .v-input--selection-controls__input {
@@ -234,7 +240,12 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setAuthUser", "setGroupsEnabled", "setDaysOnlyEnabled"]),
+    ...mapMutations([
+      "setAuthUser",
+      "setGroupsEnabled",
+      "setDaysOnlyEnabled",
+      "setOverlayAvailabilitiesEnabled",
+    ]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
@@ -271,6 +282,9 @@ export default {
 
       this.setGroupsEnabled(this.$posthog.isFeatureEnabled("avail-groups"))
       this.setDaysOnlyEnabled(this.$posthog.isFeatureEnabled("days-only"))
+      this.setOverlayAvailabilitiesEnabled(
+        this.$posthog.isFeatureEnabled("overlay-availabilities")
+      )
     },
   },
 

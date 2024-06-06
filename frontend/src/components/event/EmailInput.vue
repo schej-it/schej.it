@@ -165,6 +165,9 @@ export default {
       this.emailsAreValid = true
       return true
     },
+    reset() {
+      this.remindees = this.addedEmails
+    },
   },
 
   watch: {

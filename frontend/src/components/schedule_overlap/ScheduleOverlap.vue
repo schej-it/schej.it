@@ -54,6 +54,26 @@
                   {{ day.date }}
                 </div>
               </div>
+
+              <ToolRow
+                v-if="!isPhone && !calendarOnly"
+                :event="event"
+                :state="state"
+                :states="states"
+                :cur-timezone.sync="curTimezone"
+                :show-best-times.sync="showBestTimes"
+                :is-weekly="isWeekly"
+                :calendar-permission-granted="calendarPermissionGranted"
+                :week-offset="weekOffset"
+                :num-responses="respondents.length"
+                :mobile-num-days.sync="mobileNumDays"
+                :allow-schedule-event="allowScheduleEvent"
+                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                @onShowBestTimesChange="onShowBestTimesChange"
+                @scheduleEvent="scheduleEvent"
+                @cancelScheduleEvent="cancelScheduleEvent"
+                @confirmScheduleEvent="confirmScheduleEvent"
+              />
             </div>
           </template>
           <template v-else>
@@ -246,6 +266,29 @@
                             </div>
                           </div>
                         </div>
+
+                        <!-- Overlaid availabilities -->
+                        <div v-if="overlayAvailability">
+                          <div
+                            v-for="(timeBlock, tb) in overlaidAvailability[d]"
+                            :key="tb"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                            :style="{
+                              top: `calc(${timeBlock.hoursOffset} * 4 * 1rem)`,
+                              height: `calc(${timeBlock.hoursLength} * 4 * 1rem)`,
+                            }"
+                            style="pointer-events: none"
+                          >
+                            <div
+                              class="tw-h-full tw-w-full tw-border-2"
+                              :class="
+                                timeBlock.type === 'available'
+                                  ? 'overlay-avail-shadow-green tw-border-[#1C7D45B3] tw-bg-[#1C7D4533]'
+                                  : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
+                              "
+                            ></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -262,6 +305,26 @@
                   class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
                 />
               </div>
+
+              <ToolRow
+                v-if="!isPhone && !calendarOnly"
+                :event="event"
+                :state="state"
+                :states="states"
+                :cur-timezone.sync="curTimezone"
+                :show-best-times.sync="showBestTimes"
+                :is-weekly="isWeekly"
+                :calendar-permission-granted="calendarPermissionGranted"
+                :week-offset="weekOffset"
+                :num-responses="respondents.length"
+                :mobile-num-days.sync="mobileNumDays"
+                :allow-schedule-event="allowScheduleEvent"
+                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                @onShowBestTimesChange="onShowBestTimesChange"
+                @scheduleEvent="scheduleEvent"
+                @cancelScheduleEvent="cancelScheduleEvent"
+                @confirmScheduleEvent="confirmScheduleEvent"
+              />
             </div>
 
             <div
@@ -287,9 +350,28 @@
           class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
-            class="tw-flex tw-flex-col tw-gap-2"
+            class="tw-flex tw-flex-col tw-gap-5"
             v-if="state == states.EDIT_AVAILABILITY"
           >
+            <div
+              v-if="!(calendarPermissionGranted && !event.daysOnly)"
+              class="tw-text-sm tw-italic tw-text-dark-gray"
+            >
+              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
+              availability as
+              {{
+                authUser
+                  ? `${authUser.firstName} ${authUser.lastName}`
+                  : curGuestId?.length > 0
+                  ? curGuestId
+                  : "a guest"
+              }}
+            </div>
+            <AvailabilityTypeToggle
+              v-if="!isGroup && !isPhone"
+              class="tw-w-full"
+              v-model="availabilityType"
+            />
             <!-- User's calendar accounts -->
             <CalendarAccounts
               v-if="calendarPermissionGranted && !event.daysOnly"
@@ -304,22 +386,19 @@
                 isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
               "
             ></CalendarAccounts>
-            <div v-else class="tw-text-sm tw-italic tw-text-dark-gray">
-              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
-              availability as
-              {{
-                authUser
-                  ? `${authUser.firstName} ${authUser.lastName}`
-                  : curGuestId?.length > 0
-                  ? curGuestId
-                  : "a guest"
-              }}
-            </div>
 
             <!-- Options section -->
-            <div v-if="!isGroup" ref="optionsSection">
+            <div
+              v-if="
+                !isGroup &&
+                !event.daysOnly &&
+                overlayAvailabilitiesEnabled &&
+                respondents.length > 0
+              "
+              ref="optionsSection"
+            >
               <v-btn
-                class="-tw-ml-2 tw-mb-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
+                class="-tw-ml-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
                 block
                 text
                 @click="toggleShowOptions"
@@ -331,6 +410,7 @@
               >
               <v-expand-transition>
                 <div v-show="showOptions">
+                  <<<<<<< HEAD
                   <AvailabilityTypeToggle
                     class="tw-mb-2 tw-w-full"
                     v-model="availabilityType"
@@ -342,6 +422,22 @@
                     v-model="bufferTimeActive"
                     @update:bufferTime="(val) => (bufferTime = val)"
                   />
+                  =======
+                  <v-switch
+                    v-if="respondents.length > 0"
+                    class="tw-mt-0 tw-py-1"
+                    inset
+                    :input-value="overlayAvailability"
+                    @change="updateOverlayAvailability"
+                    hide-details
+                  >
+                    <template v-slot:label>
+                      <div class="tw-text-xs tw-text-black">
+                        Overlay everyone's availability
+                      </div>
+                    </template>
+                  </v-switch>
+                  >>>>>>> c2f8252bd7d8906589b6787547df965f964e1df0
                 </div>
               </v-expand-transition>
             </div>
@@ -452,42 +548,31 @@
         </div>
       </v-expand-transition>
 
-      <div
+      <ToolRow
+        v-if="isPhone && !calendarOnly"
         class="tw-px-4"
-        :class="
-          event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
-        "
-        v-if="!calendarOnly"
-      >
-        <ToolRow
-          :event="event"
-          :state="state"
-          :states="states"
-          :cur-timezone.sync="curTimezone"
-          :show-best-times.sync="showBestTimes"
-          :is-weekly="isWeekly"
-          :calendar-permission-granted="calendarPermissionGranted"
-          :week-offset="weekOffset"
-          :num-responses="respondents.length"
-          :mobile-num-days.sync="mobileNumDays"
-          :allow-schedule-event="allowScheduleEvent"
-          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-          @onShowBestTimesChange="onShowBestTimesChange"
-          @scheduleEvent="scheduleEvent"
-          @cancelScheduleEvent="cancelScheduleEvent"
-          @confirmScheduleEvent="confirmScheduleEvent"
-        />
-
-        <Advertisement
-          class="tw-mt-5 sm:tw-mt-10"
-          :ownerId="event.ownerId"
-        ></Advertisement>
-      </div>
+        :event="event"
+        :state="state"
+        :states="states"
+        :cur-timezone.sync="curTimezone"
+        :show-best-times.sync="showBestTimes"
+        :is-weekly="isWeekly"
+        :calendar-permission-granted="calendarPermissionGranted"
+        :week-offset="weekOffset"
+        :num-responses="respondents.length"
+        :mobile-num-days.sync="mobileNumDays"
+        :allow-schedule-event="allowScheduleEvent"
+        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+        @onShowBestTimesChange="onShowBestTimesChange"
+        @scheduleEvent="scheduleEvent"
+        @cancelScheduleEvent="cancelScheduleEvent"
+        @confirmScheduleEvent="confirmScheduleEvent"
+      />
 
       <!-- Fixed bottom section for mobile -->
       <div
         v-if="isPhone && !calendarOnly"
-        class="tw-fixed tw-bottom-16 tw-z-10 tw-w-full"
+        class="tw-fixed tw-bottom-16 tw-z-20 tw-w-full"
       >
         <!-- Hint text (mobile) -->
         <v-expand-transition>
@@ -510,7 +595,7 @@
 
         <!-- Fixed pos availability toggle (mobile) -->
         <v-expand-transition>
-          <div v-if="!isGroup && !optionsVisible && showOptions && editing">
+          <div v-if="!isGroup && editing">
             <div class="tw-bg-white tw-p-4">
               <AvailabilityTypeToggle
                 class="tw-w-full"
@@ -616,7 +701,6 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
-import Color from "color"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -667,9 +751,6 @@ export default {
 
       availability: new Set(), // The current user's availability
       ifNeeded: new Set(), // The current user's "if needed" availability
-      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
-      bufferTimeActive: false, // Whether to buffer events when autofilling
-      bufferTime: 15, // Buffer time in minutes
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -683,6 +764,12 @@ export default {
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
+
+      /** Edit options */
+      availabilityType: availabilityTypes.AVAILABLE, // The current availability type
+      bufferTimeActive: false, // Whether to buffer events when autofilling
+      bufferTime: 15, // Buffer time in minutes
+      overlayAvailability: false, // Whether to overlay everyone's availability when editing
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -701,7 +788,7 @@ export default {
       /* Variables for options */
       showOptions:
         localStorage["showAvailabilityOptions"] == undefined
-          ? true
+          ? false
           : localStorage["showAvailabilityOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
@@ -751,7 +838,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "overlayAvailabilitiesEnabled"]),
     /** Only allow scheduling when a curScheduledEvent exists */
     allowScheduleEvent() {
       return !!this.curScheduledEvent
@@ -1223,8 +1310,9 @@ export default {
     hasPrevPage() {
       return this.page > 0 || this.event.type === eventTypes.GROUP
     },
-    numPages() {
-      return Math.ceil(this.event.dates.length / this.maxDaysPerPage)
+    /** Returns whether the event has more than one page */
+    hasPages() {
+      return this.hasNextPage || this.hasPrevPage
     },
 
     showStickyRespondents() {
@@ -1344,6 +1432,72 @@ export default {
       return (
         this.guestName?.length > 0 && this.guestName in this.parsedResponses
       )
+    },
+
+    /** Returns an array of time blocks representing the current user's availability
+     * (used for displaying current user's availability on top of everybody else's availability)
+     */
+    overlaidAvailability() {
+      const overlaidAvailability = []
+      this.days.forEach((day, d) => {
+        overlaidAvailability.push([])
+        let curBlockIndex = 0
+        this.times.forEach((time, t) => {
+          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          const dragAdd =
+            this.dragging &&
+            this.inDragRange(t, d) &&
+            this.dragType === this.DRAG_TYPES.ADD
+          const dragRemove =
+            this.dragging &&
+            this.inDragRange(t, d) &&
+            this.dragType === this.DRAG_TYPES.REMOVE
+
+          // Check if timeslot is available or if needed or in the drag region
+          if (
+            dragAdd ||
+            (!dragRemove &&
+              (this.availability.has(date.getTime()) ||
+                this.ifNeeded.has(date.getTime())))
+          ) {
+            // Determine whether to render as available or if needed block
+            let type = availabilityTypes.AVAILABLE
+            if (dragAdd) {
+              type = this.availabilityType
+            } else {
+              type = this.availability.has(date.getTime())
+                ? availabilityTypes.AVAILABLE
+                : availabilityTypes.IF_NEEDED
+            }
+
+            if (curBlockIndex in overlaidAvailability[d]) {
+              if (overlaidAvailability[d][curBlockIndex].type === type) {
+                // Increase block length if matching type and curBlockIndex exists
+                overlaidAvailability[d][curBlockIndex].hoursLength += 0.25
+              } else {
+                // Add a new block because type is different
+                overlaidAvailability[d].push({
+                  hoursOffset: time.hoursOffset,
+                  hoursLength: 0.25,
+                  type,
+                })
+                curBlockIndex++
+              }
+            } else {
+              // Add a new block because block doesn't exist for current index
+              overlaidAvailability[d].push({
+                hoursOffset: time.hoursOffset,
+                hoursLength: 0.25,
+                type,
+              })
+            }
+          } else if (curBlockIndex in overlaidAvailability[d]) {
+            // Only increment cur block index if block already exists at the current index
+            curBlockIndex++
+          }
+        })
+      })
+      return overlaidAvailability
     },
   },
   methods: {
@@ -1924,7 +2078,10 @@ export default {
         this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Fill style
-      if (this.state === this.states.EDIT_AVAILABILITY) {
+      if (
+        !this.overlayAvailability &&
+        this.state === this.states.EDIT_AVAILABILITY
+      ) {
         // Set default background color to red (unavailable)
         s.backgroundColor = "#E523230D"
 
@@ -1964,6 +2121,7 @@ export default {
       }
 
       if (
+        this.overlayAvailability ||
         this.state === this.states.BEST_TIMES ||
         this.state === this.states.HEATMAP ||
         this.state === this.states.SCHEDULE_EVENT ||
@@ -1985,6 +2143,18 @@ export default {
           ).length
 
           max = this.curRespondentsMax
+        } else if (this.overlayAvailability) {
+          if (
+            (this.userHasResponded || this.curGuestId?.length > 0) &&
+            timeslotRespondents.has(this.authUser?._id ?? this.curGuestId)
+          ) {
+            // Subtract 1 because we do not want to include current user's availability
+            numRespondents = timeslotRespondents.size - 1
+            max = this.max
+          } else {
+            numRespondents = timeslotRespondents.size
+            max = this.max
+          }
         }
 
         const totalRespondents = this.respondents.length
@@ -1992,7 +2162,7 @@ export default {
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
             // Only set timeslot to green for the times that most people are available
-            if (totalRespondents === 1) {
+            if (totalRespondents === 1 || this.overlayAvailability) {
               // Make single responses less saturated
               const green = "#00994CAA"
               s.backgroundColor = green
@@ -2011,12 +2181,21 @@ export default {
               // Determine color of timeslot based on number of people available
               const frac = numRespondents / max
               const green = "#00994C"
-              let alpha = Math.floor(frac * (255 - 30))
-                .toString(16)
-                .toUpperCase()
-                .substring(0, 2)
-                .padStart(2, "0")
-              if (frac == 1) alpha = "FF"
+              let alpha
+              if (!this.overlayAvailability) {
+                alpha = Math.floor(frac * (255 - 30))
+                  .toString(16)
+                  .toUpperCase()
+                  .substring(0, 2)
+                  .padStart(2, "0")
+                if (frac == 1) alpha = "FF"
+              } else {
+                alpha = Math.floor(frac * (255 - 85))
+                  .toString(16)
+                  .toUpperCase()
+                  .substring(0, 2)
+                  .padStart(2, "0")
+              }
 
               s.backgroundColor = green + alpha
             }
@@ -2102,7 +2281,10 @@ export default {
               ) {
                 this.timeslotSelected = false
               }
-            } else if (this.userHasResponded || this.guestAddedAvailability) {
+            } else if (
+              this.state !== this.states.EDIT_AVAILABILITY &&
+              (this.userHasResponded || this.guestAddedAvailability)
+            ) {
               // Persist timeslot selection if user has already responded
               this.timeslotSelected = true
             }
@@ -2159,6 +2341,10 @@ export default {
     stopEditing() {
       this.state = this.defaultState
       this.stopAvailabilityAnim()
+
+      // Reset options
+      this.availabilityType = availabilityTypes.AVAILABLE
+      this.overlayAvailability = false
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
@@ -2489,6 +2675,9 @@ export default {
     toggleShowOptions() {
       this.showOptions = !this.showOptions
       localStorage["showAvailabilityOptions"] = this.showOptions
+    },
+    updateOverlayAvailability(val) {
+      this.overlayAvailability = !!val
     },
     //#endregion
 
