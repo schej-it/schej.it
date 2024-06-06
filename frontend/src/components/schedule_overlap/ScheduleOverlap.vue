@@ -389,7 +389,11 @@
 
             <!-- Options section -->
             <div
-              v-if="!isGroup && !event.daysOnly && overlayAvailabilitiesEnabled"
+              v-if="
+                !isGroup &&
+                !event.daysOnly &&
+                (showBufferTimeToggle || showOverlayAvailabilityToggle)
+              "
               ref="optionsSection"
             >
               <v-btn
@@ -406,13 +410,13 @@
               <v-expand-transition>
                 <div v-show="showOptions">
                   <BufferTimeSwitch
-                    v-if="calendarPermissionGranted && !userHasResponded"
+                    v-if="showBufferTimeToggle"
                     class="tw-mt-0 tw-py-1"
                     v-model="bufferTimeActive"
                     :bufferTime.sync="bufferTime"
                   />
                   <v-switch
-                    v-if="respondents.length > 0"
+                    v-if="showOverlayAvailabilityToggle"
                     class="tw-mt-0 tw-py-1"
                     inset
                     :input-value="overlayAvailability"
@@ -1487,6 +1491,14 @@ export default {
         })
       })
       return overlaidAvailability
+    },
+
+    // Options
+    showOverlayAvailabilityToggle() {
+      return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
+    },
+    showBufferTimeToggle() {
+      return this.calendarPermissionGranted && !this.userHasResponded
     },
   },
   methods: {

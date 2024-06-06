@@ -4,6 +4,7 @@
     @change="emitItem"
     inset
     class="tw-flex tw-items-center"
+    hide-details
   >
     <template v-slot:label>
       <div
