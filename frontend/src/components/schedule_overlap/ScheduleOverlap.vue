@@ -389,12 +389,7 @@
 
             <!-- Options section -->
             <div
-              v-if="
-                !isGroup &&
-                !event.daysOnly &&
-                overlayAvailabilitiesEnabled &&
-                respondents.length > 0
-              "
+              v-if="!isGroup && !event.daysOnly && overlayAvailabilitiesEnabled"
               ref="optionsSection"
             >
               <v-btn
@@ -410,19 +405,12 @@
               >
               <v-expand-transition>
                 <div v-show="showOptions">
-                  <<<<<<< HEAD
-                  <AvailabilityTypeToggle
-                    class="tw-mb-2 tw-w-full"
-                    v-model="availabilityType"
-                  />
-
                   <BufferTimeSwitch
                     v-if="calendarPermissionGranted && !userHasResponded"
-                    class="tw-w-full"
+                    class="tw-mt-0 tw-py-1"
                     v-model="bufferTimeActive"
                     @update:bufferTime="(val) => (bufferTime = val)"
                   />
-                  =======
                   <v-switch
                     v-if="respondents.length > 0"
                     class="tw-mt-0 tw-py-1"
@@ -437,7 +425,6 @@
                       </div>
                     </template>
                   </v-switch>
-                  >>>>>>> c2f8252bd7d8906589b6787547df965f964e1df0
                 </div>
               </v-expand-transition>
             </div>
