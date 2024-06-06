@@ -2076,7 +2076,7 @@ export default {
       const classStyle = { class: "", style: {} }
 
       const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-      classStyle.class += "tw-mix-blend-multiply tw-border-gray "
+      classStyle.class += "tw-mix-blend-multiply tw-border-[#BDBDBDE6] "
       if (fractionalTime === 0.25) {
         classStyle.class += "tw-border-b "
         classStyle.style.borderBottomStyle = "dashed"
