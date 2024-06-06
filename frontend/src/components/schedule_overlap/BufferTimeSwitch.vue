@@ -1,6 +1,6 @@
 <template>
   <v-switch
-    :value="value"
+    :input-value="value"
     @change="emitItem"
     inset
     class="tw-flex tw-items-center"
@@ -14,7 +14,8 @@
           dense
           :items="bufferTimes"
           class="-tw-mb-2 tw-w-[3.1rem] tw-scale-75 tw-text-xs"
-          v-model="bufferTime"
+          :value="bufferTime"
+          @input="(val) => $emit('update:bufferTime', val)"
           @click="
             (e) => {
               e.preventDefault()
@@ -34,20 +35,20 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
+    bufferTime: { type: Number, required: true },
   },
 
   components: {},
 
   data() {
     return {
-      bufferTime: 15,
       bufferTimes: [15, 30, 45],
     }
   },
 
   methods: {
     emitItem(e) {
-      this.$emit("input", e !== null)
+      this.$emit("input", e)
     },
   },
 

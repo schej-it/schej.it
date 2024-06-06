@@ -409,7 +409,7 @@
                     v-if="calendarPermissionGranted && !userHasResponded"
                     class="tw-mt-0 tw-py-1"
                     v-model="bufferTimeActive"
-                    @update:bufferTime="(val) => (bufferTime = val)"
+                    :bufferTime.sync="bufferTime"
                   />
                   <v-switch
                     v-if="respondents.length > 0"
@@ -754,8 +754,10 @@ export default {
 
       /** Edit options */
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
-      bufferTimeActive: false, // Whether to buffer events when autofilling
-      bufferTime: 15, // Buffer time in minutes
+      bufferTimeActive: localStorage["bufferTimeActive"] == "true", // Whether to buffer events when autofilling
+      bufferTime: localStorage["bufferTime"]
+        ? parseInt(localStorage["bufferTime"])
+        : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
 
       /* Variables for drag stuff */
@@ -2971,9 +2973,11 @@ export default {
       }
     },
     bufferTimeActive() {
+      localStorage["bufferTimeActive"] = this.bufferTimeActive
       this.reanimateAvailability()
     },
     bufferTime() {
+      localStorage["bufferTime"] = this.bufferTime
       if (this.bufferTimeActive) {
         this.reanimateAvailability()
       }
