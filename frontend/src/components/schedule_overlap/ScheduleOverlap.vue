@@ -202,7 +202,7 @@
                             <div
                               v-if="
                                 (respondents.length > 0 ||
-                                  state === this.states.EDIT_AVAILABILITY) &&
+                                  state === states.EDIT_AVAILABILITY) &&
                                 curTimeslot.row === t &&
                                 curTimeslot.col === d
                               "
@@ -2062,9 +2062,9 @@ export default {
       }
 
       // Change default red:
-      if (classStyle.style.backgroundColor === "#E523230D") {
-        classStyle.style.backgroundColor = "#E5232326"
-      }
+      // if (classStyle.style.backgroundColor === "#E523230D") {
+      //   classStyle.style.backgroundColor = "#E5232326"
+      // }
 
       return classStyle
     },
