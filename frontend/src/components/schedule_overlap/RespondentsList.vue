@@ -24,15 +24,31 @@
             }}
           </template>
         </div>
+        <template v-if="allowExportCsv">
+          <v-spacer />
+          <v-menu>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon v-on="on" v-bind="attrs"
+                ><v-icon>mdi-dots-vertical</v-icon></v-btn
+              >
+            </template>
+            <v-list class="tw-py-1" dense>
+              <v-list-item id="export-csv-btn" @click="exportCsv">
+                <v-list-item-title>Export CSV</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
       </template>
-      <v-spacer />
-      <div
-        v-if="isPhone"
-        class="tw-mt-2 tw-text-sm tw-font-normal tw-text-dark-gray"
-        :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
-      >
-        * if needed
-      </div>
+      <template v-if="isPhone">
+        <v-spacer />
+        <div
+          class="tw-mt-2 tw-text-sm tw-font-normal tw-text-dark-gray"
+          :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
+        >
+          * if needed
+        </div>
+      </template>
     </div>
     <div
       class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-text-sm sm:tw-block sm:tw-overflow-visible"
@@ -231,6 +247,13 @@ export default {
 
   computed: {
     ...mapState(["authUser"]),
+    allowExportCsv() {
+      if (this.isGroup || this.isPhone) return false
+
+      return this.event.blindAvailabilityEnabled
+        ? this.isOwner && this.respondents.length > 0
+        : this.respondents.length > 0
+    },
     curRespondentsSet() {
       return new Set(this.curRespondents)
     },
@@ -348,6 +371,9 @@ export default {
           "There was an error deleting that person's availability!"
         )
       }
+    },
+    exportCsv() {
+      console.log("export csv")
     },
   },
 }
