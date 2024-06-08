@@ -324,6 +324,14 @@ export const getCurrentTimezone = () => {
     .split(" ")[2]
 }
 
+/** Returns the preferred locale of the user
+ * Source: https://stackoverflow.com/questions/673905/how-can-i-determine-a-users-locale-within-the-browser
+ */
+export const getLocale = () => {
+  if (navigator.languages != undefined) return navigator.languages[0]
+  return navigator.language
+}
+
 /** 
   Returns an object of the users' calendar events for each calendar account for the given event, filtering for events
   only between the time ranges of the event and clamping calendar events that extend beyond the time
