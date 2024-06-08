@@ -423,6 +423,9 @@ export default {
     getDateString(date) {
       const locale = getLocale()
 
+      if (this.event.daysOnly) {
+        return date.toISOString().substring(0, 10)
+      }
       return (
         '"' +
         date.toLocaleString(locale, { timeZone: this.timezone.value }) +
@@ -431,11 +434,15 @@ export default {
     },
     async exportCsv() {
       const csv = []
+      console.log(this.event)
       if (this.exportCsvDialog.type === "datesToAvailable") {
         csv.push(["Date / Time", "Available"])
         for (const date of this.event.dates) {
           let curDate = new Date(date)
-          for (let i = 0; i < this.event.duration * 4; ++i) {
+          const numIterations = this.event.daysOnly
+            ? 1
+            : this.event.duration * 4
+          for (let i = 0; i < numIterations; ++i) {
             const userIds = this.responsesFormatted.get(curDate.getTime())
             const users = [...userIds].map((id) => {
               const user = this.parsedResponses[id].user
