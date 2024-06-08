@@ -24,15 +24,65 @@
             }}
           </template>
         </div>
+        <template v-if="allowExportCsv">
+          <v-spacer />
+          <v-menu>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon v-on="on" v-bind="attrs"
+                ><v-icon>mdi-dots-vertical</v-icon></v-btn
+              >
+            </template>
+            <v-list class="tw-py-1" dense>
+              <v-dialog v-model="exportCsvDialog.visible" width="400">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-list-item id="export-csv-btn" v-on="on" v-bind="attrs">
+                    <v-list-item-title>Export CSV</v-list-item-title>
+                  </v-list-item>
+                </template>
+                <v-card>
+                  <v-card-title>Export CSV</v-card-title>
+                  <v-card-text>
+                    <div class="tw-mb-2">Select CSV format:</div>
+                    <v-select
+                      v-model="exportCsvDialog.type"
+                      solo
+                      hide-details
+                      :items="exportCsvDialog.types"
+                      item-text="text"
+                      item-value="value"
+                    />
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer />
+                    <v-btn
+                      text
+                      @click="exportCsvDialog.visible = false"
+                      :disabled="exportCsvDialog.loading"
+                      >Cancel</v-btn
+                    >
+                    <v-btn
+                      text
+                      @click="exportCsv"
+                      color="primary"
+                      :loading="exportCsvDialog.loading"
+                      >Export</v-btn
+                    >
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-list>
+          </v-menu>
+        </template>
       </template>
-      <v-spacer />
-      <div
-        v-if="isPhone"
-        class="tw-mt-2 tw-text-sm tw-font-normal tw-text-dark-gray"
-        :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
-      >
-        * if needed
-      </div>
+      <template v-if="isPhone">
+        <v-spacer />
+        <div
+          class="tw-mt-2 tw-text-sm tw-font-normal tw-text-dark-gray"
+          :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
+        >
+          * if needed
+        </div>
+      </template>
     </div>
     <div
       class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-text-sm sm:tw-block sm:tw-overflow-visible"
@@ -196,7 +246,7 @@
 </template>
 
 <script>
-import { _delete, getDateHoursOffset, isPhone } from "@/utils"
+import { _delete, getDateHoursOffset, getLocale, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
 
@@ -220,17 +270,38 @@ export default {
     isGroup: { type: Boolean, required: true },
     attendees: { type: Array, default: () => [] },
     showCalendarEvents: { type: Boolean, required: true },
+    responsesFormatted: { type: Map, required: true },
+    timezone: { type: Object, required: true },
   },
 
   data() {
     return {
       deleteAvailabilityDialog: false,
+      exportCsvDialog: {
+        visible: false,
+        loading: false,
+        type: "datesToAvailable",
+        types: [
+          {
+            text: "Dates <> people available",
+            value: "datesToAvailable",
+          },
+          { text: "Name <> dates available", value: "nameToDates" },
+        ],
+      },
       userToDelete: null,
     }
   },
 
   computed: {
     ...mapState(["authUser"]),
+    allowExportCsv() {
+      if (this.isGroup || this.isPhone) return false
+
+      return this.event.blindAvailabilityEnabled
+        ? this.isOwner && this.respondents.length > 0
+        : this.respondents.length > 0
+    },
     curRespondentsSet() {
       return new Set(this.curRespondents)
     },
@@ -348,6 +419,61 @@ export default {
           "There was an error deleting that person's availability!"
         )
       }
+    },
+    getDateString(date) {
+      const locale = getLocale()
+
+      return (
+        '"' +
+        date.toLocaleString(locale, { timeZone: this.timezone.value }) +
+        '"'
+      )
+    },
+    async exportCsv() {
+      const csv = []
+      if (this.exportCsvDialog.type === "datesToAvailable") {
+        csv.push(["Date / Time", "Available"])
+        for (const date of this.event.dates) {
+          let curDate = new Date(date)
+          for (let i = 0; i < this.event.duration * 4; ++i) {
+            const userIds = this.responsesFormatted.get(curDate.getTime())
+            const users = [...userIds].map((id) => {
+              const user = this.parsedResponses[id].user
+              return user.firstName + " " + user.lastName
+            })
+            csv.push([this.getDateString(curDate), ...users])
+            curDate.setMinutes(curDate.getMinutes() + 15)
+          }
+        }
+      } else if (this.exportCsvDialog.type === "nameToDates") {
+        csv.push(["Name", "Date / Times available"])
+        for (const response of Object.values(this.parsedResponses)) {
+          const dateTimesAvailable = [
+            ...response.availability,
+            ...response.ifNeeded,
+          ]
+          dateTimesAvailable.sort((a, b) => a - b)
+          csv.push([
+            `${response.user.firstName} ${response.user.lastName}`,
+            ...dateTimesAvailable.map((d) => this.getDateString(new Date(d))),
+          ])
+        }
+      }
+
+      // Create CSV uri
+      // Source: https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
+      const csvString =
+        "data:text/csv;charset=utf-8," + csv.map((e) => e.join(",")).join("\n")
+      const encodedUri = encodeURI(csvString)
+
+      // Set CSV filename and download
+      // Source: https://stackoverflow.com/questions/7034754/how-to-set-a-file-name-using-window-open
+      const downloadLink = document.createElement("a")
+      downloadLink.href = encodedUri
+      downloadLink.download = `${this.event.name}.csv`
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      document.body.removeChild(downloadLink)
     },
   },
 }
