@@ -434,7 +434,6 @@ export default {
     },
     async exportCsv() {
       const csv = []
-      console.log(this.event)
       if (this.exportCsvDialog.type === "datesToAvailable") {
         csv.push(["Date / Time", "Available"])
         for (const date of this.event.dates) {
