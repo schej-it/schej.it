@@ -226,12 +226,41 @@
                 <v-checkbox
                   v-if="authUser"
                   v-model="blindAvailabilityEnabled"
-                  hide-details
+                  messages="Only show responses to event creator"
                 >
                   <template v-slot:label>
-                    <span class="tw-text-sm tw-text-very-dark-gray"
-                      >Only show responses to event creator</span
+                    <span class="tw-text-sm tw-text-black">
+                      Hide responses from respondents
+                    </span>
+                  </template>
+                  <template v-slot:message="{ key, message }">
+                    <div
+                      class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
                     >
+                      {{ message }}
+                    </div>
+                  </template>
+                </v-checkbox>
+                <v-checkbox
+                  v-else
+                  disabled
+                  messages="Only show responses to event creator. "
+                >
+                  <template v-slot:label>
+                    <span class="tw-text-sm"
+                      >Hide responses from respondents</span
+                    >
+                  </template>
+                  <template v-slot:message="{ key, message }">
+                    <div
+                      class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                    >
+                      {{ message }}
+                      <span class="tw-font-medium tw-text-very-dark-gray"
+                        ><a @click="$emit('signIn')">Sign in</a>
+                        to use this feature
+                      </span>
+                    </div>
                   </template>
                 </v-checkbox>
                 <v-checkbox
@@ -472,7 +501,7 @@ export default {
       this.selectedDaysOfWeek = []
       this.notificationsEnabled = false
       this.daysOnly = false
-      this.selectedDateOption = "Specific dates",
+      this.selectedDateOption = "Specific dates"
       this.emails = []
       this.showAdvancedOptions = false
       this.blindAvailabilityEnabled = false
@@ -739,16 +768,23 @@ export default {
         this.startTime !== this.initialEventData.startTime ||
         this.endTime !== this.initialEventData.endTime ||
         this.selectedDateOption !== this.initialEventData.selectedDateOption ||
-        JSON.stringify(this.selectedDays) !== JSON.stringify(this.initialEventData.selectedDays) ||
-        JSON.stringify(this.selectedDaysOfWeek) !== JSON.stringify(this.initialEventData.selectedDaysOfWeek) ||
+        JSON.stringify(this.selectedDays) !==
+          JSON.stringify(this.initialEventData.selectedDays) ||
+        JSON.stringify(this.selectedDaysOfWeek) !==
+          JSON.stringify(this.initialEventData.selectedDaysOfWeek) ||
         this.daysOnly !== this.initialEventData.daysOnly ||
-        this.notificationsEnabled !== this.initialEventData.notificationsEnabled ||
-        JSON.stringify(this.emails) !== JSON.stringify(this.initialEventData.emails) ||
-        this.blindAvailabilityEnabled !== this.initialEventData.blindAvailabilityEnabled ||
-        this.sendEmailAfterXResponsesEnabled !== this.initialEventData.sendEmailAfterXResponsesEnabled ||
-        this.sendEmailAfterXResponses !== this.initialEventData.sendEmailAfterXResponses 
+        this.notificationsEnabled !==
+          this.initialEventData.notificationsEnabled ||
+        JSON.stringify(this.emails) !==
+          JSON.stringify(this.initialEventData.emails) ||
+        this.blindAvailabilityEnabled !==
+          this.initialEventData.blindAvailabilityEnabled ||
+        this.sendEmailAfterXResponsesEnabled !==
+          this.initialEventData.sendEmailAfterXResponsesEnabled ||
+        this.sendEmailAfterXResponses !==
+          this.initialEventData.sendEmailAfterXResponses
       )
-    }
+    },
   },
 
   watch: {

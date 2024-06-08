@@ -107,6 +107,7 @@
             class="tw-drop-shadow-lg"
             :dialog="false"
             :allow-notifications="false"
+            @signIn="signIn"
           />
         </div>
       </div>
