@@ -26,7 +26,7 @@
         </div>
         <template v-if="allowExportCsv">
           <v-spacer />
-          <v-menu>
+          <v-menu right offset-x>
             <template v-slot:activator="{ on, attrs }">
               <v-btn icon v-on="on" v-bind="attrs"
                 ><v-icon>mdi-dots-vertical</v-icon></v-btn
