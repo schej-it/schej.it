@@ -220,7 +220,12 @@
     </v-dialog>
 
     <!-- New event dialog -->
-    <NewDialog v-model="newDialog" :allow-notifications="false" no-tabs />
+    <NewDialog
+      v-model="newDialog"
+      :allow-notifications="false"
+      no-tabs
+      @signIn="signIn"
+    />
 
     <!-- GitHub button -->
     <v-snackbar

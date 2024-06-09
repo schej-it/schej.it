@@ -44,6 +44,7 @@
           @input="handleDialogInput"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
+          @signIn="$emit('signIn')"
         />
         <NewGroup
           v-else-if="tab === 'group'"
