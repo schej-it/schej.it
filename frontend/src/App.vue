@@ -79,12 +79,16 @@ html {
   /* touch-action: manipulation !important; */
 }
 
+.v-messages__message {
+  font-size: theme("fontSize.xs");
+}
+
+/** Buttons */
 .v-btn {
   letter-spacing: unset !important;
   text-transform: unset !important;
 }
 
-/** Buttons */
 .v-btn:not(.v-btn--round, .v-btn-toggle > .v-btn).v-size--default {
   height: 38px !important;
 }
