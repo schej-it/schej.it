@@ -86,97 +86,111 @@
     </div>
     <div
       ref="scrollableSection"
-      class="-tw-ml-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
+      class="tw-flex tw-flex-col tw-overflow-hidden"
       :style="
         maxHeight
-          ? `max-height: ${maxHeight}px !important; overflow-y: auto !important;`
+          ? `max-height: ${maxHeight}px !important;`
           : !isPhone
-          ? `max-height: ${desktopMaxHeight}px !important; overflow-y: auto !important;`
+          ? `max-height: ${desktopMaxHeight}px !important;`
           : ''
       "
     >
-      <div v-if="respondents.length === 0" class="tw-mb-6">
-        <span
-          class="tw-text-very-dark-gray"
-          v-if="!isOwner && event.blindAvailabilityEnabled"
-        >
-          No response yet!
-        </span>
-        <span class="tw-text-very-dark-gray" v-else>No responses yet!</span>
-      </div>
-      <template v-else>
-        <div
-          v-for="(user, i) in respondents"
-          :key="user._id"
-          class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-overflow-visible tw-py-1"
-          @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
-          @mouseleave="$emit('mouseLeaveRespondent')"
-          @click="(e) => clickRespondent(e, user._id)"
-        >
-          <div class="tw-relative tw-flex tw-items-center">
-            <UserAvatarContent
-              v-if="!isGuest(user)"
-              :user="user"
-              class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-            ></UserAvatarContent>
-            <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-
-            <v-simple-checkbox
-              @click="(e) => $emit('clickRespondent', e, user._id)"
-              color="primary"
-              :value="respondentSelected(user._id)"
-              class="tw-absolute tw-left-0 tw-top-0 -tw-translate-y-1 tw-bg-white tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
-              :class="
-                respondentSelected(user._id) ? 'tw-opacity-100' : 'tw-opacity-0'
-              "
-            />
-          </div>
-
-          <div
-            class="tw-mr-1 tw-transition-all"
-            :class="respondentClass(user._id)"
+      <div
+        class="-tw-ml-2 tw-grid tw-grow tw-grid-cols-2 tw-gap-x-2 tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
+        :class="
+          isPhone && !maxHeight
+            ? 'tw-overflow-hidden'
+            : 'tw-overflow-y-auto tw-overflow-x-hidden'
+        "
+      >
+        <div v-if="respondents.length === 0" class="tw-mb-6">
+          <span
+            class="tw-text-very-dark-gray"
+            v-if="!isOwner && event.blindAvailabilityEnabled"
           >
-            {{
-              user.firstName +
-              " " +
-              user.lastName +
-              (respondentIfNeeded(user._id) ? "*" : "")
-            }}
-          </div>
+            No response yet!
+          </span>
+          <span class="tw-text-very-dark-gray" v-else>No responses yet!</span>
+        </div>
+        <template v-else>
+          <div
+            v-for="(user, i) in respondents"
+            :key="user._id"
+            class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-overflow-visible tw-py-1"
+            @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
+            @mouseleave="$emit('mouseLeaveRespondent')"
+            @click="(e) => clickRespondent(e, user._id)"
+          >
+            <div class="tw-relative tw-flex tw-items-center">
+              <UserAvatarContent
+                v-if="!isGuest(user)"
+                :user="user"
+                class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
+              ></UserAvatarContent>
+              <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
 
-          <!-- <div v-if="isGroup" class="tw-ml-1">
+              <v-simple-checkbox
+                @click="(e) => $emit('clickRespondent', e, user._id)"
+                color="primary"
+                :value="respondentSelected(user._id)"
+                class="tw-absolute tw-left-0 tw-top-0 -tw-translate-y-1 tw-bg-white tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+                :class="
+                  respondentSelected(user._id)
+                    ? 'tw-opacity-100'
+                    : 'tw-opacity-0'
+                "
+              />
+            </div>
+
+            <div
+              class="tw-mr-1 tw-transition-all"
+              :class="respondentClass(user._id)"
+            >
+              {{
+                user.firstName +
+                " " +
+                user.lastName +
+                (respondentIfNeeded(user._id) ? "*" : "")
+              }}
+            </div>
+
+            <!-- <div v-if="isGroup" class="tw-ml-1">
             <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
           </div> -->
 
-          <v-btn
-            v-if="!authUser && isGuest(user)"
-            absolute
-            small
-            icon
-            class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
-            @click="$emit('editGuestAvailability', user._id)"
-            ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
-          >
-          <v-btn
-            v-else-if="isOwner && !isGroup"
-            absolute
-            small
-            icon
-            class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
-            @click="() => showDeleteAvailabilityDialog(user)"
-            ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
-              >mdi-delete</v-icon
-            ></v-btn
-          >
+            <v-btn
+              v-if="!authUser && isGuest(user)"
+              absolute
+              small
+              icon
+              class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
+              @click="$emit('editGuestAvailability', user._id)"
+              ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
+            >
+            <v-btn
+              v-else-if="isOwner && !isGroup"
+              absolute
+              small
+              icon
+              class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
+              @click="() => showDeleteAvailabilityDialog(user)"
+              ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
+                >mdi-delete</v-icon
+              ></v-btn
+            >
+          </div>
+        </template>
+        <div
+          v-if="!isPhone && respondents.length > 0"
+          class="tw-col-span-full tw-mt-2 tw-text-dark-gray"
+          :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
+        >
+          * if needed
         </div>
-      </template>
-      <div
-        v-if="!isPhone && respondents.length > 0"
-        class="tw-col-span-full tw-mt-2 tw-text-dark-gray"
-        :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
-      >
-        * if needed
       </div>
+      <ExpandableSection v-if="!isPhone" label="Options" v-model="showOptions">
+        <div class="tw-pt-2">helooo</div>
+      </ExpandableSection>
     </div>
 
     <div
@@ -252,11 +266,12 @@
 import { _delete, getDateHoursOffset, getLocale, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
+import ExpandableSection from "../ExpandableSection.vue"
 
 export default {
   name: "RespondentsList",
 
-  components: { UserAvatarContent },
+  components: { UserAvatarContent, ExpandableSection },
 
   props: {
     curDate: { type: Date, required: false }, // Date of the current timeslot
@@ -280,6 +295,7 @@ export default {
   data() {
     return {
       deleteAvailabilityDialog: false,
+      showOptions: false,
       exportCsvDialog: {
         visible: false,
         loading: false,
