@@ -86,7 +86,7 @@
     </div>
     <div
       ref="scrollableSection"
-      class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-text-sm sm:tw-block sm:tw-overflow-visible"
+      class="-tw-ml-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
       :style="
         maxHeight
           ? `max-height: ${maxHeight}px !important; overflow-y: auto !important;`
