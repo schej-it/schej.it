@@ -525,7 +525,7 @@
           "
         >
           <div
-            class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-dark-gray"
+            class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
           >
             <div class="tw-flex tw-items-center tw-gap-1">
               <v-icon small>mdi-information-outline</v-icon>
@@ -567,7 +567,7 @@
           <template v-if="hintTextShown">
             <div :key="hintText">
               <div
-                :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-dark-gray`"
+                :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-very-dark-gray`"
               >
                 <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
                   <v-icon small>mdi-information-outline</v-icon>
