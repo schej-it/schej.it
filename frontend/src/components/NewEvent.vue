@@ -182,10 +182,13 @@
                   <template v-slot:header>
                     <div class="tw-flex tw-gap-1">
                       <div class="tw-text-very-dark-gray">
-                        Remind people to fill out the Schej
+                        Remind people to fill out the event
                       </div>
 
-                      <v-tooltip top color="#4F4F4F">
+                      <v-tooltip
+                        top
+                        content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100"
+                      >
                         <template v-slot:activator="{ on, attrs }">
                           <v-icon small v-bind="attrs" v-on="on"
                             >mdi-information-outline
@@ -195,7 +198,7 @@
                           Reminder emails will be sent the day of event
                           creation,<br />one day after, and three days after.
                           You will also receive <br />an email when everybody
-                          has filled out the Schej.
+                          has filled out the event.
                         </div>
                       </v-tooltip>
                     </div>
