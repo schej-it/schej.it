@@ -620,8 +620,8 @@ export default {
               posthogPayload.eventId = this.event._id
               this.$posthog?.capture("Event edited", posthogPayload)
 
-              this.$emit("input", false)
-              this.reset()
+              // this.$emit("input", false)
+              // this.reset()
               window.location.reload()
             })
             .catch((err) => {
