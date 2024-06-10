@@ -82,6 +82,9 @@ html {
 .v-messages__message {
   font-size: theme("fontSize.xs");
 }
+.v-input--selection-controls {
+  margin-top: 0px !important;
+}
 
 /** Buttons */
 .v-btn {
