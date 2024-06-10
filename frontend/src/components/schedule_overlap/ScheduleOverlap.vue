@@ -55,6 +55,24 @@
                 </div>
               </div>
 
+              <v-expand-transition>
+                <div
+                  :key="hintText"
+                  v-if="!isPhone && hintTextShown"
+                  class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
+                >
+                  <div
+                    class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                  >
+                    <div class="tw-flex tw-items-center tw-gap-1">
+                      <v-icon small>mdi-information-outline</v-icon>
+                      {{ hintText }}
+                    </div>
+                    <v-icon small @click="closeHint">mdi-close</v-icon>
+                  </div>
+                </div>
+              </v-expand-transition>
+
               <ToolRow
                 v-if="!isPhone && !calendarOnly"
                 :event="event"
@@ -306,6 +324,25 @@
                 />
               </div>
 
+              <!-- Hint text (desktop) -->
+              <v-expand-transition>
+                <div
+                  :key="hintText"
+                  v-if="!isPhone && hintTextShown"
+                  class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
+                >
+                  <div
+                    class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                  >
+                    <div class="tw-flex tw-items-center tw-gap-1">
+                      <v-icon small>mdi-information-outline</v-icon>
+                      {{ hintText }}
+                    </div>
+                    <v-icon small @click="closeHint">mdi-close</v-icon>
+                  </div>
+                </div>
+              </v-expand-transition>
+
               <ToolRow
                 v-if="!isPhone && !calendarOnly"
                 :event="event"
@@ -513,28 +550,6 @@
           </template>
         </div>
       </div>
-
-      <!-- Hint text (desktop) -->
-      <v-expand-transition>
-        <div
-          :key="hintText"
-          v-if="!isPhone && hintTextShown"
-          class="tw-sticky tw-bottom-4 tw-z-10 tw-flex tw-px-4"
-          :class="
-            event.daysOnly ? 'sm:tw-mr-52' : 'sm:tw-ml-12 sm:tw-mr-[14.75rem]'
-          "
-        >
-          <div
-            class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
-          >
-            <div class="tw-flex tw-items-center tw-gap-1">
-              <v-icon small>mdi-information-outline</v-icon>
-              {{ hintText }}
-            </div>
-            <v-icon small @click="closeHint">mdi-close</v-icon>
-          </div>
-        </div>
-      </v-expand-transition>
 
       <ToolRow
         v-if="isPhone && !calendarOnly"
