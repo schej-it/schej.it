@@ -85,10 +85,13 @@
       </template>
     </div>
     <div
+      ref="scrollableSection"
       class="tw-mt-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-overflow-hidden tw-text-sm sm:tw-block sm:tw-overflow-visible"
       :style="
         maxHeight
           ? `max-height: ${maxHeight}px !important; overflow-y: auto !important;`
+          : !isPhone
+          ? `max-height: ${desktopMaxHeight}px !important; overflow-y: auto !important;`
           : ''
       "
     >
@@ -290,6 +293,8 @@ export default {
         ],
       },
       userToDelete: null,
+
+      desktopMaxHeight: 0,
     }
   },
 
@@ -481,6 +486,27 @@ export default {
       downloadLink.click()
       document.body.removeChild(downloadLink)
     },
+    setDesktopMaxHeight() {
+      const el = this.$refs.scrollableSection
+      if (el) {
+        const { top } = el.getBoundingClientRect()
+        this.desktopMaxHeight = window.innerHeight - top - 32
+      } else {
+        this.desktopMaxHeight = 0
+      }
+    },
+  },
+
+  mounted() {
+    this.setDesktopMaxHeight()
+
+    addEventListener("resize", this.setDesktopMaxHeight)
+    // addEventListener("scroll", this.setDesktopMaxHeight)
+  },
+
+  beforeDestroy() {
+    removeEventListener("resize", this.setDesktopMaxHeight)
+    // removeEventListener("scroll", this.setDesktopMaxHeight)
   },
 }
 </script>
