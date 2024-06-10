@@ -196,7 +196,7 @@
                         <!-- Timeslots -->
                         <div v-for="(_, t) in times" :key="t" class="tw-w-full">
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                            class="timeslot tw-h-4"
                             :class="
                               timeslotClassStyle[d * times.length + t]?.class
                             "
@@ -2042,6 +2042,7 @@ export default {
         classStyle.class +=
           "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
+        classStyle.class += "tw-border-[#6B6B6B] "
         // Normal border
         const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
         if (fractionalTime === 0.25) {
@@ -2051,12 +2052,10 @@ export default {
           classStyle.class += "tw-border-b "
         }
 
-        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-        if (col === this.days.length - 1)
-          classStyle.class += "tw-border-r tw-border-r-gray "
-        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-        if (row === this.times.length - 1)
-          classStyle.class += "tw-border-b tw-border-b-gray "
+        if (col === 0) classStyle.class += "tw-border-l "
+        classStyle.class += "tw-border-r "
+        if (row === 0) classStyle.class += "tw-border-t "
+        if (row === this.times.length - 1) classStyle.class += "tw-border-b "
       }
 
       return classStyle
@@ -2245,15 +2244,16 @@ export default {
         classStyle.class +=
           "tw-outline-2 tw-outline-dashed tw-outline-black tw-z-10 "
       } else {
+        classStyle.class += "tw-border-dark-gray "
         // Normal border
-        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-        classStyle.class += "tw-border-r tw-border-r-gray "
+        if (col === 0) classStyle.class += "tw-border-l "
+        classStyle.class += "tw-border-r "
         if (col !== 7 - 1) {
           classStyle.style.borderRightStyle = "dashed"
         }
 
-        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-        classStyle.class += "tw-border-b tw-border-b-gray "
+        if (row === 0) classStyle.class += "tw-border-t "
+        classStyle.class += "tw-border-b "
         if (row !== Math.floor(this.monthDays.length / 7) - 1) {
           classStyle.style.borderBottomStyle = "dashed"
         }
