@@ -517,7 +517,7 @@ export default {
 
       // Get duration of event
       let duration = this.endTime - this.startTime
-      if (duration < 0) duration += 24
+      if (duration <= 0) duration += 24
 
       // Get date objects for each selected day
       let dates = []
