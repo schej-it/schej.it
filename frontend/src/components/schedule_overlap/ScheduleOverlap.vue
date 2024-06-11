@@ -347,7 +347,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-[13rem] sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-5"
@@ -409,14 +409,8 @@
               >
               <v-expand-transition>
                 <div v-show="showOptions">
-                  <BufferTimeSwitch
-                    v-if="showBufferTimeToggle"
-                    class="tw-mt-0 tw-py-1"
-                    v-model="bufferTimeActive"
-                    :bufferTime.sync="bufferTime"
-                  />
+                  <div v-if="showOverlayAvailabilityToggle">
                   <v-switch
-                    v-if="showOverlayAvailabilityToggle"
                     class="tw-mt-0 tw-py-1"
                     inset
                     :input-value="overlayAvailability"
@@ -425,10 +419,30 @@
                   >
                     <template v-slot:label>
                       <div class="tw-text-xs tw-text-black">
-                        Overlay everyone's availability
+                        <div>Overlay availabilities</div>
                       </div>
                     </template>
+
                   </v-switch>
+
+                  <div>
+                    <div class="tw-text-[12px] tw-text-dark-gray">
+                      View everyone’s availability while inputting your own
+                    </div>
+                  </div>
+                </div>
+
+                  <div v-if="showBufferTimeToggle">
+                    <BufferTimeSwitch
+                      class="tw-mt-0 tw-py-1"
+                      v-model="bufferTimeActive"
+                      :bufferTime.sync="bufferTime"
+                    />
+
+                    <div class="tw-text-[12px] tw-text-dark-gray">
+                      Add time around calendar events
+                    </div>
+                  </div>
                 </div>
               </v-expand-transition>
             </div>

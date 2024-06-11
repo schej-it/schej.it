@@ -7,24 +7,23 @@
     hide-details
   >
     <template v-slot:label>
-      <div
-        class="tw-flex tw-items-center tw-justify-center tw-text-xs tw-text-black"
-      >
-        Buffer
-        <v-select
-          dense
-          :items="bufferTimes"
-          class="-tw-mb-2 tw-w-[3.1rem] tw-scale-75 tw-text-xs"
-          :value="bufferTime"
-          @input="(val) => $emit('update:bufferTime', val)"
-          @click="
-            (e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }
-          "
-        ></v-select>
-        minutes
+      <div class="tw-flex tw-flex-col tw-text-xs">
+        <div class="tw-flex tw-items-center tw-justify-center tw-text-black">
+          Buffer time
+          <v-select
+            dense
+            :items="bufferTimes"
+            class="-tw-mb-[0.7rem] tw-w-20 tw-scale-90 tw-text-xs"
+            :value="bufferTime"
+            @input="(val) => $emit('update:bufferTime', val)"
+            @click="
+              (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+            "
+          ></v-select>
+        </div>
       </div>
     </template>
   </v-switch>
@@ -43,7 +42,11 @@ export default {
 
   data() {
     return {
-      bufferTimes: [15, 30, 45],
+      bufferTimes: [
+        { text: "15 min", value: 15 },
+        { text: "30 min", value: 30 },
+        { text: "45 min", value: 45 },
+      ],
     }
   },
 
