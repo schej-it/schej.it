@@ -301,7 +301,7 @@
                               class="tw-h-full tw-w-full tw-border-2"
                               :class="
                                 timeBlock.type === 'available'
-                                  ? 'overlay-avail-shadow-green tw-border-[#1C7D45B3] tw-bg-[#1C7D4533]'
+                                  ? 'overlay-avail-shadow-green tw-border-[#1C7D45B3] tw-bg-[#1C7D4566]'
                                   : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
                               "
                             ></div>
