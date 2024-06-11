@@ -1,5 +1,6 @@
 <template>
   <v-switch
+    id="buffer-time-switch"
     :input-value="value"
     @change="emitItem"
     inset

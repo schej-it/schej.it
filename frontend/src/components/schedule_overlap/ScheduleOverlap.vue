@@ -447,27 +447,27 @@
               <v-expand-transition>
                 <div v-show="showOptions">
                   <div v-if="showOverlayAvailabilityToggle">
-                  <v-switch
-                    class="tw-mt-0 tw-py-1"
-                    inset
-                    :input-value="overlayAvailability"
-                    @change="updateOverlayAvailability"
-                    hide-details
-                  >
-                    <template v-slot:label>
-                      <div class="tw-text-xs tw-text-black">
-                        <div>Overlay availabilities</div>
+                    <v-switch
+                      id="overlay-availabilities-toggle"
+                      class="tw-mt-0 tw-py-1"
+                      inset
+                      :input-value="overlayAvailability"
+                      @change="updateOverlayAvailability"
+                      hide-details
+                    >
+                      <template v-slot:label>
+                        <div class="tw-text-xs tw-text-black">
+                          <div>Overlay availabilities</div>
+                        </div>
+                      </template>
+                    </v-switch>
+
+                    <div>
+                      <div class="tw-text-[12px] tw-text-dark-gray">
+                        View everyone’s availability while inputting your own
                       </div>
-                    </template>
-
-                  </v-switch>
-
-                  <div>
-                    <div class="tw-text-[12px] tw-text-dark-gray">
-                      View everyone’s availability while inputting your own
                     </div>
                   </div>
-                </div>
 
                   <div v-if="showBufferTimeToggle">
                     <BufferTimeSwitch
