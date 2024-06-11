@@ -188,9 +188,13 @@
           * if needed
         </div>
       </div>
-      <ExpandableSection v-if="!isPhone" label="Options" v-model="showOptions">
-        <div class="tw-pt-2">helooo</div>
-      </ExpandableSection>
+      <EventOptions
+        v-if="!isPhone"
+        :event="event"
+        :showBestTimes="showBestTimes"
+        @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
+        :numResponses="respondents.length"
+      />
     </div>
 
     <div
@@ -266,12 +270,12 @@
 import { _delete, getDateHoursOffset, getLocale, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
-import ExpandableSection from "../ExpandableSection.vue"
+import EventOptions from "./EventOptions.vue"
 
 export default {
   name: "RespondentsList",
 
-  components: { UserAvatarContent, ExpandableSection },
+  components: { UserAvatarContent, EventOptions },
 
   props: {
     curDate: { type: Date, required: false }, // Date of the current timeslot
@@ -290,12 +294,12 @@ export default {
     showCalendarEvents: { type: Boolean, required: true },
     responsesFormatted: { type: Map, required: true },
     timezone: { type: Object, required: true },
+    showBestTimes: { type: Boolean, required: true },
   },
 
   data() {
     return {
       deleteAvailabilityDialog: false,
-      showOptions: false,
       exportCsvDialog: {
         visible: false,
         loading: false,

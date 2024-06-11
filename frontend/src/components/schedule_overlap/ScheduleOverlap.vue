@@ -87,7 +87,6 @@
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @onShowBestTimesChange="onShowBestTimesChange"
                 @scheduleEvent="scheduleEvent"
                 @cancelScheduleEvent="cancelScheduleEvent"
                 @confirmScheduleEvent="confirmScheduleEvent"
@@ -357,7 +356,6 @@
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @onShowBestTimesChange="onShowBestTimesChange"
                 @scheduleEvent="scheduleEvent"
                 @cancelScheduleEvent="cancelScheduleEvent"
                 @confirmScheduleEvent="confirmScheduleEvent"
@@ -529,6 +527,7 @@
               :showCalendarEvents.sync="showCalendarEvents"
               :responsesFormatted="responsesFormatted"
               :timezone="curTimezone"
+              :showBestTimes.sync="showBestTimes"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
@@ -566,7 +565,6 @@
         :mobile-num-days.sync="mobileNumDays"
         :allow-schedule-event="allowScheduleEvent"
         @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-        @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
         @cancelScheduleEvent="cancelScheduleEvent"
         @confirmScheduleEvent="confirmScheduleEvent"
@@ -641,6 +639,7 @@
                 :showCalendarEvents.sync="showCalendarEvents"
                 :responsesFormatted="responsesFormatted"
                 :timezone="curTimezone"
+                :showBestTimes.sync="showBestTimes"
                 @mouseOverRespondent="mouseOverRespondent"
                 @mouseLeaveRespondent="mouseLeaveRespondent"
                 @clickRespondent="clickRespondent"
@@ -2970,6 +2969,9 @@ export default {
         this.availability = new Set()
         this.populateUserAvailability(this.authUser._id)
       }
+    },
+    showBestTimes() {
+      this.onShowBestTimesChange()
     },
   },
   created() {

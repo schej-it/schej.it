@@ -166,7 +166,6 @@ export default {
   methods: {
     updateShowBestTimes(val) {
       this.$emit("update:showBestTimes", !!val)
-      this.$emit("onShowBestTimesChange", !!val)
     },
     updateCurTimezone(val) {
       this.$emit("update:curTimezone", val)
