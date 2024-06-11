@@ -2002,6 +2002,8 @@ export default {
           this.$posthog?.capture(`Added ${type}`, {
             eventId: this.event._id,
             addedIfNeededTimes,
+            bufferTime: this.bufferTime,
+            bufferTimeActive: this.bufferTimeActive,
           })
         }
       } else {
