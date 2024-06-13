@@ -80,6 +80,7 @@
                 :states="states"
                 :cur-timezone.sync="curTimezone"
                 :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
                 :is-weekly="isWeekly"
                 :calendar-permission-granted="calendarPermissionGranted"
                 :week-offset="weekOffset"
@@ -563,7 +564,7 @@
               "
               text
               color="primary"
-              class="-tw-ml-2 tw-px-2"
+              class="-tw-ml-2 tw-mt-4 tw-px-2"
               @click="() => $emit('addAvailability')"
               >+ Add availability</v-btn
             >
