@@ -180,13 +180,13 @@
             >
           </div>
         </template>
-        <div
-          v-if="!isPhone && respondents.length > 0"
-          class="tw-col-span-full tw-mt-2 tw-text-dark-gray"
-          :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
-        >
-          * if needed
-        </div>
+      </div>
+      <div
+        v-if="!isPhone && respondents.length > 0"
+        class="tw-col-span-full tw-mb-2 tw-mt-1 tw-text-sm tw-text-dark-gray"
+        :class="showIfNeededStar ? 'tw-visible' : 'tw-invisible'"
+      >
+        * if needed
       </div>
       <EventOptions
         v-if="!isPhone"
