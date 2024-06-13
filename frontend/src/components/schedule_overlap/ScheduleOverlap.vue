@@ -349,6 +349,7 @@
                 :states="states"
                 :cur-timezone.sync="curTimezone"
                 :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
                 :is-weekly="isWeekly"
                 :calendar-permission-granted="calendarPermissionGranted"
                 :week-offset="weekOffset"
@@ -546,7 +547,8 @@
               :showCalendarEvents.sync="showCalendarEvents"
               :responsesFormatted="responsesFormatted"
               :timezone="curTimezone"
-              :showBestTimes.sync="showBestTimes"
+              :show-best-times.sync="showBestTimes"
+              :hide-if-needed.sync="hideIfNeeded"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
@@ -577,6 +579,7 @@
         :states="states"
         :cur-timezone.sync="curTimezone"
         :show-best-times.sync="showBestTimes"
+        :hide-if-needed.sync="hideIfNeeded"
         :is-weekly="isWeekly"
         :calendar-permission-granted="calendarPermissionGranted"
         :week-offset="weekOffset"
@@ -658,7 +661,8 @@
                 :showCalendarEvents.sync="showCalendarEvents"
                 :responsesFormatted="responsesFormatted"
                 :timezone="curTimezone"
-                :showBestTimes.sync="showBestTimes"
+                :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
                 @mouseOverRespondent="mouseOverRespondent"
                 @mouseLeaveRespondent="mouseLeaveRespondent"
                 @clickRespondent="clickRespondent"
@@ -818,6 +822,7 @@ export default {
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
+      hideIfNeeded: false,
       deleteAvailabilityDialog: false,
       showCalendarEvents: false,
 

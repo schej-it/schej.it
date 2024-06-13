@@ -86,7 +86,7 @@
     </div>
     <div
       ref="scrollableSection"
-      class="tw-flex tw-flex-col tw-overflow-hidden"
+      class="tw-flex tw-flex-col"
       :style="
         maxHeight
           ? `max-height: ${maxHeight}px !important;`
@@ -193,6 +193,8 @@
         :event="event"
         :showBestTimes="showBestTimes"
         @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
+        :hideIfNeeded="hideIfNeeded"
+        @update:hideIfNeeded="(val) => $emit('update:hideIfNeeded', val)"
         :numResponses="respondents.length"
       />
     </div>
@@ -295,6 +297,7 @@ export default {
     responsesFormatted: { type: Map, required: true },
     timezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
+    hideIfNeeded: { type: Boolean, required: true },
   },
 
   data() {

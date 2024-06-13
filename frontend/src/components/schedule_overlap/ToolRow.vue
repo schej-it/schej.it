@@ -8,7 +8,7 @@
           state === states.EDIT_AVAILABILITY ? 'center' : 'between'
         } 
         `"
-        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
@@ -18,22 +18,36 @@
         />
 
         <template v-if="state !== states.EDIT_AVAILABILITY">
-          <div v-if="numResponses > 1">
+          <template v-if="isPhone">
+            <div v-if="numResponses > 1">
+              <v-switch
+                inset
+                id="show-best-times-toggle"
+                :input-value="showBestTimes"
+                @change="(val) => $emit('update:showBestTimes', !!val)"
+                hide-details
+              >
+                <template v-slot:label>
+                  <div class="tw-text-sm tw-text-black">
+                    Show best {{ event.daysOnly ? "days" : "times" }}
+                  </div>
+                </template>
+              </v-switch>
+            </div>
             <v-switch
               inset
-              id="show-best-times-toggle"
-              class="tw-mt-0 tw-py-2.5"
-              :input-value="showBestTimes"
-              @change="updateShowBestTimes"
+              id="hide-if-needed-toggle"
+              :input-value="hideIfNeeded"
+              @change="(val) => $emit('update:hideIfNeeded', !!val)"
               hide-details
             >
               <template v-slot:label>
                 <div class="tw-text-sm tw-text-black">
-                  Show best {{ event.daysOnly ? "days" : "times" }}
+                  Hide if needed {{ event.daysOnly ? "days" : "times" }}
                 </div>
               </template>
             </v-switch>
-          </div>
+          </template>
           <div
             v-if="!event.daysOnly && isPhone"
             class="tw-flex tw-basis-full tw-items-center tw-gap-x-2"
@@ -136,6 +150,7 @@ export default {
     states: { type: Object, required: true },
     curTimezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
+    hideIfNeeded: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
@@ -164,9 +179,6 @@ export default {
   },
 
   methods: {
-    updateShowBestTimes(val) {
-      this.$emit("update:showBestTimes", !!val)
-    },
     updateCurTimezone(val) {
       this.$emit("update:curTimezone", val)
     },

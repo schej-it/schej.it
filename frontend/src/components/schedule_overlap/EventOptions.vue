@@ -1,16 +1,29 @@
 <template>
   <ExpandableSection label="Options" v-model="showOptions">
-    <div class="tw-pt-2" v-if="numResponses > 1">
+    <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2" v-if="numResponses > 1">
       <v-switch
         inset
         id="show-best-times-toggle"
         :input-value="showBestTimes"
-        @change="updateShowBestTimes"
+        @change="(val) => $emit('update:showBestTimes', !!val)"
         hide-details
       >
         <template v-slot:label>
           <div class="tw-text-sm tw-text-black">
             Show best {{ event.daysOnly ? "days" : "times" }}
+          </div>
+        </template>
+      </v-switch>
+      <v-switch
+        inset
+        id="hide-if-needed-toggle"
+        :input-value="hideIfNeeded"
+        @change="(val) => $emit('update:hideIfNeeded', !!val)"
+        hide-details
+      >
+        <template v-slot:label>
+          <div class="tw-text-sm tw-text-black">
+            Hide if needed {{ event.daysOnly ? "days" : "times" }}
           </div>
         </template>
       </v-switch>
@@ -31,6 +44,7 @@ export default {
   props: {
     event: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
+    hideIfNeeded: { type: Boolean, required: true },
     numResponses: { type: Number, required: true },
   },
 
@@ -38,12 +52,6 @@ export default {
     return {
       showOptions: false,
     }
-  },
-
-  methods: {
-    updateShowBestTimes(val) {
-      this.$emit("update:showBestTimes", !!val)
-    },
   },
 }
 </script>
