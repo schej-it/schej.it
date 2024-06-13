@@ -300,7 +300,7 @@
                               class="tw-h-full tw-w-full tw-border-2"
                               :class="
                                 timeBlock.type === 'available'
-                                  ? 'overlay-avail-shadow-green tw-border-[#1C7D45B3] tw-bg-[#1C7D4533]'
+                                  ? 'overlay-avail-shadow-green tw-border-[#1C7D45B3] tw-bg-[#1C7D4566]'
                                   : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
                               "
                             ></div>
@@ -382,7 +382,7 @@
         <!-- Respondents -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-52 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-[13rem] sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
         >
           <div
             class="tw-flex tw-flex-col tw-gap-5"
@@ -427,8 +427,7 @@
               v-if="
                 !isGroup &&
                 !event.daysOnly &&
-                overlayAvailabilitiesEnabled &&
-                respondents.length > 0
+                (showBufferTimeToggle || showOverlayAvailabilityToggle)
               "
               ref="optionsSection"
             >
@@ -445,20 +444,40 @@
               >
               <v-expand-transition>
                 <div v-show="showOptions">
-                  <v-switch
-                    v-if="respondents.length > 0"
-                    class="tw-mt-0 tw-py-1"
-                    inset
-                    :input-value="overlayAvailability"
-                    @change="updateOverlayAvailability"
-                    hide-details
-                  >
-                    <template v-slot:label>
-                      <div class="tw-text-xs tw-text-black">
-                        Overlay everyone's availability
+                  <div v-if="showOverlayAvailabilityToggle">
+                    <v-switch
+                      id="overlay-availabilities-toggle"
+                      class="tw-mt-0 tw-py-1"
+                      inset
+                      :input-value="overlayAvailability"
+                      @change="updateOverlayAvailability"
+                      hide-details
+                    >
+                      <template v-slot:label>
+                        <div class="tw-text-xs tw-text-black">
+                          <div>Overlay availabilities</div>
+                        </div>
+                      </template>
+                    </v-switch>
+
+                    <div>
+                      <div class="tw-text-[12px] tw-text-dark-gray">
+                        View everyone’s availability while inputting your own
                       </div>
-                    </template>
-                  </v-switch>
+                    </div>
+                  </div>
+
+                  <div v-if="showBufferTimeToggle">
+                    <BufferTimeSwitch
+                      class="tw-mt-0 tw-py-1"
+                      v-model="bufferTimeActive"
+                      :bufferTime.sync="bufferTime"
+                    />
+
+                    <div class="tw-text-[12px] tw-text-dark-gray">
+                      Add time around calendar events
+                    </div>
+                  </div>
                 </div>
               </v-expand-transition>
             </div>
@@ -710,6 +729,7 @@ import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
 import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
+import BufferTimeSwitch from "./BufferTimeSwitch.vue"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -770,6 +790,10 @@ export default {
 
       /** Edit options */
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
+      bufferTimeActive: localStorage["bufferTimeActive"] == "true", // Whether to buffer events when autofilling
+      bufferTime: localStorage["bufferTime"]
+        ? parseInt(localStorage["bufferTime"])
+        : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
 
       /* Variables for drag stuff */
@@ -1500,6 +1524,14 @@ export default {
       })
       return overlaidAvailability
     },
+
+    // Options
+    showOverlayAvailabilityToggle() {
+      return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
+    },
+    showBufferTimeToggle() {
+      return this.calendarPermissionGranted && !this.userHasResponded
+    },
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -1837,9 +1869,19 @@ export default {
           let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
           const index = calendarEventsByDay[i].findIndex((e) => {
+            const bufferTimeInMS = this.bufferTimeActive
+              ? this.bufferTime * 1000 * 60
+              : 0
+            const startDateBuffered = new Date(
+              e.startDate.getTime() - bufferTimeInMS
+            )
+            const endDateBuffered = new Date(
+              e.endDate.getTime() + bufferTimeInMS
+            )
+
             const notIntersect =
-              dateCompare(endDate, e.startDate) <= 0 ||
-              dateCompare(startDate, e.endDate) >= 0
+              dateCompare(endDate, startDateBuffered) <= 0 ||
+              dateCompare(startDate, endDateBuffered) >= 0
             return !notIntersect && !e.free
           })
           if (index === -1) {
@@ -1959,6 +2001,8 @@ export default {
           this.$posthog?.capture(`Added ${type}`, {
             eventId: this.event._id,
             addedIfNeededTimes,
+            bufferTime: this.bufferTime,
+            bufferTimeActive: this.bufferTimeActive,
           })
         }
       } else {
@@ -2872,8 +2916,23 @@ export default {
       }
       return manualAvailabilityDow
     },
-
     //#endregion
+
+    /** Recalculate availability the calendar based on calendar events */
+    reanimateAvailability() {
+      if (
+        this.state === this.states.EDIT_AVAILABILITY &&
+        this.authUser &&
+        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
+        !this.loadingCalendarEvents &&
+        (!this.unsavedChanges || this.availabilityAnimEnabled)
+      ) {
+        for (const timeout of this.availabilityAnimTimeouts) {
+          clearTimeout(timeout)
+        }
+        this.setAvailabilityAutomatically()
+      }
+    },
   },
   watch: {
     availability() {
@@ -2908,18 +2967,7 @@ export default {
       },
     },
     calendarEventsByDay() {
-      if (
-        this.state === this.states.EDIT_AVAILABILITY &&
-        this.authUser &&
-        !(this.authUser?._id in this.event.responses) && // User hasn't responded yet
-        !this.loadingCalendarEvents &&
-        (!this.unsavedChanges || this.availabilityAnimEnabled)
-      ) {
-        for (const timeout of this.availabilityAnimTimeouts) {
-          clearTimeout(timeout)
-        }
-        this.setAvailabilityAutomatically()
-      }
+      this.reanimateAvailability()
     },
     page() {
       this.$nextTick(() => {
@@ -2973,6 +3021,16 @@ export default {
     showBestTimes() {
       this.onShowBestTimesChange()
     },
+    bufferTimeActive() {
+      localStorage["bufferTimeActive"] = this.bufferTimeActive
+      this.reanimateAvailability()
+    },
+    bufferTime() {
+      localStorage["bufferTime"] = this.bufferTime
+      if (this.bufferTimeActive) {
+        this.reanimateAvailability()
+      }
+    },
   },
   created() {
     this.resetCurUserAvailability()
@@ -3011,6 +3069,7 @@ export default {
   },
   components: {
     AvailabilityTypeToggle,
+    BufferTimeSwitch,
     UserAvatarContent,
     ZigZag,
     ConfirmDetailsDialog,
