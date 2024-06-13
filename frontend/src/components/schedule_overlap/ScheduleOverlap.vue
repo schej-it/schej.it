@@ -1693,7 +1693,7 @@ export default {
 
       this.$worker
         .run(
-          (days, times, parsedResponses, daysOnly) => {
+          (days, times, parsedResponses, daysOnly, hideIfNeeded) => {
             // Define functions locally because we can't import functions
             const splitTimeNum = (timeNum) => {
               const hours = Math.floor(timeNum)
@@ -1737,7 +1737,7 @@ export default {
                 // Check availability array
                 if (
                   response.availability?.has(date.getTime()) ||
-                  response.ifNeeded?.has(date.getTime())
+                  (response.ifNeeded?.has(date.getTime()) && !hideIfNeeded)
                 ) {
                   formatted.get(date.getTime()).add(response.user._id)
                   continue
@@ -1746,7 +1746,13 @@ export default {
             }
             return formatted
           },
-          [this.allDays, this.times, this.parsedResponses, this.event.daysOnly]
+          [
+            this.allDays,
+            this.times,
+            this.parsedResponses,
+            this.event.daysOnly,
+            this.hideIfNeeded,
+          ]
         )
         .then((formatted) => {
           // Only set responses formatted for the latest request
@@ -3008,6 +3014,9 @@ export default {
       if (this.event.type === eventTypes.GROUP) {
         this.fetchResponses()
       }
+    },
+    hideIfNeeded() {
+      this.getResponsesFormatted()
     },
     parsedResponses() {
       // Theoretically, parsed responses should only be changing for groups

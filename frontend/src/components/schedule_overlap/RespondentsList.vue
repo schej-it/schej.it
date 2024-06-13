@@ -371,6 +371,10 @@ export default {
       })
     },
     showIfNeededStar() {
+      if (this.hideIfNeeded) {
+        return false
+      }
+
       for (const user of this.respondents) {
         if (this.respondentIfNeeded(user._id)) {
           return true
@@ -407,7 +411,7 @@ export default {
     },
     /** Returns whether the respondent has "ifNeeded" availability for the current timeslot */
     respondentIfNeeded(id) {
-      if (!this.curDate) return false
+      if (!this.curDate || this.hideIfNeeded) return false
 
       return Boolean(
         this.parsedResponses[id]?.ifNeeded?.has(this.curDate.getTime())
