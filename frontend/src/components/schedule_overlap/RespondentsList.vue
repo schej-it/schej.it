@@ -96,7 +96,7 @@
       "
     >
       <div
-        class="-tw-ml-2 tw-grid tw-grow tw-grid-cols-2 tw-gap-x-2 tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
+        class="-tw-ml-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
         :class="
           isPhone && !maxHeight
             ? 'tw-overflow-hidden'
@@ -116,7 +116,7 @@
           <div
             v-for="(user, i) in respondents"
             :key="user._id"
-            class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-overflow-hidden tw-overflow-visible tw-py-1"
+            class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-py-1"
             @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
             @mouseleave="$emit('mouseLeaveRespondent')"
             @click="(e) => clickRespondent(e, user._id)"
@@ -141,7 +141,6 @@
                 "
               />
             </div>
-
             <div
               class="tw-mr-1 tw-transition-all"
               :class="respondentClass(user._id)"
@@ -179,6 +178,7 @@
               ></v-btn
             >
           </div>
+          <div class="tw-h-2"></div>
         </template>
       </div>
       <div
