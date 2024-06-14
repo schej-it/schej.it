@@ -32,11 +32,24 @@
           </div>
         </template>
       </v-switch>
+      <v-switch
+        v-if="isGroup && !isPhone"
+        inset
+        :input-value="showCalendarEvents"
+        @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
+        hide-details
+      >
+        <template v-slot:label>
+          <div class="tw-text-sm tw-text-black">Overlay calendar events</div>
+        </template>
+      </v-switch>
     </div>
   </ExpandableSection>
 </template>
 
 <script>
+import { isPhone } from "@/utils"
+import { eventTypes } from "@/constants"
 import ExpandableSection from "@/components/ExpandableSection.vue"
 
 export default {
@@ -52,6 +65,16 @@ export default {
     hideIfNeeded: { type: Boolean, required: true },
     numResponses: { type: Number, required: true },
     showEventOptions: { type: Boolean, required: true },
+    showCalendarEvents: { type: Boolean, required: true },
+  },
+
+  computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
+    isGroup() {
+      return this.event.type === eventTypes.GROUP
+    },
   },
 }
 </script>

@@ -188,6 +188,25 @@
       >
         * if needed
       </div>
+      <div
+        v-if="!maxHeight && pendingUsers.length > 0"
+        class="tw-mb-4 sm:tw-mb-6"
+      >
+        <div class="tw-mb-2 tw-flex tw-items-center tw-font-medium">
+          <div class="tw-mr-1 tw-text-lg">Pending</div>
+          <div class="tw-font-normal">({{ pendingUsers.length }})</div>
+        </div>
+        <div>
+          <div v-for="(user, i) in pendingUsers" :key="user.email">
+            <div class="tw-relative tw-flex tw-items-center">
+              <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
+              <div class="tw-mr-1 tw-text-sm tw-transition-all">
+                {{ user.email }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <template v-if="!isPhone">
         <EventOptions
           :event="event"
@@ -197,6 +216,10 @@
           @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
           :hideIfNeeded="hideIfNeeded"
           @update:hideIfNeeded="(val) => $emit('update:hideIfNeeded', val)"
+          :showCalendarEvents="showCalendarEvents"
+          @update:showCalendarEvents="
+            (val) => $emit('update:showCalendarEvents', val)
+          "
           :numResponses="respondents.length"
         />
         <v-btn
@@ -219,25 +242,6 @@
       class="tw-mt-2 tw-text-xs tw-italic tw-text-very-dark-gray"
     >
       Responses are only visible to {{ isOwner ? "you" : "event creator" }}
-    </div>
-
-    <div
-      v-if="pendingUsers.length > 0"
-      class="tw-mb-2 tw-flex tw-items-center tw-font-medium"
-    >
-      <div class="tw-mr-1 tw-text-lg">Pending</div>
-      <div class="tw-font-normal">({{ pendingUsers.length }})</div>
-    </div>
-
-    <div>
-      <div v-for="(user, i) in pendingUsers" :key="user.email">
-        <div class="tw-relative tw-flex tw-items-center">
-          <v-icon class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-          <div class="tw-mr-1 tw-text-sm tw-transition-all">
-            {{ user.email }}
-          </div>
-        </div>
-      </div>
     </div>
 
     <v-dialog v-model="deleteAvailabilityDialog" width="500" persistent>
@@ -267,19 +271,18 @@
       </v-card>
     </v-dialog>
 
-    <div v-if="isGroup">
-      <v-switch
-        inset
-        class="tw-mb-4"
-        :input-value="showCalendarEvents"
-        @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
-        hide-details
-      >
-        <template v-slot:label>
-          <div class="tw-text-sm tw-text-black">Overlay calendar events</div>
-        </template>
-      </v-switch>
-    </div>
+    <v-switch
+      v-if="isGroup && isPhone"
+      class="tw-mt-2"
+      inset
+      :input-value="showCalendarEvents"
+      @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
+      hide-details
+    >
+      <template v-slot:label>
+        <div class="tw-text-sm tw-text-black">Overlay calendar events</div>
+      </template>
+    </v-switch>
 
     <v-btn
       v-if="
