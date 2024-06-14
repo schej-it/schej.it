@@ -556,24 +556,14 @@
               :hide-if-needed.sync="hideIfNeeded"
               :show-event-options="showEventOptions"
               @toggleShowEventOptions="toggleShowEventOptions"
+              :guestAddedAvailability="guestAddedAvailability"
+              @addAvailability="$emit('addAvailability')"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
               @editGuestAvailability="editGuestAvailability"
               @refreshEvent="refreshEvent"
             />
-            <v-btn
-              v-if="
-                !authUser &&
-                guestAddedAvailability &&
-                !event.blindAvailabilityEnabled
-              "
-              text
-              color="primary"
-              class="-tw-ml-2 tw-mt-4 tw-px-2"
-              @click="() => $emit('addAvailability')"
-              >+ Add availability</v-btn
-            >
           </template>
         </div>
       </div>
@@ -674,6 +664,8 @@
                 :hide-if-needed.sync="hideIfNeeded"
                 :show-event-options="showEventOptions"
                 @toggleShowEventOptions="toggleShowEventOptions"
+                :guestAddedAvailability="guestAddedAvailability"
+                @addAvailability="$emit('addAvailability')"
                 @mouseOverRespondent="mouseOverRespondent"
                 @mouseLeaveRespondent="mouseLeaveRespondent"
                 @clickRespondent="clickRespondent"

@@ -188,17 +188,30 @@
       >
         * if needed
       </div>
-      <EventOptions
-        v-if="!isPhone"
-        :event="event"
-        :showEventOptions="showEventOptions"
-        @toggleShowEventOptions="$emit('toggleShowEventOptions')"
-        :showBestTimes="showBestTimes"
-        @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
-        :hideIfNeeded="hideIfNeeded"
-        @update:hideIfNeeded="(val) => $emit('update:hideIfNeeded', val)"
-        :numResponses="respondents.length"
-      />
+      <template v-if="!isPhone">
+        <EventOptions
+          :event="event"
+          :showEventOptions="showEventOptions"
+          @toggleShowEventOptions="$emit('toggleShowEventOptions')"
+          :showBestTimes="showBestTimes"
+          @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
+          :hideIfNeeded="hideIfNeeded"
+          @update:hideIfNeeded="(val) => $emit('update:hideIfNeeded', val)"
+          :numResponses="respondents.length"
+        />
+        <v-btn
+          v-if="
+            !authUser &&
+            guestAddedAvailability &&
+            !event.blindAvailabilityEnabled
+          "
+          text
+          color="primary"
+          class="-tw-ml-2 tw-mt-4 tw-w-min tw-px-2"
+          @click="() => $emit('addAvailability')"
+          >+ Add availability</v-btn
+        >
+      </template>
     </div>
 
     <div
@@ -267,6 +280,21 @@
         </template>
       </v-switch>
     </div>
+
+    <v-btn
+      v-if="
+        !maxHeight &&
+        isPhone &&
+        !authUser &&
+        guestAddedAvailability &&
+        !event.blindAvailabilityEnabled
+      "
+      text
+      color="primary"
+      class="-tw-ml-2 tw-mt-4 tw-w-min tw-px-2"
+      @click="() => $emit('addAvailability')"
+      >+ Add availability</v-btn
+    >
   </div>
 </template>
 
@@ -301,6 +329,7 @@ export default {
     showBestTimes: { type: Boolean, required: true },
     hideIfNeeded: { type: Boolean, required: true },
     showEventOptions: { type: Boolean, required: true },
+    guestAddedAvailability: { type: Boolean, required: true },
   },
 
   data() {
