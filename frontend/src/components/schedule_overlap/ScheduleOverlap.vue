@@ -437,15 +437,15 @@
                 class="-tw-ml-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
                 block
                 text
-                @click="toggleShowOptions"
+                @click="toggleShowEditOptions"
               >
                 <span class="tw-mr-1 tw-text-base tw-font-medium">Options</span>
-                <v-icon :class="`tw-rotate-${showOptions ? '180' : '0'}`"
+                <v-icon :class="`tw-rotate-${showEditOptions ? '180' : '0'}`"
                   >mdi-chevron-down</v-icon
                 ></v-btn
               >
               <v-expand-transition>
-                <div v-show="showOptions">
+                <div v-show="showEditOptions">
                   <div v-if="showOverlayAvailabilityToggle">
                     <v-switch
                       id="overlay-availabilities-toggle"
@@ -816,10 +816,14 @@ export default {
       dragCur: null,
 
       /* Variables for options */
-      showOptions:
-        localStorage["showAvailabilityOptions"] == undefined
+      showEditOptions:
+        localStorage["showEditOptions"] == undefined
           ? false
-          : localStorage["showAvailabilityOptions"] == "true",
+          : localStorage["showEditOptions"] == "true",
+      showEventOptions:
+        localStorage["showEventOptions"] == undefined
+          ? false
+          : localStorage["showEventOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
       showBestTimes: localStorage["showBestTimes"] == "true",
@@ -2719,9 +2723,13 @@ export default {
       )
         this.state = this.defaultState
     },
-    toggleShowOptions() {
-      this.showOptions = !this.showOptions
-      localStorage["showAvailabilityOptions"] = this.showOptions
+    toggleShowEditOptions() {
+      this.showEditOptions = !this.showEditOptions
+      localStorage["showEditOptions"] = this.showEditOptions
+    },
+    toggleShowEventOptions() {
+      this.showEventOptions = !this.showEventOptions
+      localStorage["showEventOptions"] = this.showEventOptions
     },
     updateOverlayAvailability(val) {
       this.overlayAvailability = !!val
