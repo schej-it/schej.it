@@ -12,60 +12,66 @@
       >
         <!-- Select timezone -->
         <TimezoneSelector
-          v-if="!event.daysOnly && !isPhone"
+          v-if="!event.daysOnly"
           :value="curTimezone"
-          @input="updateCurTimezone"
+          @input="(val) => $emit('update:curTimezone', val)"
         />
 
-        <template v-if="state !== states.EDIT_AVAILABILITY">
-          <template v-if="isPhone">
-            <div v-if="numResponses > 1">
-              <v-switch
-                inset
-                id="show-best-times-toggle"
-                :input-value="showBestTimes"
-                @change="(val) => $emit('update:showBestTimes', !!val)"
-                hide-details
-              >
-                <template v-slot:label>
-                  <div class="tw-text-sm tw-text-black">
-                    Show best {{ event.daysOnly ? "days" : "times" }}
-                  </div>
-                </template>
-              </v-switch>
-            </div>
-            <v-switch
-              inset
-              id="hide-if-needed-toggle"
-              :input-value="hideIfNeeded"
-              @change="(val) => $emit('update:hideIfNeeded', !!val)"
-              hide-details
-            >
-              <template v-slot:label>
-                <div class="tw-text-sm tw-text-black">
-                  Hide if needed {{ event.daysOnly ? "days" : "times" }}
-                </div>
-              </template>
-            </v-switch>
-          </template>
-          <div
-            v-if="!event.daysOnly && isPhone"
-            class="tw-flex tw-basis-full tw-items-center tw-gap-x-2"
+        <template v-if="state !== states.EDIT_AVAILABILITY && isPhone">
+          <ExpandableSection
+            label="Options"
+            v-model="showOptions"
+            class="tw-mt-2 tw-w-full"
           >
-            Show
-            <v-select
-              :value="mobileNumDays"
-              @input="$emit('update:mobileNumDays', $event)"
-              :items="mobileNumDaysOptions"
-              :menu-props="{ auto: true }"
-              item-text="label"
-              item-value="value"
-              class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
-              dense
-              hide-details
-            />
-            at a time
-          </div>
+            <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
+              <template v-if="numResponses > 1">
+                <v-switch
+                  inset
+                  id="show-best-times-toggle"
+                  :input-value="showBestTimes"
+                  @change="(val) => $emit('update:showBestTimes', !!val)"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <div class="tw-text-sm tw-text-black">
+                      Show best {{ event.daysOnly ? "days" : "times" }}
+                    </div>
+                  </template>
+                </v-switch>
+                <v-switch
+                  inset
+                  id="hide-if-needed-toggle"
+                  :input-value="hideIfNeeded"
+                  @change="(val) => $emit('update:hideIfNeeded', !!val)"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <div class="tw-text-sm tw-text-black">
+                      Hide if needed {{ event.daysOnly ? "days" : "times" }}
+                    </div>
+                  </template>
+                </v-switch>
+              </template>
+              <div
+                v-if="!event.daysOnly"
+                class="tw-flex tw-basis-full tw-items-center tw-gap-x-2 tw-py-1"
+              >
+                Show
+                <v-select
+                  :value="mobileNumDays"
+                  @input="$emit('update:mobileNumDays', $event)"
+                  :items="mobileNumDaysOptions"
+                  :menu-props="{ auto: true }"
+                  item-text="label"
+                  item-value="value"
+                  class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
+                  dense
+                  hide-details
+                />
+                at a time
+              </div>
+            </div>
+          </ExpandableSection>
         </template>
         <template v-else-if="isWeekly && !isPhone">
           <v-spacer />
@@ -77,12 +83,6 @@
             />
           </div>
         </template>
-
-        <TimezoneSelector
-          v-if="!event.daysOnly && isPhone"
-          :value="curTimezone"
-          @input="updateCurTimezone"
-        />
       </div>
 
       <div
@@ -140,6 +140,7 @@ import TimezoneSelector from "./TimezoneSelector.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import { isPhone } from "@/utils"
 import Advertisement from "../event/Advertisement.vue"
+import ExpandableSection from "../ExpandableSection.vue"
 
 export default {
   name: "ToolRow",
@@ -163,6 +164,7 @@ export default {
     TimezoneSelector,
     GCalWeekSelector,
     Advertisement,
+    ExpandableSection,
   },
 
   data: () => ({
@@ -170,17 +172,12 @@ export default {
       { label: "3 days", value: 3 },
       { label: "7 days", value: 7 },
     ],
+    showOptions: false,
   }),
 
   computed: {
     isPhone() {
       return isPhone(this.$vuetify)
-    },
-  },
-
-  methods: {
-    updateCurTimezone(val) {
-      this.$emit("update:curTimezone", val)
     },
   },
 }

@@ -1,6 +1,10 @@
 <template>
-  <ExpandableSection label="Options" v-model="showOptions">
-    <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2" v-if="numResponses > 1">
+  <ExpandableSection
+    label="Options"
+    v-model="showOptions"
+    v-if="numResponses > 1"
+  >
+    <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
       <v-switch
         inset
         id="show-best-times-toggle"
