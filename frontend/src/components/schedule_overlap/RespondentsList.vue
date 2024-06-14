@@ -191,6 +191,8 @@
       <EventOptions
         v-if="!isPhone"
         :event="event"
+        :showEventOptions="showEventOptions"
+        @toggleShowEventOptions="$emit('toggleShowEventOptions')"
         :showBestTimes="showBestTimes"
         @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
         :hideIfNeeded="hideIfNeeded"
@@ -298,6 +300,7 @@ export default {
     timezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     hideIfNeeded: { type: Boolean, required: true },
+    showEventOptions: { type: Boolean, required: true },
   },
 
   data() {

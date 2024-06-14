@@ -87,6 +87,8 @@
                 :num-responses="respondents.length"
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
+                :show-event-options="showEventOptions"
+                @toggleShowEventOptions="toggleShowEventOptions"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                 @scheduleEvent="scheduleEvent"
                 @cancelScheduleEvent="cancelScheduleEvent"
@@ -357,6 +359,8 @@
                 :num-responses="respondents.length"
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
+                :show-event-options="showEventOptions"
+                @toggleShowEventOptions="toggleShowEventOptions"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                 @scheduleEvent="scheduleEvent"
                 @cancelScheduleEvent="cancelScheduleEvent"
@@ -550,6 +554,8 @@
               :timezone="curTimezone"
               :show-best-times.sync="showBestTimes"
               :hide-if-needed.sync="hideIfNeeded"
+              :show-event-options="showEventOptions"
+              @toggleShowEventOptions="toggleShowEventOptions"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
@@ -587,6 +593,8 @@
         :num-responses="respondents.length"
         :mobile-num-days.sync="mobileNumDays"
         :allow-schedule-event="allowScheduleEvent"
+        :show-event-options="showEventOptions"
+        @toggleShowEventOptions="toggleShowEventOptions"
         @update:weekOffset="(val) => $emit('update:weekOffset', val)"
         @scheduleEvent="scheduleEvent"
         @cancelScheduleEvent="cancelScheduleEvent"
@@ -664,6 +672,8 @@
                 :timezone="curTimezone"
                 :show-best-times.sync="showBestTimes"
                 :hide-if-needed.sync="hideIfNeeded"
+                :show-event-options="showEventOptions"
+                @toggleShowEventOptions="toggleShowEventOptions"
                 @mouseOverRespondent="mouseOverRespondent"
                 @mouseLeaveRespondent="mouseLeaveRespondent"
                 @clickRespondent="clickRespondent"
@@ -793,13 +803,25 @@ export default {
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
 
-      /** Edit options */
+      /* Edit options */
+      showEditOptions:
+        localStorage["showEditOptions"] == undefined
+          ? false
+          : localStorage["showEditOptions"] == "true",
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       bufferTimeActive: localStorage["bufferTimeActive"] == "true", // Whether to buffer events when autofilling
       bufferTime: localStorage["bufferTime"]
         ? parseInt(localStorage["bufferTime"])
         : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
+
+      /* Event Options */
+      showEventOptions:
+        localStorage["showEventOptions"] == undefined
+          ? false
+          : localStorage["showEventOptions"] == "true",
+      showBestTimes: false,
+      hideIfNeeded: false,
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -816,18 +838,8 @@ export default {
       dragCur: null,
 
       /* Variables for options */
-      showEditOptions:
-        localStorage["showEditOptions"] == undefined
-          ? false
-          : localStorage["showEditOptions"] == "true",
-      showEventOptions:
-        localStorage["showEventOptions"] == undefined
-          ? false
-          : localStorage["showEventOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
-      showBestTimes: localStorage["showBestTimes"] == "true",
-      hideIfNeeded: false,
       deleteAvailabilityDialog: false,
       showCalendarEvents: false,
 

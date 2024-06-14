@@ -20,7 +20,8 @@
         <template v-if="state !== states.EDIT_AVAILABILITY && isPhone">
           <ExpandableSection
             label="Options"
-            v-model="showOptions"
+            :value="showEventOptions"
+            @input="$emit('toggleShowEventOptions')"
             class="tw-mt-2 tw-w-full"
           >
             <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
@@ -158,6 +159,7 @@ export default {
     numResponses: { type: Number, required: true },
     mobileNumDays: { type: Number, default: 3 }, // The number of days to show at a time on mobile
     allowScheduleEvent: { type: Boolean, required: true },
+    showEventOptions: { type: Boolean, required: true },
   },
 
   components: {
@@ -172,7 +174,6 @@ export default {
       { label: "3 days", value: 3 },
       { label: "7 days", value: 7 },
     ],
-    showOptions: false,
   }),
 
   computed: {

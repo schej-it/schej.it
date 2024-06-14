@@ -1,8 +1,9 @@
 <template>
   <ExpandableSection
-    label="Options"
-    v-model="showOptions"
     v-if="numResponses > 1"
+    label="Options"
+    :value="showEventOptions"
+    @input="$emit('toggleShowEventOptions')"
   >
     <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
       <v-switch
@@ -50,12 +51,7 @@ export default {
     showBestTimes: { type: Boolean, required: true },
     hideIfNeeded: { type: Boolean, required: true },
     numResponses: { type: Number, required: true },
-  },
-
-  data() {
-    return {
-      showOptions: false,
-    }
+    showEventOptions: { type: Boolean, required: true },
   },
 }
 </script>
