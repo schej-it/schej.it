@@ -273,7 +273,8 @@
 
     <v-switch
       v-if="isGroup && isPhone"
-      class="tw-mt-2"
+      :class="maxHeight && 'tw-mt-2'"
+      class="tw-mb-4"
       inset
       :input-value="showCalendarEvents"
       @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"

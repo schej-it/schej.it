@@ -13,6 +13,7 @@
         <!-- Select timezone -->
         <TimezoneSelector
           v-if="!event.daysOnly"
+          class="tw-w-full sm:tw-w-[unset]"
           :value="curTimezone"
           @input="(val) => $emit('update:curTimezone', val)"
         />
