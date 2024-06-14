@@ -84,6 +84,7 @@ html {
 }
 .v-input--selection-controls {
   margin-top: 0px !important;
+  padding-top: 0px !important;
 }
 
 /** Buttons */

@@ -11,7 +11,7 @@
           <v-checkbox
             v-model="account.enabled"
             @change="(enabled) => toggleCalendarAccount(enabled)"
-            class="-tw-mb-[3px]"
+            hide-details
           />
           <div
             class="-tw-ml-2 tw-h-fit tw-w-fit tw-cursor-pointer"
@@ -74,12 +74,13 @@
         <div
           v-for="(subCalendar, id) in account.subCalendars"
           :key="id"
-          class="tw-flex tw-flex-row tw-items-center"
+          class="tw-flex tw-flex-row tw-items-start tw-py-2"
         >
           <v-checkbox
             v-model="subCalendar.enabled"
             @change="(enabled) => toggleSubCalendarAccount(enabled, id)"
-            class="tw-h-5 tw-items-center"
+            class="-tw-mt-px"
+            hide-details
           />
           <div
             :class="!fillSpace ? 'tw-w-40' : ''"
