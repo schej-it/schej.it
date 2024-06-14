@@ -70,11 +70,11 @@
     <!-- Sub-calendar accounts -->
 
     <v-expand-transition>
-      <div v-if="showSubCalendars" class="tw-bg-[#EBF7EF]">
+      <div v-if="showSubCalendars" class="tw-space-y-2 tw-bg-[#EBF7EF] tw-py-2">
         <div
           v-for="(subCalendar, id) in account.subCalendars"
           :key="id"
-          class="tw-flex tw-flex-row tw-items-start tw-py-2"
+          class="tw-flex tw-flex-row tw-items-start"
         >
           <v-checkbox
             v-model="subCalendar.enabled"
