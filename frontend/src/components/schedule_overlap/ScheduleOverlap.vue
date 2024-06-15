@@ -2538,8 +2538,9 @@ export default {
 
       if (!this.dragStart || !this.dragCur) return
 
+      // Update availability set based on drag region
       if (this.state === this.states.EDIT_AVAILABILITY) {
-        // Update availability set based on drag region
+        // Determine colInc and rowInc
         let colInc =
           (this.dragCur.col - this.dragStart.col) /
           Math.abs(this.dragCur.col - this.dragStart.col)
@@ -2548,18 +2549,31 @@ export default {
           Math.abs(this.dragCur.row - this.dragStart.row)
         if (isNaN(colInc)) colInc = 1
         if (isNaN(rowInc)) rowInc = 1
-        let r = this.dragStart.row
-        while (r != this.dragCur.row + rowInc) {
-          let c = this.dragStart.col
-          while (c != this.dragCur.col + colInc) {
+
+        // Determine iteration variables
+        let rowStart = this.dragStart.row
+        let rowMax = this.dragCur.row + rowInc
+        let colStart = this.dragStart.col
+        let colMax = this.dragCur.col + colInc
+
+        // Correct iteration variables if days only
+        if (this.event.daysOnly) {
+          colStart = 0
+          colMax = 7
+          colInc = 1
+        }
+
+        // Iterate all selected time slots and either add or remove them
+        for (let r = rowStart; r != rowMax; r += rowInc) {
+          for (let c = colStart; c != colMax; c += colInc) {
             const date = this.getDateFromRowCol(r, c)
 
             // Don't add to availability set if month day is not included
             if (
               this.event.daysOnly &&
-              !this.monthDayIncluded.get(date.getTime())
+              (!this.monthDayIncluded.get(date.getTime()) ||
+                !this.inDragRange(r, c))
             ) {
-              c += colInc
               continue
             }
 
@@ -2627,10 +2641,7 @@ export default {
                 )
               }
             }
-
-            c += colInc
           }
-          r += rowInc
         }
         this.availability = new Set(this.availability)
       } else if (this.state === this.states.SCHEDULE_EVENT) {
@@ -2652,8 +2663,36 @@ export default {
       this.dragCur = null
     },
     inDragRange(row, col) {
-      /* Returns whether the given day and time index is within the drag range */
+      /* Returns whether the given row and col is within the drag range */
       if (this.dragging) {
+        if (this.event.daysOnly) {
+          if (
+            isBetween(row, this.dragStart.row, this.dragCur.row) ||
+            isBetween(row, this.dragCur.row, this.dragStart.row)
+          ) {
+            if (this.dragCur.row < this.dragStart.row) {
+              return (
+                (this.dragCur.row === row && this.dragCur.col <= col) ||
+                (this.dragStart.row === row && this.dragStart.col >= col) ||
+                (this.dragStart.row !== row && this.dragCur.row !== row)
+              )
+            } else if (this.dragCur.row > this.dragStart.row) {
+              return (
+                (this.dragCur.row === row && this.dragCur.col >= col) ||
+                (this.dragStart.row === row && this.dragStart.col <= col) ||
+                (this.dragStart.row !== row && this.dragCur.row !== row)
+              )
+            } else {
+              // cur row == start row
+              return (
+                isBetween(col, this.dragStart.col, this.dragCur.col) ||
+                isBetween(col, this.dragCur.col, this.dragStart.col)
+              )
+            }
+          }
+          return false
+        }
+
         return (
           (isBetween(row, this.dragStart.row, this.dragCur.row) ||
             isBetween(row, this.dragCur.row, this.dragStart.row)) &&
@@ -2661,6 +2700,7 @@ export default {
             isBetween(col, this.dragCur.col, this.dragStart.col))
         )
       }
+      return false
     },
     moveDrag(e) {
       if (!this.allowDrag) return
