@@ -80,14 +80,16 @@
                 :states="states"
                 :cur-timezone.sync="curTimezone"
                 :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
                 :is-weekly="isWeekly"
                 :calendar-permission-granted="calendarPermissionGranted"
                 :week-offset="weekOffset"
                 :num-responses="respondents.length"
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
+                :show-event-options="showEventOptions"
+                @toggleShowEventOptions="toggleShowEventOptions"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @onShowBestTimesChange="onShowBestTimesChange"
                 @scheduleEvent="scheduleEvent"
                 @cancelScheduleEvent="cancelScheduleEvent"
                 @confirmScheduleEvent="confirmScheduleEvent"
@@ -350,14 +352,16 @@
                 :states="states"
                 :cur-timezone.sync="curTimezone"
                 :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
                 :is-weekly="isWeekly"
                 :calendar-permission-granted="calendarPermissionGranted"
                 :week-offset="weekOffset"
                 :num-responses="respondents.length"
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
+                :show-event-options="showEventOptions"
+                @toggleShowEventOptions="toggleShowEventOptions"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @onShowBestTimesChange="onShowBestTimesChange"
                 @scheduleEvent="scheduleEvent"
                 @cancelScheduleEvent="cancelScheduleEvent"
                 @confirmScheduleEvent="confirmScheduleEvent"
@@ -437,15 +441,15 @@
                 class="-tw-ml-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
                 block
                 text
-                @click="toggleShowOptions"
+                @click="toggleShowEditOptions"
               >
                 <span class="tw-mr-1 tw-text-base tw-font-medium">Options</span>
-                <v-icon :class="`tw-rotate-${showOptions ? '180' : '0'}`"
+                <v-icon :class="`tw-rotate-${showEditOptions ? '180' : '0'}`"
                   >mdi-chevron-down</v-icon
                 ></v-btn
               >
               <v-expand-transition>
-                <div v-show="showOptions">
+                <div v-show="showEditOptions">
                   <div v-if="showOverlayAvailabilityToggle">
                     <v-switch
                       id="overlay-availabilities-toggle"
@@ -548,24 +552,18 @@
               :showCalendarEvents.sync="showCalendarEvents"
               :responsesFormatted="responsesFormatted"
               :timezone="curTimezone"
+              :show-best-times.sync="showBestTimes"
+              :hide-if-needed.sync="hideIfNeeded"
+              :show-event-options="showEventOptions"
+              @toggleShowEventOptions="toggleShowEventOptions"
+              :guestAddedAvailability="guestAddedAvailability"
+              @addAvailability="$emit('addAvailability')"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
               @editGuestAvailability="editGuestAvailability"
               @refreshEvent="refreshEvent"
             />
-            <v-btn
-              v-if="
-                !authUser &&
-                guestAddedAvailability &&
-                !event.blindAvailabilityEnabled
-              "
-              text
-              color="primary"
-              class="-tw-ml-2 tw-px-2"
-              @click="() => $emit('addAvailability')"
-              >+ Add availability</v-btn
-            >
           </template>
         </div>
       </div>
@@ -578,14 +576,16 @@
         :states="states"
         :cur-timezone.sync="curTimezone"
         :show-best-times.sync="showBestTimes"
+        :hide-if-needed.sync="hideIfNeeded"
         :is-weekly="isWeekly"
         :calendar-permission-granted="calendarPermissionGranted"
         :week-offset="weekOffset"
         :num-responses="respondents.length"
         :mobile-num-days.sync="mobileNumDays"
         :allow-schedule-event="allowScheduleEvent"
+        :show-event-options="showEventOptions"
+        @toggleShowEventOptions="toggleShowEventOptions"
         @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-        @onShowBestTimesChange="onShowBestTimesChange"
         @scheduleEvent="scheduleEvent"
         @cancelScheduleEvent="cancelScheduleEvent"
         @confirmScheduleEvent="confirmScheduleEvent"
@@ -660,6 +660,12 @@
                 :showCalendarEvents.sync="showCalendarEvents"
                 :responsesFormatted="responsesFormatted"
                 :timezone="curTimezone"
+                :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
+                :show-event-options="showEventOptions"
+                @toggleShowEventOptions="toggleShowEventOptions"
+                :guestAddedAvailability="guestAddedAvailability"
+                @addAvailability="$emit('addAvailability')"
                 @mouseOverRespondent="mouseOverRespondent"
                 @mouseLeaveRespondent="mouseLeaveRespondent"
                 @clickRespondent="clickRespondent"
@@ -789,13 +795,25 @@ export default {
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
 
-      /** Edit options */
+      /* Edit options */
+      showEditOptions:
+        localStorage["showEditOptions"] == undefined
+          ? false
+          : localStorage["showEditOptions"] == "true",
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
       bufferTimeActive: localStorage["bufferTimeActive"] == "true", // Whether to buffer events when autofilling
       bufferTime: localStorage["bufferTime"]
         ? parseInt(localStorage["bufferTime"])
         : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
+
+      /* Event Options */
+      showEventOptions:
+        localStorage["showEventOptions"] == undefined
+          ? false
+          : localStorage["showEventOptions"] == "true",
+      showBestTimes: false,
+      hideIfNeeded: false,
 
       /* Variables for drag stuff */
       DRAG_TYPES: {
@@ -812,13 +830,8 @@ export default {
       dragCur: null,
 
       /* Variables for options */
-      showOptions:
-        localStorage["showAvailabilityOptions"] == undefined
-          ? false
-          : localStorage["showAvailabilityOptions"] == "true",
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
-      showBestTimes: localStorage["showBestTimes"] == "true",
       deleteAvailabilityDialog: false,
       showCalendarEvents: false,
 
@@ -1689,7 +1702,7 @@ export default {
 
       this.$worker
         .run(
-          (days, times, parsedResponses, daysOnly) => {
+          (days, times, parsedResponses, daysOnly, hideIfNeeded) => {
             // Define functions locally because we can't import functions
             const splitTimeNum = (timeNum) => {
               const hours = Math.floor(timeNum)
@@ -1733,7 +1746,7 @@ export default {
                 // Check availability array
                 if (
                   response.availability?.has(date.getTime()) ||
-                  response.ifNeeded?.has(date.getTime())
+                  (response.ifNeeded?.has(date.getTime()) && !hideIfNeeded)
                 ) {
                   formatted.get(date.getTime()).add(response.user._id)
                   continue
@@ -1742,7 +1755,13 @@ export default {
             }
             return formatted
           },
-          [this.allDays, this.times, this.parsedResponses, this.event.daysOnly]
+          [
+            this.allDays,
+            this.times,
+            this.parsedResponses,
+            this.event.daysOnly,
+            this.hideIfNeeded,
+          ]
         )
         .then((formatted) => {
           // Only set responses formatted for the latest request
@@ -2708,9 +2727,13 @@ export default {
       )
         this.state = this.defaultState
     },
-    toggleShowOptions() {
-      this.showOptions = !this.showOptions
-      localStorage["showAvailabilityOptions"] = this.showOptions
+    toggleShowEditOptions() {
+      this.showEditOptions = !this.showEditOptions
+      localStorage["showEditOptions"] = this.showEditOptions
+    },
+    toggleShowEventOptions() {
+      this.showEventOptions = !this.showEventOptions
+      localStorage["showEventOptions"] = this.showEventOptions
     },
     updateOverlayAvailability(val) {
       this.overlayAvailability = !!val
@@ -3005,6 +3028,9 @@ export default {
         this.fetchResponses()
       }
     },
+    hideIfNeeded() {
+      this.getResponsesFormatted()
+    },
     parsedResponses() {
       // Theoretically, parsed responses should only be changing for groups
       this.getResponsesFormatted()
@@ -3018,6 +3044,9 @@ export default {
         this.availability = new Set()
         this.populateUserAvailability(this.authUser._id)
       }
+    },
+    showBestTimes() {
+      this.onShowBestTimesChange()
     },
     bufferTimeActive() {
       localStorage["bufferTimeActive"] = this.bufferTimeActive

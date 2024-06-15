@@ -8,52 +8,76 @@
           state === states.EDIT_AVAILABILITY ? 'center' : 'between'
         } 
         `"
-        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-4 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
         <TimezoneSelector
-          v-if="!event.daysOnly && !isPhone"
+          v-if="!event.daysOnly"
+          class="tw-w-full sm:tw-w-[unset]"
           :value="curTimezone"
-          @input="updateCurTimezone"
+          @input="(val) => $emit('update:curTimezone', val)"
         />
 
-        <template v-if="state !== states.EDIT_AVAILABILITY">
-          <div v-if="numResponses > 1">
-            <v-switch
-              inset
-              id="show-best-times-toggle"
-              class="tw-mt-0 tw-py-2.5"
-              :input-value="showBestTimes"
-              @change="updateShowBestTimes"
-              hide-details
-            >
-              <template v-slot:label>
-                <div class="tw-text-sm tw-text-black">
-                  Show best {{ event.daysOnly ? "days" : "times" }}
-                </div>
-              </template>
-            </v-switch>
-          </div>
-          <div
-            v-if="!event.daysOnly && isPhone"
-            class="tw-flex tw-basis-full tw-items-center tw-gap-x-2"
+        <template v-if="state !== states.EDIT_AVAILABILITY && isPhone">
+          <ExpandableSection
+            label="Options"
+            :value="showEventOptions"
+            @input="$emit('toggleShowEventOptions')"
+            class="tw-mt-2 tw-w-full"
           >
-            Show
-            <v-select
-              :value="mobileNumDays"
-              @input="$emit('update:mobileNumDays', $event)"
-              :items="mobileNumDaysOptions"
-              :menu-props="{ auto: true }"
-              item-text="label"
-              item-value="value"
-              class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
-              dense
-              hide-details
-            />
-            at a time
-          </div>
+            <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
+              <template v-if="numResponses > 1">
+                <v-switch
+                  inset
+                  id="show-best-times-toggle"
+                  :input-value="showBestTimes"
+                  @change="(val) => $emit('update:showBestTimes', !!val)"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <div class="tw-text-sm tw-text-black">
+                      Show best {{ event.daysOnly ? "days" : "times" }}
+                    </div>
+                  </template>
+                </v-switch>
+                <v-switch
+                  inset
+                  id="hide-if-needed-toggle"
+                  :input-value="hideIfNeeded"
+                  @change="(val) => $emit('update:hideIfNeeded', !!val)"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <div class="tw-text-sm tw-text-black">
+                      Hide if needed {{ event.daysOnly ? "days" : "times" }}
+                    </div>
+                  </template>
+                </v-switch>
+              </template>
+              <div
+                v-if="!event.daysOnly"
+                class="tw-flex tw-basis-full tw-items-center tw-gap-x-2 tw-py-1"
+              >
+                Show
+                <v-select
+                  :value="mobileNumDays"
+                  @input="$emit('update:mobileNumDays', $event)"
+                  :items="mobileNumDaysOptions"
+                  :menu-props="{ auto: true }"
+                  item-text="label"
+                  item-value="value"
+                  class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
+                  dense
+                  hide-details
+                />
+                at a time
+              </div>
+            </div>
+          </ExpandableSection>
         </template>
-        <template v-else-if="isWeekly && !isPhone">
+        <template
+          v-if="state === states.EDIT_AVAILABILITY && isWeekly && !isPhone"
+        >
           <v-spacer />
           <div class="tw-min-w-fit">
             <GCalWeekSelector
@@ -63,12 +87,6 @@
             />
           </div>
         </template>
-
-        <TimezoneSelector
-          v-if="!event.daysOnly && isPhone"
-          :value="curTimezone"
-          @input="updateCurTimezone"
-        />
       </div>
 
       <div
@@ -126,6 +144,7 @@ import TimezoneSelector from "./TimezoneSelector.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import { isPhone } from "@/utils"
 import Advertisement from "../event/Advertisement.vue"
+import ExpandableSection from "../ExpandableSection.vue"
 
 export default {
   name: "ToolRow",
@@ -136,18 +155,21 @@ export default {
     states: { type: Object, required: true },
     curTimezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
+    hideIfNeeded: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
     calendarPermissionGranted: { type: Boolean, required: true },
     weekOffset: { type: Number, required: true },
     numResponses: { type: Number, required: true },
     mobileNumDays: { type: Number, default: 3 }, // The number of days to show at a time on mobile
     allowScheduleEvent: { type: Boolean, required: true },
+    showEventOptions: { type: Boolean, required: true },
   },
 
   components: {
     TimezoneSelector,
     GCalWeekSelector,
     Advertisement,
+    ExpandableSection,
   },
 
   data: () => ({
@@ -160,16 +182,6 @@ export default {
   computed: {
     isPhone() {
       return isPhone(this.$vuetify)
-    },
-  },
-
-  methods: {
-    updateShowBestTimes(val) {
-      this.$emit("update:showBestTimes", !!val)
-      this.$emit("onShowBestTimesChange", !!val)
-    },
-    updateCurTimezone(val) {
-      this.$emit("update:curTimezone", val)
     },
   },
 }

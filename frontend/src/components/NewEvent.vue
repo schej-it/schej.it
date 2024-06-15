@@ -155,155 +155,130 @@
           </template>
         </v-checkbox>
 
-        <div v-if="authUser">
-          <v-btn
-            class="tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-base"
-            block
-            text
-            @click="() => toggleEmailReminders()"
-            ><span class="tw-mr-1">Email reminders</span>
-            <v-icon
-              :class="`tw-rotate-${showEmailReminders ? '180' : '0'}`"
-              :size="30"
-              >mdi-chevron-down</v-icon
-            ></v-btn
+        <div class="tw-flex tw-flex-col tw-gap-2">
+          <ExpandableSection
+            v-if="authUser"
+            label="Email reminders"
+            v-model="showEmailReminders"
+            :auto-scroll="dialog"
           >
-          <v-expand-transition>
-            <div v-show="showEmailReminders">
-              <div class="tw-my-2 tw-space-y-5">
-                <EmailInput
-                  v-show="authUser"
-                  ref="emailInput"
-                  @requestContactsAccess="requestContactsAccess"
-                  labelColor="tw-text-very-dark-gray"
-                  :addedEmails="addedEmails"
-                  @update:emails="(newEmails) => (emails = newEmails)"
-                >
-                  <template v-slot:header>
-                    <div class="tw-flex tw-gap-1">
-                      <div class="tw-text-very-dark-gray">
-                        Remind people to fill out the event
+            <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2">
+              <EmailInput
+                v-show="authUser"
+                ref="emailInput"
+                @requestContactsAccess="requestContactsAccess"
+                labelColor="tw-text-very-dark-gray"
+                :addedEmails="addedEmails"
+                @update:emails="(newEmails) => (emails = newEmails)"
+              >
+                <template v-slot:header>
+                  <div class="tw-flex tw-gap-1">
+                    <div class="tw-text-very-dark-gray">
+                      Remind people to fill out the event
+                    </div>
+
+                    <v-tooltip
+                      top
+                      content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100"
+                    >
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-icon small v-bind="attrs" v-on="on"
+                          >mdi-information-outline
+                        </v-icon>
+                      </template>
+                      <div>
+                        Reminder emails will be sent the day of event
+                        creation,<br />one day after, and three days after. You
+                        will also receive <br />an email when everybody has
+                        filled out the event.
                       </div>
-
-                      <v-tooltip
-                        top
-                        content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100"
-                      >
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon small v-bind="attrs" v-on="on"
-                            >mdi-information-outline
-                          </v-icon>
-                        </template>
-                        <div>
-                          Reminder emails will be sent the day of event
-                          creation,<br />one day after, and three days after.
-                          You will also receive <br />an email when everybody
-                          has filled out the event.
-                        </div>
-                      </v-tooltip>
-                    </div>
-                  </template>
-                </EmailInput>
-              </div>
+                    </v-tooltip>
+                  </div>
+                </template>
+              </EmailInput>
             </div>
-          </v-expand-transition>
-          <div ref="emailRemindersOpenScrollTo"></div>
-        </div>
+          </ExpandableSection>
 
-        <div>
-          <v-btn
-            class="-tw-mt-2 tw-flex tw-items-end tw-justify-start tw-p-1 tw-text-base"
-            block
-            text
-            @click="() => toggleAdvancedOptions()"
-            ><span class="tw-mr-1">Advanced options</span>
-            <v-icon
-              :class="`tw-rotate-${showAdvancedOptions ? '180' : '0'}`"
-              :size="30"
-              >mdi-chevron-down</v-icon
-            ></v-btn
+          <ExpandableSection
+            v-model="showAdvancedOptions"
+            label="Advanced options"
+            :auto-scroll="dialog"
           >
-          <v-expand-transition>
-            <div v-show="showAdvancedOptions">
-              <div class="tw-my-2 tw-space-y-5">
-                <v-checkbox
-                  v-if="authUser"
-                  v-model="blindAvailabilityEnabled"
-                  messages="Only show responses to event creator"
-                >
-                  <template v-slot:label>
-                    <span class="tw-text-sm tw-text-black">
-                      Hide responses from respondents
+            <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2">
+              <v-checkbox
+                v-if="authUser"
+                v-model="blindAvailabilityEnabled"
+                messages="Only show responses to event creator"
+              >
+                <template v-slot:label>
+                  <span class="tw-text-sm tw-text-black">
+                    Hide responses from respondents
+                  </span>
+                </template>
+                <template v-slot:message="{ key, message }">
+                  <div
+                    class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                  >
+                    {{ message }}
+                  </div>
+                </template>
+              </v-checkbox>
+              <v-checkbox
+                v-else
+                disabled
+                messages="Only show responses to event creator. "
+              >
+                <template v-slot:label>
+                  <span class="tw-text-sm"
+                    >Hide responses from respondents</span
+                  >
+                </template>
+                <template v-slot:message="{ key, message }">
+                  <div
+                    class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                  >
+                    {{ message }}
+                    <span class="tw-font-medium tw-text-very-dark-gray"
+                      ><a @click="$emit('signIn')">Sign in</a>
+                      to use this feature
                     </span>
-                  </template>
-                  <template v-slot:message="{ key, message }">
-                    <div
-                      class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
-                    >
-                      {{ message }}
-                    </div>
-                  </template>
-                </v-checkbox>
-                <v-checkbox
-                  v-else
-                  disabled
-                  messages="Only show responses to event creator. "
-                >
-                  <template v-slot:label>
-                    <span class="tw-text-sm"
-                      >Hide responses from respondents</span
-                    >
-                  </template>
-                  <template v-slot:message="{ key, message }">
-                    <div
-                      class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
-                    >
-                      {{ message }}
-                      <span class="tw-font-medium tw-text-very-dark-gray"
-                        ><a @click="$emit('signIn')">Sign in</a>
-                        to use this feature
-                      </span>
-                    </div>
-                  </template>
-                </v-checkbox>
-                <v-checkbox
-                  v-if="authUser"
-                  v-model="sendEmailAfterXResponsesEnabled"
-                  hide-details
-                >
-                  <template v-slot:label>
-                    <div
-                      :class="
-                        !sendEmailAfterXResponsesEnabled && 'tw-opacity-50'
+                  </div>
+                </template>
+              </v-checkbox>
+              <v-checkbox
+                v-if="authUser"
+                v-model="sendEmailAfterXResponsesEnabled"
+                hide-details
+              >
+                <template v-slot:label>
+                  <div
+                    :class="!sendEmailAfterXResponsesEnabled && 'tw-opacity-50'"
+                    class="tw-flex tw-items-center tw-gap-x-2 tw-text-sm tw-text-very-dark-gray"
+                  >
+                    <div>Email me after</div>
+                    <v-text-field
+                      v-model="sendEmailAfterXResponses"
+                      @click="
+                        (e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }
                       "
-                      class="tw-flex tw-items-center tw-gap-x-2 tw-text-sm tw-text-very-dark-gray"
-                    >
-                      <div>Email me after</div>
-                      <v-text-field
-                        v-model="sendEmailAfterXResponses"
-                        @click="
-                          (e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                          }
-                        "
-                        :disabled="!sendEmailAfterXResponsesEnabled"
-                        dense
-                        class="email-me-after-text-field -tw-mt-[2px] tw-w-10"
-                        menu-props="auto"
-                        hide-details
-                        type="number"
-                        min="1"
-                      ></v-text-field>
-                      <div>responses</div>
-                    </div>
-                  </template>
-                </v-checkbox>
-                <TimezoneSelector v-model="timezone" label="Timezone" />
-              </div>
+                      :disabled="!sendEmailAfterXResponsesEnabled"
+                      dense
+                      class="email-me-after-text-field -tw-mt-[2px] tw-w-10"
+                      menu-props="auto"
+                      hide-details
+                      type="number"
+                      min="1"
+                    ></v-text-field>
+                    <div>responses</div>
+                  </div>
+                </template>
+              </v-checkbox>
+              <TimezoneSelector v-model="timezone" label="Timezone" />
             </div>
-          </v-expand-transition>
-          <div ref="advancedOpenScrollTo"></div>
+          </ExpandableSection>
         </div>
       </v-form>
     </v-card-text>
@@ -359,6 +334,7 @@ import SlideToggle from "./SlideToggle.vue"
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
+import ExpandableSection from "./ExpandableSection.vue"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -382,6 +358,7 @@ export default {
     EmailInput,
     DatePicker,
     SlideToggle,
+    ExpandableSection,
   },
 
   data: () => ({
@@ -638,25 +615,15 @@ export default {
         }
       }
     },
-    toggleAdvancedOptions(delayed = false) {
-      this.showAdvancedOptions = !this.showAdvancedOptions
-      if (this.showAdvancedOptions)
-        this.scrollToElement(this.$refs.advancedOpenScrollTo, delayed)
-    },
 
     toggleEmailReminders(delayed = false) {
-      this.showEmailReminders = !this.showEmailReminders
-      if (this.showEmailReminders)
-        this.scrollToElement(this.$refs.emailRemindersOpenScrollTo, delayed)
-    },
-
-    scrollToElement(element, delayed = false) {
-      const openScrollEl = element
-      if (this.dialog && openScrollEl) {
+      if (delayed) {
         setTimeout(
-          () => openScrollEl.scrollIntoView({ behavior: "smooth" }),
-          delayed ? 500 : 200
+          () => (this.showEmailReminders = !this.showEmailReminders),
+          300
         )
+      } else {
+        this.showEmailReminders = !this.showEmailReminders
       }
     },
 
