@@ -34,6 +34,15 @@
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
+      <div
+        v-if="edit && event?.ownerId == 0"
+        class="tw-mb-4 tw-flex tw-items-start tw-gap-1 tw-rounded tw-bg-light-gray tw-p-2 tw-text-dark-gray"
+      >
+        <v-icon class="-tw-mt-px tw-text-base">mdi-alert-circle</v-icon>
+        <span>
+          Anybody can edit this event because it was created while not signed in
+        </span>
+      </div>
       <v-form
         ref="form"
         v-model="formValid"
