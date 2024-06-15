@@ -75,7 +75,9 @@
             </div>
           </ExpandableSection>
         </template>
-        <template v-else-if="isWeekly && !isPhone">
+        <template
+          v-if="state === states.EDIT_AVAILABILITY && isWeekly && !isPhone"
+        >
           <v-spacer />
           <div class="tw-min-w-fit">
             <GCalWeekSelector
