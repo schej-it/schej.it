@@ -44,7 +44,7 @@ func InitEvents(router *gin.Engine) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,when2meetHref=string,attendees=[]string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -61,6 +61,7 @@ func createEvent(c *gin.Context) {
 		DaysOnly                 *bool    `json:"daysOnly"`
 		Remindees                []string `json:"remindees"`
 		SendEmailAfterXResponses *int     `json:"sendEmailAfterXResponses"`
+		When2meetHref            *string  `json:"when2meetHref"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -93,6 +94,7 @@ func createEvent(c *gin.Context) {
 		BlindAvailabilityEnabled: payload.BlindAvailabilityEnabled,
 		DaysOnly:                 payload.DaysOnly,
 		SendEmailAfterXResponses: payload.SendEmailAfterXResponses,
+		When2meetHref:            payload.When2meetHref,
 		Type:                     payload.Type,
 		Responses:                make(map[string]*models.Response),
 	}

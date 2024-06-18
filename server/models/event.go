@@ -23,6 +23,7 @@ type Event struct {
 	Dates                    []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
 	NotificationsEnabled     *bool                `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
 	SendEmailAfterXResponses *int                 `json:"sendEmailAfterXResponses" bson:"sendEmailAfterXResponses,omitempty"`
+	When2meetHref            *string              `json:"when2meetHref" bson:"when2meetHref,omitempty"`
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 

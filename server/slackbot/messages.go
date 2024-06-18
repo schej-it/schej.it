@@ -33,6 +33,7 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 		numRemindees := len(utils.Coalesce(event.Remindees))
 		blindAvailabilityEnabled := utils.Coalesce(event.BlindAvailabilityEnabled)
 		sendEmailAfterXResponses := utils.Coalesce(event.SendEmailAfterXResponses)
+		when2meetHref := utils.Coalesce(event.When2meetHref)
 
 		eventInfoText += fmt.Sprintln("*Days only*:", daysOnly)
 		if notificationsEnabled {
@@ -46,6 +47,9 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 		}
 		if sendEmailAfterXResponses > 0 {
 			eventInfoText += fmt.Sprintln("*Send email after X responses*:", sendEmailAfterXResponses)
+		}
+		if len(when2meetHref) > 0 {
+			eventInfoText += fmt.Sprintf("*When2meet URL*: https://when2meet.com%s\n", when2meetHref)
 		}
 	}
 
