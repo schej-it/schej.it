@@ -15,6 +15,7 @@
         <div class="tw-text-sm tw-text-black">
           <div class="tw-flex tw-items-center tw-gap-2">
             <v-select
+              menu-props="auto"
               dense
               hide-details
               class="-tw-mt-0.5 tw-w-20 tw-text-xs"
@@ -30,6 +31,7 @@
             />
             <div>to</div>
             <v-select
+              menu-props="auto"
               dense
               hide-details
               class="-tw-mt-0.5 tw-w-20 tw-text-xs"

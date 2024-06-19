@@ -17,6 +17,7 @@
           class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-black"
         >
           <v-select
+            menu-props="auto"
             dense
             hide-details
             :items="bufferTimes"
