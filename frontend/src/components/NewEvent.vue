@@ -236,6 +236,7 @@
                 v-else
                 disabled
                 messages="Only show responses to event creator. "
+                off-icon="mdi-checkbox-blank-off-outline"
               >
                 <template v-slot:label>
                   <span class="tw-text-sm"

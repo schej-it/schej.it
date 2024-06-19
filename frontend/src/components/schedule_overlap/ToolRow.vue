@@ -8,7 +8,7 @@
           state === states.EDIT_AVAILABILITY ? 'center' : 'between'
         } 
         `"
-        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
+        class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-4"
       >
         <!-- Select timezone -->
         <div v-if="!event.daysOnly" class="tw-flex tw-items-center tw-gap-2">
@@ -24,7 +24,7 @@
             :menu-props="{ auto: true }"
             item-text="label"
             item-value="value"
-            class="-tw-mt-px tw-w-16 tw-text-sm"
+            class="tw-z-20 -tw-mt-px tw-w-16 tw-text-sm"
             dense
             hide-details
           />

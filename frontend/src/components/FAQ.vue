@@ -37,9 +37,13 @@
           </div>
           <div
             v-if="authRequired"
-            class="tw-mt-6 tw-text-sm tw-font-medium tw-text-green"
+            class="tw-mt-6 tw-text-sm tw-font-medium tw-text-dark-gray"
           >
-            *You must be signed in to your Google Account to use this feature
+            *
+            <a @click.stop="$emit('signIn')" class="tw-text-green tw-underline"
+              >Sign in</a
+            >
+            to use this feature
           </div>
         </div>
       </div>
