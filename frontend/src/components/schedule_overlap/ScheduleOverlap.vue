@@ -439,55 +439,44 @@
               "
               ref="optionsSection"
             >
-              <v-btn
-                class="-tw-ml-2 tw-w-[calc(100%+1rem)] tw-justify-between tw-px-2"
-                block
-                text
-                @click="toggleShowEditOptions"
+              <ExpandableSection
+                label="Options"
+                :value="showEditOptions"
+                @input="toggleShowEditOptions"
               >
-                <span class="tw-mr-1 tw-text-base tw-font-medium">Options</span>
-                <v-icon :class="`tw-rotate-${showEditOptions ? '180' : '0'}`"
-                  >mdi-chevron-down</v-icon
-                ></v-btn
-              >
-              <v-expand-transition>
-                <div v-show="showEditOptions">
+                <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2.5">
                   <div v-if="showOverlayAvailabilityToggle">
                     <v-switch
                       id="overlay-availabilities-toggle"
-                      class="tw-mt-0 tw-py-1"
                       inset
                       :input-value="overlayAvailability"
                       @change="updateOverlayAvailability"
                       hide-details
                     >
                       <template v-slot:label>
-                        <div class="tw-text-xs tw-text-black">
-                          <div>Overlay availabilities</div>
+                        <div class="tw-text-sm tw-text-black">
+                          Overlay availabilities
                         </div>
                       </template>
                     </v-switch>
 
-                    <div>
-                      <div class="tw-text-[12px] tw-text-dark-gray">
-                        View everyone’s availability while inputting your own
-                      </div>
+                    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray">
+                      View everyone's availability while inputting your own
                     </div>
                   </div>
 
                   <div v-if="showBufferTimeToggle">
                     <BufferTimeSwitch
-                      class="tw-mt-0 tw-py-1"
                       v-model="bufferTimeActive"
                       :bufferTime.sync="bufferTime"
                     />
 
-                    <div class="tw-text-[12px] tw-text-dark-gray">
+                    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray">
                       Add time around calendar events
                     </div>
                   </div>
                 </div>
-              </v-expand-transition>
+              </ExpandableSection>
             </div>
 
             <!-- Delete availability button -->
@@ -734,6 +723,7 @@ import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
+import ExpandableSection from "../ExpandableSection.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -3148,6 +3138,7 @@ export default {
   },
   components: {
     AvailabilityTypeToggle,
+    ExpandableSection,
     BufferTimeSwitch,
     UserAvatarContent,
     ZigZag,

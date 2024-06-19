@@ -8,23 +8,24 @@
     hide-details
   >
     <template v-slot:label>
-      <div class="tw-flex tw-flex-col tw-text-xs">
-        <div class="tw-flex tw-items-center tw-justify-center tw-text-black">
-          Buffer time
-          <v-select
-            dense
-            :items="bufferTimes"
-            class="-tw-mb-[0.7rem] tw-w-20 tw-scale-90 tw-text-xs"
-            :value="bufferTime"
-            @input="(val) => $emit('update:bufferTime', val)"
-            @click="
-              (e) => {
-                e.preventDefault()
-                e.stopPropagation()
-              }
-            "
-          ></v-select>
-        </div>
+      <div
+        class="tw-flex tw-items-center tw-justify-center tw-gap-2 tw-text-sm tw-text-black"
+      >
+        <div>Buffer time</div>
+        <v-select
+          dense
+          hide-details
+          :items="bufferTimes"
+          class="-tw-mt-0.5 tw-w-20 tw-text-xs"
+          :value="bufferTime"
+          @input="(val) => $emit('update:bufferTime', val)"
+          @click="
+            (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }
+          "
+        ></v-select>
       </div>
     </template>
   </v-switch>
