@@ -435,7 +435,9 @@
               v-if="
                 !isGroup &&
                 !event.daysOnly &&
-                (showBufferTimeToggle || showOverlayAvailabilityToggle)
+                (showBufferTimeToggle ||
+                  showOverlayAvailabilityToggle ||
+                  showWorkingHoursToggle)
               "
               ref="optionsSection"
             >
@@ -460,7 +462,7 @@
                       </template>
                     </v-switch>
 
-                    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray">
+                    <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
                       View everyone's availability while inputting your own
                     </div>
                   </div>
@@ -471,9 +473,18 @@
                       :bufferTime.sync="bufferTime"
                     />
 
-                    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray">
+                    <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
                       Add time around calendar events
                     </div>
+                  </div>
+
+                  <div v-if="showWorkingHoursToggle">
+                    <WorkingHoursToggle
+                      v-model="workingHoursActive"
+                      :startTime.sync="workingHoursStartTime"
+                      :endTime.sync="workingHoursEndTime"
+                      :timezone="curTimezone"
+                    />
                   </div>
                 </div>
               </ExpandableSection>
@@ -724,6 +735,7 @@ import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import ExpandableSection from "../ExpandableSection.vue"
+import WorkingHoursToggle from "./WorkingHoursToggle.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -799,6 +811,9 @@ export default {
         ? parseInt(localStorage["bufferTime"])
         : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
+      workingHoursActive: false,
+      workingHoursStartTime: 9,
+      workingHoursEndTime: 17,
 
       /* Event Options */
       showEventOptions:
@@ -1543,6 +1558,9 @@ export default {
       return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
     },
     showBufferTimeToggle() {
+      return this.calendarPermissionGranted && !this.userHasResponded
+    },
+    showWorkingHoursToggle() {
       return this.calendarPermissionGranted && !this.userHasResponded
     },
   },
@@ -3148,6 +3166,7 @@ export default {
     RespondentsList,
     Advertisement,
     GCalWeekSelector,
+    WorkingHoursToggle,
   },
 }
 </script>

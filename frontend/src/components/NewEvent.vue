@@ -332,6 +332,7 @@ import {
   validateEmail,
   signInGoogle,
   getDateWithTimezone,
+  getTimeOptions,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
@@ -448,17 +449,7 @@ export default {
         : []
     },
     times() {
-      const times = []
-
-      for (let h = 1; h < 12; ++h) {
-        times.push({ text: `${h} am`, value: h })
-      }
-      for (let h = 0; h < 12; ++h) {
-        times.push({ text: `${h == 0 ? 12 : h} pm`, value: h + 12 })
-      }
-      times.push({ text: "12 am", value: 0 })
-
-      return times
+      return getTimeOptions()
     },
     minCalendarDate() {
       if (this.edit) {

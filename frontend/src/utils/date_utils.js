@@ -1,4 +1,4 @@
-import { eventTypes } from "@/constants"
+import { eventTypes, timeTypes } from "@/constants"
 import { get } from "./fetch_utils"
 import { isBetween } from "./general_utils"
 /* 
@@ -340,6 +340,31 @@ export const getLocale = () => {
 export const userPrefers12h = () => {
   return Intl.DateTimeFormat(getLocale(), { hour: "numeric" }).resolvedOptions()
     .hour12
+}
+
+/** Returns an array of time options based on whether user prefers 12h or 24h */
+export const getTimeOptions = () => {
+  const prefers12h = !localStorage["timeType"]
+    ? userPrefers12h()
+    : localStorage["timeType"] === timeTypes.HOUR12
+
+  const times = []
+  if (prefers12h) {
+    for (let h = 1; h < 12; ++h) {
+      times.push({ text: `${h} am`, value: h })
+    }
+    for (let h = 0; h < 12; ++h) {
+      times.push({ text: `${h == 0 ? 12 : h} pm`, value: h + 12 })
+    }
+    times.push({ text: "12 am", value: 0 })
+
+    return times
+  }
+
+  for (let h = 0; h < 24; ++h) {
+    times.push({ text: `${h}:00`, value: h })
+  }
+  return times
 }
 
 /** 
