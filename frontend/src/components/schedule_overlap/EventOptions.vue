@@ -5,7 +5,7 @@
     :value="showEventOptions"
     @input="$emit('toggleShowEventOptions')"
   >
-    <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
+    <div class="tw-flex tw-flex-col tw-gap-4 tw-pt-2">
       <v-switch
         inset
         id="show-best-times-toggle"
