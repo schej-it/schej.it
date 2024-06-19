@@ -435,9 +435,7 @@
               v-if="
                 !isGroup &&
                 !event.daysOnly &&
-                (showBufferTimeToggle ||
-                  showOverlayAvailabilityToggle ||
-                  showWorkingHoursToggle)
+                (showOverlayAvailabilityToggle || showCalendarOptions)
               "
               ref="optionsSection"
             >
@@ -467,25 +465,47 @@
                     </div>
                   </div>
 
-                  <div v-if="showBufferTimeToggle">
-                    <BufferTimeSwitch
-                      v-model="bufferTimeActive"
-                      :bufferTime.sync="bufferTime"
-                    />
+                  <v-dialog
+                    v-if="showCalendarOptions"
+                    v-model="calendarOptionsDialog"
+                    width="500"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        outlined
+                        class="tw-border-gray tw-text-sm"
+                        v-on="on"
+                        v-bind="attrs"
+                      >
+                        Calendar options...
+                      </v-btn>
+                    </template>
 
-                    <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
-                      Add time around calendar events
-                    </div>
-                  </div>
+                    <v-card>
+                      <v-card-title class="tw-flex">
+                        <div>Calendar options</div>
+                        <v-spacer />
+                        <v-btn icon @click="calendarOptionsDialog = false">
+                          <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                      </v-card-title>
+                      <v-card-text
+                        class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
+                      >
+                        <BufferTimeSwitch
+                          v-model="bufferTimeActive"
+                          :bufferTime.sync="bufferTime"
+                        />
 
-                  <div v-if="showWorkingHoursToggle">
-                    <WorkingHoursToggle
-                      v-model="workingHoursActive"
-                      :startTime.sync="workingHoursStartTime"
-                      :endTime.sync="workingHoursEndTime"
-                      :timezone="curTimezone"
-                    />
-                  </div>
+                        <WorkingHoursToggle
+                          v-model="workingHoursActive"
+                          :startTime.sync="workingHoursStartTime"
+                          :endTime.sync="workingHoursEndTime"
+                          :timezone="curTimezone"
+                        />
+                      </v-card-text>
+                    </v-card>
+                  </v-dialog>
                 </div>
               </ExpandableSection>
             </div>
@@ -843,8 +863,11 @@ export default {
       timeType:
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
-      deleteAvailabilityDialog: false,
       showCalendarEvents: false,
+
+      /* Dialogs */
+      deleteAvailabilityDialog: false,
+      calendarOptionsDialog: false,
 
       /* Variables for scrolling */
       optionsVisible: false,
@@ -1557,10 +1580,7 @@ export default {
     showOverlayAvailabilityToggle() {
       return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
     },
-    showBufferTimeToggle() {
-      return this.calendarPermissionGranted && !this.userHasResponded
-    },
-    showWorkingHoursToggle() {
+    showCalendarOptions() {
       return this.calendarPermissionGranted && !this.userHasResponded
     },
   },

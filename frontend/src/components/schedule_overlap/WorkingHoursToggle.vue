@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="tw-mb-2 tw-text-sm tw-text-black">Working hours</div>
+    <div class="tw-mb-1 tw-text-sm tw-text-black">Working hours</div>
+    <div class="tw-mb-2 tw-text-xs tw-text-dark-gray">
+      Only autofill availability between working hours
+    </div>
     <v-switch
       id="working-hours-toggle"
       inset
@@ -44,9 +47,6 @@
         </div>
       </template>
     </v-switch>
-    <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
-      Only autofill availability between working hours
-    </div>
   </div>
 </template>
 
