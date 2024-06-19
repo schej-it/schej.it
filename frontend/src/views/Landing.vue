@@ -133,7 +133,7 @@
           <div class="tw-text-base tw-font-medium md:tw-text-xl">
             <div v-if="i == 1">
               <span
-                class="tw-underline tw-decoration-pale-green tw-decoration-4"
+                class="tw-underline tw-decoration-[#29BC6888] tw-decoration-4"
                 style="text-underline-position: under"
                 >Autofill</span
               >
