@@ -11,12 +11,25 @@
         class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
-        <TimezoneSelector
-          v-if="!event.daysOnly"
-          class="tw-w-full sm:tw-w-[unset]"
-          :value="curTimezone"
-          @input="(val) => $emit('update:curTimezone', val)"
-        />
+        <div class="tw-flex tw-items-center tw-gap-2">
+          <TimezoneSelector
+            v-if="!event.daysOnly"
+            class="tw-w-full sm:tw-w-[unset]"
+            :value="curTimezone"
+            @input="(val) => $emit('update:curTimezone', val)"
+          />
+          <v-select
+            :value="timeType"
+            @input="$emit('update:timeType', $event)"
+            :items="timeTypeOptions"
+            :menu-props="{ auto: true }"
+            item-text="label"
+            item-value="value"
+            class="-tw-mt-px tw-w-16 tw-text-sm"
+            dense
+            hide-details
+          />
+        </div>
 
         <template v-if="state !== states.EDIT_AVAILABILITY && isPhone">
           <ExpandableSection
@@ -145,6 +158,7 @@ import GCalWeekSelector from "./GCalWeekSelector.vue"
 import { isPhone } from "@/utils"
 import Advertisement from "../event/Advertisement.vue"
 import ExpandableSection from "../ExpandableSection.vue"
+import { timeTypes } from "@/constants"
 
 export default {
   name: "ToolRow",
@@ -163,6 +177,7 @@ export default {
     mobileNumDays: { type: Number, default: 3 }, // The number of days to show at a time on mobile
     allowScheduleEvent: { type: Boolean, required: true },
     showEventOptions: { type: Boolean, required: true },
+    timeType: { type: String, required: true },
   },
 
   components: {
@@ -176,6 +191,10 @@ export default {
     mobileNumDaysOptions: [
       { label: "3 days", value: 3 },
       { label: "7 days", value: 7 },
+    ],
+    timeTypeOptions: [
+      { label: "12h", value: timeTypes.HOUR12 },
+      { label: "24h", value: timeTypes.HOUR24 },
     ],
   }),
 

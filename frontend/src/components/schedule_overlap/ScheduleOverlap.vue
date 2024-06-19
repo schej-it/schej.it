@@ -88,6 +88,7 @@
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
                 :show-event-options="showEventOptions"
+                :time-type.sync="timeType"
                 @toggleShowEventOptions="toggleShowEventOptions"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                 @scheduleEvent="scheduleEvent"
@@ -360,6 +361,7 @@
                 :mobile-num-days.sync="mobileNumDays"
                 :allow-schedule-event="allowScheduleEvent"
                 :show-event-options="showEventOptions"
+                :time-type.sync="timeType"
                 @toggleShowEventOptions="toggleShowEventOptions"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                 @scheduleEvent="scheduleEvent"
@@ -584,6 +586,7 @@
         :mobile-num-days.sync="mobileNumDays"
         :allow-schedule-event="allowScheduleEvent"
         :show-event-options="showEventOptions"
+        :time-type.sync="timeType"
         @toggleShowEventOptions="toggleShowEventOptions"
         @update:weekOffset="(val) => $emit('update:weekOffset', val)"
         @scheduleEvent="scheduleEvent"
@@ -717,11 +720,11 @@ import {
   generateEnabledCalendarsPayload,
   isTouchEnabled,
   isElementInViewport,
-  getDaysInMonth,
   lightOrDark,
   removeTransparencyFromHex,
+  userPrefers12h,
 } from "@/utils"
-import { availabilityTypes, eventTypes } from "@/constants"
+import { availabilityTypes, eventTypes, timeTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
@@ -832,6 +835,9 @@ export default {
       /* Variables for options */
       curTimezone: this.initialTimezone,
       curScheduledEvent: null, // The scheduled event represented in the form {hoursOffset, hoursLength, dayIndex}
+      timeType:
+        localStorage["timeType"] ??
+        (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
       deleteAvailabilityDialog: false,
       showCalendarEvents: false,
 
@@ -1286,7 +1292,10 @@ export default {
 
         times.push({
           hoursOffset: i,
-          text: timeNumToTimeText(localTimeNum),
+          text: timeNumToTimeText(
+            localTimeNum,
+            this.timeType === timeTypes.HOUR12
+          ),
         })
         times.push({
           hoursOffset: i + 0.25,
@@ -3097,6 +3106,9 @@ export default {
       if (this.bufferTimeActive) {
         this.reanimateAvailability()
       }
+    },
+    timeType() {
+      localStorage["timeType"] = this.timeType
     },
   },
   created() {

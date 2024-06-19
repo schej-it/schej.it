@@ -201,7 +201,7 @@ export const dateToDowDate = (dows, date, weekOffset, reverse = false) => {
 }
 
 /** Converts a timeNum (e.g. 13) to a timeText (e.g. "1 pm") */
-export const timeNumToTimeText = (timeNum) => {
+export const timeNumToTimeText = (timeNum, hour12 = true) => {
   const hours = Math.floor(timeNum)
   const minutesDecimal = timeNum - hours
   const minutesString =
@@ -209,10 +209,14 @@ export const timeNumToTimeText = (timeNum) => {
       ? `:${String(Math.floor(minutesDecimal * 60)).padStart(2, "0")}`
       : ""
 
-  if (timeNum >= 0 && timeNum < 1) return `12${minutesString} am`
-  else if (timeNum < 12) return `${hours}${minutesString} am`
-  else if (timeNum >= 12 && timeNum < 13) return `12${minutesString} pm`
-  return `${hours - 12}${minutesString} pm`
+  if (hour12) {
+    if (timeNum >= 0 && timeNum < 1) return `12${minutesString} am`
+    else if (timeNum < 12) return `${hours}${minutesString} am`
+    else if (timeNum >= 12 && timeNum < 13) return `12${minutesString} pm`
+    return `${hours - 12}${minutesString} pm`
+  }
+
+  return `${hours}:${minutesString.length > 0 ? minutesString : "00"}`
 }
 
 /** Converts a timeNum (e.g. 9.5) to a timeString (e.g. 09:30:00) */
@@ -330,6 +334,12 @@ export const getCurrentTimezone = () => {
 export const getLocale = () => {
   if (navigator.languages != undefined) return navigator.languages[0]
   return navigator.language
+}
+
+/** Returns whether the user prefers 12h time */
+export const userPrefers12h = () => {
+  return Intl.DateTimeFormat(getLocale(), { hour: "numeric" }).resolvedOptions()
+    .hour12
 }
 
 /** 

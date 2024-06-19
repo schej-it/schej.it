@@ -11,7 +11,7 @@
       @input="onChange"
       :items="timezones"
       :menu-props="{ auto: true }"
-      class="tw-z-20 -tw-mt-px tw-w-52 tw-text-sm"
+      class="-tw-mt-px tw-w-52 tw-text-sm"
       dense
       color="#219653"
       item-color="green"
