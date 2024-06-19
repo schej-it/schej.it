@@ -11,9 +11,8 @@
         class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-8"
       >
         <!-- Select timezone -->
-        <div class="tw-flex tw-items-center tw-gap-2">
+        <div v-if="!event.daysOnly" class="tw-flex tw-items-center tw-gap-2">
           <TimezoneSelector
-            v-if="!event.daysOnly"
             class="tw-w-full sm:tw-w-[unset]"
             :value="curTimezone"
             @input="(val) => $emit('update:curTimezone', val)"
