@@ -743,6 +743,9 @@ import {
   lightOrDark,
   removeTransparencyFromHex,
   userPrefers12h,
+  getISODateString,
+  getDateWithTimezone,
+  timeNumToTimeString,
 } from "@/utils"
 import { availabilityTypes, eventTypes, timeTypes } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -1921,14 +1924,40 @@ export default {
           if (manualAvailabilityAdded) continue
         }
 
+        // Calculate buffer time
+        const bufferTimeInMS = this.bufferTimeActive
+          ? this.bufferTime * 1000 * 60
+          : 0
+
+        // Calculate working hours
+        const startTimeString = timeNumToTimeString(this.workingHoursStartTime)
+        const day = getISODateString(getDateWithTimezone(date))
+        const workingHoursStartDate = dayjs
+          .tz(`${day} ${startTimeString}`, this.curTimezone.value)
+          .toDate()
+        let duration = this.workingHoursEndTime - this.workingHoursStartTime
+        if (duration <= 0) duration += 24
+        const workingHoursEndDate = getDateHoursOffset(
+          workingHoursStartDate,
+          duration
+        )
+
         for (const time of this.times) {
-          // Check if there exists a calendar event that overlaps [time, time+0.5]
+          // Check if there exists a calendar event that overlaps [time, time+0.25]
           let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
+
+          // Working hours
+          if (this.workingHoursActive) {
+            if (
+              endDate.getTime() <= workingHoursStartDate.getTime() ||
+              startDate.getTime() >= workingHoursEndDate.getTime()
+            ) {
+              continue
+            }
+          }
+
           const index = calendarEventsByDay[i].findIndex((e) => {
-            const bufferTimeInMS = this.bufferTimeActive
-              ? this.bufferTime * 1000 * 60
-              : 0
             const startDateBuffered = new Date(
               e.startDate.getTime() - bufferTimeInMS
             )
@@ -3132,6 +3161,19 @@ export default {
     bufferTime() {
       localStorage["bufferTime"] = this.bufferTime
       if (this.bufferTimeActive) {
+        this.reanimateAvailability()
+      }
+    },
+    workingHoursActive() {
+      this.reanimateAvailability()
+    },
+    workingHoursStartTime() {
+      if (this.workingHoursActive) {
+        this.reanimateAvailability()
+      }
+    },
+    workingHoursEndTime() {
+      if (this.workingHoursActive) {
         this.reanimateAvailability()
       }
     },
