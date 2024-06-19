@@ -182,7 +182,12 @@
           <div
             class="tw-grid tw-grid-cols-1 tw-gap-3 sm:tw-text-xl lg:tw-text-2xl"
           >
-            <FAQ v-for="faq in faqs" :key="faq.question" v-bind="faq" />
+            <FAQ
+              v-for="faq in faqs"
+              :key="faq.question"
+              @signIn="signIn"
+              v-bind="faq"
+            />
           </div>
         </div>
       </div>
@@ -330,7 +335,7 @@ export default {
           'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
       },
       {
-        question: `I want it so only I can see people's responses`,
+        question: `I want it so that only I can see people's responses.`,
         answer: `Just check "Only show responses to event creator" under Advanced Options when creating your event! Other respondees will not be able to see each other's names or availability.`,
         authRequired: true,
       },

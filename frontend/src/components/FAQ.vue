@@ -39,7 +39,10 @@
             v-if="authRequired"
             class="tw-mt-6 tw-text-sm tw-font-medium tw-text-green"
           >
-            *You must be signed in to your Google Account to use this feature
+            *You must be signed in to your Google Account to use this feature.
+            <a @click.stop="$emit('signIn')" class="tw-underline"
+              >Sign in with Google</a
+            >
           </div>
         </div>
       </div>
