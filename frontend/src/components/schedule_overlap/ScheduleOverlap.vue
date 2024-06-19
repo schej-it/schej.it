@@ -1931,7 +1931,7 @@ export default {
 
         // Calculate working hours
         const startTimeString = timeNumToTimeString(this.workingHoursStartTime)
-        const day = getISODateString(getDateWithTimezone(date))
+        const day = getISODateString(getDateWithTimezone(date), true)
         const workingHoursStartDate = dayjs
           .tz(`${day} ${startTimeString}`, this.curTimezone.value)
           .toDate()
