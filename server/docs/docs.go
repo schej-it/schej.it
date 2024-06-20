@@ -268,6 +268,9 @@ var doc = `{
                                         },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
+                                        },
+                                        "when2meetHref": {
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -850,6 +853,49 @@ var doc = `{
                 }
             }
         },
+        "/user/calendar-options": {
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Updates the user's calendar options",
+                "parameters": [
+                    {
+                        "description": "Object containing the updated options",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "bufferTime": {
+                                            "$ref": "#/definitions/models.BufferTimeOptions"
+                                        },
+                                        "workingHours": {
+                                            "$ref": "#/definitions/models.WorkingHoursOptions"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/user/calendars": {
             "get": {
                 "description": "Gets the user's calendar events between \"timeMin\" and \"timeMax\"",
@@ -1280,6 +1326,17 @@ var doc = `{
                 }
             }
         },
+        "models.BufferTimeOptions": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "time": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.CalendarAccount": {
             "type": "object",
             "properties": {
@@ -1321,6 +1378,19 @@ var doc = `{
                 },
                 "summary": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CalendarOptions": {
+            "type": "object",
+            "properties": {
+                "bufferTime": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.BufferTimeOptions"
+                },
+                "workingHours": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.WorkingHoursOptions"
                 }
             }
         },
@@ -1389,6 +1459,9 @@ var doc = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                },
+                "when2meetHref": {
                     "type": "string"
                 }
             }
@@ -1503,6 +1576,11 @@ var doc = `{
                         "$ref": "#/definitions/models.CalendarAccount"
                     }
                 },
+                "calendarOptions": {
+                    "description": "Calendar options",
+                    "type": "object",
+                    "$ref": "#/definitions/models.CalendarOptions"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -1521,6 +1599,20 @@ var doc = `{
                 },
                 "timezoneOffset": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.WorkingHoursOptions": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endTime": {
+                    "type": "number"
+                },
+                "startTime": {
+                    "type": "number"
                 }
             }
         },

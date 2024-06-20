@@ -28,6 +28,7 @@ func InitUser(router *gin.Engine) {
 
 	userRouter.GET("/profile", getProfile)
 	userRouter.PATCH("/name", updateName)
+	userRouter.PATCH("/calendar-options", updateCalendarOptions)
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-calendar-account", addCalendarAccount)
@@ -72,6 +73,58 @@ func updateName(c *gin.Context) {
 
 	_, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
 		"$set": bson.M{"firstName": payload.FirstName, "lastName": payload.LastName, "hasCustomName": true},
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Updates the user's calendar options
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{bufferTime=models.BufferTimeOptions,workingHours=models.WorkingHoursOptions} true "Object containing the updated options"
+// @Success 200
+// @Router /user/calendar-options [patch]
+func updateCalendarOptions(c *gin.Context) {
+	payload := struct {
+		BufferTime   *models.BufferTimeOptions   `json:"bufferTime"`
+		WorkingHours *models.WorkingHoursOptions `json:"workingHours"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	authUser := utils.GetAuthUser(c)
+
+	// Set default values for calendar options if nil
+	if authUser.CalendarOptions == nil {
+		authUser.CalendarOptions = &models.CalendarOptions{
+			BufferTime: models.BufferTimeOptions{
+				Enabled: false,
+				Time:    15,
+			},
+			WorkingHours: models.WorkingHoursOptions{
+				Enabled:   false,
+				StartTime: 9,
+				EndTime:   17,
+			},
+		}
+	}
+
+	// Update calendar options
+	if payload.BufferTime != nil {
+		authUser.CalendarOptions.BufferTime = *payload.BufferTime
+	}
+	if payload.WorkingHours != nil {
+		authUser.CalendarOptions.WorkingHours = *payload.WorkingHours
+	}
+
+	// Update database
+	_, err := db.UsersCollection.UpdateByID(context.Background(), authUser.Id, bson.M{
+		"$set": bson.M{"calendarOptions": authUser.CalendarOptions},
 	})
 	if err != nil {
 		logger.StdErr.Panicln(err)

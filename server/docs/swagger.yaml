@@ -39,6 +39,13 @@ definitions:
       email:
         type: string
     type: object
+  models.BufferTimeOptions:
+    properties:
+      enabled:
+        type: boolean
+      time:
+        type: integer
+    type: object
   models.CalendarAccount:
     properties:
       email:
@@ -67,6 +74,15 @@ definitions:
         type: string
       summary:
         type: string
+    type: object
+  models.CalendarOptions:
+    properties:
+      bufferTime:
+        $ref: '#/definitions/models.BufferTimeOptions'
+        type: object
+      workingHours:
+        $ref: '#/definitions/models.WorkingHoursOptions'
+        type: object
     type: object
   models.Event:
     properties:
@@ -114,6 +130,8 @@ definitions:
       shortId:
         type: string
       type:
+        type: string
+      when2meetHref:
         type: string
     type: object
   models.EventType:
@@ -193,6 +211,10 @@ definitions:
           CalendarAccounts is a mapping from {email => CalendarAccount} that contains all the
           additional accounts the user wants to see google calendar events for
         type: object
+      calendarOptions:
+        $ref: '#/definitions/models.CalendarOptions'
+        description: Calendar options
+        type: object
       email:
         type: string
       firstName:
@@ -207,6 +229,15 @@ definitions:
         type: string
       timezoneOffset:
         type: integer
+    type: object
+  models.WorkingHoursOptions:
+    properties:
+      enabled:
+        type: boolean
+      endTime:
+        type: number
+      startTime:
+        type: number
     type: object
   responses.Error:
     properties:
@@ -374,6 +405,8 @@ paths:
                 type: integer
               type:
                 $ref: '#/definitions/models.EventType'
+              when2meetHref:
+                type: string
             type: object
       produces:
       - application/json
@@ -737,6 +770,31 @@ paths:
       responses:
         "200": {}
       summary: Adds a new calendar account
+      tags:
+      - user
+  /user/calendar-options:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the updated options
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              bufferTime:
+                $ref: '#/definitions/models.BufferTimeOptions'
+              workingHours:
+                $ref: '#/definitions/models.WorkingHoursOptions'
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Updates the user's calendar options
       tags:
       - user
   /user/calendars:
