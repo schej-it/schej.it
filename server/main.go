@@ -159,13 +159,13 @@ func noRouteHandler() gin.HandlerFunc {
 			event := db.GetEventByEitherId(eventId)
 
 			title := fmt.Sprintf("%s - Schej", event.Name)
-			if len(utils.Coalesce(event.When2meetHref)) > 0 {
-				// title += " [Converted from When2meet]"
-			}
-
 			params = gin.H{
 				"title":   title,
 				"ogTitle": title,
+			}
+
+			if len(utils.Coalesce(event.When2meetHref)) > 0 {
+				params["ogImage"] = "/img/when2meetOgImage.png"
 			}
 		}
 
