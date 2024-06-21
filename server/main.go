@@ -4,8 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
+	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -18,6 +22,7 @@ import (
 	"schej.it/server/routes"
 	"schej.it/server/services/gcloud"
 	"schej.it/server/slackbot"
+	"schej.it/server/utils"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -103,12 +108,28 @@ func main() {
 	router.Use(sessions.Sessions("session", store))
 
 	// Init routes
-	routes.InitAuth(router)
-	routes.InitUser(router)
-	routes.InitEvents(router)
-	routes.InitUsers(router)
-	routes.InitAnalytics(router)
-	slackbot.InitSlackbot(router)
+	apiRouter := router.Group("/api")
+	routes.InitAuth(apiRouter)
+	routes.InitUser(apiRouter)
+	routes.InitEvents(apiRouter)
+	routes.InitUsers(apiRouter)
+	routes.InitAnalytics(apiRouter)
+	slackbot.InitSlackbot(apiRouter)
+
+	err = filepath.WalkDir("../frontend/dist", func(path string, d fs.DirEntry, err error) error {
+		if !d.IsDir() && d.Name() != "index.html" {
+			split := splitPath(path)
+			newPath := filepath.Join(split[3:]...)
+			router.StaticFile(fmt.Sprintf("/%s", newPath), path)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatalf("failed to walk directories: %s", err)
+	}
+
+	router.LoadHTMLFiles("../frontend/dist/index.html")
+	router.NoRoute(noRouteHandler())
 
 	// Init swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
@@ -124,4 +145,38 @@ func loadDotEnv() {
 	if err != nil {
 		logger.StdErr.Panicln("Error loading .env file")
 	}
+}
+
+func noRouteHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		params := gin.H{}
+		path := c.Request.URL.Path
+
+		// Determine meta tags based off URL
+		if match := regexp.MustCompile(`\/e\/(\w+)`).FindStringSubmatchIndex(path); match != nil {
+			// /e/:eventId
+			eventId := path[match[2]:match[3]]
+			event := db.GetEventByEitherId(eventId)
+
+			title := fmt.Sprintf("%s - Schej", event.Name)
+			params = gin.H{
+				"title":   title,
+				"ogTitle": title,
+			}
+
+			if len(utils.Coalesce(event.When2meetHref)) > 0 {
+				params["ogImage"] = "/img/when2meetOgImage.png"
+			}
+		}
+
+		c.HTML(http.StatusOK, "index.html", params)
+	}
+}
+
+func splitPath(path string) []string {
+	dir, last := filepath.Split(path)
+	if dir == "" {
+		return []string{last}
+	}
+	return append(splitPath(filepath.Clean(dir)), last)
 }

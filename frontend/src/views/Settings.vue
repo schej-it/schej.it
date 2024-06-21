@@ -179,6 +179,10 @@ import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 export default {
   name: "Settings",
 
+  metaInfo: {
+    title: "Settings - Schej",
+  },
+
   components: { CalendarAccounts },
 
   data: () => ({

@@ -26,11 +26,19 @@
     <meta name="msapplication-navbutton-color" content="#FFFFFF" />
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#FFFFFF" />
-    <title>Schej - Finding a time to meet, made simple</title>
-    <meta
-      name="description"
-      content="Schej helps you quickly find the best time for your group to meet. It's like When2meet with Google Calendar integration!"
+    <div style="display:none">
+    {{ $defaultTitle := "Schej - Finding a time to meet, made simple" }}
+    {{ $defaultDescription := "Schej helps you quickly find the best time for your group to meet. It's like When2meet with Google Calendar integration!" }}
+    {{ $defaultOgImage := "/img/ogImage.png" }}
+    </div>
+    <title>{{ or .title $defaultTitle }}</title>
+    <meta 
+      name="description" 
+      content="{{or .description $defaultDescription }}" 
     />
+    <meta property="og:title" content="{{or .ogTitle $defaultTitle}}" />
+    <meta property="og:description" content="{{or .ogDescription $defaultDescription }}" />
+    <meta property="og:image" content="{{or .ogImage $defaultOgImage }}" />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css"

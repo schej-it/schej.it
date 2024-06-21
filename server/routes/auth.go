@@ -22,7 +22,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func InitAuth(router *gin.Engine) {
+func InitAuth(router *gin.RouterGroup) {
 	authRouter := router.Group("/auth")
 
 	authRouter.POST("/sign-in", signIn)
@@ -48,7 +48,7 @@ func signIn(c *gin.Context) {
 		return
 	}
 
-	tokens := auth.GetTokensFromAuthCode(payload.Code)
+	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
 
 	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
 

@@ -22,7 +22,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func InitUser(router *gin.Engine) {
+func InitUser(router *gin.RouterGroup) {
 	userRouter := router.Group("/user")
 	userRouter.Use(middleware.AuthRequired())
 
@@ -189,7 +189,7 @@ func addCalendarAccount(c *gin.Context) {
 	authUser := utils.GetAuthUser(c)
 
 	// Get tokens
-	tokens := auth.GetTokensFromAuthCode(payload.Code)
+	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
 
 	// Get user info from JWT
 	claims := utils.ParseJWT(tokens.IdToken)
