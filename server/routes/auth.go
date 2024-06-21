@@ -48,7 +48,7 @@ func signIn(c *gin.Context) {
 		return
 	}
 
-	tokens := auth.GetTokensFromAuthCode(payload.Code)
+	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
 
 	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
 

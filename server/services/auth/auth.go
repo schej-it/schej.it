@@ -2,13 +2,13 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"schej.it/server/logger"
-	"schej.it/server/utils"
 )
 
 type GoogleApiTokenResponse struct {
@@ -23,14 +23,9 @@ type GoogleApiTokenResponse struct {
 }
 
 // Returns access, refresh, and id tokens from the auth code
-func GetTokensFromAuthCode(code string) GoogleApiTokenResponse {
+func GetTokensFromAuthCode(code string, origin string) GoogleApiTokenResponse {
 	// Call Google oauth token endpoint
-	var redirectUri string
-	if utils.IsRelease() {
-		redirectUri = "https://schej.it/auth"
-	} else {
-		redirectUri = "http://localhost:8080/auth"
-	}
+	redirectUri := fmt.Sprintf("%s/auth", origin)
 	values := url.Values{
 		"client_id":     {os.Getenv("CLIENT_ID")},
 		"client_secret": {os.Getenv("CLIENT_SECRET")},
