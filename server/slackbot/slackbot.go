@@ -29,7 +29,7 @@ func SendMessage(message *commands.Response) {
 	commands.SendRawMessage(message, webhookUrl)
 }
 
-func InitSlackbot(router *gin.Engine) {
+func InitSlackbot(router *gin.RouterGroup) {
 	slackbotRouter := router.Group("/slackbot")
 
 	slackbotRouter.POST("", execCommand)

@@ -10,7 +10,7 @@ import (
 	"schej.it/server/slackbot"
 )
 
-func InitAnalytics(router *gin.Engine) {
+func InitAnalytics(router *gin.RouterGroup) {
 	authRouter := router.Group("/analytics")
 
 	authRouter.POST("/scanned-poster", scannedPoster)

@@ -24,7 +24,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func InitEvents(router *gin.Engine) {
+func InitEvents(router *gin.RouterGroup) {
 	eventRouter := router.Group("/events")
 
 	eventRouter.POST("", createEvent)

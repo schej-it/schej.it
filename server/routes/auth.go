@@ -22,7 +22,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func InitAuth(router *gin.Engine) {
+func InitAuth(router *gin.RouterGroup) {
 	authRouter := router.Group("/auth")
 
 	authRouter.POST("/sign-in", signIn)

@@ -15,7 +15,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func InitUsers(router *gin.Engine) {
+func InitUsers(router *gin.RouterGroup) {
 	userRouter := router.Group("/users")
 	userRouter.GET("", searchUsers)
 	userRouter.GET("/:userId", getUser)

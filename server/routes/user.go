@@ -22,7 +22,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func InitUser(router *gin.Engine) {
+func InitUser(router *gin.RouterGroup) {
 	userRouter := router.Group("/user")
 	userRouter.Use(middleware.AuthRequired())
 
