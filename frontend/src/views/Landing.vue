@@ -288,6 +288,10 @@ import GithubButton from "vue-github-button"
 export default {
   name: "Landing",
 
+  metaInfo: {
+    title: "Schej - Finding a time to meet, made simple",
+  },
+
   components: {
     LandingPageCalendar,
     SignInGoogleBtn,

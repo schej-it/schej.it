@@ -158,9 +158,9 @@ func noRouteHandler() gin.HandlerFunc {
 			eventId := path[match[2]:match[3]]
 			event := db.GetEventByEitherId(eventId)
 
-			title := event.Name
+			title := fmt.Sprintf("%s - Schej", event.Name)
 			if len(utils.Coalesce(event.When2meetHref)) > 0 {
-				title += " [Converted from When2meet]"
+				// title += " [Converted from When2meet]"
 			}
 
 			params = gin.H{

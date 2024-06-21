@@ -5,3 +5,13 @@
     frameborder="0"
   ></iframe>
 </template>
+
+<script>
+export default {
+  name: "PrivacyPolicy",
+
+  metaInfo: {
+    title: "Privacy Policy - Schej",
+  },
+}
+</script>

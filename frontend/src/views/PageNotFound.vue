@@ -27,6 +27,10 @@ import { isPhone } from "@/utils"
 export default {
   name: "PageNotFound",
 
+  metaInfo: {
+    title: "Page not found - Schej",
+  },
+
   computed: {
     isPhone() {
       return isPhone(this.$vuetify)
