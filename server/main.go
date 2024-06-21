@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -21,6 +22,7 @@ import (
 	"schej.it/server/routes"
 	"schej.it/server/services/gcloud"
 	"schej.it/server/slackbot"
+	"schej.it/server/utils"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -147,11 +149,27 @@ func loadDotEnv() {
 
 func noRouteHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			// "title":   "hehe xd",
-			// "ogTitle": "hehe xd",
-			// "ogImage": ""
-		})
+		params := gin.H{}
+		path := c.Request.URL.Path
+
+		// Determine meta tags based off URL
+		if match := regexp.MustCompile(`\/e\/(\w+)`).FindStringSubmatchIndex(path); match != nil {
+			// /e/:eventId
+			eventId := path[match[2]:match[3]]
+			event := db.GetEventByEitherId(eventId)
+
+			title := event.Name
+			if len(utils.Coalesce(event.When2meetHref)) > 0 {
+				title += " [Converted from When2meet]"
+			}
+
+			params = gin.H{
+				"title":   title,
+				"ogTitle": title,
+			}
+		}
+
+		c.HTML(http.StatusOK, "index.html", params)
 	}
 }
 
