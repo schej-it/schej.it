@@ -810,6 +810,7 @@ export default {
         this.$nextTick(() => {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
+        document.title = `${this.event.name} - Schej`
       }
     },
     scheduleOverlapComponent() {

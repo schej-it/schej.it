@@ -56,6 +56,10 @@ import { eventTypes } from "@/constants"
 export default {
   name: "Home",
 
+  metaInfo: {
+    title: "Home - Schej",
+  },
+
   components: {
     NewDialog,
     EventType,
