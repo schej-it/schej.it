@@ -38,6 +38,18 @@ export const timeTypes = Object.freeze({
   HOUR24: "24-hour",
 })
 
+export const calendarOptionsDefaults = Object.freeze({
+  bufferTime: {
+    enabled: false,
+    time: 15,
+  },
+  workingHours: {
+    enabled: false,
+    startTime: 9,
+    endTime: 17,
+  },
+})
+
 export const dayIndexToDayString = Object.freeze([
   "2018-06-17", // Sunday
   "2018-06-18", // Monday

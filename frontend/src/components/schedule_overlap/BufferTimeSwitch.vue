@@ -6,8 +6,8 @@
     </div>
     <v-switch
       id="buffer-time-switch"
-      :input-value="value"
-      @change="emitItem"
+      :input-value="bufferTime.enabled"
+      @change="(val) => updateBufferTime('enabled', val)"
       inset
       class="tw-flex tw-items-center"
       hide-details
@@ -22,8 +22,8 @@
             hide-details
             :items="bufferTimes"
             class="-tw-mt-0.5 tw-w-20 tw-text-xs"
-            :value="bufferTime"
-            @input="(val) => $emit('update:bufferTime', val)"
+            :value="bufferTime.time"
+            @input="(val) => updateBufferTime('time', val)"
             @click="
               (e) => {
                 e.preventDefault()
@@ -38,12 +38,13 @@
 </template>
 
 <script>
+import { patch } from "@/utils"
+
 export default {
   name: "BufferTimeToggle",
 
   props: {
-    value: { type: Boolean, required: true },
-    bufferTime: { type: Number, required: true },
+    bufferTime: { type: Object, required: true },
   },
 
   components: {},
@@ -59,14 +60,15 @@ export default {
   },
 
   methods: {
-    emitItem(e) {
-      this.$emit("input", e)
-    },
-  },
-
-  watch: {
-    bufferTime() {
-      this.$emit("update:bufferTime", this.bufferTime)
+    updateBufferTime(key, val) {
+      const bufferTime = {
+        ...this.bufferTime,
+        [key]: val,
+      }
+      patch(`/user/calendar-options`, {
+        bufferTime,
+      })
+      this.$emit("update:bufferTime", bufferTime)
     },
   },
 }

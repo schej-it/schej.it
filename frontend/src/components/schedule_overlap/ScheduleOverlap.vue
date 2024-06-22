@@ -492,15 +492,10 @@
                       <v-card-text
                         class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
                       >
-                        <BufferTimeSwitch
-                          v-model="bufferTimeActive"
-                          :bufferTime.sync="bufferTime"
-                        />
+                        <BufferTimeSwitch :bufferTime.sync="bufferTime" />
 
                         <WorkingHoursToggle
-                          v-model="workingHoursActive"
-                          :startTime.sync="workingHoursStartTime"
-                          :endTime.sync="workingHoursEndTime"
+                          :workingHours.sync="workingHours"
                           :timezone="curTimezone"
                         />
                       </v-card-text>
@@ -747,7 +742,12 @@ import {
   getDateWithTimezone,
   timeNumToTimeString,
 } from "@/utils"
-import { availabilityTypes, eventTypes, timeTypes } from "@/constants"
+import {
+  availabilityTypes,
+  calendarOptionsDefaults,
+  eventTypes,
+  timeTypes,
+} from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
@@ -829,14 +829,9 @@ export default {
           ? false
           : localStorage["showEditOptions"] == "true",
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
-      bufferTimeActive: localStorage["bufferTimeActive"] == "true", // Whether to buffer events when autofilling
-      bufferTime: localStorage["bufferTime"]
-        ? parseInt(localStorage["bufferTime"])
-        : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
-      workingHoursActive: false,
-      workingHoursStartTime: 9,
-      workingHoursEndTime: 17,
+      bufferTime: calendarOptionsDefaults.bufferTime, // Set in mounted()
+      workingHours: calendarOptionsDefaults.workingHours, // Set in mounted()
 
       /* Event Options */
       showEventOptions:
@@ -1925,17 +1920,17 @@ export default {
         }
 
         // Calculate buffer time
-        const bufferTimeInMS = this.bufferTimeActive
-          ? this.bufferTime * 1000 * 60
+        const bufferTimeInMS = this.bufferTime.enabled
+          ? this.bufferTime.time * 1000 * 60
           : 0
 
         // Calculate working hours
-        const startTimeString = timeNumToTimeString(this.workingHoursStartTime)
+        const startTimeString = timeNumToTimeString(this.workingHours.startTime)
         const day = getISODateString(getDateWithTimezone(date), true)
         const workingHoursStartDate = dayjs
           .tz(`${day} ${startTimeString}`, this.curTimezone.value)
           .toDate()
-        let duration = this.workingHoursEndTime - this.workingHoursStartTime
+        let duration = this.workingHours.endTime - this.workingHours.startTime
         if (duration <= 0) duration += 24
         const workingHoursEndDate = getDateHoursOffset(
           workingHoursStartDate,
@@ -1948,7 +1943,7 @@ export default {
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
 
           // Working hours
-          if (this.workingHoursActive) {
+          if (this.workingHours.enabled) {
             if (
               endDate.getTime() <= workingHoursStartDate.getTime() ||
               startDate.getTime() >= workingHoursEndDate.getTime()
@@ -2088,7 +2083,8 @@ export default {
             eventId: this.event._id,
             addedIfNeededTimes,
             bufferTime: this.bufferTime,
-            bufferTimeActive: this.bufferTimeActive,
+            // bufferTime: this.bufferTime.time,
+            // bufferTimeEnabled: this.bufferTime.enabled,
           })
         }
       } else {
@@ -3154,26 +3150,13 @@ export default {
     showBestTimes() {
       this.onShowBestTimesChange()
     },
-    bufferTimeActive() {
-      localStorage["bufferTimeActive"] = this.bufferTimeActive
-      this.reanimateAvailability()
-    },
-    bufferTime() {
-      localStorage["bufferTime"] = this.bufferTime
-      if (this.bufferTimeActive) {
+    bufferTime(cur, prev) {
+      if (cur.enabled !== prev.enabled || cur.enabled) {
         this.reanimateAvailability()
       }
     },
-    workingHoursActive() {
-      this.reanimateAvailability()
-    },
-    workingHoursStartTime() {
-      if (this.workingHoursActive) {
-        this.reanimateAvailability()
-      }
-    },
-    workingHoursEndTime() {
-      if (this.workingHoursActive) {
+    workingHours(cur, prev) {
+      if (cur.enabled !== prev.enabled || cur.enabled) {
         this.reanimateAvailability()
       }
     },
@@ -3189,6 +3172,14 @@ export default {
   mounted() {
     // Set initial state to best_times or heatmap depending on show best times toggle.
     this.state = this.showBestTimes ? "best_times" : "heatmap"
+
+    // Set options defaults
+    this.bufferTime =
+      this.authUser?.calendarOptions?.bufferTime ??
+      calendarOptionsDefaults.bufferTime
+    this.workingHours =
+      this.authUser?.calendarOptions?.workingHours ??
+      calendarOptionsDefaults.workingHours
 
     // Set initial calendar max scroll
     // this.calendarMaxScroll =

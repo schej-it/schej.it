@@ -7,8 +7,8 @@
     <v-switch
       id="working-hours-toggle"
       inset
-      :input-value="value"
-      @change="(val) => $emit('input', val)"
+      :input-value="workingHours.enabled"
+      @change="(val) => updateWorkingHours('enabled', val)"
       hide-details
     >
       <template v-slot:label>
@@ -20,8 +20,8 @@
               hide-details
               class="-tw-mt-0.5 tw-w-20 tw-text-xs"
               :items="times"
-              :value="startTime"
-              @input="(val) => $emit('update:startTime', val)"
+              :value="workingHours.startTime"
+              @input="(val) => updateWorkingHours('startTime', val)"
               @click="
                 (e) => {
                   e.preventDefault()
@@ -36,8 +36,8 @@
               hide-details
               class="-tw-mt-0.5 tw-w-20 tw-text-xs"
               :items="times"
-              :value="endTime"
-              @input="(val) => $emit('update:endTime', val)"
+              :value="workingHours.endTime"
+              @input="(val) => updateWorkingHours('endTime', val)"
               @click="
                 (e) => {
                   e.preventDefault()
@@ -54,20 +54,31 @@
 
 <script>
 import { getTimeOptions } from "@/utils"
+import { patch } from "@/utils"
 
 export default {
   name: "WorkingHoursToggle",
 
   props: {
-    value: { type: Boolean, required: true },
-    startTime: { type: Number, required: true },
-    endTime: { type: Number, required: true },
-    timezone: { type: Object, required: true },
+    workingHours: { type: Object, required: true },
   },
 
   computed: {
     times() {
       return getTimeOptions()
+    },
+  },
+
+  methods: {
+    updateWorkingHours(key, val) {
+      const workingHours = {
+        ...this.workingHours,
+        [key]: val,
+      }
+      patch(`/user/calendar-options`, {
+        workingHours,
+      })
+      this.$emit("update:workingHours", workingHours)
     },
   },
 }
