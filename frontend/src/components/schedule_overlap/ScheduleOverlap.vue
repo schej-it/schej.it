@@ -435,7 +435,7 @@
               v-if="
                 !isGroup &&
                 !event.daysOnly &&
-                (showBufferTimeToggle || showOverlayAvailabilityToggle)
+                (showOverlayAvailabilityToggle || showCalendarOptions)
               "
               ref="optionsSection"
             >
@@ -460,21 +460,47 @@
                       </template>
                     </v-switch>
 
-                    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray">
+                    <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
                       View everyone's availability while inputting your own
                     </div>
                   </div>
 
-                  <div v-if="showBufferTimeToggle">
-                    <BufferTimeSwitch
-                      v-model="bufferTimeActive"
-                      :bufferTime.sync="bufferTime"
-                    />
+                  <v-dialog
+                    v-if="showCalendarOptions"
+                    v-model="calendarOptionsDialog"
+                    width="500"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        outlined
+                        class="tw-border-gray tw-text-sm"
+                        v-on="on"
+                        v-bind="attrs"
+                      >
+                        Calendar options...
+                      </v-btn>
+                    </template>
 
-                    <div class="tw-mt-1 tw-text-xs tw-text-dark-gray">
-                      Add time around calendar events
-                    </div>
-                  </div>
+                    <v-card>
+                      <v-card-title class="tw-flex">
+                        <div>Calendar options</div>
+                        <v-spacer />
+                        <v-btn icon @click="calendarOptionsDialog = false">
+                          <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                      </v-card-title>
+                      <v-card-text
+                        class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
+                      >
+                        <BufferTimeSwitch :bufferTime.sync="bufferTime" />
+
+                        <WorkingHoursToggle
+                          :workingHours.sync="workingHours"
+                          :timezone="curTimezone"
+                        />
+                      </v-card-text>
+                    </v-card>
+                  </v-dialog>
                 </div>
               </ExpandableSection>
             </div>
@@ -712,8 +738,16 @@ import {
   lightOrDark,
   removeTransparencyFromHex,
   userPrefers12h,
+  getISODateString,
+  getDateWithTimezone,
+  timeNumToTimeString,
 } from "@/utils"
-import { availabilityTypes, eventTypes, timeTypes } from "@/constants"
+import {
+  availabilityTypes,
+  calendarOptionsDefaults,
+  eventTypes,
+  timeTypes,
+} from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
@@ -724,6 +758,7 @@ import ToolRow from "./ToolRow.vue"
 import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import ExpandableSection from "../ExpandableSection.vue"
+import WorkingHoursToggle from "./WorkingHoursToggle.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -794,11 +829,9 @@ export default {
           ? false
           : localStorage["showEditOptions"] == "true",
       availabilityType: availabilityTypes.AVAILABLE, // The current availability type
-      bufferTimeActive: localStorage["bufferTimeActive"] == "true", // Whether to buffer events when autofilling
-      bufferTime: localStorage["bufferTime"]
-        ? parseInt(localStorage["bufferTime"])
-        : 15, // Buffer time in minutes
       overlayAvailability: false, // Whether to overlay everyone's availability when editing
+      bufferTime: calendarOptionsDefaults.bufferTime, // Set in mounted()
+      workingHours: calendarOptionsDefaults.workingHours, // Set in mounted()
 
       /* Event Options */
       showEventOptions:
@@ -828,8 +861,11 @@ export default {
       timeType:
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
-      deleteAvailabilityDialog: false,
       showCalendarEvents: false,
+
+      /* Dialogs */
+      deleteAvailabilityDialog: false,
+      calendarOptionsDialog: false,
 
       /* Variables for scrolling */
       optionsVisible: false,
@@ -1542,7 +1578,7 @@ export default {
     showOverlayAvailabilityToggle() {
       return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
     },
-    showBufferTimeToggle() {
+    showCalendarOptions() {
       return this.calendarPermissionGranted && !this.userHasResponded
     },
   },
@@ -1883,14 +1919,40 @@ export default {
           if (manualAvailabilityAdded) continue
         }
 
+        // Calculate buffer time
+        const bufferTimeInMS = this.bufferTime.enabled
+          ? this.bufferTime.time * 1000 * 60
+          : 0
+
+        // Calculate working hours
+        const startTimeString = timeNumToTimeString(this.workingHours.startTime)
+        const day = getISODateString(getDateWithTimezone(date), true)
+        const workingHoursStartDate = dayjs
+          .tz(`${day} ${startTimeString}`, this.curTimezone.value)
+          .toDate()
+        let duration = this.workingHours.endTime - this.workingHours.startTime
+        if (duration <= 0) duration += 24
+        const workingHoursEndDate = getDateHoursOffset(
+          workingHoursStartDate,
+          duration
+        )
+
         for (const time of this.times) {
-          // Check if there exists a calendar event that overlaps [time, time+0.5]
+          // Check if there exists a calendar event that overlaps [time, time+0.25]
           let startDate = getDateHoursOffset(date, time.hoursOffset)
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
+
+          // Working hours
+          if (this.workingHours.enabled) {
+            if (
+              endDate.getTime() <= workingHoursStartDate.getTime() ||
+              startDate.getTime() >= workingHoursEndDate.getTime()
+            ) {
+              continue
+            }
+          }
+
           const index = calendarEventsByDay[i].findIndex((e) => {
-            const bufferTimeInMS = this.bufferTimeActive
-              ? this.bufferTime * 1000 * 60
-              : 0
             const startDateBuffered = new Date(
               e.startDate.getTime() - bufferTimeInMS
             )
@@ -2021,7 +2083,8 @@ export default {
             eventId: this.event._id,
             addedIfNeededTimes,
             bufferTime: this.bufferTime,
-            bufferTimeActive: this.bufferTimeActive,
+            // bufferTime: this.bufferTime.time,
+            // bufferTimeEnabled: this.bufferTime.enabled,
           })
         }
       } else {
@@ -3087,13 +3150,13 @@ export default {
     showBestTimes() {
       this.onShowBestTimesChange()
     },
-    bufferTimeActive() {
-      localStorage["bufferTimeActive"] = this.bufferTimeActive
-      this.reanimateAvailability()
+    bufferTime(cur, prev) {
+      if (cur.enabled !== prev.enabled || cur.enabled) {
+        this.reanimateAvailability()
+      }
     },
-    bufferTime() {
-      localStorage["bufferTime"] = this.bufferTime
-      if (this.bufferTimeActive) {
+    workingHours(cur, prev) {
+      if (cur.enabled !== prev.enabled || cur.enabled) {
         this.reanimateAvailability()
       }
     },
@@ -3109,6 +3172,14 @@ export default {
   mounted() {
     // Set initial state to best_times or heatmap depending on show best times toggle.
     this.state = this.showBestTimes ? "best_times" : "heatmap"
+
+    // Set options defaults
+    this.bufferTime =
+      this.authUser?.calendarOptions?.bufferTime ??
+      calendarOptionsDefaults.bufferTime
+    this.workingHours =
+      this.authUser?.calendarOptions?.workingHours ??
+      calendarOptionsDefaults.workingHours
 
     // Set initial calendar max scroll
     // this.calendarMaxScroll =
@@ -3148,6 +3219,7 @@ export default {
     RespondentsList,
     Advertisement,
     GCalWeekSelector,
+    WorkingHoursToggle,
   },
 }
 </script>

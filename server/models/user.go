@@ -24,6 +24,9 @@ type User struct {
 
 	// Google OAuth stuff
 	TokenOrigin TokenOriginType `json:"-" bson:"tokenOrigin,omitempty"`
+
+	// Calendar options
+	CalendarOptions *CalendarOptions `json:"calendarOptions" bson:"calendarOptions,omitempty"`
 }
 
 // CalendarAccount contains info about the user's other signed in calendar accounts
@@ -42,6 +45,21 @@ type CalendarAccount struct {
 type SubCalendar struct {
 	Name    string `json:"name" bson:"name,omitempty"`
 	Enabled *bool  `json:"enabled" bson:"enabled,omitempty"`
+}
+type CalendarOptions struct {
+	BufferTime   BufferTimeOptions   `json:"bufferTime" bson:"bufferTime"`
+	WorkingHours WorkingHoursOptions `json:"workingHours" bson:"workingHours"`
+}
+
+type BufferTimeOptions struct {
+	Enabled bool `json:"enabled" bson:"enabled"`
+	Time    int  `json:"time" bson:"time"`
+}
+
+type WorkingHoursOptions struct {
+	Enabled   bool    `json:"enabled" bson:"enabled"`
+	StartTime float32 `json:"startTime" bson:"startTime"`
+	EndTime   float32 `json:"endTime" bson:"endTime"`
 }
 
 // Declare the possible types of TokenOrigin
