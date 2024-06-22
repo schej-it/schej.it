@@ -165,7 +165,7 @@ func noRouteHandler() gin.HandlerFunc {
 			}
 
 			if len(utils.Coalesce(event.When2meetHref)) > 0 {
-				params["ogImage"] = "/img/when2meetOgImage.png"
+				params["ogImage"] = "/img/when2meetOgImage2.png"
 			}
 		}
 
