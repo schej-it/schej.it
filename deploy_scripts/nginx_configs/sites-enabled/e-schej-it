@@ -1,0 +1,33 @@
+server {
+	server_name e.schej.it;
+
+	# reverse proxy requests to posthog
+	location / {
+		proxy_pass https://app.posthog.com;
+		proxy_redirect off;
+		proxy_ssl_session_reuse off;
+		proxy_ssl_server_name on;
+		proxy_set_header Host app.posthog.com;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+	}
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/e.schej.it/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/e.schej.it/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = e.schej.it) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+	listen 80;
+	server_name e.schej.it;
+    return 404; # managed by Certbot
+
+
+}
