@@ -1225,14 +1225,14 @@ export default {
 
             // Get availability from calendar events and use manual availability on the
             // "touched" days
-            const availability = this.getAvailabilityFromCalendarEvents(
+            const availability = this.getAvailabilityFromCalendarEvents({
               calendarEventsByDay,
-              {
-                includeTouchedAvailability: true,
-                fetchedManualAvailability: fetchedManualAvailability ?? {},
-                curManualAvailability: curManualAvailability ?? {},
-              }
-            )
+              includeTouchedAvailability: true,
+              fetchedManualAvailability: fetchedManualAvailability ?? {},
+              curManualAvailability: curManualAvailability ?? {},
+              calendarOptions:
+                this.fetchedResponses[userId]?.calendarOptions ?? undefined,
+            })
 
             parsed[userId] = {
               ...this.event.responses[userId],
@@ -1874,30 +1874,29 @@ export default {
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
-    getAvailabilityFromCalendarEvents(
-      calendarEventsByDay,
-      options = {
-        includeTouchedAvailability: false, // Whether to include manual availability for touched days
-        fetchedManualAvailability: {}, // Object mapping unix timestamp to array of manual availability (fetched from server)
-        curManualAvailability: {}, // Manual availability with edits (takes precedence over fetchedManualAvailability)
-      }
-    ) {
+    getAvailabilityFromCalendarEvents({
+      calendarEventsByDay = [],
+      includeTouchedAvailability = false, // Whether to include manual availability for touched days
+      fetchedManualAvailability = {}, // Object mapping unix timestamp to array of manual availability (fetched from server)
+      curManualAvailability = {}, // Manual availability with edits (takes precedence over fetchedManualAvailability)
+      calendarOptions = calendarOptionsDefaults, // User id of the user we are getting availability for
+    }) {
       const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
 
-        if (options.includeTouchedAvailability) {
+        if (includeTouchedAvailability) {
           const endDate = getDateHoursOffset(date, this.event.duration)
 
           // Check if manual availability has been added for the current date
           let manualAvailabilityAdded = false
 
-          for (const time in options.curManualAvailability) {
+          for (const time in curManualAvailability) {
             if (date.getTime() <= time && time <= endDate.getTime()) {
-              options.curManualAvailability[time].forEach((a) => {
+              curManualAvailability[time].forEach((a) => {
                 availability.add(new Date(a).getTime())
               })
-              delete options.curManualAvailability[time]
+              delete curManualAvailability[time]
               manualAvailabilityAdded = true
               break
             }
@@ -1905,12 +1904,12 @@ export default {
 
           if (manualAvailabilityAdded) continue
 
-          for (const time in options.fetchedManualAvailability) {
+          for (const time in fetchedManualAvailability) {
             if (date.getTime() <= time && time <= endDate.getTime()) {
-              options.fetchedManualAvailability[time].forEach((a) => {
+              fetchedManualAvailability[time].forEach((a) => {
                 availability.add(new Date(a).getTime())
               })
-              delete options.fetchedManualAvailability[time]
+              delete fetchedManualAvailability[time]
               manualAvailabilityAdded = true
               break
             }
@@ -1920,17 +1919,21 @@ export default {
         }
 
         // Calculate buffer time
-        const bufferTimeInMS = this.bufferTime.enabled
-          ? this.bufferTime.time * 1000 * 60
+        const bufferTimeInMS = calendarOptions.bufferTime.enabled
+          ? calendarOptions.bufferTime.time * 1000 * 60
           : 0
 
         // Calculate working hours
-        const startTimeString = timeNumToTimeString(this.workingHours.startTime)
+        const startTimeString = timeNumToTimeString(
+          calendarOptions.workingHours.startTime
+        )
         const day = getISODateString(getDateWithTimezone(date), true)
         const workingHoursStartDate = dayjs
           .tz(`${day} ${startTimeString}`, this.curTimezone.value)
           .toDate()
-        let duration = this.workingHours.endTime - this.workingHours.startTime
+        let duration =
+          calendarOptions.workingHours.endTime -
+          calendarOptions.workingHours.startTime
         if (duration <= 0) duration += 24
         const workingHoursEndDate = getDateHoursOffset(
           workingHoursStartDate,
@@ -1943,7 +1946,7 @@ export default {
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
 
           // Working hours
-          if (this.workingHours.enabled) {
+          if (calendarOptions.workingHours.enabled) {
             if (
               endDate.getTime() <= workingHoursStartDate.getTime() ||
               startDate.getTime() >= workingHoursEndDate.getTime()
@@ -1976,9 +1979,13 @@ export default {
     setAvailabilityAutomatically() {
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set()
-      const tmpAvailability = this.getAvailabilityFromCalendarEvents(
-        this.calendarEventsByDay
-      )
+      const tmpAvailability = this.getAvailabilityFromCalendarEvents({
+        calendarEventsByDay: this.calendarEventsByDay,
+        calendarOptions: {
+          bufferTime: this.bufferTime,
+          workingHours: this.workingHours,
+        },
+      })
 
       const pageStartDate = getDateDayOffset(
         new Date(this.event.dates[0]),
