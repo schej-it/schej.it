@@ -3208,15 +3208,17 @@ export default {
       this.workingHours =
         this.authUser?.calendarOptions?.workingHours ??
         calendarOptionsDefaults.workingHours
-      if (
-        this.isGroup &&
-        this.event.responses[this.authUser._id]?.calendarOptions
-      ) {
-        // Update calendar options if user has changed them for this specific group
-        const { bufferTime, workingHours } =
-          this.event.responses[this.authUser._id]?.calendarOptions
-        if (bufferTime) this.bufferTime = bufferTime
-        if (workingHours) this.workingHours = workingHours
+      if (this.isGroup) {
+        if (this.event.responses[this.authUser._id]?.calendarOptions) {
+          // Update calendar options if user has changed them for this specific group
+          const { bufferTime, workingHours } =
+            this.event.responses[this.authUser._id]?.calendarOptions
+          if (bufferTime) this.bufferTime = bufferTime
+          if (workingHours) this.workingHours = workingHours
+        } else {
+          this.bufferTime = calendarOptionsDefaults.bufferTime
+          this.workingHours = calendarOptionsDefaults.workingHours
+        }
       }
     }
 
