@@ -2082,9 +2082,9 @@ export default {
           this.$posthog?.capture(`Added ${type}`, {
             eventId: this.event._id,
             addedIfNeededTimes,
-            bufferTime: this.bufferTime,
-            // bufferTime: this.bufferTime.time,
-            // bufferTimeEnabled: this.bufferTime.enabled,
+            // bufferTime: this.bufferTime,
+            bufferTime: this.bufferTime.time,
+            bufferTimeActive: this.bufferTime.enabled,
           })
         }
       } else {
