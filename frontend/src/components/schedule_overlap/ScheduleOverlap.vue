@@ -1239,7 +1239,12 @@ export default {
               fetchedManualAvailability: fetchedManualAvailability ?? {},
               curManualAvailability: curManualAvailability ?? {},
               calendarOptions:
-                this.fetchedResponses[userId]?.calendarOptions ?? undefined,
+                userId === this.authUser._id
+                  ? {
+                      bufferTime: this.bufferTime,
+                      workingHours: this.workingHours,
+                    }
+                  : this.fetchedResponses[userId]?.calendarOptions ?? undefined,
             })
 
             parsed[userId] = {
@@ -2072,6 +2077,10 @@ export default {
           payload.manualAvailability[day] = [
             ...this.manualAvailability[day],
           ].map((a) => new Date(a))
+        }
+        payload.calendarOptions = {
+          bufferTime: this.bufferTime,
+          workingHours: this.workingHours,
         }
       } else {
         type = "availability"
@@ -3201,11 +3210,11 @@ export default {
         calendarOptionsDefaults.workingHours
       if (
         this.isGroup &&
-        this.event.responses[this.authUser.id]?.calendarOptions
+        this.event.responses[this.authUser._id]?.calendarOptions
       ) {
         // Update calendar options if user has changed them for this specific group
         const { bufferTime, workingHours } =
-          this.event.responses[this.authUser.id]?.calendarOptions
+          this.event.responses[this.authUser._id]?.calendarOptions
         if (bufferTime) this.bufferTime = bufferTime
         if (workingHours) this.workingHours = workingHours
       }
