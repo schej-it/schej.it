@@ -2085,7 +2085,9 @@ export default {
             // bufferTime: this.bufferTime,
             bufferTime: this.bufferTime.time,
             bufferTimeActive: this.bufferTime.enabled,
-            workingHours: this.workingHours,
+            workingHoursEnabled: this.workingHours.enabled,
+            workingHoursStartTime: this.workingHours.startTime,
+            workingHoursEndTime: this.workingHours.endTime,
           })
         }
       } else {
