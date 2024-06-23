@@ -491,10 +491,11 @@
                       <v-card-text
                         class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
                       >
-                        <AlertText v-if="isGroup">
+                        <AlertText v-if="isGroup" class="-tw-mb-4">
                           Calendar options will only updated for the current
                           group
                         </AlertText>
+
                         <BufferTimeSwitch
                           :bufferTime.sync="bufferTime"
                           :syncWithBackend="!isGroup"
