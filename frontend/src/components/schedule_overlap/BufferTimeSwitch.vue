@@ -45,6 +45,7 @@ export default {
 
   props: {
     bufferTime: { type: Object, required: true },
+    syncWithBackend: { type: Boolean, default: false },
   },
 
   components: {},
@@ -65,9 +66,11 @@ export default {
         ...this.bufferTime,
         [key]: val,
       }
-      patch(`/user/calendar-options`, {
-        bufferTime,
-      })
+      if (this.syncWithBackend) {
+        patch(`/user/calendar-options`, {
+          bufferTime,
+        })
+      }
       this.$emit("update:bufferTime", bufferTime)
     },
   },

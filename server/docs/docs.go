@@ -637,6 +637,9 @@ var doc = `{
                                                 "type": "string"
                                             }
                                         },
+                                        "calendarOptions": {
+                                            "$ref": "#/definitions/models.CalendarOptions"
+                                        },
                                         "enabledCalendars": {
                                             "type": "object",
                                             "additionalProperties": {
@@ -1511,6 +1514,10 @@ var doc = `{
             "properties": {
                 "availability": {
                     "type": "string"
+                },
+                "calendarOptions": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.CalendarOptions"
                 },
                 "enabledCalendars": {
                     "description": "Maps email to an array of sub calendar ids",

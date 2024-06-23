@@ -493,7 +493,7 @@ func getResponses(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,ifNeeded=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[string][]string} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,ifNeeded=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[string][]string,calendarOptions=models.CalendarOptions} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
@@ -507,6 +507,7 @@ func updateEventResponse(c *gin.Context) {
 		UseCalendarAvailability *bool                                        `json:"useCalendarAvailability"`
 		EnabledCalendars        *map[string][]string                         `json:"enabledCalendars"`
 		ManualAvailability      *map[primitive.DateTime][]primitive.DateTime `json:"manualAvailability"`
+		CalendarOptions         *models.CalendarOptions                      `json:"calendarOptions"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -545,6 +546,7 @@ func updateEventResponse(c *gin.Context) {
 			IfNeeded:                payload.IfNeeded,
 			UseCalendarAvailability: payload.UseCalendarAvailability,
 			EnabledCalendars:        payload.EnabledCalendars,
+			CalendarOptions:         payload.CalendarOptions,
 		}
 
 		if event.Type == models.GROUP {

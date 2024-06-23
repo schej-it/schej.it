@@ -433,7 +433,6 @@
             <!-- Options section -->
             <div
               v-if="
-                !isGroup &&
                 !event.daysOnly &&
                 (showOverlayAvailabilityToggle || showCalendarOptions)
               "
@@ -492,11 +491,19 @@
                       <v-card-text
                         class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
                       >
-                        <BufferTimeSwitch :bufferTime.sync="bufferTime" />
+                        <AlertText v-if="isGroup">
+                          Calendar options will only updated for the current
+                          group
+                        </AlertText>
+                        <BufferTimeSwitch
+                          :bufferTime.sync="bufferTime"
+                          :syncWithBackend="!isGroup"
+                        />
 
                         <WorkingHoursToggle
                           :workingHours.sync="workingHours"
                           :timezone="curTimezone"
+                          :syncWithBackend="!isGroup"
                         />
                       </v-card-text>
                     </v-card>
@@ -759,6 +766,7 @@ import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import ExpandableSection from "../ExpandableSection.vue"
 import WorkingHoursToggle from "./WorkingHoursToggle.vue"
+import AlertText from "../AlertText.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -1225,14 +1233,19 @@ export default {
 
             // Get availability from calendar events and use manual availability on the
             // "touched" days
-            const availability = this.getAvailabilityFromCalendarEvents(
+            const availability = this.getAvailabilityFromCalendarEvents({
               calendarEventsByDay,
-              {
-                includeTouchedAvailability: true,
-                fetchedManualAvailability: fetchedManualAvailability ?? {},
-                curManualAvailability: curManualAvailability ?? {},
-              }
-            )
+              includeTouchedAvailability: true,
+              fetchedManualAvailability: fetchedManualAvailability ?? {},
+              curManualAvailability: curManualAvailability ?? {},
+              calendarOptions:
+                userId === this.authUser._id
+                  ? {
+                      bufferTime: this.bufferTime,
+                      workingHours: this.workingHours,
+                    }
+                  : this.fetchedResponses[userId]?.calendarOptions ?? undefined,
+            })
 
             parsed[userId] = {
               ...this.event.responses[userId],
@@ -1579,7 +1592,10 @@ export default {
       return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
     },
     showCalendarOptions() {
-      return this.calendarPermissionGranted && !this.userHasResponded
+      return (
+        this.calendarPermissionGranted &&
+        (this.isGroup || (!this.isGroup && !this.userHasResponded))
+      )
     },
   },
   methods: {
@@ -1874,30 +1890,29 @@ export default {
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns a set containing the available times based on the given calendar events object */
-    getAvailabilityFromCalendarEvents(
-      calendarEventsByDay,
-      options = {
-        includeTouchedAvailability: false, // Whether to include manual availability for touched days
-        fetchedManualAvailability: {}, // Object mapping unix timestamp to array of manual availability (fetched from server)
-        curManualAvailability: {}, // Manual availability with edits (takes precedence over fetchedManualAvailability)
-      }
-    ) {
+    getAvailabilityFromCalendarEvents({
+      calendarEventsByDay = [],
+      includeTouchedAvailability = false, // Whether to include manual availability for touched days
+      fetchedManualAvailability = {}, // Object mapping unix timestamp to array of manual availability (fetched from server)
+      curManualAvailability = {}, // Manual availability with edits (takes precedence over fetchedManualAvailability)
+      calendarOptions = calendarOptionsDefaults, // User id of the user we are getting availability for
+    }) {
       const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
 
-        if (options.includeTouchedAvailability) {
+        if (includeTouchedAvailability) {
           const endDate = getDateHoursOffset(date, this.event.duration)
 
           // Check if manual availability has been added for the current date
           let manualAvailabilityAdded = false
 
-          for (const time in options.curManualAvailability) {
+          for (const time in curManualAvailability) {
             if (date.getTime() <= time && time <= endDate.getTime()) {
-              options.curManualAvailability[time].forEach((a) => {
+              curManualAvailability[time].forEach((a) => {
                 availability.add(new Date(a).getTime())
               })
-              delete options.curManualAvailability[time]
+              delete curManualAvailability[time]
               manualAvailabilityAdded = true
               break
             }
@@ -1905,12 +1920,12 @@ export default {
 
           if (manualAvailabilityAdded) continue
 
-          for (const time in options.fetchedManualAvailability) {
+          for (const time in fetchedManualAvailability) {
             if (date.getTime() <= time && time <= endDate.getTime()) {
-              options.fetchedManualAvailability[time].forEach((a) => {
+              fetchedManualAvailability[time].forEach((a) => {
                 availability.add(new Date(a).getTime())
               })
-              delete options.fetchedManualAvailability[time]
+              delete fetchedManualAvailability[time]
               manualAvailabilityAdded = true
               break
             }
@@ -1920,17 +1935,21 @@ export default {
         }
 
         // Calculate buffer time
-        const bufferTimeInMS = this.bufferTime.enabled
-          ? this.bufferTime.time * 1000 * 60
+        const bufferTimeInMS = calendarOptions.bufferTime.enabled
+          ? calendarOptions.bufferTime.time * 1000 * 60
           : 0
 
         // Calculate working hours
-        const startTimeString = timeNumToTimeString(this.workingHours.startTime)
+        const startTimeString = timeNumToTimeString(
+          calendarOptions.workingHours.startTime
+        )
         const day = getISODateString(getDateWithTimezone(date), true)
         const workingHoursStartDate = dayjs
           .tz(`${day} ${startTimeString}`, this.curTimezone.value)
           .toDate()
-        let duration = this.workingHours.endTime - this.workingHours.startTime
+        let duration =
+          calendarOptions.workingHours.endTime -
+          calendarOptions.workingHours.startTime
         if (duration <= 0) duration += 24
         const workingHoursEndDate = getDateHoursOffset(
           workingHoursStartDate,
@@ -1943,7 +1962,7 @@ export default {
           const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
 
           // Working hours
-          if (this.workingHours.enabled) {
+          if (calendarOptions.workingHours.enabled) {
             if (
               endDate.getTime() <= workingHoursStartDate.getTime() ||
               startDate.getTime() >= workingHoursEndDate.getTime()
@@ -1976,9 +1995,13 @@ export default {
     setAvailabilityAutomatically() {
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set()
-      const tmpAvailability = this.getAvailabilityFromCalendarEvents(
-        this.calendarEventsByDay
-      )
+      const tmpAvailability = this.getAvailabilityFromCalendarEvents({
+        calendarEventsByDay: this.calendarEventsByDay,
+        calendarOptions: {
+          bufferTime: this.bufferTime,
+          workingHours: this.workingHours,
+        },
+      })
 
       const pageStartDate = getDateDayOffset(
         new Date(this.event.dates[0]),
@@ -2054,6 +2077,10 @@ export default {
           payload.manualAvailability[day] = [
             ...this.manualAvailability[day],
           ].map((a) => new Date(a))
+        }
+        payload.calendarOptions = {
+          bufferTime: this.bufferTime,
+          workingHours: this.workingHours,
         }
       } else {
         type = "availability"
@@ -3176,13 +3203,27 @@ export default {
     // Set initial state to best_times or heatmap depending on show best times toggle.
     this.state = this.showBestTimes ? "best_times" : "heatmap"
 
-    // Set options defaults
-    this.bufferTime =
-      this.authUser?.calendarOptions?.bufferTime ??
-      calendarOptionsDefaults.bufferTime
-    this.workingHours =
-      this.authUser?.calendarOptions?.workingHours ??
-      calendarOptionsDefaults.workingHours
+    // Set calendar options defaults
+    if (this.authUser) {
+      this.bufferTime =
+        this.authUser?.calendarOptions?.bufferTime ??
+        calendarOptionsDefaults.bufferTime
+      this.workingHours =
+        this.authUser?.calendarOptions?.workingHours ??
+        calendarOptionsDefaults.workingHours
+      if (this.isGroup) {
+        if (this.event.responses[this.authUser._id]?.calendarOptions) {
+          // Update calendar options if user has changed them for this specific group
+          const { bufferTime, workingHours } =
+            this.event.responses[this.authUser._id]?.calendarOptions
+          if (bufferTime) this.bufferTime = bufferTime
+          if (workingHours) this.workingHours = workingHours
+        } else {
+          this.bufferTime = calendarOptionsDefaults.bufferTime
+          this.workingHours = calendarOptionsDefaults.workingHours
+        }
+      }
+    }
 
     // Set initial calendar max scroll
     // this.calendarMaxScroll =
@@ -3211,6 +3252,7 @@ export default {
     removeEventListener("scroll", this.onScroll)
   },
   components: {
+    AlertText,
     AvailabilityTypeToggle,
     ExpandableSection,
     BufferTimeSwitch,
