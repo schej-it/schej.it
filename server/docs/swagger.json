@@ -621,6 +621,9 @@
                                                 "type": "string"
                                             }
                                         },
+                                        "calendarOptions": {
+                                            "$ref": "#/definitions/models.CalendarOptions"
+                                        },
                                         "enabledCalendars": {
                                             "type": "object",
                                             "additionalProperties": {
@@ -1495,6 +1498,10 @@
             "properties": {
                 "availability": {
                     "type": "string"
+                },
+                "calendarOptions": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.CalendarOptions"
                 },
                 "enabledCalendars": {
                     "description": "Maps email to an array of sub calendar ids",

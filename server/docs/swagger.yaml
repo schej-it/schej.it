@@ -164,6 +164,9 @@ definitions:
     properties:
       availability:
         type: string
+      calendarOptions:
+        $ref: '#/definitions/models.CalendarOptions'
+        type: object
       enabledCalendars:
         additionalProperties:
           items:
@@ -665,6 +668,8 @@ paths:
                 items:
                   type: string
                 type: array
+              calendarOptions:
+                $ref: '#/definitions/models.CalendarOptions'
               enabledCalendars:
                 additionalProperties:
                   items:

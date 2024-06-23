@@ -61,6 +61,7 @@ type Response struct {
 	// Calendar availability variables for Availability Groups feature
 	UseCalendarAvailability *bool                `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
 	EnabledCalendars        *map[string][]string `json:"enabledCalendars" bson:"enabledCalendars,omitempty"` // Maps email to an array of sub calendar ids
+	CalendarOptions         *CalendarOptions     `json:"calendarOptions" bson:"calendarOptions,omitempty"`
 }
 
 // Object containing information associated with the remindee
