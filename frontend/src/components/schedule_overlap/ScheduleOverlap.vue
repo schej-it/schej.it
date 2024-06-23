@@ -2085,6 +2085,7 @@ export default {
             // bufferTime: this.bufferTime,
             bufferTime: this.bufferTime.time,
             bufferTimeActive: this.bufferTime.enabled,
+            workingHours: this.workingHours,
           })
         }
       } else {
