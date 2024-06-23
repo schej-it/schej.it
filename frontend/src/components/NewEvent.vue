@@ -34,15 +34,9 @@
       </template>
     </v-card-title>
     <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
-      <div
-        v-if="edit && event?.ownerId == 0"
-        class="tw-mb-4 tw-flex tw-items-start tw-gap-1 tw-rounded tw-bg-light-gray tw-p-2 tw-text-dark-gray"
-      >
-        <v-icon class="-tw-mt-px tw-text-base">mdi-alert-circle</v-icon>
-        <span>
-          Anybody can edit this event because it was created while not signed in
-        </span>
-      </div>
+      <AlertText v-if="edit && event?.ownerId == 0" class="tw-mb-4">
+        Anybody can edit this event because it was created while not signed in
+      </AlertText>
       <v-form
         ref="form"
         v-model="formValid"
@@ -341,6 +335,7 @@ import HelpDialog from "./HelpDialog.vue"
 import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
 import SlideToggle from "./SlideToggle.vue"
+import AlertText from "@/components/AlertText.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -370,6 +365,7 @@ export default {
     DatePicker,
     SlideToggle,
     ExpandableSection,
+    AlertText,
   },
 
   data: () => ({

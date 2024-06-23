@@ -433,7 +433,6 @@
             <!-- Options section -->
             <div
               v-if="
-                !isGroup &&
                 !event.daysOnly &&
                 (showOverlayAvailabilityToggle || showCalendarOptions)
               "
@@ -492,11 +491,19 @@
                       <v-card-text
                         class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
                       >
-                        <BufferTimeSwitch :bufferTime.sync="bufferTime" />
+                        <AlertText v-if="isGroup">
+                          Calendar options will only updated for the current
+                          group
+                        </AlertText>
+                        <BufferTimeSwitch
+                          :bufferTime.sync="bufferTime"
+                          :syncWithBackend="!isGroup"
+                        />
 
                         <WorkingHoursToggle
                           :workingHours.sync="workingHours"
                           :timezone="curTimezone"
+                          :syncWithBackend="!isGroup"
                         />
                       </v-card-text>
                     </v-card>
@@ -759,6 +766,7 @@ import RespondentsList from "./RespondentsList.vue"
 import GCalWeekSelector from "./GCalWeekSelector.vue"
 import ExpandableSection from "../ExpandableSection.vue"
 import WorkingHoursToggle from "./WorkingHoursToggle.vue"
+import AlertText from "../AlertText.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -1579,7 +1587,10 @@ export default {
       return this.respondents.length > 0 && this.overlayAvailabilitiesEnabled
     },
     showCalendarOptions() {
-      return this.calendarPermissionGranted && !this.userHasResponded
+      return (
+        this.calendarPermissionGranted &&
+        (this.isGroup || (!this.isGroup && !this.userHasResponded))
+      )
     },
   },
   methods: {
@@ -3180,13 +3191,25 @@ export default {
     // Set initial state to best_times or heatmap depending on show best times toggle.
     this.state = this.showBestTimes ? "best_times" : "heatmap"
 
-    // Set options defaults
-    this.bufferTime =
-      this.authUser?.calendarOptions?.bufferTime ??
-      calendarOptionsDefaults.bufferTime
-    this.workingHours =
-      this.authUser?.calendarOptions?.workingHours ??
-      calendarOptionsDefaults.workingHours
+    // Set calendar options defaults
+    if (this.authUser) {
+      this.bufferTime =
+        this.authUser?.calendarOptions?.bufferTime ??
+        calendarOptionsDefaults.bufferTime
+      this.workingHours =
+        this.authUser?.calendarOptions?.workingHours ??
+        calendarOptionsDefaults.workingHours
+      if (
+        this.isGroup &&
+        this.event.responses[this.authUser.id]?.calendarOptions
+      ) {
+        // Update calendar options if user has changed them for this specific group
+        const { bufferTime, workingHours } =
+          this.event.responses[this.authUser.id]?.calendarOptions
+        if (bufferTime) this.bufferTime = bufferTime
+        if (workingHours) this.workingHours = workingHours
+      }
+    }
 
     // Set initial calendar max scroll
     // this.calendarMaxScroll =
@@ -3215,6 +3238,7 @@ export default {
     removeEventListener("scroll", this.onScroll)
   },
   components: {
+    AlertText,
     AvailabilityTypeToggle,
     ExpandableSection,
     BufferTimeSwitch,

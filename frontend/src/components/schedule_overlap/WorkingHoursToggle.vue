@@ -61,6 +61,7 @@ export default {
 
   props: {
     workingHours: { type: Object, required: true },
+    syncWithBackend: { type: Boolean, default: false },
   },
 
   computed: {
@@ -75,9 +76,11 @@ export default {
         ...this.workingHours,
         [key]: val,
       }
-      patch(`/user/calendar-options`, {
-        workingHours,
-      })
+      if (this.syncWithBackend) {
+        patch(`/user/calendar-options`, {
+          workingHours,
+        })
+      }
       this.$emit("update:workingHours", workingHours)
     },
   },
