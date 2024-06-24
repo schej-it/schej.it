@@ -182,7 +182,7 @@
 
                     <v-tooltip
                       top
-                      content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100"
+                      content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100 tw-py-4"
                     >
                       <template v-slot:activator="{ on, attrs }">
                         <v-icon small v-bind="attrs" v-on="on"
