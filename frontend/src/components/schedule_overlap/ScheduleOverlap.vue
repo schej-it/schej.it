@@ -2547,10 +2547,11 @@ export default {
         if (r.email.length > 0) {
           return r.email
         } else {
-          return `${r.firstName} (no email)`
+          // return `${r.firstName} (no email)`
+          return null
         }
       })
-      const emailsString = encodeURIComponent(emails.join(","))
+      const emailsString = encodeURIComponent(emails.filter(Boolean).join(","))
 
       // Format start and end date to be in the format required by gcal (remove -, :, and .000)
       const start = startDate.toISOString().replace(/([-:]|\.000)/g, "")
