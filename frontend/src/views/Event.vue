@@ -580,10 +580,12 @@ export default {
       if (!this.scheduleOverlapComponent) return
 
       this.curGuestId = this.selectedGuestRespondent
-      this.scheduleOverlapComponent.populateUserAvailability(
-        this.selectedGuestRespondent
-      )
       this.scheduleOverlapComponent.startEditing()
+      this.$nextTick(() => {
+        this.scheduleOverlapComponent.populateUserAvailability(
+          this.selectedGuestRespondent
+        )
+      })
     },
     async saveChanges(ignorePagesNotVisited = false) {
       /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
