@@ -212,6 +212,7 @@
       <template v-if="!isPhone">
         <v-btn
           v-if="
+            !isGroup &&
             (authUser || guestAddedAvailability) &&
             !event.blindAvailabilityEnabled
           "
@@ -298,6 +299,7 @@
       v-if="
         !maxHeight &&
         isPhone &&
+        !isGroup &&
         (authUser || guestAddedAvailability) &&
         !event.blindAvailabilityEnabled
       "
