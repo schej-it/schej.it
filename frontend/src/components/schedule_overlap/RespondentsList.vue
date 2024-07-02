@@ -214,7 +214,7 @@
           v-if="
             !isGroup &&
             (authUser || guestAddedAvailability) &&
-            !event.blindAvailabilityEnabled
+            (!event.blindAvailabilityEnabled || isOwner)
           "
           text
           color="primary"
@@ -304,7 +304,7 @@
         isPhone &&
         !isGroup &&
         (authUser || guestAddedAvailability) &&
-        !event.blindAvailabilityEnabled
+        (!event.blindAvailabilityEnabled || isOwner)
       "
       text
       color="primary"
