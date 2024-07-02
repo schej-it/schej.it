@@ -510,7 +510,7 @@ export default {
     async deleteAvailability() {
       if (!this.scheduleOverlapComponent) return
 
-      if (!this.authUser) {
+      if (!this.authUser || this.addingAvailabilityAsGuest) {
         if (this.curGuestId) {
           await this.scheduleOverlapComponent.deleteAvailability(
             this.curGuestId

@@ -1893,7 +1893,7 @@ export default {
 
       this.availability = new Set()
       this.ifNeeded = new Set()
-      if (this.userHasResponded && !this.addingAvailabilityAsGuest) {
+      if (this.userHasResponded) {
         this.populateUserAvailability(this.authUser._id)
       }
     },
@@ -2153,7 +2153,7 @@ export default {
     },
     async deleteAvailability(name = "") {
       const payload = {}
-      if (this.authUser) {
+      if (this.authUser && !this.addingAvailabilityAsGuest) {
         payload.guest = false
         payload.userId = this.authUser._id
 
@@ -2494,7 +2494,10 @@ export default {
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
       this.availabilityType = availabilityTypes.AVAILABLE
-      if (this.authUser) {
+      this.availability = new Set()
+      this.ifNeeded = new Set()
+
+      if (this.authUser && !this.addingAvailabilityAsGuest) {
         this.resetCurUserAvailability()
       }
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -2512,9 +2515,16 @@ export default {
       this.$emit("highlightAvailabilityBtn")
     },
     editGuestAvailability(id) {
-      this.populateUserAvailability(id)
-      this.$emit("setCurGuestId", id)
-      this.startEditing()
+      if (this.authUser) {
+        this.$emit("addAvailabilityAsGuest")
+      } else {
+        this.startEditing()
+      }
+
+      this.$nextTick(() => {
+        this.populateUserAvailability(id)
+        this.$emit("setCurGuestId", id)
+      })
     },
     refreshEvent() {
       this.$emit("refreshEvent")
