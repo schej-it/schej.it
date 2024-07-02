@@ -210,15 +210,22 @@
       <template v-if="!isPhone">
         <v-btn
           v-if="
-            !authUser &&
-            guestAddedAvailability &&
+            (authUser || guestAddedAvailability) &&
             !event.blindAvailabilityEnabled
           "
           text
           color="primary"
           class="-tw-ml-2 tw-mb-4 tw-w-min tw-px-2"
-          @click="() => $emit('addAvailability')"
-          >+ Add availability</v-btn
+          @click="
+            () => {
+              if (authUser) {
+                $emit('addAvailabilityAsGuest')
+              } else {
+                $emit('addAvailability')
+              }
+            }
+          "
+          >+ Add availability{{ authUser ? " as guest" : "" }}</v-btn
         >
         <EventOptions
           :event="event"
@@ -289,15 +296,22 @@
       v-if="
         !maxHeight &&
         isPhone &&
-        !authUser &&
-        guestAddedAvailability &&
+        (authUser || guestAddedAvailability) &&
         !event.blindAvailabilityEnabled
       "
       text
       color="primary"
       class="-tw-ml-2 tw-mt-4 tw-w-min tw-px-2"
-      @click="() => $emit('addAvailability')"
-      >+ Add availability</v-btn
+      @click="
+        () => {
+          if (authUser) {
+            $emit('addAvailabilityAsGuest')
+          } else {
+            $emit('addAvailability')
+          }
+        }
+      "
+      >+ Add availability{{ authUser ? " as guest" : "" }}</v-btn
     >
   </div>
 </template>
@@ -334,6 +348,7 @@ export default {
     hideIfNeeded: { type: Boolean, required: true },
     showEventOptions: { type: Boolean, required: true },
     guestAddedAvailability: { type: Boolean, required: true },
+    addingAvailabilityAsGuest: { type: Boolean, required: true },
   },
 
   data() {
