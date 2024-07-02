@@ -228,7 +228,10 @@
               }
             }
           "
-          >+ Add availability{{ authUser ? " as guest" : "" }}</v-btn
+        >
+          {{
+            authUser ? "+ Add guest availability" : "+ Add availability"
+          }}</v-btn
         >
         <EventOptions
           :event="event"
@@ -315,7 +318,8 @@
           }
         }
       "
-      >+ Add availability{{ authUser ? " as guest" : "" }}</v-btn
+    >
+      {{ authUser ? "+ Add guest availability" : "+ Add availability" }}</v-btn
     >
   </div>
 </template>

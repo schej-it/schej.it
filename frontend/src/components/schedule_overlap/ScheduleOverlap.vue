@@ -397,13 +397,23 @@
             v-if="state == states.EDIT_AVAILABILITY"
           >
             <div
-              v-if="!(calendarPermissionGranted && !event.daysOnly)"
+              v-if="
+                !(
+                  calendarPermissionGranted &&
+                  !event.daysOnly &&
+                  !addingAvailabilityAsGuest
+                )
+              "
               class="tw-text-sm tw-italic tw-text-dark-gray"
             >
-              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
+              {{
+                (userHasResponded && !addingAvailabilityAsGuest) || curGuestId
+                  ? "Editing"
+                  : "Adding"
+              }}
               availability as
               {{
-                authUser
+                authUser && !addingAvailabilityAsGuest
                   ? `${authUser.firstName} ${authUser.lastName}`
                   : curGuestId?.length > 0
                   ? curGuestId
