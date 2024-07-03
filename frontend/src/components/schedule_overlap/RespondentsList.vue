@@ -154,29 +154,31 @@
             </div>
 
             <!-- <div v-if="isGroup" class="tw-ml-1">
-            <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
-          </div> -->
+              <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
+            </div> -->
 
-            <v-btn
-              v-if="!authUser && isGuest(user)"
-              absolute
-              small
-              icon
-              class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
-              @click="$emit('editGuestAvailability', user._id)"
-              ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
+            <div
+              class="tw-absolute tw-right-0 tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
             >
-            <v-btn
-              v-else-if="isOwner && !isGroup"
-              absolute
-              small
-              icon
-              class="tw-right-0 tw-bg-white tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
-              @click="() => showDeleteAvailabilityDialog(user)"
-              ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
-                >mdi-delete</v-icon
-              ></v-btn
-            >
+              <v-btn
+                v-if="isGuest(user)"
+                small
+                icon
+                class="tw-bg-white"
+                @click="$emit('editGuestAvailability', user._id)"
+                ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
+              >
+              <v-btn
+                v-if="isOwner && !isGroup"
+                small
+                icon
+                class="tw-bg-white"
+                @click="() => showDeleteAvailabilityDialog(user)"
+                ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
+                  >mdi-delete</v-icon
+                ></v-btn
+              >
+            </div>
           </div>
           <div class="tw-h-2"></div>
         </template>
@@ -210,15 +212,26 @@
       <template v-if="!isPhone">
         <v-btn
           v-if="
-            !authUser &&
-            guestAddedAvailability &&
-            !event.blindAvailabilityEnabled
+            !isGroup &&
+            (authUser || guestAddedAvailability) &&
+            (!event.blindAvailabilityEnabled || isOwner)
           "
           text
           color="primary"
           class="-tw-ml-2 tw-mb-4 tw-w-min tw-px-2"
-          @click="() => $emit('addAvailability')"
-          >+ Add availability</v-btn
+          @click="
+            () => {
+              if (authUser) {
+                $emit('addAvailabilityAsGuest')
+              } else {
+                $emit('addAvailability')
+              }
+            }
+          "
+        >
+          {{
+            authUser ? "+ Add guest availability" : "+ Add availability"
+          }}</v-btn
         >
         <EventOptions
           :event="event"
@@ -289,15 +302,24 @@
       v-if="
         !maxHeight &&
         isPhone &&
-        !authUser &&
-        guestAddedAvailability &&
-        !event.blindAvailabilityEnabled
+        !isGroup &&
+        (authUser || guestAddedAvailability) &&
+        (!event.blindAvailabilityEnabled || isOwner)
       "
       text
       color="primary"
       class="-tw-ml-2 tw-mt-4 tw-w-min tw-px-2"
-      @click="() => $emit('addAvailability')"
-      >+ Add availability</v-btn
+      @click="
+        () => {
+          if (authUser) {
+            $emit('addAvailabilityAsGuest')
+          } else {
+            $emit('addAvailability')
+          }
+        }
+      "
+    >
+      {{ authUser ? "+ Add guest availability" : "+ Add availability" }}</v-btn
     >
   </div>
 </template>
@@ -334,6 +356,7 @@ export default {
     hideIfNeeded: { type: Boolean, required: true },
     showEventOptions: { type: Boolean, required: true },
     guestAddedAvailability: { type: Boolean, required: true },
+    addingAvailabilityAsGuest: { type: Boolean, required: true },
   },
 
   data() {

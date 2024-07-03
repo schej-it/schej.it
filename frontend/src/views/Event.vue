@@ -232,7 +232,9 @@
         :weekOffset.sync="weekOffset"
         :curGuestId="curGuestId"
         :initial-timezone="initialTimezone"
+        :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
         @addAvailability="addAvailability"
+        @addAvailabilityAsGuest="addAvailabilityAsGuest"
         @refreshEvent="refreshEvent"
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"
@@ -384,6 +386,7 @@ export default {
     invitationDialog: false,
     pagesNotVisitedDialog: false,
     helpDialog: false,
+
     loading: true,
     calendarEventsMap: {},
     event: null,
@@ -392,6 +395,7 @@ export default {
 
     curGuestId: "", // Id of the current guest being edited
     calendarPermissionGranted: true,
+    addingAvailabilityAsGuest: false, // Whether a signed in user is current adding availability as a guest
 
     weekOffset: 0,
 
@@ -482,6 +486,11 @@ export default {
         this.choiceDialog = true
       }
     },
+    /** Add guest availability while signed in */
+    addAvailabilityAsGuest() {
+      this.addingAvailabilityAsGuest = true
+      this.setAvailabilityManually()
+    },
     cancelEditing() {
       /* Cancels editing and resets availability to previous */
       if (!this.scheduleOverlapComponent) return
@@ -489,6 +498,7 @@ export default {
       this.scheduleOverlapComponent.resetCurUserAvailability()
       this.scheduleOverlapComponent.stopEditing()
       this.curGuestId = ""
+      this.addingAvailabilityAsGuest = false
     },
     copyLink() {
       /* Copies event link to clipboard */
@@ -500,7 +510,7 @@ export default {
     async deleteAvailability() {
       if (!this.scheduleOverlapComponent) return
 
-      if (!this.authUser) {
+      if (!this.authUser || this.addingAvailabilityAsGuest) {
         if (this.curGuestId) {
           await this.scheduleOverlapComponent.deleteAvailability(
             this.curGuestId
@@ -560,7 +570,9 @@ export default {
       /* Starts editing after "set availability manually" button clicked */
       if (!this.scheduleOverlapComponent) return
 
-      this.scheduleOverlapComponent.startEditing()
+      this.$nextTick(() => {
+        this.scheduleOverlapComponent.startEditing()
+      })
       this.choiceDialog = false
     },
     editGuestAvailability() {
@@ -568,10 +580,12 @@ export default {
       if (!this.scheduleOverlapComponent) return
 
       this.curGuestId = this.selectedGuestRespondent
-      this.scheduleOverlapComponent.populateUserAvailability(
-        this.selectedGuestRespondent
-      )
       this.scheduleOverlapComponent.startEditing()
+      this.$nextTick(() => {
+        this.scheduleOverlapComponent.populateUserAvailability(
+          this.selectedGuestRespondent
+        )
+      })
     },
     async saveChanges(ignorePagesNotVisited = false) {
       /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
@@ -589,10 +603,11 @@ export default {
         return
       }
 
-      if (!this.authUser) {
+      if (!this.authUser || this.addingAvailabilityAsGuest) {
         if (this.curGuestId) {
           this.saveChangesAsGuest(this.curGuestId)
           this.curGuestId = ""
+          this.addingAvailabilityAsGuest = false
         } else {
           this.guestDialog = true
         }
@@ -615,6 +630,7 @@ export default {
         this.scheduleOverlapComponent.resetCurUserAvailability()
         this.scheduleOverlapComponent.stopEditing()
         this.guestDialog = false
+        this.addingAvailabilityAsGuest = false
       }
     },
     scheduleEvent() {

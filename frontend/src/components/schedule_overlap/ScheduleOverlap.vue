@@ -397,13 +397,23 @@
             v-if="state == states.EDIT_AVAILABILITY"
           >
             <div
-              v-if="!(calendarPermissionGranted && !event.daysOnly)"
+              v-if="
+                !(
+                  calendarPermissionGranted &&
+                  !event.daysOnly &&
+                  !addingAvailabilityAsGuest
+                )
+              "
               class="tw-text-sm tw-italic tw-text-dark-gray"
             >
-              {{ userHasResponded || curGuestId ? "Editing" : "Adding" }}
+              {{
+                (userHasResponded && !addingAvailabilityAsGuest) || curGuestId
+                  ? "Editing"
+                  : "Adding"
+              }}
               availability as
               {{
-                authUser
+                authUser && !addingAvailabilityAsGuest
                   ? `${authUser.firstName} ${authUser.lastName}`
                   : curGuestId?.length > 0
                   ? curGuestId
@@ -417,7 +427,11 @@
             />
             <!-- User's calendar accounts -->
             <CalendarAccounts
-              v-if="calendarPermissionGranted && !event.daysOnly"
+              v-if="
+                calendarPermissionGranted &&
+                !event.daysOnly &&
+                !addingAvailabilityAsGuest
+              "
               :toggleState="true"
               :eventId="event._id"
               :calendar-events-map="calendarEventsMap"
@@ -514,7 +528,11 @@
             </div>
 
             <!-- Delete availability button -->
-            <div v-if="userHasResponded || curGuestId">
+            <div
+              v-if="
+                (!addingAvailabilityAsGuest && userHasResponded) || curGuestId
+              "
+            >
               <v-dialog
                 v-model="deleteAvailabilityDialog"
                 width="500"
@@ -580,9 +598,11 @@
               :show-best-times.sync="showBestTimes"
               :hide-if-needed.sync="hideIfNeeded"
               :show-event-options="showEventOptions"
-              @toggleShowEventOptions="toggleShowEventOptions"
               :guestAddedAvailability="guestAddedAvailability"
+              :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
+              @toggleShowEventOptions="toggleShowEventOptions"
               @addAvailability="$emit('addAvailability')"
+              @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
               @mouseOverRespondent="mouseOverRespondent"
               @mouseLeaveRespondent="mouseLeaveRespondent"
               @clickRespondent="clickRespondent"
@@ -689,9 +709,11 @@
                 :show-best-times.sync="showBestTimes"
                 :hide-if-needed.sync="hideIfNeeded"
                 :show-event-options="showEventOptions"
-                @toggleShowEventOptions="toggleShowEventOptions"
                 :guestAddedAvailability="guestAddedAvailability"
+                :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
+                @toggleShowEventOptions="toggleShowEventOptions"
                 @addAvailability="$emit('addAvailability')"
+                @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
                 @mouseOverRespondent="mouseOverRespondent"
                 @mouseLeaveRespondent="mouseLeaveRespondent"
                 @clickRespondent="clickRespondent"
@@ -798,6 +820,7 @@ export default {
     showHintText: { type: Boolean, default: true }, // Whether to show the hint text telling user what to do
 
     curGuestId: { type: String, default: "" }, // Id of the current guest being edited
+    addingAvailabilityAsGuest: { type: Boolean, default: false }, // Whether the signed in user is adding availability as a guest
 
     initialTimezone: { type: Object, default: () => ({}) },
 
@@ -942,8 +965,8 @@ export default {
       // If this is an example calendar
       if (this.sampleCalendarEventsByDay) return this.sampleCalendarEventsByDay
 
-      // If the user isn't logged in
-      if (!this.authUser) return []
+      // If the user isn't logged in or is adding availability as a guest
+      if (!this.authUser || this.addingAvailabilityAsGuest) return []
 
       let events = []
       let event
@@ -1594,6 +1617,7 @@ export default {
     },
     showCalendarOptions() {
       return (
+        !this.addingAvailabilityAsGuest &&
         this.calendarPermissionGranted &&
         (this.isGroup || (!this.isGroup && !this.userHasResponded))
       )
@@ -2087,7 +2111,7 @@ export default {
         type = "availability"
         payload.availability = this.availabilityArray
         payload.ifNeeded = this.ifNeededArray
-        if (this.authUser) {
+        if (this.authUser && !this.addingAvailabilityAsGuest) {
           payload.guest = false
         } else {
           payload.guest = true
@@ -2139,7 +2163,7 @@ export default {
     },
     async deleteAvailability(name = "") {
       const payload = {}
-      if (this.authUser) {
+      if (this.authUser && !this.addingAvailabilityAsGuest) {
         payload.guest = false
         payload.userId = this.authUser._id
 
@@ -2480,7 +2504,10 @@ export default {
     startEditing() {
       this.state = this.states.EDIT_AVAILABILITY
       this.availabilityType = availabilityTypes.AVAILABLE
-      if (this.authUser) {
+      this.availability = new Set()
+      this.ifNeeded = new Set()
+
+      if (this.authUser && !this.addingAvailabilityAsGuest) {
         this.resetCurUserAvailability()
       }
       this.$nextTick(() => (this.unsavedChanges = false))
@@ -2498,9 +2525,16 @@ export default {
       this.$emit("highlightAvailabilityBtn")
     },
     editGuestAvailability(id) {
-      this.populateUserAvailability(id)
-      this.$emit("setCurGuestId", id)
-      this.startEditing()
+      if (this.authUser) {
+        this.$emit("addAvailabilityAsGuest")
+      } else {
+        this.startEditing()
+      }
+
+      this.$nextTick(() => {
+        this.populateUserAvailability(id)
+        this.$emit("setCurGuestId", id)
+      })
     },
     refreshEvent() {
       this.$emit("refreshEvent")
