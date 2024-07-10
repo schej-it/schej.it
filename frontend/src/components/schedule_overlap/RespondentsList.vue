@@ -85,6 +85,12 @@
       </template>
     </div>
     <div
+      v-if="isOwner && !isPhone && event.blindAvailabilityEnabled"
+      class="tw-mb-2 tw-mt-1 tw-text-xs tw-italic tw-text-very-dark-gray"
+    >
+      Responses are only visible to {{ isOwner ? "you" : "event creator" }}
+    </div>
+    <div
       ref="scrollableSection"
       class="tw-flex tw-flex-col"
       :style="
@@ -251,7 +257,7 @@
     </div>
 
     <div
-      v-if="event.blindAvailabilityEnabled"
+      v-if="(!isOwner || isPhone) && event.blindAvailabilityEnabled"
       class="tw-mt-2 tw-text-xs tw-italic tw-text-very-dark-gray"
     >
       Responses are only visible to {{ isOwner ? "you" : "event creator" }}

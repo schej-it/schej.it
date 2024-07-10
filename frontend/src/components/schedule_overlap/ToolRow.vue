@@ -29,6 +29,24 @@
             hide-details
           />
         </div>
+        <div
+          v-if="isPhone && !event.daysOnly"
+          class="tw-flex tw-basis-full tw-items-center tw-gap-x-2 tw-py-4"
+        >
+          Show
+          <v-select
+            :value="mobileNumDays"
+            @input="$emit('update:mobileNumDays', $event)"
+            :items="mobileNumDaysOptions"
+            :menu-props="{ auto: true }"
+            item-text="label"
+            item-value="value"
+            class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
+            dense
+            hide-details
+          />
+          at a time
+        </div>
 
         <template v-if="state !== states.EDIT_AVAILABILITY && isPhone">
           <ExpandableSection
@@ -66,24 +84,6 @@
                   </template>
                 </v-switch>
               </template>
-              <div
-                v-if="!event.daysOnly"
-                class="tw-flex tw-basis-full tw-items-center tw-gap-x-2 tw-py-1"
-              >
-                Show
-                <v-select
-                  :value="mobileNumDays"
-                  @input="$emit('update:mobileNumDays', $event)"
-                  :items="mobileNumDaysOptions"
-                  :menu-props="{ auto: true }"
-                  item-text="label"
-                  item-value="value"
-                  class="-tw-mt-px tw-flex-none tw-shrink tw-basis-24 tw-text-sm"
-                  dense
-                  hide-details
-                />
-                at a time
-              </div>
             </div>
           </ExpandableSection>
         </template>
