@@ -49,43 +49,17 @@
         </div>
 
         <template v-if="state !== states.EDIT_AVAILABILITY && isPhone">
-          <ExpandableSection
-            label="Options"
-            :value="showEventOptions"
-            @input="$emit('toggleShowEventOptions')"
+          <EventOptions
             class="tw-mt-2 tw-w-full"
-          >
-            <div class="tw-flex tw-flex-col tw-gap-2 tw-pt-2">
-              <template v-if="numResponses > 1">
-                <v-switch
-                  inset
-                  id="show-best-times-toggle"
-                  :input-value="showBestTimes"
-                  @change="(val) => $emit('update:showBestTimes', !!val)"
-                  hide-details
-                >
-                  <template v-slot:label>
-                    <div class="tw-text-sm tw-text-black">
-                      Show best {{ event.daysOnly ? "days" : "times" }}
-                    </div>
-                  </template>
-                </v-switch>
-                <v-switch
-                  inset
-                  id="hide-if-needed-toggle"
-                  :input-value="hideIfNeeded"
-                  @change="(val) => $emit('update:hideIfNeeded', !!val)"
-                  hide-details
-                >
-                  <template v-slot:label>
-                    <div class="tw-text-sm tw-text-black">
-                      Hide if needed {{ event.daysOnly ? "days" : "times" }}
-                    </div>
-                  </template>
-                </v-switch>
-              </template>
-            </div>
-          </ExpandableSection>
+            :event="event"
+            :showBestTimes="showBestTimes"
+            @update:showBestTimes="(val) => $emit('update:showBestTimes', val)"
+            :hideIfNeeded="hideIfNeeded"
+            @update:hideIfNeeded="(val) => $emit('update:hideIfNeeded', val)"
+            :showEventOptions="showEventOptions"
+            @toggleShowEventOptions="$emit('toggleShowEventOptions')"
+            :numResponses="numResponses"
+          />
         </template>
         <template
           v-if="state === states.EDIT_AVAILABILITY && isWeekly && !isPhone"
@@ -157,6 +131,7 @@ import GCalWeekSelector from "./GCalWeekSelector.vue"
 import { isPhone } from "@/utils"
 import Advertisement from "../event/Advertisement.vue"
 import ExpandableSection from "../ExpandableSection.vue"
+import EventOptions from "./EventOptions.vue"
 import { timeTypes } from "@/constants"
 
 export default {
@@ -184,6 +159,7 @@ export default {
     GCalWeekSelector,
     Advertisement,
     ExpandableSection,
+    EventOptions,
   },
 
   data: () => ({

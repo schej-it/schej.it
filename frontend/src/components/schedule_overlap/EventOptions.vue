@@ -33,7 +33,7 @@
         </template>
       </v-switch>
       <v-switch
-        v-if="isGroup && !isPhone"
+        v-if="showCalendarEvents !== undefined && isGroup && !isPhone"
         inset
         :input-value="showCalendarEvents"
         @change="(val) => $emit('update:showCalendarEvents', Boolean(val))"
@@ -65,7 +65,7 @@ export default {
     hideIfNeeded: { type: Boolean, required: true },
     numResponses: { type: Number, required: true },
     showEventOptions: { type: Boolean, required: true },
-    showCalendarEvents: { type: Boolean, required: true },
+    showCalendarEvents: { type: Boolean, required: false },
   },
 
   computed: {
