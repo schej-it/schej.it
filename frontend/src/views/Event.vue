@@ -606,7 +606,10 @@ export default {
 
       if (!this.authUser || this.addingAvailabilityAsGuest) {
         if (this.curGuestId) {
-          this.saveChangesAsGuest(this.curGuestId)
+          this.saveChangesAsGuest({
+            name: this.curGuestId,
+            email: this.event.responses[this.curGuestId].email,
+          })
           this.curGuestId = ""
           this.addingAvailabilityAsGuest = false
         } else {
