@@ -209,6 +209,23 @@
           >
             <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2">
               <v-checkbox
+                v-model="collectEmails"
+                messages="Facilitate creation of Google Calendar invites"
+              >
+                <template v-slot:label>
+                  <span class="tw-text-sm tw-text-black">
+                    Collect respondents' email addresses
+                  </span>
+                </template>
+                <template v-slot:message="{ key, message }">
+                  <div
+                    class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                  >
+                    {{ message }}
+                  </div>
+                </template>
+              </v-checkbox>
+              <v-checkbox
                 v-if="authUser"
                 v-model="blindAvailabilityEnabled"
                 messages="Only show responses to event creator"
@@ -397,6 +414,7 @@ export default {
 
     // Advanced options
     showAdvancedOptions: false,
+    collectEmails: false,
     blindAvailabilityEnabled: false,
     timezone: {},
     sendEmailAfterXResponsesEnabled: false,
@@ -484,6 +502,7 @@ export default {
       this.blindAvailabilityEnabled = false
       this.sendEmailAfterXResponsesEnabled = false
       this.sendEmailAfterXResponses = 3
+      this.collectEmails = false
 
       this.$refs.form.resetValidation()
     },
@@ -548,6 +567,7 @@ export default {
         sendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
+        collectEmails: this.collectEmails,
       }
       const posthogPayload = {
         eventName: this.name,
@@ -561,6 +581,7 @@ export default {
         eventSendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
+        eventCollectEmails: this.collectEmails,
       }
 
       if (!this.edit) {

@@ -2089,7 +2089,7 @@ export default {
       }
       this.availabilityAnimEnabled = false
     },
-    async submitAvailability(name = "") {
+    async submitAvailability(guestPayload = { name: "", email: "" }) {
       let payload = {}
 
       let type = ""
@@ -2115,8 +2115,9 @@ export default {
           payload.guest = false
         } else {
           payload.guest = true
-          payload.name = name
-          localStorage[this.guestNameKey] = name
+          payload.name = guestPayload.name
+          payload.email = guestPayload.email
+          localStorage[this.guestNameKey] = guestPayload.name
         }
       }
 
@@ -2143,16 +2144,14 @@ export default {
           })
         }
       } else {
-        if (name in this.parsedResponses) {
+        if (guestPayload.name in this.parsedResponses) {
           this.$posthog?.capture(`Edited ${type} as guest`, {
             eventId: this.event._id,
-            name,
             addedIfNeededTimes,
           })
         } else {
           this.$posthog?.capture(`Added ${type} as guest`, {
             eventId: this.event._id,
-            name,
             addedIfNeededTimes,
           })
         }

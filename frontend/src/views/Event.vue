@@ -14,6 +14,7 @@
     <GuestDialog
       v-model="guestDialog"
       @submit="saveChangesAsGuest"
+      :event="event"
       :respondents="Object.keys(event.responses)"
     />
 
@@ -605,7 +606,10 @@ export default {
 
       if (!this.authUser || this.addingAvailabilityAsGuest) {
         if (this.curGuestId) {
-          this.saveChangesAsGuest(this.curGuestId)
+          this.saveChangesAsGuest({
+            name: this.curGuestId,
+            email: this.event.responses[this.curGuestId].email,
+          })
           this.curGuestId = ""
           this.addingAvailabilityAsGuest = false
         } else {
@@ -619,12 +623,12 @@ export default {
       this.showInfo("Changes saved!")
       this.scheduleOverlapComponent.stopEditing()
     },
-    async saveChangesAsGuest(name) {
+    async saveChangesAsGuest(payload) {
       /* After guest dialog is submitted, submit availability with the given name */
       if (!this.scheduleOverlapComponent) return
 
-      if (name.length > 0) {
-        await this.scheduleOverlapComponent.submitAvailability(name)
+      if (payload.name.length > 0) {
+        await this.scheduleOverlapComponent.submitAvailability(payload)
 
         this.showInfo("Changes saved!")
         this.scheduleOverlapComponent.resetCurUserAvailability()
