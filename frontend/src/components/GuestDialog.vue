@@ -14,35 +14,51 @@
         </v-btn>
       </v-card-title>
       <v-card-text>
-        <v-text-field
-          v-model="name"
-          @keyup.enter="submit"
-          @beforeinput="restrictInput"
-          :error="alreadyTaken"
-          class="-tw-mt-1"
-          placeholder="Enter your name..."
-          :hint="alreadyTaken ? 'Name already taken' : ''"
-          persistent-hint
-          autofocus
-        ></v-text-field>
-        <div class="tw-flex">
-          <v-spacer />
-          <v-btn
-            @click="submit"
-            class="tw-bg-green"
-            :disabled="!formComplete || alreadyTaken"
-            :dark="formComplete && !alreadyTaken"
-          >
-            Continue
-          </v-btn>
-        </div>
+        <v-form
+          ref="form"
+          v-model="formValid"
+          lazy-validation
+          class="tw-flex tw-flex-col tw-gap-y-4"
+          onsubmit="return false;"
+        >
+          <v-text-field
+            v-model="name"
+            @keyup.enter="submit"
+            :rules="nameRules"
+            placeholder="Enter your name..."
+            autofocus
+            hide-details="auto"
+            solo
+          ></v-text-field>
+          <v-text-field
+            v-if="event.collectEmails"
+            v-model="email"
+            @keyup.enter="submit"
+            :rules="emailRules"
+            placeholder="Enter your email..."
+            hint="The event creator is collecting emails. We will never share your email with anyone or contact you in any way."
+            persistent-hint
+            solo
+          ></v-text-field>
+          <div class="tw-flex">
+            <v-spacer />
+            <v-btn
+              @click="submit"
+              class="tw-bg-green"
+              :dark="formValid"
+              :disabled="!formValid"
+            >
+              Continue
+            </v-btn>
+          </div>
+        </v-form>
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { isPhone } from "@/utils"
+import { isPhone, validateEmail } from "@/utils"
 
 export default {
   name: "GuestDialog",
@@ -51,12 +67,15 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
+    event: { type: Object, required: true },
     respondents: { type: Array, required: true },
   },
 
   data() {
     return {
+      formValid: false,
       name: "",
+      email: "",
     }
   },
 
@@ -64,24 +83,25 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
-    formComplete() {
-      return this.name.length > 0
+    nameRules() {
+      return [
+        (name) => !!name || "Name is required",
+        (name) => !this.respondents.includes(name) || "Name already taken",
+      ]
     },
-    alreadyTaken() {
-      return this.respondents.includes(this.name)
+    emailRules() {
+      return [
+        (email) => !!email || "Email is required",
+        (email) => !!validateEmail(email) || "Invalid email",
+      ]
     },
   },
 
   methods: {
     submit() {
-      if (!this.alreadyTaken && this.formComplete)
-        this.$emit("submit", this.name)
-    },
-    /** Restricts input to only letters, numbers, and spaces */
-    restrictInput(e) {
-      // if (e.data && /[^\w\s]/.test(e.data)) {
-      //   e.preventDefault()
-      // }
+      if (!this.$refs.form.validate()) return
+
+      this.$emit("submit", { name: this.name, email: this.email })
     },
   },
 
@@ -89,6 +109,8 @@ export default {
     value() {
       if (this.value) {
         this.name = ""
+        this.email = ""
+        this.$refs.form?.resetValidation()
       }
     },
   },

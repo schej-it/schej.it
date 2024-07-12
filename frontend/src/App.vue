@@ -81,6 +81,7 @@ html {
 
 .v-messages__message {
   font-size: theme("fontSize.xs");
+  line-height: 1.25;
 }
 .v-input--selection-controls {
   margin-top: 0px !important;

@@ -24,6 +24,7 @@ type Event struct {
 	NotificationsEnabled     *bool                `json:"notificationsEnabled" bson:"notificationsEnabled,omitempty"`
 	SendEmailAfterXResponses *int                 `json:"sendEmailAfterXResponses" bson:"sendEmailAfterXResponses,omitempty"`
 	When2meetHref            *string              `json:"when2meetHref" bson:"when2meetHref,omitempty"`
+	CollectEmails            *bool                `json:"collectEmails" bson:"collectEmails,omitempty"`
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
@@ -49,9 +50,15 @@ type Event struct {
 
 // A response object containing an array of times that the given user is available
 type Response struct {
-	Name         string               `json:"name" bson:",omitempty"`
-	UserId       primitive.ObjectID   `json:"userId" bson:",omitempty"`
-	User         *User                `json:"user" bson:",omitempty"`
+	// Guest information
+	Name  string `json:"name" bson:"name,omitempty"`
+	Email string `json:"email" bson:"email,omitempty"`
+
+	// User information
+	UserId primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
+	User   *User              `json:"user" bson:",omitempty"`
+
+	// Availability
 	Availability []primitive.DateTime `json:"availability" bson:"availability"`
 	IfNeeded     []primitive.DateTime `json:"ifNeeded" bson:"ifNeeded"`
 

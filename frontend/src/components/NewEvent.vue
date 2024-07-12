@@ -502,6 +502,7 @@ export default {
       this.blindAvailabilityEnabled = false
       this.sendEmailAfterXResponsesEnabled = false
       this.sendEmailAfterXResponses = 3
+      this.collectEmails = false
 
       this.$refs.form.resetValidation()
     },
@@ -566,6 +567,7 @@ export default {
         sendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
+        collectEmails: this.collectEmails,
       }
       const posthogPayload = {
         eventName: this.name,
@@ -579,6 +581,7 @@ export default {
         eventSendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
+        eventCollectEmails: this.collectEmails,
       }
 
       if (!this.edit) {

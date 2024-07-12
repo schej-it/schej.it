@@ -62,6 +62,7 @@ func createEvent(c *gin.Context) {
 		Remindees                []string `json:"remindees"`
 		SendEmailAfterXResponses *int     `json:"sendEmailAfterXResponses"`
 		When2meetHref            *string  `json:"when2meetHref"`
+		CollectEmails            *bool    `json:"collectEmails"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -95,6 +96,7 @@ func createEvent(c *gin.Context) {
 		DaysOnly:                 payload.DaysOnly,
 		SendEmailAfterXResponses: payload.SendEmailAfterXResponses,
 		When2meetHref:            payload.When2meetHref,
+		CollectEmails:            payload.CollectEmails,
 		Type:                     payload.Type,
 		Responses:                make(map[string]*models.Response),
 	}
@@ -219,6 +221,7 @@ func editEvent(c *gin.Context) {
 		DaysOnly                 *bool    `json:"daysOnly"`
 		Remindees                []string `json:"remindees"`
 		SendEmailAfterXResponses *int     `json:"sendEmailAfterXResponses"`
+		CollectEmails            *bool    `json:"collectEmails"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -261,6 +264,7 @@ func editEvent(c *gin.Context) {
 	event.BlindAvailabilityEnabled = payload.BlindAvailabilityEnabled
 	event.DaysOnly = payload.DaysOnly
 	event.SendEmailAfterXResponses = payload.SendEmailAfterXResponses
+	event.CollectEmails = payload.CollectEmails
 	event.Type = payload.Type
 
 	// Update remindees
@@ -416,6 +420,7 @@ func getEvent(c *gin.Context) {
 				userId = response.Name
 				response.User = &models.User{
 					FirstName: response.Name,
+					Email:     response.Email,
 				}
 			}
 		} else {
@@ -500,8 +505,11 @@ func updateEventResponse(c *gin.Context) {
 	payload := struct {
 		Availability []primitive.DateTime `json:"availability"`
 		IfNeeded     []primitive.DateTime `json:"ifNeeded"`
-		Guest        *bool                `json:"guest" binding:"required"`
-		Name         string               `json:"name"`
+
+		// Guest information
+		Guest *bool  `json:"guest" binding:"required"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
 
 		// Calendar availability variables for Availability Groups feature
 		UseCalendarAvailability *bool                                        `json:"useCalendarAvailability"`
@@ -528,6 +536,7 @@ func updateEventResponse(c *gin.Context) {
 
 		response = models.Response{
 			Name:         payload.Name,
+			Email:        payload.Email,
 			Availability: payload.Availability,
 			IfNeeded:     payload.IfNeeded,
 		}
