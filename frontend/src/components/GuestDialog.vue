@@ -112,19 +112,21 @@ export default {
       if (this.value) {
         this.name = ""
         this.email = ""
+        this.nameRules = []
+        this.emailRules = []
+
         this.$refs.form?.resetValidation()
       }
     },
     name() {
       // Default rules before submitting
       this.nameRules = [
-        (name) => !!name || "Name is required",
         (name) => !this.respondents.includes(name) || "Name already taken",
       ]
     },
     email() {
       // Default rules before submitting
-      this.emailRules = [(email) => !!email || "Email is required"]
+      this.emailRules = []
     },
   },
 }
