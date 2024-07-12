@@ -76,6 +76,8 @@ export default {
       formValid: false,
       name: "",
       email: "",
+      nameRules: [],
+      emailRules: [],
     }
   },
 
@@ -83,25 +85,25 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
-    nameRules() {
-      return [
-        (name) => !!name || "Name is required",
-        (name) => !this.respondents.includes(name) || "Name already taken",
-      ]
-    },
-    emailRules() {
-      return [
-        (email) => !!email || "Email is required",
-        (email) => !!validateEmail(email) || "Invalid email",
-      ]
-    },
   },
 
   methods: {
     submit() {
-      if (!this.$refs.form.validate()) return
+      // Set rules only on submit
+      this.nameRules = [
+        (name) => !!name || "Name is required",
+        (name) => !this.respondents.includes(name) || "Name already taken",
+      ]
+      this.emailRules = [
+        (email) => !!email || "Email is required",
+        (email) => !!validateEmail(email) || "Invalid email",
+      ]
 
-      this.$emit("submit", { name: this.name, email: this.email })
+      this.$nextTick(() => {
+        if (!this.$refs.form.validate()) return
+
+        this.$emit("submit", { name: this.name, email: this.email })
+      })
     },
   },
 
@@ -112,6 +114,17 @@ export default {
         this.email = ""
         this.$refs.form?.resetValidation()
       }
+    },
+    name() {
+      // Default rules before submitting
+      this.nameRules = [
+        (name) => !!name || "Name is required",
+        (name) => !this.respondents.includes(name) || "Name already taken",
+      ]
+    },
+    email() {
+      // Default rules before submitting
+      this.emailRules = [(email) => !!email || "Email is required"]
     },
   },
 }
