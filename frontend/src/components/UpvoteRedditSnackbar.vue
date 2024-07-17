@@ -1,0 +1,69 @@
+<template>
+  <v-snackbar
+    v-if="!isPhone"
+    min-width="unset"
+    v-model="show"
+    bottom
+    :timeout="-1"
+    class="tw-bottom-24"
+    content-class="tw-flex tw-items-center tw-gap-x-2"
+    rounded="pill"
+  >
+    Enjoying Schej? Help us reach more people by upvoting our Reddit post and
+    leaving a comment with your thoughts :)
+    <v-btn :href="redditUrl" target="_blank" small color="#FF4501">
+      Upvote
+      <v-icon small class="-tw-mr-px -tw-mt-px">mdi-arrow-up-bold</v-icon>
+    </v-btn>
+    <template v-slot:action="{ attrs }">
+      <v-btn v-bind="attrs" icon @click="dismiss">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </template>
+  </v-snackbar>
+</template>
+
+<script>
+import { isPhone } from "@/utils"
+
+export default {
+  name: "UpvoteRedditSnackbar",
+
+  data() {
+    return {
+      redditUrl:
+        "https://www.reddit.com/r/opensource/comments/1dlol7r/i_made_a_better_when2meet/",
+      show: false,
+    }
+  },
+
+  computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
+    localStorageKey() {
+      return `upvoteRedditSnackbarDismissed_${this.redditUrl}`
+    },
+  },
+
+  methods: {
+    dismiss() {
+      this.show = false
+      localStorage.setItem(this.localStorageKey, "true")
+    },
+  },
+
+  watch: {
+    $route: {
+      immediate: true,
+      handler() {
+        const showOnRoute = this.$route.name === "home"
+        const userHasDismissed =
+          localStorage.getItem(this.localStorageKey) === "true"
+
+        this.show = !userHasDismissed && showOnRoute
+      },
+    },
+  },
+}
+</script>
