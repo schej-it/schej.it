@@ -6,8 +6,8 @@
     bottom
     :timeout="-1"
     class="tw-bottom-24"
+    rounded="lg"
     content-class="tw-flex tw-items-center tw-gap-x-2"
-    rounded="pill"
   >
     Enjoying Schej? Help us reach more people by upvoting our Reddit post and
     leaving a comment with your thoughts :)
@@ -16,7 +16,7 @@
       <v-icon small class="-tw-mr-px -tw-mt-px">mdi-arrow-up-bold</v-icon>
     </v-btn>
     <template v-slot:action="{ attrs }">
-      <v-btn v-bind="attrs" icon @click="dismiss">
+      <v-btn v-bind="attrs" icon @click="dismiss" class="-tw-ml-2 tw-mr-2">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </template>
