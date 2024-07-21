@@ -325,6 +325,7 @@ export default {
                 initialTimezone: this.timezone,
               },
             })
+            this.$emit("input", false)
 
             this.$posthog?.capture("Availability group created", {
               eventId: eventId,

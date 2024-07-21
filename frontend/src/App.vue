@@ -329,7 +329,6 @@ export default {
   async created() {
     await get("/user/profile")
       .then((authUser) => {
-        // console.log(authUser)
         this.setAuthUser(authUser)
 
         this.$posthog?.identify(authUser._id, {
