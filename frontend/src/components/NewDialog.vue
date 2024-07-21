@@ -148,6 +148,21 @@ export default {
         }
       },
     },
+    value: {
+      immediate: true,
+      handler() {
+        if (this.value) {
+          // Reset tab to the type prop when dialog is opened
+          this.tab = this.type
+        }
+      },
+    },
+    type: {
+      immediate: true,
+      handler() {
+        this.tab = this.type
+      },
+    },
   },
 }
 </script>

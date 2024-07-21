@@ -1,12 +1,5 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
-    <!-- Dialog -->
-    <NewDialog
-      v-model="dialog"
-      :contactsPayload="contactsPayload"
-      :type="openNewGroup ? 'group' : 'event'"
-    />
-
     <template v-if="groupsEnabled">
       <v-fade-transition>
         <div
@@ -34,18 +27,10 @@
         </div>
       </div>
     </v-fade-transition>
-
-    <!-- FAB -->
-    <BottomFab id="create-event-btn" @click="dialog = true">
-      <v-icon>mdi-plus</v-icon>
-    </BottomFab>
-    <!-- <CreateSpeedDial /> -->
   </div>
 </template>
 
 <script>
-import { get } from "@/utils"
-import NewDialog from "@/components/NewDialog.vue"
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
@@ -60,7 +45,6 @@ export default {
   },
 
   components: {
-    NewDialog,
     EventType,
     BottomFab,
     CreateSpeedDial,
@@ -75,14 +59,16 @@ export default {
   },
 
   data: () => ({
-    dialog: false,
     loading: true,
   }),
 
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
-    this.dialog =
-      Object.keys(this.contactsPayload).length > 0 || this.openNewGroup
+    this.$emit("setNewDialogOptions", {
+      show: Object.keys(this.contactsPayload).length > 0 || this.openNewGroup,
+      contactsPayload: this.contactsPayload,
+      openNewGroup: this.openNewGroup,
+    })
   },
 
   computed: {
