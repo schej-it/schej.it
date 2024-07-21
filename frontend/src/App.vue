@@ -49,7 +49,7 @@
           Donate
         </v-btn>
         <v-btn
-          v-if="$route.name === 'home'"
+          v-if="$route.name === 'home' && !isPhone"
           color="primary"
           class="tw-mx-2"
           @click="() => createNew()"

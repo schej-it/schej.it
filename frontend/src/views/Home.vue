@@ -27,6 +27,11 @@
         </div>
       </div>
     </v-fade-transition>
+
+    <!-- FAB -->
+    <BottomFab v-if="isPhone" id="create-event-btn" @click="createNew">
+      <v-icon>mdi-plus</v-icon>
+    </BottomFab>
   </div>
 </template>
 
@@ -36,6 +41,7 @@ import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
 import { mapState, mapActions } from "vuex"
 import { eventTypes } from "@/constants"
+import { isPhone } from "@/utils"
 
 export default {
   name: "Home",
@@ -103,12 +109,22 @@ export default {
     eventsNotEmpty() {
       return this.createdEvents.length > 0 || this.joinedEvents.length > 0
     },
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
   },
 
   methods: {
     ...mapActions(["getEvents"]),
     userRespondedToEvent(event) {
       return this.authUser._id in event.responses
+    },
+    createNew() {
+      this.$emit("setNewDialogOptions", {
+        show: true,
+        contactsPayload: {},
+        openNewGroup: false,
+      })
     },
   },
 
