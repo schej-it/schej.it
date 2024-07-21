@@ -54,7 +54,6 @@
           :edit="edit"
           @input="handleDialogInput"
           :show-help="!_noTabs"
-          :calendarPermissionGranted="calendarPermissionGranted"
           :contactsPayload="this.type == 'group' ? contactsPayload : {}"
         />
       </template>
@@ -82,7 +81,6 @@ export default {
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     noTabs: { type: Boolean, default: false },
-    calendarPermissionGranted: { type: Boolean, default: true },
   },
 
   components: {
@@ -148,6 +146,21 @@ export default {
         } else {
           this.tabs = [{ title: "Event", type: "event" }]
         }
+      },
+    },
+    value: {
+      immediate: true,
+      handler() {
+        if (this.value) {
+          // Reset tab to the type prop when dialog is opened
+          this.tab = this.type
+        }
+      },
+    },
+    type: {
+      immediate: true,
+      handler() {
+        this.tab = this.type
       },
     },
   },

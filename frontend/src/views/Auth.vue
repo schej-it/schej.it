@@ -20,9 +20,6 @@ export default {
 
     // Sign in and set auth user
     try {
-      if (process.env.NODE_ENV === "development")
-        console.log({ code, timezoneOffset: new Date().getTimezoneOffset() })
-
       if (
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT ||
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT

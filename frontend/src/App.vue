@@ -3,7 +3,12 @@
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <SignInNotSupportedDialog v-model="webviewDialog" />
-    <NewDialog v-model="newDialog" type="event" no-tabs />
+    <NewDialog
+      v-model="newDialogOptions.show"
+      :type="newDialogOptions.openNewGroup ? 'group' : 'event'"
+      :contactsPayload="newDialogOptions.contactsPayload"
+      :no-tabs="newDialogOptions.eventOnly"
+    />
     <UpvoteRedditSnackbar />
     <div
       v-if="showHeader"
@@ -20,10 +25,10 @@
         <v-spacer />
 
         <v-btn
-          v-if="$route.name !== 'home'"
+          v-if="$route.name === 'event'"
           id="top-right-create-btn"
           text
-          @click="createEvent"
+          @click="() => createNew(true)"
         >
           Create an event
         </v-btn>
@@ -44,6 +49,14 @@
         >
           Donate
         </v-btn>
+        <v-btn
+          v-if="$route.name === 'home' && !isPhone"
+          color="primary"
+          class="tw-mx-2"
+          @click="() => createNew()"
+        >
+          + Create new
+        </v-btn>
         <div v-if="authUser" class="sm:tw-ml-4">
           <AuthUserMenu />
         </div>
@@ -59,7 +72,11 @@
           class="tw-relative tw-flex-1 tw-overscroll-auto"
           :class="routerViewClass"
         >
-          <router-view v-if="loaded" :key="$route.fullPath" />
+          <router-view
+            v-if="loaded"
+            :key="$route.fullPath"
+            @setNewDialogOptions="setNewDialogOptions"
+          />
         </div>
       </div>
     </v-main>
@@ -219,7 +236,11 @@ export default {
     loaded: false,
     scrollY: 0,
     webviewDialog: false,
-    newDialog: false,
+    newDialogOptions: {
+      show: false,
+      contactsPayload: {},
+      openNewGroup: false,
+    },
   }),
 
   computed: {
@@ -229,7 +250,6 @@ export default {
     },
     showHeader() {
       return (
-        this.$route.name !== "createEvent" &&
         this.$route.name !== "landing" &&
         this.$route.name !== "auth" &&
         this.$route.name !== "privacy-policy"
@@ -261,8 +281,17 @@ export default {
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
-    createEvent() {
-      this.newDialog = true
+    createNew(eventOnly = false) {
+      this.newDialogOptions = {
+        show: true,
+        contactsPayload: {},
+        openNewGroup: false,
+        eventOnly: eventOnly,
+      }
+    },
+    setNewDialogOptions(newDialogOptions) {
+      this.newDialogOptions = newDialogOptions
+      this.newDialogOptions.eventOnly = false
     },
     signIn() {
       if (this.$route.name === "event" || this.$route.name === "group") {
@@ -303,7 +332,6 @@ export default {
   async created() {
     await get("/user/profile")
       .then((authUser) => {
-        // console.log(authUser)
         this.setAuthUser(authUser)
 
         this.$posthog?.identify(authUser._id, {

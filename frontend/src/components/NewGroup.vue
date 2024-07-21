@@ -86,7 +86,7 @@
               multiple
               solo
               color="primary"
-            >  
+            >
               <v-btn depressed> S </v-btn>
               <v-btn depressed> M </v-btn>
               <v-btn depressed> T </v-btn>
@@ -188,7 +188,6 @@ export default {
     edit: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
     showHelp: { type: Boolean, default: false },
-    calendarPermissionGranted: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
   },
 
@@ -326,6 +325,7 @@ export default {
                 initialTimezone: this.timezone,
               },
             })
+            this.$emit("input", false)
 
             this.$posthog?.capture("Availability group created", {
               eventId: eventId,
@@ -377,17 +377,6 @@ export default {
           })
       }
     },
-    /** Redirects user to oauth page requesting access to the user's calendar */
-    requestCalendarPermissions() {
-      // Request permission if calendar permissions not yet granted
-      signInGoogle({
-        state: {
-          type: authTypes.GROUP_CREATE,
-        },
-        selectAccount: false,
-        requestCalendarPermission: true,
-      })
-    },
     /** Redirects user to oauth page requesting access to the user's contacts */
     requestContactsAccess({ emails }) {
       const payload = {
@@ -410,18 +399,18 @@ export default {
     /** Populate fields with data from event */
     updateFieldsFromEvent() {
       if (this.event) {
-          this.name = this.event.name
-          this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
-          this.endTime = (this.startTime + this.event.duration) % 24
+        this.name = this.event.name
+        this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
+        this.endTime = (this.startTime + this.event.duration) % 24
 
-          const selectedDaysOfWeek = []
-          for (const date of this.event.dates) {
-            selectedDaysOfWeek.push(new Date(date).getDay())
-          }
-          this.selectedDaysOfWeek = selectedDaysOfWeek
-
-          this.emails = this.otherEventAttendees
+        const selectedDaysOfWeek = []
+        for (const date of this.event.dates) {
+          selectedDaysOfWeek.push(new Date(date).getDay())
         }
+        this.selectedDaysOfWeek = selectedDaysOfWeek
+
+        this.emails = this.otherEventAttendees
+      }
     },
     resetToEventData() {
       this.updateFieldsFromEvent()
@@ -441,10 +430,12 @@ export default {
         this.name !== this.initialEventData.name ||
         this.startTime !== this.initialEventData.startTime ||
         this.endTime !== this.initialEventData.endTime ||
-        JSON.stringify(this.selectedDaysOfWeek) !== JSON.stringify(this.initialEventData.selectedDaysOfWeek) ||
-        JSON.stringify(this.emails) !== JSON.stringify(this.initialEventData.emails)
+        JSON.stringify(this.selectedDaysOfWeek) !==
+          JSON.stringify(this.initialEventData.selectedDaysOfWeek) ||
+        JSON.stringify(this.emails) !==
+          JSON.stringify(this.initialEventData.emails)
       )
-    }
+    },
   },
 
   watch: {
@@ -457,7 +448,7 @@ export default {
     },
     formEmpty(val) {
       this.$emit("update:formEmpty", val)
-    }
+    },
   },
 }
 </script>

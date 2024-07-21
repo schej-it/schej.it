@@ -1,13 +1,5 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
-    <!-- Dialog -->
-    <NewDialog
-      v-model="dialog"
-      :contactsPayload="contactsPayload"
-      :calendarPermissionGranted="calendarPermissionGranted"
-      :type="openNewGroup ? 'group' : 'event'"
-    />
-
     <template v-if="groupsEnabled">
       <v-fade-transition>
         <div
@@ -37,21 +29,19 @@
     </v-fade-transition>
 
     <!-- FAB -->
-    <BottomFab id="create-event-btn" @click="dialog = true">
+    <BottomFab v-if="isPhone" id="create-event-btn" @click="createNew">
       <v-icon>mdi-plus</v-icon>
     </BottomFab>
-    <!-- <CreateSpeedDial /> -->
   </div>
 </template>
 
 <script>
-import { get } from "@/utils"
-import NewDialog from "@/components/NewDialog.vue"
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
 import { mapState, mapActions } from "vuex"
 import { eventTypes } from "@/constants"
+import { isPhone } from "@/utils"
 
 export default {
   name: "Home",
@@ -61,7 +51,6 @@ export default {
   },
 
   components: {
-    NewDialog,
     EventType,
     BottomFab,
     CreateSpeedDial,
@@ -76,17 +65,16 @@ export default {
   },
 
   data: () => ({
-    dialog: false,
     loading: true,
-    calendarPermissionGranted: true,
   }),
 
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
-    this.dialog =
-      Object.keys(this.contactsPayload).length > 0 || this.openNewGroup
-
-    this.getCalendarPermission()
+    this.$emit("setNewDialogOptions", {
+      show: Object.keys(this.contactsPayload).length > 0 || this.openNewGroup,
+      contactsPayload: this.contactsPayload,
+      openNewGroup: this.openNewGroup,
+    })
   },
 
   computed: {
@@ -121,6 +109,9 @@ export default {
     eventsNotEmpty() {
       return this.createdEvents.length > 0 || this.joinedEvents.length > 0
     },
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
   },
 
   methods: {
@@ -128,32 +119,12 @@ export default {
     userRespondedToEvent(event) {
       return this.authUser._id in event.responses
     },
-    /** Determine if calendar permissions have been granted */
-    async getCalendarPermission() {
-      if (!this.authUser) {
-        this.calendarPermissionGranted = false
-        return
-      }
-
-      let timeMin, timeMax
-      timeMin = new Date().toISOString()
-      timeMax = new Date()
-      timeMax.setDate(timeMax.getDate() + 1)
-      timeMax = timeMax.toISOString()
-
-      let calendarEventsMap = await get(
-        `/user/calendars?timeMin=${timeMin}&timeMax=${timeMax}`
-      )
-
-      if (calendarEventsMap[this.authUser.email].error) {
-        this.calendarPermissionGranted = false
-        return
-      }
-
-      // calendar permission granted is false when every calendar in the calendar map has an error, true otherwise
-      this.calendarPermissionGranted = !Object.values(calendarEventsMap).every(
-        (c) => Boolean(c.error)
-      )
+    createNew() {
+      this.$emit("setNewDialogOptions", {
+        show: true,
+        contactsPayload: {},
+        openNewGroup: false,
+      })
     },
   },
 
