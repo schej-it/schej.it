@@ -54,7 +54,6 @@
           :edit="edit"
           @input="handleDialogInput"
           :show-help="!_noTabs"
-          :calendarPermissionGranted="calendarPermissionGranted"
           :contactsPayload="this.type == 'group' ? contactsPayload : {}"
         />
       </template>
@@ -82,7 +81,6 @@ export default {
     allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     noTabs: { type: Boolean, default: false },
-    calendarPermissionGranted: { type: Boolean, default: true },
   },
 
   components: {
