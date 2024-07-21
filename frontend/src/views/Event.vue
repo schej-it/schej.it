@@ -123,7 +123,7 @@
                   <v-icon v-if="!isPhone" class="tw-mr-1" small
                     >mdi-pencil</v-icon
                   >
-                  Edit event
+                  Edit {{ isGroup ? "group" : "event" }}
                 </v-btn>
               </template>
             </div>
