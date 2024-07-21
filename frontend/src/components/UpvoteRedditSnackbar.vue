@@ -5,7 +5,7 @@
     v-model="show"
     bottom
     :timeout="-1"
-    class="tw-bottom-24"
+    class="tw-bottom-8"
     rounded="lg"
     content-class="tw-flex tw-items-center tw-gap-x-2"
   >
