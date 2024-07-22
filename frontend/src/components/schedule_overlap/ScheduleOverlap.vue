@@ -346,6 +346,22 @@
                 </div>
               </v-expand-transition>
 
+              <v-expand-transition>
+                <div
+                  v-if="
+                    state !== states.EDIT_AVAILABILITY &&
+                    max !== respondents.length &&
+                    Object.keys(fetchedResponses).length !== 0 &&
+                    !loadingResponses.loading
+                  "
+                >
+                  <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
+                    Note: There's no time where all
+                    {{ respondents.length }} respondents are available.
+                  </div>
+                </div>
+              </v-expand-transition>
+
               <ToolRow
                 v-if="!isPhone && !calendarOnly"
                 :event="event"
@@ -2359,7 +2375,15 @@ export default {
                   .toUpperCase()
                   .substring(0, 2)
                   .padStart(2, "0")
-                if (frac == 1) alpha = "FF"
+                if (
+                  frac == 1 &&
+                  ((this.curRespondents.length > 0 &&
+                    max === this.curRespondents.length) ||
+                    (this.curRespondents.length === 0 &&
+                      max === this.respondents.length))
+                ) {
+                  alpha = "FF"
+                }
               } else {
                 alpha = Math.floor(frac * (255 - 85))
                   .toString(16)
