@@ -1,14 +1,20 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"schej.it/server/db"
 	"schej.it/server/logger"
+	"schej.it/server/models"
+	"schej.it/server/utils"
 )
 
 type GoogleApiTokenResponse struct {
@@ -101,4 +107,56 @@ func RefreshAccessTokenAsync(refreshToken string, email string, c chan RefreshAc
 	tokenResponse := RefreshAccessToken(refreshToken)
 
 	c <- RefreshAccessTokenData{tokenResponse, email, nil}
+}
+
+// If access token has expired, get a new token for the primary account as well as all other calendar accounts, update the user object, and save it to the database
+// `accounts` specifies for which accounts to refresh access tokens. If `accounts` is nil or empty, then update tokens for all accounts
+func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
+	refreshTokenChan := make(chan RefreshAccessTokenData)
+	numAccountsToUpdate := 0
+
+	// If `accounts` is nil, then update tokens for all accounts
+	updateAllAccounts := len(accounts) == 0
+
+	// Refresh calendar account access tokens if necessary
+	for _, account := range u.CalendarAccounts {
+		if account.CalendarType == models.GoogleCalendarType { // Only refresh access tokens for Google calendar accounts
+			accountDetails := account.Details.(models.GoogleCalendar)
+
+			if _, ok := accounts[accountDetails.Email]; ok || updateAllAccounts {
+				if time.Now().After(accountDetails.AccessTokenExpireDate.Time()) && len(accountDetails.RefreshToken) > 0 {
+					go RefreshAccessTokenAsync(accountDetails.RefreshToken, accountDetails.Email, refreshTokenChan)
+					numAccountsToUpdate++
+				}
+			}
+		}
+	}
+
+	// Update access tokens as responses are received
+	for i := 0; i < numAccountsToUpdate; i++ {
+		res := <-refreshTokenChan
+
+		if res.Error != nil {
+			continue
+		}
+
+		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
+
+		if calendarAccount, ok := u.CalendarAccounts[res.Email]; ok {
+			newCalendarAccountDetails := calendarAccount.Details.(models.GoogleCalendar)
+			newCalendarAccountDetails.AccessToken = res.TokenResponse.AccessToken
+			newCalendarAccountDetails.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+			calendarAccount.Details = newCalendarAccountDetails
+			u.CalendarAccounts[res.Email] = calendarAccount
+		}
+	}
+
+	// Update user object if accounts were updated
+	if numAccountsToUpdate > 0 {
+		db.UsersCollection.FindOneAndUpdate(
+			context.Background(),
+			bson.M{"_id": u.Id},
+			bson.M{"$set": u},
+		)
+	}
 }

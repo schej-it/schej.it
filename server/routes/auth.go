@@ -105,28 +105,33 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 	}
 
 	calendarAccount := models.CalendarAccount{
-		Email:   email,
-		Picture: picture,
-		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
+		CalendarType: models.GoogleCalendarType,
+		Details: models.GoogleCalendar{
+			Email:   email,
+			Picture: picture,
 
-		AccessToken:           accessToken,
-		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-		RefreshToken:          refreshToken,
+			AccessToken:           accessToken,
+			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+			RefreshToken:          refreshToken,
+		},
+
+		Enabled: utils.TruePtr(), // Workaround to pass a boolean pointer
 	}
+	calendarAccountKey := utils.GetCalendarAccountKey(email, models.GoogleCalendarType)
 
 	var userId primitive.ObjectID
 	findResult := db.UsersCollection.FindOne(context.Background(), bson.M{"email": email})
 	// If user doesn't exist, create a new user
 	if findResult.Err() == mongo.ErrNoDocuments {
 		// Fetch subcalendars
-		subCalendars, subCalendarsErr := calendar.GetCalendarList(calendarAccount.AccessToken)
-		if subCalendarsErr == nil {
+		subCalendars, err := calendarAccount.Details.(calendar.CalendarProvider).GetCalendarList()
+		if err == nil {
 			calendarAccount.SubCalendars = &subCalendars
 		}
 
 		// Set calendar accounts
 		userData.CalendarAccounts = map[string]models.CalendarAccount{
-			email: calendarAccount,
+			calendarAccountKey: calendarAccount,
 		}
 
 		// Create user
@@ -151,11 +156,11 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 			userData.LastName = ""
 		}
 
-		// Set subalendars map based on whether calendar account already exists
-		if oldCalendarAccount, ok := user.CalendarAccounts[calendarAccount.Email]; ok && oldCalendarAccount.SubCalendars != nil {
+		// Set subcalendars map based on whether calendar account already exists
+		if oldCalendarAccount, ok := user.CalendarAccounts[calendarAccountKey]; ok && oldCalendarAccount.SubCalendars != nil {
 			calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
 		} else {
-			subCalendars, err := calendar.GetCalendarList(calendarAccount.AccessToken)
+			subCalendars, err := calendarAccount.Details.(calendar.CalendarProvider).GetCalendarList()
 			if err == nil {
 				calendarAccount.SubCalendars = &subCalendars
 			}
@@ -163,7 +168,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 		// Set calendar account
 		userData.CalendarAccounts = user.CalendarAccounts
-		userData.CalendarAccounts[calendarAccount.Email] = calendarAccount
+		userData.CalendarAccounts[calendarAccountKey] = calendarAccount
 
 		// Update user if exists
 		_, err := db.UsersCollection.UpdateByID(

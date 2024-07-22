@@ -1,79 +1,22 @@
 package calendar
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/url"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"schej.it/server/db"
 	"schej.it/server/errs"
-	"schej.it/server/logger"
 	"schej.it/server/models"
+	"schej.it/server/services/auth"
 	"schej.it/server/utils"
 )
 
-// Get the user's list of calendars
-func GetCalendarList(accessToken string) (map[string]models.SubCalendar, *errs.GoogleAPIError) {
-	req, _ := http.NewRequest(
-		"GET",
-		"https://www.googleapis.com/calendar/v3/users/me/calendarList?fields=items(id,summary,selected)",
-		nil,
-	)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
-
-	// Define stucts to parse json response
-	type Response struct {
-		Items []models.Calendar   `json:"items"`
-		Error errs.GoogleAPIError `json:"error"`
-	}
-
-	// Parse the response
-	var res Response
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	// Check if the response returned an error
-	if res.Error.Errors != nil {
-		return nil, &res.Error
-	}
-
-	// Append only the selected calendars
-	calendars := make(map[string]models.SubCalendar)
-	for _, calendar := range res.Items {
-		var enabled *bool
-		if calendar.Selected {
-			enabled = utils.TruePtr()
-		} else {
-			enabled = utils.FalsePtr()
-		}
-
-		calendars[calendar.Id] = models.SubCalendar{
-			Name:    calendar.Summary,
-			Enabled: enabled,
-		}
-	}
-
-	return calendars, nil
-}
-
 type GetCalendarListData struct {
-	CalendarList map[string]models.SubCalendar `json:"calendarList"`
-	AccessToken  string                        `json:"accessToken"`
-	Email        string                        `json:"email"`
-	Error        *errs.GoogleAPIError          `json:"error"`
+	CalendarList       map[string]models.SubCalendar `json:"calendarList"`
+	CalendarAccountKey string                        `json:"calendarAccountKey"`
+	Error              error                         `json:"error"`
 }
 
 // Calls GetCalendarList but broadcasts the result to channel
-func GetCalendarListAsync(email string, accessToken string, c chan GetCalendarListData) {
+func GetCalendarListAsync(calendarAccountKey string, calendarProvider *CalendarProvider, c chan GetCalendarListData) {
 	// Recover from panics
 	defer func() {
 		if err := recover(); err != nil {
@@ -81,109 +24,32 @@ func GetCalendarListAsync(email string, accessToken string, c chan GetCalendarLi
 		}
 	}()
 
-	calendars, err := GetCalendarList(accessToken)
+	calendarList, err := (*calendarProvider).GetCalendarList()
 
-	c <- GetCalendarListData{CalendarList: calendars, AccessToken: accessToken, Email: email, Error: err}
+	c <- GetCalendarListData{CalendarList: calendarList, CalendarAccountKey: calendarAccountKey, Error: err}
 }
 
 type GetCalendarEventsData struct {
-	CalendarEvents []models.CalendarEvent `json:"calendarEvents"`
-	Email          string                 `json:"email"`
-	Error          *errs.GoogleAPIError   `json:"error"`
+	CalendarEvents     []models.CalendarEvent `json:"calendarEvents"`
+	CalendarAccountKey string                 `json:"calendarAccountKey"`
+	Error              error                  `json:"error"`
 }
 
 // Get the user's list of calendar events for the given calendar
-func GetCalendarEventsAsync(email string, accessToken string, calendarId string, timeMin time.Time, timeMax time.Time, c chan GetCalendarEventsData) {
-	min, _ := timeMin.MarshalText()
-	max, _ := timeMax.MarshalText()
-	req, _ := http.NewRequest(
-		"GET",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end,transparency,attendees)&timeMin=%s&timeMax=%s&singleEvents=true&eventTypes=default", url.PathEscape(calendarId), min, max),
-		nil,
-	)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	defer resp.Body.Close()
+func GetCalendarEventsAsync(calendarAccountKey string, calendarProvider *CalendarProvider, calendarId string, timeMin time.Time, timeMax time.Time, c chan GetCalendarEventsData) {
+	calendarEvents, err := (*calendarProvider).GetCalendarEvents(calendarId, timeMin, timeMax)
 
-	// Define some structs to parse the json response
-	type Attendee struct {
-		Self           bool   `json:"self"`
-		ResponseStatus string `json:"responseStatus"`
-	}
-	type Response struct {
-		Items []struct {
-			Id      string `json:"id"`
-			Summary string `json:"summary"`
-			Start   struct {
-				DateTime time.Time `json:"dateTime" binding:"required"`
-			} `json:"start"`
-			End struct {
-				DateTime time.Time `json:"dateTime" binding:"required"`
-			} `json:"end"`
-			Transparency string     `json:"transparency"`
-			Attendees    []Attendee `json:"attendees"`
-		} `json:"items"`
-		Error *errs.GoogleAPIError `json:"error"`
-	}
-
-	// Parse the response
-	var res Response
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		logger.StdErr.Panicln(err)
-	}
-
-	// Check if the response returned an error
-	if res.Error != nil {
-		c <- GetCalendarEventsData{Email: email, Error: res.Error}
-		return
-	}
-
-	// Format response to return
-	calendarEvents := make([]models.CalendarEvent, 0)
-	for _, item := range res.Items {
-		// Don't include events that are all day events
-		// Don't include events that are greater than 24 hours
-		if item.Start.DateTime.IsZero() || item.End.DateTime.Sub(item.Start.DateTime).Hours() >= 24 {
-			continue
-		}
-
-		// Determine if user is free during this event
-		free := false
-		if item.Transparency == "transparent" {
-			free = true
-		} else if item.Attendees != nil {
-			selfIndex := utils.Find(item.Attendees, func(a Attendee) bool { return a.Self })
-			if selfIndex != -1 {
-				free = item.Attendees[selfIndex].ResponseStatus != "accepted"
-			}
-		}
-
-		// Restructure event
-		calendarEvent := models.CalendarEvent{
-			Id:         item.Id,
-			CalendarId: calendarId,
-			Summary:    item.Summary,
-			StartDate:  primitive.NewDateTimeFromTime(item.Start.DateTime),
-			EndDate:    primitive.NewDateTimeFromTime(item.End.DateTime),
-			Free:       free,
-		}
-		calendarEvents = append(calendarEvents, calendarEvent)
-	}
-
-	c <- GetCalendarEventsData{CalendarEvents: calendarEvents, Email: email}
+	c <- GetCalendarEventsData{CalendarEvents: calendarEvents, CalendarAccountKey: calendarAccountKey, Error: err}
 }
 
 type CalendarEventsWithError struct {
 	CalendarEvents []models.CalendarEvent `json:"calendarEvents"`
-	Error          *errs.GoogleAPIError   `json:"error,omitempty"`
+	Error          error                  `json:"error,omitempty"`
 }
 
 // Returns a map mapping email to the calendar events associated with that email, and an error if there was an error fetching events for that email
 func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], timeMin time.Time, timeMax time.Time) (map[string]CalendarEventsWithError, bool) {
-	db.RefreshUserTokenIfNecessary(user, accounts)
+	auth.RefreshUserTokenIfNecessary(user, accounts)
 
 	returnAllAccounts := len(accounts) == 0
 	editedCalendarAccounts := false
@@ -196,12 +62,15 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 	// Get calendar lists
 	numCalendarListRequests := 0
 	for _, account := range user.CalendarAccounts {
-		// Get secondary account  calendars
-		if _, ok := accounts[account.Email]; ok || returnAllAccounts {
-			go GetCalendarListAsync(account.Email, account.AccessToken, calendarListChan)
+		calendarProvider := account.Details.(CalendarProvider)
+
+		// Get secondary account calendars
+		if _, ok := accounts[utils.GetCalendarAccountKey(calendarProvider.GetEmail(), account.CalendarType)]; ok || returnAllAccounts {
+			calendarAccountKey := utils.GetCalendarAccountKey(calendarProvider.GetEmail(), account.CalendarType)
+			go GetCalendarListAsync(calendarAccountKey, &calendarProvider, calendarListChan)
 			numCalendarListRequests++
 
-			calendarEventsMap[account.Email] = CalendarEventsWithError{
+			calendarEventsMap[calendarAccountKey] = CalendarEventsWithError{
 				CalendarEvents: make([]models.CalendarEvent, 0),
 			}
 		}
@@ -215,17 +84,18 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 		if calendarListData.Error != nil {
 			// This is needed to be able to send an error back to user if a given calendar account's refresh token is invalid, for example
 			go func() { // needs to be async because writing to a channel is blocking
-				calendarEventsChan <- GetCalendarEventsData{Email: calendarListData.Email, Error: calendarListData.Error}
+				calendarEventsChan <- GetCalendarEventsData{CalendarAccountKey: calendarListData.CalendarAccountKey, Error: calendarListData.Error}
 			}()
 			numCalendarEventsRequests++
 			continue
 		}
 
 		// Edit subcalendars map
-		account := user.CalendarAccounts[calendarListData.Email]
+		account := user.CalendarAccounts[calendarListData.CalendarAccountKey]
+		calendarProvider := account.Details.(CalendarProvider)
 		if account.SubCalendars == nil {
 			account.SubCalendars = &calendarListData.CalendarList
-			user.CalendarAccounts[calendarListData.Email] = account
+			user.CalendarAccounts[calendarListData.CalendarAccountKey] = account
 			editedCalendarAccounts = true
 		} else {
 			// Add subCalendar if it doesn't exist
@@ -250,32 +120,30 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 				}
 			}
 		}
-		user.CalendarAccounts[calendarListData.Email] = account
+		user.CalendarAccounts[calendarListData.CalendarAccountKey] = account
 
 		for id := range *account.SubCalendars {
-			// if *calendar.Enabled {
-			go GetCalendarEventsAsync(calendarListData.Email, calendarListData.AccessToken, id, timeMin, timeMax, calendarEventsChan)
+			go GetCalendarEventsAsync(calendarListData.CalendarAccountKey, &calendarProvider, id, timeMin, timeMax, calendarEventsChan)
 			numCalendarEventsRequests++
-			// }
 		}
 	}
 
 	// After calendar events are fetched, append to the calendarEvents array associated with the given email
 	for i := 0; i < numCalendarEventsRequests; i++ {
 		calendarEventsData := <-calendarEventsChan
-		email := calendarEventsData.Email
+		calendarAccountKey := calendarEventsData.CalendarAccountKey
 
-		if _, ok := calendarEventsMap[email]; !ok {
-			calendarEventsMap[email] = CalendarEventsWithError{}
+		if _, ok := calendarEventsMap[calendarAccountKey]; !ok {
+			calendarEventsMap[calendarAccountKey] = CalendarEventsWithError{}
 		}
 
-		if events, ok := calendarEventsMap[email]; ok {
+		if events, ok := calendarEventsMap[calendarAccountKey]; ok {
 			if calendarEventsData.Error != nil {
 				events.Error = calendarEventsData.Error
 			} else {
 				events.CalendarEvents = append(events.CalendarEvents, calendarEventsData.CalendarEvents...)
 			}
-			calendarEventsMap[email] = events
+			calendarEventsMap[calendarAccountKey] = events
 		}
 	}
 

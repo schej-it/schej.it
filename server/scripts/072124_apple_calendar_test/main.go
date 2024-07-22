@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/emersion/go-webdav"
@@ -64,16 +65,6 @@ func main() {
 					Name:  "VEVENT",
 					Start: time.Now(),
 					End:   time.Now().Add(time.Hour * 7 * 24),
-					Props: []caldav.PropFilter{{
-						Name: "DTSTART",
-						ParamFilter: []caldav.ParamFilter{{
-							Name: "VALUE",
-							TextMatch: &caldav.TextMatch{
-								Text:            "DATE",
-								NegateCondition: true,
-							},
-						}},
-					}},
 				}},
 			},
 		})
@@ -81,6 +72,17 @@ func main() {
 			panic(err)
 		}
 
-		utils.PrintJson(events)
+		var filteredEvents []caldav.CalendarObject
+		for _, event := range events {
+			// Filter out all day events
+			startTime := event.Data.Children[0].Props["DTSTART"][0].Value
+			if !strings.Contains(startTime, "T") {
+				continue
+			}
+
+			filteredEvents = append(filteredEvents, event)
+		}
+
+		utils.PrintJson(filteredEvents)
 	}
 }

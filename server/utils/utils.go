@@ -143,3 +143,7 @@ func FalsePtr() *bool {
 	b := false
 	return &b
 }
+
+func GetCalendarAccountKey(email string, calendarType models.CalendarType) string {
+	return fmt.Sprintf("%s_%s", email, calendarType)
+}

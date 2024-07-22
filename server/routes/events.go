@@ -947,8 +947,8 @@ func getCalendarAvailabilities(c *gin.Context) {
 
 				// Construct enabled accounts set
 				enabledAccounts := make([]string, 0)
-				for email := range utils.Coalesce(response.EnabledCalendars) {
-					enabledAccounts = append(enabledAccounts, email)
+				for calendarAccountKey := range utils.Coalesce(response.EnabledCalendars) {
+					enabledAccounts = append(enabledAccounts, calendarAccountKey)
 				}
 
 				// Fetch calendar events
