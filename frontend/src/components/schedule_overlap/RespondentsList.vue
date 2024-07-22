@@ -468,6 +468,10 @@ export default {
         c.push("tw-text-gray")
       }
 
+      if (this.respondentIfNeeded(id)) {
+        c.push("tw-bg-yellow")
+      }
+
       if (!this.curTimeslotAvailability[id]) {
         c.push("tw-line-through")
         c.push("tw-text-gray")
