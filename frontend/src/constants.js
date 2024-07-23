@@ -38,6 +38,12 @@ export const timeTypes = Object.freeze({
   HOUR24: "24-hour",
 })
 
+export const calendarTypes = Object.freeze({
+  GOOGLE: "google",
+  APPLE: "apple",
+  OUTLOOK: "outlook",
+})
+
 export const calendarOptionsDefaults = Object.freeze({
   bufferTime: {
     enabled: false,
