@@ -192,13 +192,13 @@ export default {
     heading: ["Permission", "Purpose", "Requested When"],
     content: [
       [
-        "View all calendars subscribed to",
-        "Allows us to display calendar events on all your calendars instead of just your primary calendar",
+        "View all calendar events",
+        "Allows us to display the names/times of your calendar events",
         "User tries to input availability automatically with Google Calendar",
       ],
       [
-        "View all calendar events",
-        "Allows us to view the names/times of your calendar events",
+        "View all calendars subscribed to",
+        "Allows us to display calendar events on all your calendars instead of just your primary calendar",
         "User tries to input availability automatically with Google Calendar",
       ],
     ],
