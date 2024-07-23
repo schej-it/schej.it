@@ -31,9 +31,9 @@ type GoogleCalendarDetails struct {
 
 // CalendarAccount contains info about the user's other signed in calendar accounts
 type CalendarAccount struct {
-	CalendarType          CalendarType          `json:"calendarType" bson:"calendarType,omitempty"`
-	GoogleCalendarDetails GoogleCalendarDetails `json:"googleCalendarDetails" bson:"googleCalendarDetails,omitempty"`
-	AppleCalendarDetails  AppleCalendarDetails  `json:"appleCalendarDetails" bson:"appleCalendarDetails,omitempty"`
+	CalendarType          CalendarType           `json:"calendarType" bson:"calendarType,omitempty"`
+	GoogleCalendarDetails *GoogleCalendarDetails `json:"googleCalendarDetails" bson:"googleCalendarDetails,omitempty"`
+	AppleCalendarDetails  *AppleCalendarDetails  `json:"appleCalendarDetails" bson:"appleCalendarDetails,omitempty"`
 
 	Enabled *bool `json:"enabled" bson:"enabled,omitempty"`
 

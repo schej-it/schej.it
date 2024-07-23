@@ -16,11 +16,11 @@ func GetCalendarProvider(calendarAccount models.CalendarAccount) CalendarProvide
 	switch calendarAccount.CalendarType {
 	case models.GoogleCalendarType:
 		return &GoogleCalendar{
-			GoogleCalendarDetails: calendarAccount.GoogleCalendarDetails,
+			GoogleCalendarDetails: *calendarAccount.GoogleCalendarDetails,
 		}
 	case models.AppleCalendarType:
 		return &AppleCalendar{
-			AppleCalendarDetails: calendarAccount.AppleCalendarDetails,
+			AppleCalendarDetails: *calendarAccount.AppleCalendarDetails,
 		}
 	}
 	return nil

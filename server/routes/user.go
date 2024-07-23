@@ -255,7 +255,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	// Define a new calendar account
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarDetails: models.GoogleCalendarDetails{
+		GoogleCalendarDetails: &models.GoogleCalendarDetails{
 			Email:   email,
 			Picture: picture,
 

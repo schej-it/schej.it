@@ -106,7 +106,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarDetails: models.GoogleCalendarDetails{
+		GoogleCalendarDetails: &models.GoogleCalendarDetails{
 			Email:   email,
 			Picture: picture,
 
