@@ -62,7 +62,7 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 	numCalendarListRequests := 0
 	for _, account := range user.CalendarAccounts {
 		calendarProvider := GetCalendarProvider(account)
-		calendarAccountKey := utils.GetCalendarAccountKey(calendarProvider.GetEmail(), account.CalendarType)
+		calendarAccountKey := utils.GetCalendarAccountKey(account.Email, account.CalendarType)
 
 		// Get secondary account calendars
 		if _, ok := accounts[calendarAccountKey]; ok || returnAllAccounts {

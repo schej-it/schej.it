@@ -106,15 +106,14 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarDetails: &models.GoogleCalendarDetails{
-			Email:   email,
-			Picture: picture,
-
+		GoogleCalendarAuth: &models.GoogleCalendarAuth{
 			AccessToken:           accessToken,
 			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 			RefreshToken:          refreshToken,
 		},
 
+		Email:   email,
+		Picture: picture,
 		Enabled: utils.TruePtr(), // Workaround to pass a boolean pointer
 	}
 	calendarAccountKey := utils.GetCalendarAccountKey(email, models.GoogleCalendarType)

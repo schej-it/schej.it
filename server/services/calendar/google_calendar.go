@@ -15,11 +15,7 @@ import (
 )
 
 type GoogleCalendar struct {
-	models.GoogleCalendarDetails
-}
-
-func (calendar GoogleCalendar) GetEmail() string {
-	return calendar.Email
+	models.GoogleCalendarAuth
 }
 
 func (calendar GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar, error) {

@@ -13,17 +13,13 @@ const (
 	OutlookCalendarType CalendarType = "outlook"
 )
 
-// AppleCalendarDetails contains necessary auth info for the user's apple calendar account
-type AppleCalendarDetails struct {
-	Email    string `json:"email" bson:"email"`
+// AppleCalendarAuth contains necessary auth info for the user's apple calendar account
+type AppleCalendarAuth struct {
 	Password string `json:"-" bson:"password"`
 }
 
-// GoogleCalendarDetails contains necessary auth info for the user's google calendar account
-type GoogleCalendarDetails struct {
-	Email   string `json:"email" bson:"email,omitempty"`
-	Picture string `json:"picture" bson:"picture,omitempty"`
-
+// GoogleCalendarAuth contains necessary auth info for the user's google calendar account
+type GoogleCalendarAuth struct {
 	AccessToken           string             `json:"-" bson:"accessToken,omitempty"`
 	AccessTokenExpireDate primitive.DateTime `json:"-" bson:"accessTokenExpireDate,omitempty"`
 	RefreshToken          string             `json:"-" bson:"refreshToken,omitempty"`
@@ -31,12 +27,13 @@ type GoogleCalendarDetails struct {
 
 // CalendarAccount contains info about the user's other signed in calendar accounts
 type CalendarAccount struct {
-	CalendarType          CalendarType           `json:"calendarType" bson:"calendarType,omitempty"`
-	GoogleCalendarDetails *GoogleCalendarDetails `json:"googleCalendarDetails" bson:"googleCalendarDetails,omitempty"`
-	AppleCalendarDetails  *AppleCalendarDetails  `json:"appleCalendarDetails" bson:"appleCalendarDetails,omitempty"`
+	CalendarType       CalendarType        `json:"calendarType" bson:"calendarType,omitempty"`
+	GoogleCalendarAuth *GoogleCalendarAuth `json:"googleCalendarAuth" bson:"googleCalendarAuth,omitempty"`
+	AppleCalendarAuth  *AppleCalendarAuth  `json:"appleCalendarAuth" bson:"appleCalendarAuth,omitempty"`
 
-	Enabled *bool `json:"enabled" bson:"enabled,omitempty"`
-
+	Email        string                  `json:"email" bson:"email"` // Email is required for all calendar accounts
+	Picture      string                  `json:"picture" bson:"picture,omitempty"`
+	Enabled      *bool                   `json:"enabled" bson:"enabled,omitempty"`
 	SubCalendars *map[string]SubCalendar `json:"subCalendars" bson:"subCalendars,omitempty"`
 }
 

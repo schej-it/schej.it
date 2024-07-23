@@ -255,15 +255,16 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	// Define a new calendar account
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarDetails: &models.GoogleCalendarDetails{
-			Email:   email,
-			Picture: picture,
+		GoogleCalendarAuth: &models.GoogleCalendarAuth{
 
 			AccessToken:           tokens.AccessToken,
 			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 			RefreshToken:          tokens.RefreshToken,
 		},
-		Enabled: &[]bool{true}[0], // Workaround to pass a boolean pointer
+
+		Email:   email,
+		Picture: picture,
+		Enabled: utils.TruePtr(), // Workaround to pass a boolean pointer
 	}
 	calendarAccountKey := utils.GetCalendarAccountKey(email, models.GoogleCalendarType)
 

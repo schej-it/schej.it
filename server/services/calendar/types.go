@@ -7,7 +7,6 @@ import (
 )
 
 type CalendarProvider interface {
-	GetEmail() string
 	GetCalendarList() (map[string]models.SubCalendar, error)
 	GetCalendarEvents(calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, error)
 }
@@ -16,11 +15,11 @@ func GetCalendarProvider(calendarAccount models.CalendarAccount) CalendarProvide
 	switch calendarAccount.CalendarType {
 	case models.GoogleCalendarType:
 		return &GoogleCalendar{
-			GoogleCalendarDetails: *calendarAccount.GoogleCalendarDetails,
+			GoogleCalendarAuth: *calendarAccount.GoogleCalendarAuth,
 		}
 	case models.AppleCalendarType:
 		return &AppleCalendar{
-			AppleCalendarDetails: *calendarAccount.AppleCalendarDetails,
+			AppleCalendarAuth: *calendarAccount.AppleCalendarAuth,
 		}
 	}
 	return nil
