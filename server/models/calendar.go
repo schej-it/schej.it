@@ -13,14 +13,14 @@ const (
 	OutlookCalendarType CalendarType = "outlook"
 )
 
-// AppleCalendar contains necessary auth info for the user's apple calendar account
-type AppleCalendar struct {
+// AppleCalendarDetails contains necessary auth info for the user's apple calendar account
+type AppleCalendarDetails struct {
 	Email    string `json:"email" bson:"email"`
 	Password string `json:"-" bson:"password"`
 }
 
-// GoogleCalendar contains necessary auth info for the user's google calendar account
-type GoogleCalendar struct {
+// GoogleCalendarDetails contains necessary auth info for the user's google calendar account
+type GoogleCalendarDetails struct {
 	Email   string `json:"email" bson:"email,omitempty"`
 	Picture string `json:"picture" bson:"picture,omitempty"`
 
@@ -31,8 +31,9 @@ type GoogleCalendar struct {
 
 // CalendarAccount contains info about the user's other signed in calendar accounts
 type CalendarAccount struct {
-	CalendarType CalendarType `json:"calendarType" bson:"calendarType,omitempty"`
-	Details      interface{}  `json:"details" bson:"details,omitempty"` // details are dependent on the calendar type, could be either AppleCalendar, GoogleCalendar, or OutlookCalendar
+	CalendarType          CalendarType          `json:"calendarType" bson:"calendarType,omitempty"`
+	GoogleCalendarDetails GoogleCalendarDetails `json:"googleCalendarDetails" bson:"googleCalendarDetails,omitempty"`
+	AppleCalendarDetails  AppleCalendarDetails  `json:"appleCalendarDetails" bson:"appleCalendarDetails,omitempty"`
 
 	Enabled *bool `json:"enabled" bson:"enabled,omitempty"`
 

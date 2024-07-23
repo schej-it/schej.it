@@ -106,7 +106,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		Details: models.GoogleCalendar{
+		GoogleCalendarDetails: models.GoogleCalendarDetails{
 			Email:   email,
 			Picture: picture,
 
@@ -124,7 +124,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 	// If user doesn't exist, create a new user
 	if findResult.Err() == mongo.ErrNoDocuments {
 		// Fetch subcalendars
-		subCalendars, err := calendarAccount.Details.(calendar.CalendarProvider).GetCalendarList()
+		subCalendars, err := calendar.GetCalendarProvider(calendarAccount).GetCalendarList()
 		if err == nil {
 			calendarAccount.SubCalendars = &subCalendars
 		}
@@ -160,7 +160,7 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		if oldCalendarAccount, ok := user.CalendarAccounts[calendarAccountKey]; ok && oldCalendarAccount.SubCalendars != nil {
 			calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
 		} else {
-			subCalendars, err := calendarAccount.Details.(calendar.CalendarProvider).GetCalendarList()
+			subCalendars, err := calendar.GetCalendarProvider(calendarAccount).GetCalendarList()
 			if err == nil {
 				calendarAccount.SubCalendars = &subCalendars
 			}

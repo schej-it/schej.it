@@ -121,7 +121,7 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 	// Refresh calendar account access tokens if necessary
 	for _, account := range u.CalendarAccounts {
 		if account.CalendarType == models.GoogleCalendarType { // Only refresh access tokens for Google calendar accounts
-			accountDetails := account.Details.(models.GoogleCalendar)
+			accountDetails := account.GoogleCalendarDetails
 
 			if _, ok := accounts[accountDetails.Email]; ok || updateAllAccounts {
 				if time.Now().After(accountDetails.AccessTokenExpireDate.Time()) && len(accountDetails.RefreshToken) > 0 {
@@ -142,12 +142,13 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
 
-		if calendarAccount, ok := u.CalendarAccounts[res.Email]; ok {
-			newCalendarAccountDetails := calendarAccount.Details.(models.GoogleCalendar)
+		calendarAccountKey := utils.GetCalendarAccountKey(res.Email, models.GoogleCalendarType)
+		if calendarAccount, ok := u.CalendarAccounts[calendarAccountKey]; ok {
+			newCalendarAccountDetails := calendarAccount.GoogleCalendarDetails
 			newCalendarAccountDetails.AccessToken = res.TokenResponse.AccessToken
 			newCalendarAccountDetails.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
-			calendarAccount.Details = newCalendarAccountDetails
-			u.CalendarAccounts[res.Email] = calendarAccount
+			calendarAccount.GoogleCalendarDetails = newCalendarAccountDetails
+			u.CalendarAccounts[calendarAccountKey] = calendarAccount
 		}
 	}
 

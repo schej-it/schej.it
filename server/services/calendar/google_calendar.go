@@ -15,14 +15,14 @@ import (
 )
 
 type GoogleCalendar struct {
-	models.GoogleCalendar
+	models.GoogleCalendarDetails
 }
 
-func (calendar *GoogleCalendar) GetEmail() string {
+func (calendar GoogleCalendar) GetEmail() string {
 	return calendar.Email
 }
 
-func (calendar *GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar, error) {
+func (calendar GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar, error) {
 	req, _ := http.NewRequest(
 		"GET",
 		"https://www.googleapis.com/calendar/v3/users/me/calendarList?fields=items(id,summary,selected)",
@@ -52,7 +52,7 @@ func (calendar *GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar
 	}
 
 	// Check if the response returned an error
-	if res.Error.Errors != nil {
+	if res.Error != nil {
 		return nil, res.Error
 	}
 

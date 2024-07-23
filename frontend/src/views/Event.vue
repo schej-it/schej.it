@@ -700,7 +700,7 @@ export default {
         .then((eventsMap) => {
           // Check if the primary calendar has an error
           // We don't care if other calendars have an error, because if they do we just dont show them
-          if (eventsMap[this.authUser.email].error) {
+          if (eventsMap[this.authUser.email + "_google"].error) {
             this.calendarPermissionGranted = false
             return
           }

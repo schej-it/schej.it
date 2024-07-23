@@ -255,7 +255,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	// Define a new calendar account
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		Details: models.GoogleCalendar{
+		GoogleCalendarDetails: models.GoogleCalendarDetails{
 			Email:   email,
 			Picture: picture,
 
@@ -271,7 +271,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	if oldCalendarAccount, ok := authUser.CalendarAccounts[calendarAccountKey]; ok && oldCalendarAccount.SubCalendars != nil {
 		calendarAccount.SubCalendars = oldCalendarAccount.SubCalendars
 	} else {
-		subCalendars, err := calendarAccount.Details.(calendar.CalendarProvider).GetCalendarList()
+		subCalendars, err := calendar.GetCalendarProvider(calendarAccount).GetCalendarList()
 		if err == nil {
 			calendarAccount.SubCalendars = &subCalendars
 		}

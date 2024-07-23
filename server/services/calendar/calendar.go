@@ -3,7 +3,6 @@ package calendar
 import (
 	"time"
 
-	"schej.it/server/errs"
 	"schej.it/server/models"
 	"schej.it/server/services/auth"
 	"schej.it/server/utils"
@@ -20,7 +19,7 @@ func GetCalendarListAsync(calendarAccountKey string, calendarProvider *CalendarP
 	// Recover from panics
 	defer func() {
 		if err := recover(); err != nil {
-			c <- GetCalendarListData{Error: &errs.GoogleAPIError{Message: err.(string)}}
+			c <- GetCalendarListData{Error: err.(error)}
 		}
 	}()
 
@@ -62,11 +61,11 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 	// Get calendar lists
 	numCalendarListRequests := 0
 	for _, account := range user.CalendarAccounts {
-		calendarProvider := account.Details.(CalendarProvider)
+		calendarProvider := GetCalendarProvider(account)
+		calendarAccountKey := utils.GetCalendarAccountKey(calendarProvider.GetEmail(), account.CalendarType)
 
 		// Get secondary account calendars
-		if _, ok := accounts[utils.GetCalendarAccountKey(calendarProvider.GetEmail(), account.CalendarType)]; ok || returnAllAccounts {
-			calendarAccountKey := utils.GetCalendarAccountKey(calendarProvider.GetEmail(), account.CalendarType)
+		if _, ok := accounts[calendarAccountKey]; ok || returnAllAccounts {
 			go GetCalendarListAsync(calendarAccountKey, &calendarProvider, calendarListChan)
 			numCalendarListRequests++
 
@@ -92,7 +91,7 @@ func GetUsersCalendarEvents(user *models.User, accounts models.Set[string], time
 
 		// Edit subcalendars map
 		account := user.CalendarAccounts[calendarListData.CalendarAccountKey]
-		calendarProvider := account.Details.(CalendarProvider)
+		calendarProvider := GetCalendarProvider(account)
 		if account.SubCalendars == nil {
 			account.SubCalendars = &calendarListData.CalendarList
 			user.CalendarAccounts[calendarListData.CalendarAccountKey] = account

@@ -7,7 +7,7 @@ import (
 )
 
 type AppleCalendar struct {
-	models.AppleCalendar
+	models.AppleCalendarDetails
 }
 
 func (calendar *AppleCalendar) GetEmail() string {

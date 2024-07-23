@@ -580,8 +580,6 @@ func updateEventResponse(c *gin.Context) {
 				response.ManualAvailability = &manualAvailability
 			}
 
-			fmt.Println(payload.ManualAvailability)
-
 			// Replace availability on days that already exist in manual availability map
 			for day := range utils.Coalesce(response.ManualAvailability) {
 				for payloadDay, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
