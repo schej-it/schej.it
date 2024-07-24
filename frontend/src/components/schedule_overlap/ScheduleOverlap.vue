@@ -886,7 +886,10 @@ export default {
         localStorage["showEventOptions"] == undefined
           ? false
           : localStorage["showEventOptions"] == "true",
-      showBestTimes: false,
+      showBestTimes:
+        localStorage["showBestTimes"] == undefined
+          ? false
+          : localStorage["showBestTimes"] == "true",
       hideIfNeeded: false,
 
       /* Variables for drag stuff */
