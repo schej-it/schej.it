@@ -176,10 +176,8 @@ export default {
     toggleSubCalendarAccount(enabled, subCalendarId) {
       if (this.syncWithBackend) {
         post(`/user/toggle-sub-calendar`, {
-          calendarAccountKey: getCalendarAccountKey(
-            this.account.email,
-            this.account.calendarType
-          ),
+          email: this.account.email,
+          calendarType: this.account.calendarType,
           enabled,
           subCalendarId,
         }).catch((err) => {
@@ -200,10 +198,8 @@ export default {
 
       if (this.syncWithBackend) {
         post(`/user/toggle-calendar`, {
-          calendarAccountKey: getCalendarAccountKey(
-            this.account.email,
-            this.account.calendarType
-          ),
+          email: this.account.email,
+          calendarType: this.account.calendarType,
           enabled,
         }).catch((err) => {
           this.showError(
