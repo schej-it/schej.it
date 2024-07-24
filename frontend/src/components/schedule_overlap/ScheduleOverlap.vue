@@ -199,7 +199,7 @@
                         <!-- Timeslots -->
                         <div v-for="(_, t) in times" :key="t" class="tw-w-full">
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                            class="timeslot tw-h-4"
                             :class="
                               timeslotClassStyle[d * times.length + t]?.class
                             "
@@ -342,6 +342,22 @@
                       {{ hintText }}
                     </div>
                     <v-icon small @click="closeHint">mdi-close</v-icon>
+                  </div>
+                </div>
+              </v-expand-transition>
+
+              <v-expand-transition>
+                <div
+                  v-if="
+                    state !== states.EDIT_AVAILABILITY &&
+                    max !== respondents.length &&
+                    Object.keys(fetchedResponses).length !== 0 &&
+                    !loadingResponses.loading
+                  "
+                >
+                  <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
+                    Note: There's no time where all
+                    {{ respondents.length }} respondents are available.
                   </div>
                 </div>
               </v-expand-transition>
@@ -870,7 +886,10 @@ export default {
         localStorage["showEventOptions"] == undefined
           ? false
           : localStorage["showEventOptions"] == "true",
-      showBestTimes: false,
+      showBestTimes:
+        localStorage["showBestTimes"] == undefined
+          ? false
+          : localStorage["showBestTimes"] == "true",
       hideIfNeeded: false,
 
       /* Variables for drag stuff */
@@ -2230,12 +2249,24 @@ export default {
           classStyle.class += "tw-border-b "
         }
 
+        classStyle.class += "tw-border-r "
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
         if (col === this.days.length - 1)
-          classStyle.class += "tw-border-r tw-border-r-gray "
+          classStyle.class += "tw-border-r-gray "
         if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
         if (row === this.times.length - 1)
           classStyle.class += "tw-border-b tw-border-b-gray "
+
+        if (this.state === this.states.EDIT_AVAILABILITY) {
+          classStyle.class += "tw-border-[#999999] "
+        } else {
+          classStyle.class += "tw-border-[#DDDDDD99] "
+        }
+      }
+
+      // Change default red:
+      if (classStyle.style.backgroundColor === "#E523230D") {
+        classStyle.style.backgroundColor = "#E5232333"
       }
 
       return classStyle
@@ -2359,7 +2390,15 @@ export default {
                   .toUpperCase()
                   .substring(0, 2)
                   .padStart(2, "0")
-                if (frac == 1) alpha = "FF"
+                if (
+                  frac == 1 &&
+                  ((this.curRespondents.length > 0 &&
+                    max === this.curRespondents.length) ||
+                    (this.curRespondents.length === 0 &&
+                      max === this.respondents.length))
+                ) {
+                  alpha = "FF"
+                }
               } else {
                 alpha = Math.floor(frac * (255 - 85))
                   .toString(16)

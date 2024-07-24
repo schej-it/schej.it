@@ -210,11 +210,11 @@
             <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2">
               <v-checkbox
                 v-model="collectEmails"
-                messages="Facilitate creation of Google Calendar invites"
+                messages="Adds emails to Google Calendar invite"
               >
                 <template v-slot:label>
                   <span class="tw-text-sm tw-text-black">
-                    Collect respondents' email addresses
+                    Require respondents' email addresses
                   </span>
                 </template>
                 <template v-slot:message="{ key, message }">
