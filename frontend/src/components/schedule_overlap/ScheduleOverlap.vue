@@ -199,7 +199,7 @@
                         <!-- Timeslots -->
                         <div v-for="(_, t) in times" :key="t" class="tw-w-full">
                           <div
-                            class="timeslot tw-h-4 tw-border-r tw-border-[#DDDDDD99]"
+                            class="timeslot tw-h-4"
                             :class="
                               timeslotClassStyle[d * times.length + t]?.class
                             "
@@ -2249,12 +2249,24 @@ export default {
           classStyle.class += "tw-border-b "
         }
 
+        classStyle.class += "tw-border-r "
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
         if (col === this.days.length - 1)
-          classStyle.class += "tw-border-r tw-border-r-gray "
+          classStyle.class += "tw-border-r-gray "
         if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
         if (row === this.times.length - 1)
           classStyle.class += "tw-border-b tw-border-b-gray "
+
+        if (this.state === this.states.EDIT_AVAILABILITY) {
+          classStyle.class += "tw-border-[#999999] "
+        } else {
+          classStyle.class += "tw-border-[#DDDDDD99] "
+        }
+      }
+
+      // Change default red:
+      if (classStyle.style.backgroundColor === "#E523230D") {
+        classStyle.style.backgroundColor = "#E5232333"
       }
 
       return classStyle
