@@ -62,7 +62,12 @@
           account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
         } ${account.email == authUser.email || toggleState ? 'tw-hidden' : ''}`"
         class="group-hover:tw-opacity-100"
-        @click="() => openRemoveDialog(account.email)"
+        @click="
+          $emit('openRemoveDialog', {
+            email: account.email,
+            calendarType: account.calendarType,
+          })
+        "
         ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
       >
     </div>
@@ -97,13 +102,7 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
-import {
-  get,
-  post,
-  _delete,
-  signInGoogle,
-  getCalendarAccountKey,
-} from "@/utils"
+import { get, post, _delete, signInGoogle } from "@/utils"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 
 export default {
@@ -113,7 +112,6 @@ export default {
     toggleState: { type: Boolean, default: false },
     account: { type: Object, default: () => {} },
     eventId: { type: String, default: "" },
-    openRemoveDialog: { type: Function },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
     removeDialog: { type: Boolean, default: false },
     selectedRemoveEmail: { type: String, default: "" },

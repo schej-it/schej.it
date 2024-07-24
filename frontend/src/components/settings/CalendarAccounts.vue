@@ -31,10 +31,9 @@
             :toggleState="toggleState"
             :account="account"
             :eventId="eventId"
-            :openRemoveDialog="openRemoveDialog"
             :calendarEventsMap="calendarEventsMap"
             :removeDialog="removeDialog"
-            :selectedRemoveEmail="selectedRemoveEmail"
+            :selectedRemoveEmail="removePayload.email"
             :fillSpace="fillSpace"
             @toggleCalendarAccount="
               (payload) => $emit('toggleCalendarAccount', payload)
@@ -42,6 +41,7 @@
             @toggleSubCalendarAccount="
               (payload) => $emit('toggleSubCalendarAccount', payload)
             "
+            @openRemoveDialog="openRemoveDialog"
           ></CalendarAccount>
         </div>
         <v-btn
@@ -61,7 +61,7 @@
         <v-card-title>Are you sure?</v-card-title>
         <v-card-text class="tw-text-sm tw-text-dark-gray"
           >Are you sure you want to remove
-          {{ selectedRemoveEmail }}?</v-card-text
+          {{ removePayload.email }}?</v-card-text
         >
         <v-card-actions>
           <v-spacer />
@@ -76,7 +76,7 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
-import { _delete, signInGoogle } from "@/utils"
+import { get, _delete, signInGoogle, getCalendarAccountKey } from "@/utils"
 import CalendarAccount from "@/components/settings/CalendarAccount.vue"
 
 export default {
@@ -94,7 +94,7 @@ export default {
 
   data: () => ({
     removeDialog: false,
-    selectedRemoveEmail: "",
+    removePayload: {},
     calendarAccounts: {},
     showCalendars:
       localStorage["showCalendars"] == undefined
@@ -128,20 +128,21 @@ export default {
         selectAccount: true,
       })
     },
-    openRemoveDialog(email) {
+    openRemoveDialog(payload) {
       this.removeDialog = true
-      this.selectedRemoveEmail = email
+      this.removePayload = payload
     },
     removeAccount() {
-      _delete(`/user/remove-calendar-account`, {
-        email: this.selectedRemoveEmail,
-      })
+      _delete(`/user/remove-calendar-account`, this.removePayload)
         .then(async () => {
-          // TODO: investigate into what the standard method is best
-          delete this.authUser.calendarAccounts[this.selectedRemoveEmail]
+          // Remove calendar account locally
+          const calendarAccountKey = getCalendarAccountKey(
+            this.removePayload.email,
+            this.removePayload.calendarType
+          )
+          delete this.authUser.calendarAccounts[calendarAccountKey]
           this.setAuthUser(this.authUser)
-          // const newAuthUser = await get("/user/profile")
-          // this.setAuthUser(newAuthUser)
+
           this.removeDialog = false
         })
         .catch((err) => {
