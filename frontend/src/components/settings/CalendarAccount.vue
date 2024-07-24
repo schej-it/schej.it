@@ -96,7 +96,7 @@
 
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
-import { authTypes } from "@/constants"
+import { authTypes, calendarTypes } from "@/constants"
 import { get, post, _delete, signInGoogle } from "@/utils"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 
@@ -147,6 +147,7 @@ export default {
             ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
             : authTypes.ADD_CALENDAR_ACCOUNT,
           eventId: this.eventId,
+          calendarType: calendarTypes.GOOGLE,
         },
         requestCalendarPermission: true,
         selectAccount: true,
@@ -159,6 +160,7 @@ export default {
             ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
             : authTypes.ADD_CALENDAR_ACCOUNT,
           eventId: this.eventId,
+          calendarType: calendarTypes.GOOGLE,
         },
         requestCalendarPermission: true,
         selectAccount: false,

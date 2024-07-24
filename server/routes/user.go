@@ -329,13 +329,13 @@ func removeCalendarAccount(c *gin.Context) {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param payload body object{email=string,enabled=bool} true "Email of calendar account and whether to enable it"
+// @Param payload body object{calendarAccountKey=string,enabled=bool} true "Email of calendar account and whether to enable it"
 // @Success 200
 // @Router /user/toggle-calendar [post]
 func toggleCalendar(c *gin.Context) {
 	payload := struct {
-		Email   string `json:"email" binding:"required"`
-		Enabled *bool  `json:"enabled" binding:"required"`
+		CalendarAccountKey string `json:"calendarAccountKey" binding:"required"`
+		Enabled            *bool  `json:"enabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		logger.StdErr.Panicln(err)
@@ -344,9 +344,9 @@ func toggleCalendar(c *gin.Context) {
 
 	// Update enabled status for the specified account
 	authUser := utils.GetAuthUser(c)
-	if account, ok := authUser.CalendarAccounts[payload.Email]; ok {
+	if account, ok := authUser.CalendarAccounts[payload.CalendarAccountKey]; ok {
 		account.Enabled = payload.Enabled
-		authUser.CalendarAccounts[payload.Email] = account
+		authUser.CalendarAccounts[payload.CalendarAccountKey] = account
 
 		_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
 			"_id": authUser.Id,
@@ -366,14 +366,14 @@ func toggleCalendar(c *gin.Context) {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param payload body object{email=string,subCalendarId=string,enabled=bool} true "Email of calendar account, the sub calendar id, and whether to enable it"
+// @Param payload body object{calendarAccountKey=string,subCalendarId=string,enabled=bool} true "Email of calendar account, the sub calendar id, and whether to enable it"
 // @Success 200
 // @Router /user/toggle-sub-calendar [post]
 func toggleSubCalendar(c *gin.Context) {
 	payload := struct {
-		Email         string `json:"email" binding:"required"`
-		SubCalendarId string `json:"subCalendarId" binding:"required"`
-		Enabled       *bool  `json:"enabled" binding:"required"`
+		CalendarAccountKey string `json:"calendarAccountKey" binding:"required"`
+		SubCalendarId      string `json:"subCalendarId" binding:"required"`
+		Enabled            *bool  `json:"enabled" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		logger.StdErr.Panicln(err)
@@ -382,11 +382,11 @@ func toggleSubCalendar(c *gin.Context) {
 
 	// Update enabled status for the specified sub calendar
 	authUser := utils.GetAuthUser(c)
-	if account, ok := authUser.CalendarAccounts[payload.Email]; ok {
+	if account, ok := authUser.CalendarAccounts[payload.CalendarAccountKey]; ok {
 		if subCalendar, ok := (*account.SubCalendars)[payload.SubCalendarId]; ok {
 			subCalendar.Enabled = payload.Enabled
 			(*account.SubCalendars)[payload.SubCalendarId] = subCalendar
-			authUser.CalendarAccounts[payload.Email] = account
+			authUser.CalendarAccounts[payload.CalendarAccountKey] = account
 
 			_, err := db.UsersCollection.UpdateOne(context.Background(), bson.M{
 				"_id": authUser.Id,

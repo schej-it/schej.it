@@ -3,7 +3,7 @@
 <script>
 import { get, post } from "@/utils"
 import { mapMutations } from "vuex"
-import { authTypes } from "@/constants"
+import { authTypes, calendarTypes } from "@/constants"
 
 export default {
   name: "Auth",
@@ -24,7 +24,11 @@ export default {
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT ||
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
       ) {
-        await post("/user/add-calendar-account", { code })
+        if (state.calendarType === calendarTypes.GOOGLE) {
+          await post("/user/add-google-calendar-account", { code })
+        } else {
+          await post("/user/add-calendar-account", { code })
+        }
       } else {
         await post("/auth/sign-in", {
           code,
