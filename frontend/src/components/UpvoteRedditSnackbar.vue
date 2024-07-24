@@ -7,6 +7,7 @@
     :timeout="-1"
     class="tw-bottom-8 tw-z-50"
     rounded="lg"
+    color="#333"
     content-class="tw-flex tw-items-center tw-gap-x-2"
   >
     Enjoying Schej? Help us reach more people by upvoting our Reddit post and
