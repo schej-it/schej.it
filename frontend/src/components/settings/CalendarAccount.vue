@@ -97,7 +97,13 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
-import { get, post, _delete, signInGoogle } from "@/utils"
+import {
+  get,
+  post,
+  _delete,
+  signInGoogle,
+  getCalendarAccountKey,
+} from "@/utils"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 
 export default {
@@ -170,7 +176,10 @@ export default {
     toggleSubCalendarAccount(enabled, subCalendarId) {
       if (this.syncWithBackend) {
         post(`/user/toggle-sub-calendar`, {
-          email: this.account.email,
+          calendarAccountKey: getCalendarAccountKey(
+            this.account.email,
+            this.account.calendarType
+          ),
           enabled,
           subCalendarId,
         }).catch((err) => {
@@ -191,7 +200,10 @@ export default {
 
       if (this.syncWithBackend) {
         post(`/user/toggle-calendar`, {
-          email: this.account.email,
+          calendarAccountKey: getCalendarAccountKey(
+            this.account.email,
+            this.account.calendarType
+          ),
           enabled,
         }).catch((err) => {
           this.showError(
