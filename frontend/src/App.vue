@@ -52,7 +52,7 @@
         <v-btn
           v-if="$route.name === 'home' && !isPhone"
           color="primary"
-          class="tw-mx-2 tw-rounded-md"
+          class="tw-mx-2 tw-rounded-lg"
           :style="{
             boxShadow: '0px 2px 8px 0px #00994C80 !important',
           }"
