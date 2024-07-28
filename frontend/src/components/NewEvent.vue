@@ -33,7 +33,11 @@
         </HelpDialog>
       </template>
     </v-card-title>
-    <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
+    <v-card-text
+      ref="cardText"
+      class="tw-relative tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8"
+      @scroll="handleScroll"
+    >
       <AlertText v-if="edit && event?.ownerId == 0" class="tw-mb-4">
         Anybody can edit this event because it was created while not signed in
       </AlertText>
@@ -323,6 +327,24 @@
         </div>
       </div>
     </v-card-actions>
+
+    <div
+      v-if="showOverflowGradient"
+      class="tw-pointer-events-none tw-absolute tw-bottom-[90px] tw-left-0 tw-right-0 tw-z-20 tw-flex tw-h-16 tw-items-end tw-justify-center"
+      :style="{
+        background:
+          'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%)',
+      }"
+    >
+      <v-btn
+        fab
+        x-small
+        class="tw-pointer-events-auto tw-transform"
+        @click="scrollToBottom"
+      >
+        <v-icon>mdi-chevron-down</v-icon>
+      </v-btn>
+    </div>
   </v-card>
 </template>
 
@@ -424,6 +446,9 @@ export default {
 
     // Unsaved changes
     initialEventData: {},
+
+    scrollPosition: 0,
+    showOverflowGradient: false,
   }),
 
   mounted() {
@@ -443,6 +468,10 @@ export default {
 
       this.$refs.form.resetValidation()
     }
+
+    this.$nextTick(() => {
+      this.handleScroll() // Initial check for gradient visibility
+    })
   },
 
   computed: {
@@ -772,6 +801,19 @@ export default {
         this.sendEmailAfterXResponses !==
           this.initialEventData.sendEmailAfterXResponses
       )
+    },
+    handleScroll() {
+      if (this.$refs.cardText) {
+        this.scrollPosition = this.$refs.cardText.scrollTop
+        const { scrollHeight, clientHeight, scrollTop } = this.$refs.cardText
+        this.showOverflowGradient =
+          scrollHeight > clientHeight && scrollTop < scrollHeight - clientHeight
+      }
+    },
+    scrollToBottom() {
+      if (this.$refs.cardText) {
+        this.$refs.cardText.scrollTop = this.$refs.cardText.scrollHeight
+      }
     },
   },
 
