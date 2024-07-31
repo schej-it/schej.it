@@ -193,6 +193,7 @@
       <div class="tw-relative">
         <OverflowGradient
           v-if="hasMounted"
+          class="tw-h-32"
           :scrollContainer="$refs.respondentsScrollView"
           :showArrow="false"
         />
