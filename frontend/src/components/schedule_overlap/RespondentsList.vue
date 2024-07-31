@@ -102,6 +102,7 @@
       "
     >
       <div
+        ref="respondentsScrollView"
         class="-tw-ml-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
         :class="
           isPhone && !maxHeight
@@ -189,6 +190,13 @@
           <div class="tw-h-2"></div>
         </template>
       </div>
+      <div class="tw-relative">
+        <OverflowGradient
+          v-if="hasMounted"
+          :scrollContainer="$refs.respondentsScrollView"
+        />
+      </div>
+
       <div
         v-if="!isPhone && respondents.length > 0"
         class="tw-col-span-full tw-mb-2 tw-mt-1 tw-text-sm tw-text-dark-gray"
@@ -335,11 +343,12 @@ import { _delete, getDateHoursOffset, getLocale, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
 import EventOptions from "./EventOptions.vue"
+import OverflowGradient from "@/components/OverflowGradient.vue"
 
 export default {
   name: "RespondentsList",
 
-  components: { UserAvatarContent, EventOptions },
+  components: { UserAvatarContent, EventOptions, OverflowGradient },
 
   props: {
     curDate: { type: Date, required: false }, // Date of the current timeslot
@@ -383,6 +392,8 @@ export default {
       userToDelete: null,
 
       desktopMaxHeight: 0,
+
+      hasMounted: false,
     }
   },
 
@@ -598,6 +609,10 @@ export default {
 
     addEventListener("resize", this.setDesktopMaxHeight)
     // addEventListener("scroll", this.setDesktopMaxHeight)
+
+    this.$nextTick(() => {
+      this.hasMounted = true
+    })
   },
 
   beforeDestroy() {
