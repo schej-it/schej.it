@@ -33,7 +33,10 @@
         </HelpDialog>
       </template>
     </v-card-title>
-    <v-card-text class="tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8">
+    <v-card-text
+      ref="cardText"
+      class="tw-relative tw-flex-1 tw-overflow-auto tw-px-4 tw-py-1 sm:tw-px-8"
+    >
       <AlertText v-if="edit && event?.ownerId == 0" class="tw-mb-4">
         Anybody can edit this event because it was created while not signed in
       </AlertText>
@@ -323,6 +326,12 @@
         </div>
       </div>
     </v-card-actions>
+
+    <OverflowGradient
+      v-if="hasMounted"
+      :scrollContainer="$refs.cardText"
+      class="tw-bottom-[90px]"
+    />
   </v-card>
 </template>
 
@@ -353,6 +362,7 @@ import EmailInput from "./event/EmailInput.vue"
 import DatePicker from "@/components/DatePicker.vue"
 import SlideToggle from "./SlideToggle.vue"
 import AlertText from "@/components/AlertText.vue"
+import OverflowGradient from "@/components/OverflowGradient.vue"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -383,6 +393,7 @@ export default {
     SlideToggle,
     ExpandableSection,
     AlertText,
+    OverflowGradient,
   },
 
   data: () => ({
@@ -424,6 +435,8 @@ export default {
 
     // Unsaved changes
     initialEventData: {},
+
+    hasMounted: false,
   }),
 
   mounted() {
@@ -443,6 +456,10 @@ export default {
 
       this.$refs.form.resetValidation()
     }
+
+    this.$nextTick(() => {
+      this.hasMounted = true
+    })
   },
 
   computed: {
