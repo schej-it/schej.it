@@ -8,6 +8,7 @@
     }"
   >
     <v-btn
+      v-if="showArrow"
       fab
       x-small
       class="tw-pointer-events-auto tw-transform"
@@ -25,6 +26,10 @@ export default {
     scrollContainer: {
       type: HTMLElement,
       required: true,
+    },
+    showArrow: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {

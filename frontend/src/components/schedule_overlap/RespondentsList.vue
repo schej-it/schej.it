@@ -194,6 +194,7 @@
         <OverflowGradient
           v-if="hasMounted"
           :scrollContainer="$refs.respondentsScrollView"
+          :showArrow="false"
         />
       </div>
 
