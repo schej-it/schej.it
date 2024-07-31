@@ -2376,9 +2376,16 @@ export default {
         } else if (this.defaultState === this.states.HEATMAP) {
           if (numRespondents > 0) {
             if (totalRespondents === 1) {
-              // Make single responses less saturated
-              const green = "#00994CAA"
-              s.backgroundColor = green
+              if (
+                this.parsedResponses[this.respondents[0]._id]?.ifNeeded?.has(
+                  date.getTime()
+                )
+              ) {
+                c += "tw-bg-yellow "
+              } else {
+                const green = "#00994CAA"
+                s.backgroundColor = green
+              }
             } else {
               // Determine color of timeslot based on number of people available
               const frac = numRespondents / max
