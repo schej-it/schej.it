@@ -356,7 +356,7 @@
                   "
                 >
                   <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
-                    Note: There's no time where all
+                    Note: There's no time when all
                     {{ respondents.length }} respondents are available.
                   </div>
                 </div>
