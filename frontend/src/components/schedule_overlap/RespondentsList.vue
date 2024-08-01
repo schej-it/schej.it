@@ -192,7 +192,7 @@
       </div>
       <div class="tw-relative">
         <OverflowGradient
-          v-if="hasMounted"
+          v-if="hasMounted && !isPhone"
           class="tw-h-32"
           :scrollContainer="$refs.respondentsScrollView"
           :showArrow="false"
