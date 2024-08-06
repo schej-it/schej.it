@@ -481,7 +481,10 @@ export default {
         c.push("tw-text-gray")
       }
 
-      if (this.respondentIfNeeded(id)) {
+      if (
+        (this.curRespondentsSet.has(id) || this.curRespondents.length === 0) &&
+        this.respondentIfNeeded(id)
+      ) {
         c.push("tw-bg-yellow")
       }
 
