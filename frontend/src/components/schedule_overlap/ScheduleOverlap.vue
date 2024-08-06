@@ -2359,7 +2359,10 @@ export default {
           }
         }
 
-        const totalRespondents = this.respondents.length
+        const totalRespondents =
+          this.state === this.states.SUBSET_AVAILABILITY
+            ? this.curRespondents.length
+            : this.respondents.length
 
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
@@ -2376,8 +2379,12 @@ export default {
         } else if (this.defaultState === this.states.HEATMAP) {
           if (numRespondents > 0) {
             if (totalRespondents === 1) {
+              const respondentId =
+                this.state === this.states.SUBSET_AVAILABILITY
+                  ? this.curRespondents[0]
+                  : this.respondents[0]._id
               if (
-                this.parsedResponses[this.respondents[0]._id]?.ifNeeded?.has(
+                this.parsedResponses[respondentId]?.ifNeeded?.has(
                   date.getTime()
                 )
               ) {
