@@ -356,7 +356,7 @@
                   "
                 >
                   <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
-                    Note: There's no time where all
+                    Note: There's no time when all
                     {{ respondents.length }} respondents are available.
                   </div>
                 </div>
@@ -2359,7 +2359,10 @@ export default {
           }
         }
 
-        const totalRespondents = this.respondents.length
+        const totalRespondents =
+          this.state === this.states.SUBSET_AVAILABILITY
+            ? this.curRespondents.length
+            : this.respondents.length
 
         if (this.defaultState === this.states.BEST_TIMES) {
           if (max > 0 && numRespondents === max) {
@@ -2376,9 +2379,20 @@ export default {
         } else if (this.defaultState === this.states.HEATMAP) {
           if (numRespondents > 0) {
             if (totalRespondents === 1) {
-              // Make single responses less saturated
-              const green = "#00994CAA"
-              s.backgroundColor = green
+              const respondentId =
+                this.state === this.states.SUBSET_AVAILABILITY
+                  ? this.curRespondents[0]
+                  : this.respondents[0]._id
+              if (
+                this.parsedResponses[respondentId]?.ifNeeded?.has(
+                  date.getTime()
+                )
+              ) {
+                c += "tw-bg-yellow "
+              } else {
+                const green = "#00994CAA"
+                s.backgroundColor = green
+              }
             } else {
               // Determine color of timeslot based on number of people available
               const frac = numRespondents / max
