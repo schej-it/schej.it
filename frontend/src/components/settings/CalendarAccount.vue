@@ -62,7 +62,12 @@
           account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
         } ${account.email == authUser.email || toggleState ? 'tw-hidden' : ''}`"
         class="group-hover:tw-opacity-100"
-        @click="() => openRemoveDialog(account.email)"
+        @click="
+          $emit('openRemoveDialog', {
+            email: account.email,
+            calendarType: account.calendarType,
+          })
+        "
         ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
       >
     </div>
@@ -96,8 +101,14 @@
 
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
-import { authTypes } from "@/constants"
-import { get, post, _delete, signInGoogle } from "@/utils"
+import { authTypes, calendarTypes } from "@/constants"
+import {
+  get,
+  post,
+  _delete,
+  signInGoogle,
+  getCalendarAccountKey,
+} from "@/utils"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 
 export default {
@@ -107,7 +118,6 @@ export default {
     toggleState: { type: Boolean, default: false },
     account: { type: Object, default: () => {} },
     eventId: { type: String, default: "" },
-    openRemoveDialog: { type: Function },
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
     removeDialog: { type: Boolean, default: false },
     selectedRemoveEmail: { type: String, default: "" },
@@ -133,7 +143,9 @@ export default {
     accountHasError() {
       return (
         this.calendarEventsMapCopy &&
-        this.calendarEventsMapCopy[this.account.email]?.error
+        this.calendarEventsMapCopy[
+          getCalendarAccountKey(this.account.email, this.account.calendarType)
+        ]?.error
       )
     },
     /** don't show account if in toggle state and account has an error */
@@ -147,6 +159,7 @@ export default {
             ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
             : authTypes.ADD_CALENDAR_ACCOUNT,
           eventId: this.eventId,
+          calendarType: calendarTypes.GOOGLE,
         },
         requestCalendarPermission: true,
         selectAccount: true,
@@ -159,6 +172,7 @@ export default {
             ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
             : authTypes.ADD_CALENDAR_ACCOUNT,
           eventId: this.eventId,
+          calendarType: calendarTypes.GOOGLE,
         },
         requestCalendarPermission: true,
         selectAccount: false,
@@ -169,6 +183,7 @@ export default {
       if (this.syncWithBackend) {
         post(`/user/toggle-sub-calendar`, {
           email: this.account.email,
+          calendarType: this.account.calendarType,
           enabled,
           subCalendarId,
         }).catch((err) => {
@@ -190,6 +205,7 @@ export default {
       if (this.syncWithBackend) {
         post(`/user/toggle-calendar`, {
           email: this.account.email,
+          calendarType: this.account.calendarType,
           enabled,
         }).catch((err) => {
           this.showError(

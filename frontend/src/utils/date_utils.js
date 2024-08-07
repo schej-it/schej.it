@@ -527,3 +527,7 @@ export const processCalendarEvents = (
 
   return calendarEventsByDay
 }
+
+export const getCalendarAccountKey = (email, calendarType) => {
+  return `${email}_${calendarType}`
+}

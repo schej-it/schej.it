@@ -580,8 +580,6 @@ func updateEventResponse(c *gin.Context) {
 				response.ManualAvailability = &manualAvailability
 			}
 
-			fmt.Println(payload.ManualAvailability)
-
 			// Replace availability on days that already exist in manual availability map
 			for day := range utils.Coalesce(response.ManualAvailability) {
 				for payloadDay, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
@@ -947,8 +945,8 @@ func getCalendarAvailabilities(c *gin.Context) {
 
 				// Construct enabled accounts set
 				enabledAccounts := make([]string, 0)
-				for email := range utils.Coalesce(response.EnabledCalendars) {
-					enabledAccounts = append(enabledAccounts, email)
+				for calendarAccountKey := range utils.Coalesce(response.EnabledCalendars) {
+					enabledAccounts = append(enabledAccounts, calendarAccountKey)
 				}
 
 				// Fetch calendar events

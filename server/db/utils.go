@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"schej.it/server/logger"
 	"schej.it/server/models"
-	"schej.it/server/services/auth"
 	"schej.it/server/utils"
 )
 
@@ -143,52 +142,6 @@ func DeleteFriendRequestById(friendRequestId string) {
 	})
 	if err != nil {
 		logger.StdErr.Panicln(err)
-	}
-}
-
-// If access token has expired, get a new token for the primary account as well as all other calendar accounts, update the user object, and save it to the database
-// `accounts` specifies for which accounts to refresh access tokens. If `accounts` is nil or empty, then update tokens for all accounts
-func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
-	refreshTokenChan := make(chan auth.RefreshAccessTokenData)
-	numAccountsToUpdate := 0
-
-	// If `accounts` is nil, then update tokens for all accounts
-	updateAllAccounts := len(accounts) == 0
-
-	// Refresh calendar account access tokens if necessary
-	for _, account := range u.CalendarAccounts {
-		if _, ok := accounts[account.Email]; ok || updateAllAccounts {
-			if time.Now().After(account.AccessTokenExpireDate.Time()) && len(account.RefreshToken) > 0 {
-				go auth.RefreshAccessTokenAsync(account.RefreshToken, account.Email, refreshTokenChan)
-				numAccountsToUpdate++
-			}
-		}
-	}
-
-	// Update access tokens as responses are received
-	for i := 0; i < numAccountsToUpdate; i++ {
-		res := <-refreshTokenChan
-
-		if res.Error != nil {
-			continue
-		}
-
-		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
-
-		if calendarAccount, ok := u.CalendarAccounts[res.Email]; ok {
-			calendarAccount.AccessToken = res.TokenResponse.AccessToken
-			calendarAccount.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
-			u.CalendarAccounts[res.Email] = calendarAccount
-		}
-	}
-
-	// Update user object if accounts were updated
-	if numAccountsToUpdate > 0 {
-		UsersCollection.FindOneAndUpdate(
-			context.Background(),
-			bson.M{"_id": u.Id},
-			bson.M{"$set": u},
-		)
 	}
 }
 

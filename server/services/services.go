@@ -7,14 +7,15 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/models"
+	"schej.it/server/services/auth"
+	"schej.it/server/utils"
 )
 
 // Calls the given url with the given method using the user's google api access token
 func CallGoogleApi(user *models.User, method string, url string, body *bson.M) *http.Response {
-	db.RefreshUserTokenIfNecessary(user, nil)
+	auth.RefreshUserTokenIfNecessary(user, nil)
 
 	// Format body as a buffer if not nil
 	var bodyBuffer *bytes.Buffer
@@ -32,7 +33,8 @@ func CallGoogleApi(user *models.User, method string, url string, body *bson.M) *
 	} else {
 		req, _ = http.NewRequest(method, url, nil)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.CalendarAccounts[user.Email].AccessToken))
+	calendarAccountKey := utils.GetCalendarAccountKey(user.Email, models.GoogleCalendarType)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.CalendarAccounts[calendarAccountKey].GoogleCalendarAuth.AccessToken))
 
 	// Execute request
 	response, err := http.DefaultClient.Do(req)
