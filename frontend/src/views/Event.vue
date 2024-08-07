@@ -698,9 +698,16 @@ export default {
       const curWeekOffset = this.weekOffset
       return getCalendarEventsMap(this.event, { weekOffset: curWeekOffset })
         .then((eventsMap) => {
-          // Check if the primary calendar has an error
-          // We don't care if other calendars have an error, because if they do we just dont show them
-          if (eventsMap[this.authUser.email + "_google"].error) {
+          // If all calendars have error, then set calendarPermissionGranted to false
+          // TODO: What happens if user signed in without enabling calendar??
+          let noError = false
+          for (const key in eventsMap) {
+            if (!eventsMap[key].error) {
+              noError = true
+              break
+            }
+          }
+          if (!noError) {
             this.calendarPermissionGranted = false
             return
           }

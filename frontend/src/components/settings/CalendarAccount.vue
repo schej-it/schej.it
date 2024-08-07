@@ -102,7 +102,13 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
-import { get, post, _delete, signInGoogle } from "@/utils"
+import {
+  get,
+  post,
+  _delete,
+  signInGoogle,
+  getCalendarAccountKey,
+} from "@/utils"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 
 export default {
@@ -137,7 +143,9 @@ export default {
     accountHasError() {
       return (
         this.calendarEventsMapCopy &&
-        this.calendarEventsMapCopy[this.account.email]?.error
+        this.calendarEventsMapCopy[
+          getCalendarAccountKey(this.account.email, this.account.calendarType)
+        ]?.error
       )
     },
     /** don't show account if in toggle state and account has an error */
