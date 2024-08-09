@@ -22,7 +22,8 @@ type GoogleCalendarAuth struct {
 
 // AppleCalendarAuth contains necessary auth info for the user's apple calendar account
 type AppleCalendarAuth struct {
-	Password string `json:"-" bson:"password"`
+	Email    string `json:"-" bson:"email,omitempty"`
+	Password string `json:"-" bson:"password,omitempty"`
 }
 
 // OutlookCalendarAuth contains necessary auth info for the user's outlook calendar account

@@ -283,6 +283,7 @@ func addAppleCalendarAccount(c *gin.Context) {
 	}
 
 	auth := &models.AppleCalendarAuth{
+		Email:    payload.Email,
 		Password: payload.Password,
 	}
 
