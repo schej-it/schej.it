@@ -460,12 +460,29 @@
               "
             ></CalendarAccounts>
 
+            <div v-if="showOverlayAvailabilityToggle">
+              <v-switch
+                id="overlay-availabilities-toggle"
+                inset
+                :input-value="overlayAvailability"
+                @change="updateOverlayAvailability"
+                hide-details
+              >
+                <template v-slot:label>
+                  <div class="tw-text-sm tw-text-black">
+                    Overlay availabilities
+                  </div>
+                </template>
+              </v-switch>
+
+              <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
+                View everyone's availability while inputting your own
+              </div>
+            </div>
+
             <!-- Options section -->
             <div
-              v-if="
-                !event.daysOnly &&
-                (showOverlayAvailabilityToggle || showCalendarOptions)
-              "
+              v-if="!event.daysOnly && showCalendarOptions"
               ref="optionsSection"
             >
               <ExpandableSection
@@ -474,26 +491,6 @@
                 @input="toggleShowEditOptions"
               >
                 <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2.5">
-                  <div v-if="showOverlayAvailabilityToggle">
-                    <v-switch
-                      id="overlay-availabilities-toggle"
-                      inset
-                      :input-value="overlayAvailability"
-                      @change="updateOverlayAvailability"
-                      hide-details
-                    >
-                      <template v-slot:label>
-                        <div class="tw-text-sm tw-text-black">
-                          Overlay availabilities
-                        </div>
-                      </template>
-                    </v-switch>
-
-                    <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
-                      View everyone's availability while inputting your own
-                    </div>
-                  </div>
-
                   <v-dialog
                     v-if="showCalendarOptions"
                     v-model="calendarOptionsDialog"
