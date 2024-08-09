@@ -6,8 +6,7 @@ definitions:
           $ref: '#/definitions/models.CalendarEvent'
         type: array
       error:
-        $ref: '#/definitions/errs.GoogleAPIError'
-        type: object
+        type: error
     type: object
   commands.Response:
     properties:
@@ -19,18 +18,7 @@ definitions:
       text:
         type: string
     type: object
-  errs.GoogleAPIError:
-    properties:
-      code:
-        type: integer
-      details:
-        type: object
-      errors:
-        type: object
-      message:
-        type: string
-      status:
-        type: string
+  models.AppleCalendarAuth:
     type: object
   models.Attendee:
     properties:
@@ -48,10 +36,22 @@ definitions:
     type: object
   models.CalendarAccount:
     properties:
+      appleCalendarAuth:
+        $ref: '#/definitions/models.AppleCalendarAuth'
+        type: object
+      calendarType:
+        type: string
       email:
+        description: Email is required for all calendar accounts
         type: string
       enabled:
         type: boolean
+      googleCalendarAuth:
+        $ref: '#/definitions/models.GoogleCalendarAuth'
+        type: object
+      outlookCalendarAuth:
+        $ref: '#/definitions/models.OutlookCalendarAuth'
+        type: object
       picture:
         type: string
       subCalendars:
@@ -84,6 +84,8 @@ definitions:
         $ref: '#/definitions/models.WorkingHoursOptions'
         type: object
     type: object
+  models.CalendarType:
+    type: string
   models.Event:
     properties:
       _id:
@@ -98,6 +100,8 @@ definitions:
         type: boolean
       calendarEventId:
         type: string
+      collectEmails:
+        type: boolean
       dates:
         type: string
       daysOnly:
@@ -136,6 +140,8 @@ definitions:
     type: object
   models.EventType:
     type: string
+  models.GoogleCalendarAuth:
+    type: object
   models.Location:
     properties:
       city:
@@ -153,6 +159,8 @@ definitions:
       state:
         type: string
     type: object
+  models.OutlookCalendarAuth:
+    type: object
   models.Remindee:
     properties:
       email:
@@ -163,10 +171,13 @@ definitions:
   models.Response:
     properties:
       availability:
+        description: Availability
         type: string
       calendarOptions:
         $ref: '#/definitions/models.CalendarOptions'
         type: object
+      email:
+        type: string
       enabledCalendars:
         additionalProperties:
           items:
@@ -185,6 +196,7 @@ definitions:
           that day
         type: object
       name:
+        description: Guest information
         type: string
       useCalendarAvailability:
         description: Calendar availability variables for Availability Groups feature
@@ -193,6 +205,7 @@ definitions:
         $ref: '#/definitions/models.User'
         type: object
       userId:
+        description: User information
         type: string
     type: object
   models.SubCalendar:
@@ -211,7 +224,7 @@ definitions:
         additionalProperties:
           $ref: '#/definitions/models.CalendarAccount'
         description: |-
-          CalendarAccounts is a mapping from {email => CalendarAccount} that contains all the
+          CalendarAccounts is a mapping from {`email_CALENDARTYPE` => CalendarAccount} that contains all the
           additional accounts the user wants to see google calendar events for
         type: object
       calendarOptions:
@@ -249,7 +262,7 @@ definitions:
     required:
     - error
     type: object
-host: localhost:3002
+host: localhost:3002/api
 info:
   contact: {}
   description: This is the API for Schej.it!
@@ -754,7 +767,32 @@ paths:
       summary: Deletes the currently signed in user
       tags:
       - user
-  /user/add-calendar-account:
+  /user/add-apple-calendar-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the email and app password of the apple account
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+              password:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Adds an apple calendar account
+      tags:
+      - user
+  /user/add-google-calendar-account:
     post:
       consumes:
       - application/json
@@ -898,7 +936,8 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Object containing the email of the calendar account to remove
+      - description: Object containing the email + type of the calendar account to
+          remove
         in: body
         name: payload
         required: true
@@ -906,6 +945,8 @@ paths:
           allOf:
           - type: object
           - properties:
+              calendarType:
+                $ref: '#/definitions/models.CalendarType'
               email:
                 type: string
             type: object
@@ -949,7 +990,7 @@ paths:
           allOf:
           - type: object
           - properties:
-              email:
+              calendarAccountKey:
                 type: string
               enabled:
                 type: boolean
@@ -976,7 +1017,7 @@ paths:
           allOf:
           - type: object
           - properties:
-              email:
+              calendarAccountKey:
                 type: string
               enabled:
                 type: boolean
