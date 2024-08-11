@@ -282,9 +282,14 @@ func addAppleCalendarAccount(c *gin.Context) {
 		return
 	}
 
+	encryptedPassword, err := utils.Encrypt(payload.Password)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
 	auth := &models.AppleCalendarAuth{
 		Email:    payload.Email,
-		Password: payload.Password,
+		Password: encryptedPassword,
 	}
 
 	addCalendarAccount(c, addCalendarAccountArgs{
