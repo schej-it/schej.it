@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showAccount()" class="tw-flex tw-flex-col">
+  <div v-if="showAccount" class="tw-flex tw-flex-col">
     <div
       class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
     >
@@ -38,7 +38,7 @@
         >
           {{ account.email }}
         </div>
-        <v-tooltip top v-if="accountHasError()">
+        <v-tooltip top v-if="accountHasError">
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               icon
@@ -60,7 +60,7 @@
         icon
         :class="`tw-opacity-${
           account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
-        } ${account.email == authUser.email || toggleState ? 'tw-hidden' : ''}`"
+        } ${!allowDelete ? 'tw-hidden' : ''}`"
         class="group-hover:tw-opacity-100"
         @click="
           $emit('openRemoveDialog', {
@@ -131,27 +131,30 @@ export default {
 
   data: () => ({
     showSubCalendars: false,
-    calendarEventsMapCopy: null,
   }),
 
   computed: {
     ...mapState(["authUser"]),
+    allowDelete() {
+      return !(
+        (this.account.calendarType == calendarTypes.GOOGLE &&
+          this.account.email == this.authUser.email) ||
+        this.toggleState
+      )
+    },
+    accountHasError() {
+      return this.calendarEventsMap?.[
+        getCalendarAccountKey(this.account.email, this.account.calendarType)
+      ]?.error
+    },
+    /** don't show account if in toggle state and account has an error */
+    showAccount() {
+      return !(this.toggleState && this.accountHasError)
+    },
   },
 
   methods: {
     ...mapActions(["showError"]),
-    accountHasError() {
-      return (
-        this.calendarEventsMapCopy &&
-        this.calendarEventsMapCopy[
-          getCalendarAccountKey(this.account.email, this.account.calendarType)
-        ]?.error
-      )
-    },
-    /** don't show account if in toggle state and account has an error */
-    showAccount() {
-      return !(this.toggleState && this.accountHasError(this.account))
-    },
     addCalendarAccount() {
       signInGoogle({
         state: {
@@ -219,28 +222,6 @@ export default {
         })
       }
     },
-  },
-
-  watch: {
-    calendarEventsMapCopy: {
-      immediate: true,
-      async handler() {
-        // Do a test request to calendarevents route to check if calendar access is allowed for each account
-        if (!this.calendarEventsMapCopy) {
-          try {
-            this.calendarEventsMapCopy = await get(
-              `/user/calendars?timeMin=${new Date().toISOString()}&timeMax=${new Date().toISOString()}`
-            )
-          } catch (err) {
-            console.error(err)
-          }
-        }
-      },
-    },
-  },
-
-  created() {
-    this.calendarEventsMapCopy = this.calendarEventsMap
   },
 }
 </script>

@@ -25,13 +25,13 @@
       <span v-if="showCalendars">
         <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'">
           <CalendarAccount
-            v-for="account in calendarAccounts"
-            :key="account.email"
+            v-for="(account, key) in calendarAccounts"
+            :key="key"
             :syncWithBackend="syncWithBackend"
             :toggleState="toggleState"
             :account="account"
             :eventId="eventId"
-            :calendarEventsMap="calendarEventsMap"
+            :calendarEventsMap="calendarEventsMapCopy"
             :removeDialog="removeDialog"
             :selectedRemoveEmail="removePayload.email"
             :fillSpace="fillSpace"
@@ -100,6 +100,8 @@ export default {
       localStorage["showCalendars"] == undefined
         ? true
         : localStorage["showCalendars"] == "true",
+
+    calendarEventsMapCopy: {},
   }),
 
   computed: {
@@ -160,6 +162,31 @@ export default {
 
   components: {
     CalendarAccount,
+  },
+
+  watch: {
+    calendarEventsMap: {
+      immediate: true,
+      async handler() {
+        // Do a test request to calendarevents route to check if calendar access is allowed for each account
+        if (
+          !this.calendarEventsMap ||
+          Object.keys(this.calendarEventsMap).length === 0
+        ) {
+          const timeMin = new Date()
+          const timeMax = new Date()
+          try {
+            this.calendarEventsMapCopy = await get(
+              `/user/calendars?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
+            )
+          } catch (err) {
+            console.error(err)
+          }
+        } else {
+          this.calendarEventsMapCopy = this.calendarEventsMap
+        }
+      },
+    },
   },
 }
 </script>

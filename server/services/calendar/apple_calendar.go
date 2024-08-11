@@ -87,7 +87,7 @@ func (calendar *AppleCalendar) GetCalendarEvents(calendarId string, timeMin time
 		},
 	})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var filteredEvents []models.CalendarEvent
