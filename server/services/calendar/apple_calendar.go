@@ -122,7 +122,6 @@ func (calendar *AppleCalendar) GetCalendarEvents(calendarId string, timeMin time
 
 func (calendar *AppleCalendar) getClients() (*webdav.Client, *caldav.Client, error) {
 	decryptedPassword, err := utils.Decrypt(calendar.Password)
-	fmt.Println("decryptedPassword", decryptedPassword)
 	if err != nil {
 		return nil, nil, err
 	}

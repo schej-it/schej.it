@@ -44,16 +44,26 @@
             @openRemoveDialog="openRemoveDialog"
           ></CalendarAccount>
         </div>
-        <v-btn
+        <v-dialog
           v-if="allowAddCalendarAccount"
-          text
-          color="primary"
-          :class="
-            toggleState ? '-tw-ml-2 tw-mt-0 tw-w-min tw-px-2' : 'tw-w-full'
-          "
-          @click="addCalendarAccount"
-          >+ Add calendar</v-btn
+          v-model="addCalendarAccountDialog"
+          width="400"
+          content-class="tw-m-0"
         >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              text
+              color="primary"
+              :class="
+                toggleState ? '-tw-ml-2 tw-mt-0 tw-w-min tw-px-2' : 'tw-w-full'
+              "
+              v-bind="attrs"
+              v-on="on"
+              >+ Add calendar</v-btn
+            >
+          </template>
+          <CalendarTypeSelector />
+        </v-dialog>
       </span>
     </v-expand-transition>
     <v-dialog v-model="removeDialog" width="500" persistent>
@@ -78,6 +88,7 @@ import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
 import { get, _delete, signInGoogle, getCalendarAccountKey } from "@/utils"
 import CalendarAccount from "@/components/settings/CalendarAccount.vue"
+import CalendarTypeSelector from "@/components/settings/CalendarTypeSelector.vue"
 
 export default {
   name: "CalendarAccounts",
@@ -95,6 +106,9 @@ export default {
   data: () => ({
     removeDialog: false,
     removePayload: {},
+
+    addCalendarAccountDialog: false,
+
     calendarAccounts: {},
     showCalendars:
       localStorage["showCalendars"] == undefined
@@ -162,6 +176,7 @@ export default {
 
   components: {
     CalendarAccount,
+    CalendarTypeSelector,
   },
 
   watch: {
