@@ -204,7 +204,7 @@ func createEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to update"
+// @Param payload body object{name=string,description=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
@@ -214,6 +214,9 @@ func editEvent(c *gin.Context) {
 		Duration *float32             `json:"duration" binding:"required"`
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
+
+		// For both events and groups
+		Description *string `json:"description"`
 
 		// Only for events (not groups)
 		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
@@ -258,6 +261,7 @@ func editEvent(c *gin.Context) {
 
 	// Update event
 	event.Name = payload.Name
+	event.Description = payload.Description
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
 	event.NotificationsEnabled = payload.NotificationsEnabled

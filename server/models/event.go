@@ -14,10 +14,11 @@ const (
 
 // Representation of an Event in the mongoDB database
 type Event struct {
-	Id      primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	ShortId *string            `json:"shortId" bson:"shortId,omitempty"`
-	OwnerId primitive.ObjectID `json:"ownerId" bson:"ownerId,omitempty"`
-	Name    string             `json:"name" bson:"name,omitempty"`
+	Id          primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
+	ShortId     *string            `json:"shortId" bson:"shortId,omitempty"`
+	OwnerId     primitive.ObjectID `json:"ownerId" bson:"ownerId,omitempty"`
+	Name        string             `json:"name" bson:"name,omitempty"`
+	Description *string            `json:"description" bson:"description,omitempty"`
 
 	Duration                 *float32             `json:"duration" bson:"duration,omitempty"`
 	Dates                    []primitive.DateTime `json:"dates" bson:"dates,omitempty"`
