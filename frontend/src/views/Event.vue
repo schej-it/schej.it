@@ -221,77 +221,7 @@
         </div>
 
         <!-- Description -->
-        <div
-          class="tw-mt-1 tw-max-w-full sm:tw-mt-2 sm:tw-max-w-[calc(100%-236px)]"
-        >
-          <div
-            v-if="event.description && !editingDescription"
-            class="tw-flex tw-items-center tw-gap-2 tw-rounded tw-border tw-border-gray tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray sm:tw-text-sm"
-          >
-            <div class="tw-grow tw-truncate">
-              {{ event.description }}
-            </div>
-            <v-btn
-              v-if="canEdit"
-              key="edit-description-btn"
-              class="-tw-my-1"
-              icon
-              small
-              @click="editingDescription = true"
-            >
-              <v-icon small>mdi-pencil</v-icon>
-            </v-btn>
-          </div>
-          <template v-else-if="canEdit">
-            <v-btn
-              v-if="!editingDescription"
-              text
-              class="-tw-ml-2 tw-mt-0 tw-w-min tw-px-2 tw-text-dark-gray"
-              @click="editingDescription = true"
-            >
-              + Add description
-            </v-btn>
-            <div v-else class="tw-flex tw-w-full tw-items-center tw-gap-2">
-              <v-textarea
-                v-model="newDescription"
-                placeholder="Enter a description..."
-                class="-tw-mt-2 tw-flex-grow tw-text-xs sm:tw-text-sm"
-                autofocus
-                :rows="1"
-                auto-grow
-                hide-details
-              ></v-textarea>
-              <template v-if="isPhone">
-                <v-btn
-                  icon
-                  small
-                  @click="
-                    newDescription = event.description
-                    editingDescription = false
-                  "
-                >
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-                <v-btn icon small color="primary" @click="saveDescription"
-                  ><v-icon>mdi-check</v-icon></v-btn
-                >
-              </template>
-              <template v-else>
-                <v-btn
-                  text
-                  @click="
-                    newDescription = event.description
-                    editingDescription = false
-                  "
-                  >Cancel</v-btn
-                >
-                <v-btn color="primary" text @click="saveDescription"
-                  >Save</v-btn
-                >
-              </template>
-            </div>
-          </template>
-        </div>
+        <EventDescription :event.sync="event" :canEdit="canEdit" />
       </div>
 
       <!-- Calendar -->
@@ -413,7 +343,6 @@
 <script>
 import {
   get,
-  put,
   signInGoogle,
   isPhone,
   processEvent,
@@ -432,6 +361,7 @@ import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import HelpDialog from "@/components/HelpDialog.vue"
+import EventDescription from "@/components/event/EventDescription.vue"
 
 export default {
   name: "Event",
@@ -451,6 +381,7 @@ export default {
     MarkAvailabilityDialog,
     InvitationDialog,
     HelpDialog,
+    EventDescription,
   },
 
   data: () => ({
@@ -461,9 +392,6 @@ export default {
     invitationDialog: false,
     pagesNotVisitedDialog: false,
     helpDialog: false,
-
-    editingDescription: false,
-    newDescription: "",
 
     loading: true,
     calendarEventsMap: {},
@@ -841,17 +769,6 @@ export default {
       this.weekOffset = 0
     },
 
-    saveDescription() {
-      const oldDescription = this.event.description
-      this.event.description = this.newDescription
-      this.editingDescription = false
-      put(`/events/${this.event._id}`, this.event).catch((err) => {
-        console.error(err)
-        this.showError("Failed to save description! Please try again later.")
-        this.event.description = oldDescription
-      })
-    },
-
     onBeforeUnload(e) {
       if (this.areUnsavedChanges) {
         e.preventDefault()
@@ -926,7 +843,6 @@ export default {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
         document.title = `${this.event.name} - Schej`
-        this.newDescription = this.event.description ?? ""
       }
     },
     scheduleOverlapComponent() {
