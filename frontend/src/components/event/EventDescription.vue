@@ -69,6 +69,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import { isPhone, put } from "@/utils"
 
 export default {
@@ -100,6 +101,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(["showError"]),
     saveDescription() {
       const oldEvent = { ...this.event }
       const newEvent = {
