@@ -21,7 +21,7 @@
               block
             >
               <div class="-tw-mx-4 tw-text-sm">
-                Automatically with Google Calendar
+                Autofill with Google Calendar
               </div>
             </v-btn>
             <v-btn @click="setAvailabilityManually" block>Manually</v-btn>

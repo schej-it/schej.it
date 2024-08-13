@@ -120,9 +120,6 @@
                   class="tw-px-2 tw-text-sm tw-text-green"
                   text
                 >
-                  <v-icon v-if="!isPhone" class="tw-mr-1" small
-                    >mdi-pencil</v-icon
-                  >
                   Edit {{ isGroup ? "group" : "event" }}
                 </v-btn>
               </template>
@@ -219,6 +216,9 @@
             </div>
           </div>
         </div>
+
+        <!-- Description -->
+        <EventDescription :event.sync="event" :canEdit="canEdit" />
       </div>
 
       <!-- Calendar -->
@@ -358,6 +358,7 @@ import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import HelpDialog from "@/components/HelpDialog.vue"
+import EventDescription from "@/components/event/EventDescription.vue"
 
 export default {
   name: "Event",
@@ -377,6 +378,7 @@ export default {
     MarkAvailabilityDialog,
     InvitationDialog,
     HelpDialog,
+    EventDescription,
   },
 
   data: () => ({

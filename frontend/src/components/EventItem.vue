@@ -34,6 +34,7 @@
         </v-chip>
         <v-menu
           v-if="showOptions"
+          v-model="showMenu"
           ref="menu"
           :close-on-content-click="false"
           transition="slide-x-transition"
@@ -47,6 +48,11 @@
           </template>
 
           <v-list class="tw-py-1" dense>
+            <v-list-item @click="copyLink">
+              <v-list-item-content>
+                <v-list-item-title>Copy link</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
             <v-dialog
               v-if="!isGroup"
               v-model="duplicateDialog"
@@ -148,6 +154,7 @@ export default {
   },
 
   data: () => ({
+    showMenu: false,
     duplicateDialog: false,
     duplicateDialogOptions: {
       name: "",
@@ -181,6 +188,14 @@ export default {
 
   methods: {
     ...mapActions(["showError", "showInfo", "getEvents"]),
+    copyLink() {
+      /* Copies event link to clipboard */
+      navigator.clipboard.writeText(
+        `${window.location.origin}/e/${this.event.shortId ?? this.event._id}`
+      )
+      this.showInfo("Link copied to clipboard!")
+      this.showMenu = false
+    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
