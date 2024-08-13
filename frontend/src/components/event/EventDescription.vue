@@ -14,7 +14,7 @@
 
     <div
       v-if="event.description && !isEditing"
-      class="tw-inline-flex tw-max-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded tw-border tw-border-gray tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
+      class="tw-inline-flex tw-max-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded tw-border tw-border-light-gray-stroke tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
       @click="showFullDescription = true"
     >
       <div class="tw-grow tw-truncate">
@@ -50,32 +50,19 @@
           auto-grow
           hide-details
         ></v-textarea>
-        <template v-if="isPhone">
-          <v-btn
-            icon
-            small
-            @click="
-              newDescription = event.description
-              isEditing = false
-            "
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-          <v-btn icon small color="primary" @click="saveDescription"
-            ><v-icon>mdi-check</v-icon></v-btn
-          >
-        </template>
-        <template v-else>
-          <v-btn
-            text
-            @click="
-              newDescription = event.description
-              isEditing = false
-            "
-            >Cancel</v-btn
-          >
-          <v-btn color="primary" text @click="saveDescription">Save</v-btn>
-        </template>
+        <v-btn
+          icon
+          :small="isPhone"
+          @click="
+            newDescription = event.description
+            isEditing = false
+          "
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-btn icon :small="isPhone" color="primary" @click="saveDescription"
+          ><v-icon>mdi-check</v-icon></v-btn
+        >
       </div>
     </template>
   </div>

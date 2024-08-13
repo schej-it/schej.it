@@ -120,9 +120,6 @@
                   class="tw-px-2 tw-text-sm tw-text-green"
                   text
                 >
-                  <v-icon v-if="!isPhone" class="tw-mr-1" small
-                    >mdi-pencil</v-icon
-                  >
                   Edit {{ isGroup ? "group" : "event" }}
                 </v-btn>
               </template>
