@@ -12,18 +12,55 @@
             How would you like to add <br v-if="isPhone" />
             your availability?
           </div>
-          <div class="">
-            <v-btn
-              @click="showPermissions"
-              class="tw-mb-2"
-              color="primary"
-              dark
-              block
-            >
-              <div class="-tw-mx-4 tw-text-sm">
+          <div class="tw-flex tw-flex-col tw-gap-2">
+            <v-btn block @click="showPermissions" class="tw-bg-white">
+              <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
+                <v-img
+                  class="tw-flex-initial"
+                  width="20"
+                  height="20"
+                  src="@/assets/google_logo.svg"
+                />
+                <v-spacer />
                 Autofill with Google Calendar
+                <v-spacer />
               </div>
             </v-btn>
+            <v-btn block class="tw-bg-white">
+              <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
+                <v-img
+                  class="tw-flex-initial"
+                  width="20"
+                  height="20"
+                  src="@/assets/apple_logo.svg"
+                />
+                <v-spacer />
+                Autofill with Apple Calendar
+                <v-spacer />
+              </div>
+            </v-btn>
+            <v-btn block class="tw-bg-white">
+              <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
+                <v-img
+                  class="tw-flex-initial"
+                  width="20"
+                  height="20"
+                  src="@/assets/outlook_logo.svg"
+                />
+                <v-spacer />
+                Autofill with Outlook Calendar
+                <v-spacer />
+              </div>
+            </v-btn>
+            <div class="tw-flex tw-items-center tw-gap-3">
+              <v-divider />
+              <div
+                class="tw-text-center tw-text-xs tw-font-medium tw-text-dark-gray"
+              >
+                or
+              </div>
+              <v-divider />
+            </div>
             <v-btn @click="setAvailabilityManually" block>Manually</v-btn>
           </div>
         </div>
