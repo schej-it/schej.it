@@ -126,7 +126,7 @@
 import { mapState } from "vuex"
 import { isPhone, post, generateEnabledCalendarsPayload } from "@/utils"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
-import CalendarPermissionsCard from "@/components/CalendarPermissionsCard.vue"
+import CalendarPermissionsCard from "@/components/calendar_permission_dialogs/CalendarPermissionsCard.vue"
 import UserChip from "@/components/general/UserChip.vue"
 
 export default {

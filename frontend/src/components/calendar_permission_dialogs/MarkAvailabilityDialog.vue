@@ -13,7 +13,7 @@
             your availability?
           </div>
           <div class="tw-flex tw-flex-col tw-gap-2">
-            <v-btn block @click="showPermissions" class="tw-bg-white">
+            <v-btn block @click="autofillWithGcal" class="tw-bg-white">
               <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
                 <v-img
                   class="tw-flex-initial"
@@ -26,7 +26,7 @@
                 <v-spacer />
               </div>
             </v-btn>
-            <v-btn block class="tw-bg-white">
+            <v-btn block @click="autofillWithApple" class="tw-bg-white">
               <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
                 <v-img
                   class="tw-flex-initial"
@@ -39,7 +39,7 @@
                 <v-spacer />
               </div>
             </v-btn>
-            <v-btn block class="tw-bg-white">
+            <v-btn block @click="autofillWithOutlook" class="tw-bg-white">
               <div class="tw-flex tw-w-full tw-items-center tw-gap-2">
                 <v-img
                   class="tw-flex-initial"
@@ -67,10 +67,24 @@
       </v-expand-transition>
       <v-expand-transition>
         <CalendarPermissionsCard
-          v-show="state === states.PERMISSIONS"
+          v-show="state === states.GCAL_PERMISSIONS"
           cancelLabel="Back"
           @cancel="showChoices"
           @allow="setAvailabilityAutomatically"
+        />
+      </v-expand-transition>
+      <v-expand-transition>
+        <CreateAccount
+          v-if="state === states.CREATE_ACCOUNT_APPLE"
+          @back="state = states.CHOICES"
+          @continue="state = states.APPLE_CREDENTIALS"
+        />
+      </v-expand-transition>
+      <v-expand-transition>
+        <AppleCredentials
+          v-if="state === states.APPLE_CREDENTIALS"
+          @back="state = states.CHOICES"
+          @continue=""
         />
       </v-expand-transition>
     </v-card>
@@ -79,7 +93,10 @@
 
 <script>
 import { isPhone } from "@/utils"
-import CalendarPermissionsCard from "@/components/CalendarPermissionsCard"
+import { mapState } from "vuex"
+import CalendarPermissionsCard from "./CalendarPermissionsCard"
+import CreateAccount from "./CreateAccount"
+import AppleCredentials from "./AppleCredentials"
 
 export default {
   name: "MarkAvailabilityDialog",
@@ -90,19 +107,24 @@ export default {
 
   components: {
     CalendarPermissionsCard,
+    CreateAccount,
+    AppleCredentials,
   },
 
   data() {
     return {
       states: {
         CHOICES: "choices", // present user with choice of automatic or manual
-        PERMISSIONS: "permissions", // present to user the gcal permissions we request
+        GCAL_PERMISSIONS: "gcal_permissions", // present to user the gcal permissions we request
+        CREATE_ACCOUNT_APPLE: "create_account_apple", // present to user the create account dialog
+        APPLE_CREDENTIALS: "apple_credentials", // present to user the apple credentials dialog
       },
       state: "choices",
     }
   },
 
   computed: {
+    ...mapState(["authUser"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -115,9 +137,17 @@ export default {
     setAvailabilityManually() {
       this.$emit("setAvailabilityManually")
     },
-    showPermissions() {
-      this.state = this.states.PERMISSIONS
+    autofillWithGcal() {
+      this.state = this.states.GCAL_PERMISSIONS
     },
+    autofillWithApple() {
+      if (this.authUser) {
+        this.state = this.states.APPLE_CREDENTIALS
+      } else {
+        this.state = this.states.CREATE_ACCOUNT_APPLE
+      }
+    },
+    autofillWithOutlook() {},
     showChoices() {
       this.state = this.states.CHOICES
     },

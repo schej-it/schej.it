@@ -168,7 +168,7 @@ import {
 import { mapState, mapActions } from "vuex"
 import { eventTypes, dayIndexToDayString, authTypes } from "@/constants"
 import HelpDialog from "./HelpDialog.vue"
-import CalendarPermissionsCard from "./CalendarPermissionsCard.vue"
+import CalendarPermissionsCard from "./calendar_permission_dialogs/CalendarPermissionsCard.vue"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
 import EmailInput from "./event/EmailInput.vue"
 
