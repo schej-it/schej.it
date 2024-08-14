@@ -114,9 +114,9 @@ html {
   letter-spacing: unset !important;
   text-transform: unset !important;
 }
-
 .v-btn:not(.v-btn--round, .v-btn-toggle > .v-btn).v-size--default {
   height: 38px !important;
+  border-radius: theme("borderRadius.md") !important;
 }
 
 .v-btn.v-btn--is-elevated {
@@ -157,6 +157,7 @@ html {
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
     drop-shadow(0 1px 1px rgb(0 0 0 / 0.06)) !important;
   box-shadow: none !important;
+  border-radius: theme("borderRadius.md") !important;
 }
 .v-menu__content {
   box-shadow: 0px 5px 5px -1px rgba(0, 0, 0, 0.1),
