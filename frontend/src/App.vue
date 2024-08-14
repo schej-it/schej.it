@@ -154,10 +154,10 @@ html {
 .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
   > .v-input__control
   > .v-input__slot {
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
-    drop-shadow(0 1px 1px rgb(0 0 0 / 0.06)) !important;
-  box-shadow: none !important;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1)) !important;
+  box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.1) !important;
   border-radius: theme("borderRadius.md") !important;
+  border: 1px solid rgba(theme("colors.very-dark-gray"), 0.07) !important;
 }
 .v-menu__content {
   box-shadow: 0px 5px 5px -1px rgba(0, 0, 0, 0.1),
