@@ -2086,9 +2086,7 @@ export default {
                 this.availabilityAnimEnabled = false
 
                 if (this.showSnackbar) {
-                  this.showInfo(
-                    "Your availability has been set automatically using your Google Calendar!"
-                  )
+                  this.showInfo("Your availability has been autofilled!")
                 }
                 this.unsavedChanges = false
               }, 500)
