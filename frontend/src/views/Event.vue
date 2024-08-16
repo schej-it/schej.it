@@ -859,6 +859,9 @@ export default {
     weekOffset() {
       this.refreshCalendar()
     },
+    [`authUser.calendarAccounts`]() {
+      this.fetchAuthUserCalendarEvents()
+    },
   },
 }
 </script>
