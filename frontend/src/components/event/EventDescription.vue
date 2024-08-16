@@ -14,7 +14,7 @@
 
     <div
       v-if="event.description && !isEditing"
-      class="tw-inline-flex tw-max-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded tw-border tw-border-light-gray-stroke tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
+      class="tw-inline-flex tw-max-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-light-gray-stroke tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
       @click="showFullDescription = true"
     >
       <div class="tw-grow tw-truncate">

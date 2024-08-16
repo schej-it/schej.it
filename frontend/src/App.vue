@@ -114,9 +114,9 @@ html {
   letter-spacing: unset !important;
   text-transform: unset !important;
 }
-
 .v-btn:not(.v-btn--round, .v-btn-toggle > .v-btn).v-size--default {
   height: 38px !important;
+  border-radius: theme("borderRadius.md") !important;
 }
 
 .v-btn.v-btn--is-elevated {
@@ -136,9 +136,9 @@ html {
 .v-btn.v-btn--is-elevated.primary,
 .v-btn.v-btn--is-elevated.tw-bg-green,
 .v-btn.v-btn--is-elevated.tw-bg-white.tw-text-green {
-  -webkit-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
-  -moz-box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
-  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.25) !important;
+  -webkit-box-shadow: 0px 2px 8px 0px #00994c80 !important;
+  -moz-box-shadow: 0px 2px 8px 0px #00994c80 !important;
+  box-shadow: 0px 2px 8px 0px #00994c80 !important;
   border: 1px solid theme("colors.light-green") !important;
 }
 
@@ -161,9 +161,10 @@ html {
 .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat)
   > .v-input__control
   > .v-input__slot {
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1))
-    drop-shadow(0 1px 1px rgb(0 0 0 / 0.06)) !important;
-  box-shadow: none !important;
+  filter: drop-shadow(0 0.5px 2px rgba(0, 0, 0, 0.1)) !important;
+  box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.1) !important;
+  border-radius: theme("borderRadius.md") !important;
+  border: 1px solid #4f4f4f1f !important;
 }
 .v-menu__content {
   box-shadow: 0px 5px 5px -1px rgba(0, 0, 0, 0.1),

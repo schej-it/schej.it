@@ -12,7 +12,7 @@
       multiple
       color="primary"
       :show-current="false"
-      class="tw-min-w-full tw-border-0 tw-drop-shadow sm:tw-min-w-0"
+      class="tw-min-w-full tw-rounded-md tw-border-0 tw-drop-shadow sm:tw-min-w-0"
       :min="minCalendarDate"
       full-width
       :scrollable="false"
