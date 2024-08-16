@@ -46,6 +46,7 @@
       <div class="tw-flex tw-items-center tw-gap-2">
         <v-btn text class="tw-grow" @click="$emit('back')">Back</v-btn>
         <v-btn
+          :disabled="!enableSubmit"
           color="primary"
           class="tw-grow"
           :loading="loading"
@@ -60,6 +61,7 @@
 <script>
 import { post } from "@/utils"
 import { mapActions } from "vuex"
+import { errors } from "@/constants"
 
 export default {
   name: "AppleCredentials",
@@ -72,8 +74,14 @@ export default {
     }
   },
 
+  computed: {
+    enableSubmit() {
+      return this.email && this.password
+    },
+  },
+
   methods: {
-    ...mapActions(["refreshAuthUser"]),
+    ...mapActions(["showError", "refreshAuthUser"]),
     submit() {
       this.loading = true
       post(`/user/add-apple-calendar-account`, {
@@ -83,6 +91,15 @@ export default {
         .then(async () => {
           await this.refreshAuthUser()
           this.$emit("addedAppleCalendar")
+        })
+        .catch((err) => {
+          if (err.error === errors.InvalidCredentials) {
+            this.showError("Your Apple ID or app password is incorrect.")
+          } else {
+            this.showError(
+              "An error occurred while adding your Apple Calendar! Please try again later."
+            )
+          }
         })
         .finally(() => {
           this.loading = false

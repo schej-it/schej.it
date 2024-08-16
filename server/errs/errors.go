@@ -17,6 +17,7 @@ const (
 	RemindeeEmailNotFound string = "remindee-email-not-found"
 	AttendeeEmailNotFound string = "attendee-email-not-found"
 	EventNotGroup         string = "event-not-group"
+	InvalidCredentials    string = "invalid-credentials"
 )
 
 type GoogleAPIError struct {

@@ -8,6 +8,7 @@ export const errors = Object.freeze({
   NotSignedIn: "not-signed-in",
   UserDoesNotExist: "user-does-not-exist",
   EventNotFound: "event-not-found",
+  InvalidCredentials: "invalid-credentials",
 })
 
 // Auth types

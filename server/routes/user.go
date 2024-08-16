@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
+	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
@@ -290,6 +291,16 @@ func addAppleCalendarAccount(c *gin.Context) {
 	auth := &models.AppleCalendarAuth{
 		Email:    payload.Email,
 		Password: encryptedPassword,
+	}
+
+	// Check if the provided credentials are valid
+	calendarProvider := calendar.AppleCalendar{
+		AppleCalendarAuth: *auth,
+	}
+	_, err = calendarProvider.GetCalendarList()
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.InvalidCredentials})
+		return
 	}
 
 	addCalendarAccount(c, addCalendarAccountArgs{
