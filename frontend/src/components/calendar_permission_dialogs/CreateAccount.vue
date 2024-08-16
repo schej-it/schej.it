@@ -18,7 +18,10 @@
       <SignInGoogleBtn @click="" class="tw-mb-3 tw-w-full" />
       <div class="tw-text-center tw-text-xs tw-text-dark-gray">
         By continuing, you agree to our
-        <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
+        <router-link
+          class="tw-text-blue"
+          target="_blank"
+          :to="{ name: 'privacy-policy' }"
           >privacy policy</router-link
         >
       </div>

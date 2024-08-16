@@ -62,7 +62,11 @@
               >+ Add calendar</v-btn
             >
           </template>
-          <CalendarTypeSelector />
+          <CalendarTypeSelector
+            @addGoogleCalendar="addGoogleCalendar"
+            @addAppleCalendar="addAppleCalendar"
+            @addOutlookCalendar="addOutlookCalendar"
+          />
         </v-dialog>
       </span>
     </v-expand-transition>
@@ -86,7 +90,13 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
-import { get, _delete, signInGoogle, getCalendarAccountKey } from "@/utils"
+import {
+  get,
+  post,
+  _delete,
+  signInGoogle,
+  getCalendarAccountKey,
+} from "@/utils"
 import CalendarAccount from "@/components/settings/CalendarAccount.vue"
 import CalendarTypeSelector from "@/components/settings/CalendarTypeSelector.vue"
 
@@ -129,9 +139,9 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError"]),
+    ...mapActions(["showError", "showInfo", "refreshAuthUser"]),
     ...mapMutations(["setAuthUser"]),
-    addCalendarAccount() {
+    addGoogleCalendar() {
       signInGoogle({
         state: {
           type: this.toggleState
@@ -143,6 +153,19 @@ export default {
         requestCalendarPermission: true,
         selectAccount: true,
       })
+    },
+    addAppleCalendar(email, password) {
+      post(`/user/add-apple-calendar-account`, {
+        email,
+        password,
+      }).then(async () => {
+        this.addCalendarAccountDialog = false
+        await this.refreshAuthUser()
+        this.calendarAccounts = this.authUser.calendarAccounts
+      })
+    },
+    addOutlookCalendar() {
+      this.showInfo("Outlook calendar integration coming soon!")
     },
     openRemoveDialog(payload) {
       this.removeDialog = true

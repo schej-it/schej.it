@@ -60,6 +60,11 @@ export default new Vuex.Store({
       setTimeout(() => commit("setInfo", info), 0)
     },
 
+    async refreshAuthUser({ commit }) {
+      const authUser = await get("/user/profile")
+      commit("setAuthUser", authUser)
+    },
+
     // Events
     getEvents({ commit, dispatch }) {
       if (this.state.authUser) {
