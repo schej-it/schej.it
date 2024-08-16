@@ -165,7 +165,7 @@ export default {
       })
     },
     addOutlookCalendar() {
-      this.showInfo("Outlook calendar integration coming soon!")
+      this.showInfo("Outlook Calendar integration coming soon!")
     },
     openRemoveDialog(payload) {
       this.removeDialog = true

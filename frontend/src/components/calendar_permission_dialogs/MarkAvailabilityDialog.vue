@@ -93,7 +93,7 @@
 
 <script>
 import { isPhone } from "@/utils"
-import { mapState } from "vuex"
+import { mapActions, mapState } from "vuex"
 import CalendarPermissionsCard from "./CalendarPermissionsCard"
 import CreateAccount from "./CreateAccount"
 import AppleCredentials from "./AppleCredentials"
@@ -131,6 +131,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(["showInfo"]),
     setAvailabilityAutomatically() {
       this.$emit("setAvailabilityAutomatically")
     },
@@ -147,7 +148,9 @@ export default {
         this.state = this.states.CREATE_ACCOUNT_APPLE
       }
     },
-    autofillWithOutlook() {},
+    autofillWithOutlook() {
+      this.showInfo("Outlook Calendar integration coming soon!")
+    },
     showChoices() {
       this.state = this.states.CHOICES
     },
