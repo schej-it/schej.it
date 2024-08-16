@@ -64,7 +64,7 @@
           </template>
           <CalendarTypeSelector
             @addGoogleCalendar="addGoogleCalendar"
-            @addAppleCalendar="addAppleCalendar"
+            @addedAppleCalendar="addedAppleCalendar"
             @addOutlookCalendar="addOutlookCalendar"
           />
         </v-dialog>
@@ -154,15 +154,9 @@ export default {
         selectAccount: true,
       })
     },
-    addAppleCalendar(email, password) {
-      post(`/user/add-apple-calendar-account`, {
-        email,
-        password,
-      }).then(async () => {
-        this.addCalendarAccountDialog = false
-        await this.refreshAuthUser()
-        this.calendarAccounts = this.authUser.calendarAccounts
-      })
+    addedAppleCalendar() {
+      this.addCalendarAccountDialog = false
+      this.calendarAccounts = this.authUser.calendarAccounts
     },
     addOutlookCalendar() {
       this.showInfo("Outlook Calendar integration coming soon!")

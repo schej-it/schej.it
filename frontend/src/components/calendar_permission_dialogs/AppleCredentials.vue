@@ -48,7 +48,8 @@
         <v-btn
           color="primary"
           class="tw-grow"
-          @click="$emit('continue', email, password)"
+          :loading="loading"
+          @click="submit"
           >Submit</v-btn
         >
       </div>
@@ -57,6 +58,9 @@
 </template>
 
 <script>
+import { post } from "@/utils"
+import { mapActions } from "vuex"
+
 export default {
   name: "AppleCredentials",
 
@@ -64,7 +68,26 @@ export default {
     return {
       email: "",
       password: "",
+      loading: false,
     }
+  },
+
+  methods: {
+    ...mapActions(["refreshAuthUser"]),
+    submit() {
+      this.loading = true
+      post(`/user/add-apple-calendar-account`, {
+        email: this.email,
+        password: this.password,
+      })
+        .then(async () => {
+          await this.refreshAuthUser()
+          this.$emit("addedAppleCalendar")
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
   },
 }
 </script>

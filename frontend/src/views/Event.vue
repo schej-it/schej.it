@@ -7,6 +7,7 @@
       @signInLinkApple="signInLinkApple"
       @setAvailabilityAutomatically="setAvailabilityAutomatically"
       @setAvailabilityManually="setAvailabilityManually"
+      @addedAppleCalendar="addedAppleCalendar"
     />
 
     <!-- Google sign in not supported dialog -->
@@ -691,9 +692,14 @@ export default {
             eventId: this.eventId,
           },
           selectAccount: true,
-          requestCalendarPermission: true,
         })
       }
+    },
+    /** Called when user adds apple calendar account */
+    addedAppleCalendar() {
+      this.choiceDialog = false
+      this.scheduleOverlapComponent?.startEditing()
+      this.scheduleOverlapComponent?.setAvailabilityAutomatically()
     },
 
     /** Refresh calendar availabilities of everybody in the group */

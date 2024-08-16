@@ -54,9 +54,7 @@
       <AppleCredentials
         v-if="state === states.APPLE_CREDENTIALS"
         @back="state = states.PICK_CALENDAR"
-        @continue="
-          (email, password) => $emit('addAppleCalendar', email, password)
-        "
+        @addedAppleCalendar="$emit('addedAppleCalendar')"
       />
     </v-expand-transition>
   </v-card>
