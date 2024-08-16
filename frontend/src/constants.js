@@ -12,9 +12,10 @@ export const errors = Object.freeze({
 
 // Auth types
 export const authTypes = Object.freeze({
-  EVENT_ADD_AVAILABILITY: "event-add-availability",
-  EVENT_SIGN_IN: "event-sign-in",
-  EVENT_CONTACTS: "event-contacts",
+  EVENT_ADD_AVAILABILITY: "event-add-availability", // Autofill with google calendar
+  EVENT_SIGN_IN_LINK_APPLE: "event-sign-in-link-apple", // Sign in to link apple calendar
+  EVENT_SIGN_IN: "event-sign-in", // Top right sign in button on event page
+  EVENT_CONTACTS: "event-contacts", // Enable contacts
   GROUP_ADD_AVAILABILITY: "group-add-availability",
   GROUP_SIGN_IN: "group-sign-in",
   GROUP_CREATE: "group-create",

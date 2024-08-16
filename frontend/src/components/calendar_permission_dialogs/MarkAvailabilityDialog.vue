@@ -76,6 +76,7 @@
       <v-expand-transition>
         <CreateAccount
           v-if="state === states.CREATE_ACCOUNT_APPLE"
+          @signInLinkApple="$emit('signInLinkApple')"
           @back="state = states.CHOICES"
           @continue="state = states.APPLE_CREDENTIALS"
         />
@@ -103,6 +104,7 @@ export default {
 
   props: {
     value: { type: Boolean, required: true },
+    initialState: { type: String, default: "choices" },
   },
 
   components: {
@@ -119,7 +121,7 @@ export default {
         CREATE_ACCOUNT_APPLE: "create_account_apple", // present to user the create account dialog
         APPLE_CREDENTIALS: "apple_credentials", // present to user the apple credentials dialog
       },
-      state: "choices",
+      state: this.initialState,
     }
   },
 

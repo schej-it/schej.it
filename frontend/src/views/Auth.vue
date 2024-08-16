@@ -60,6 +60,12 @@ export default {
               params: { eventId: state.eventId },
             })
             break
+          case authTypes.EVENT_SIGN_IN_LINK_APPLE:
+            this.$router.replace({
+              name: "event",
+              params: { eventId: state.eventId, linkApple: true },
+            })
+            break
           case authTypes.GROUP_CREATE:
             this.$router.replace({
               name: "home",
