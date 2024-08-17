@@ -49,7 +49,7 @@
               <v-icon>mdi-alert-circle</v-icon>
             </v-btn>
           </template>
-          <span>Sign in again</span>
+          <span>{{ reauthenticateBtnText }}</span>
         </v-tooltip>
       </div>
       <!-- Needed to make sure tailwind classes compile -->
@@ -62,12 +62,7 @@
           account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
         } ${!allowDelete ? 'tw-hidden' : ''}`"
         class="group-hover:tw-opacity-100"
-        @click="
-          $emit('openRemoveDialog', {
-            email: account.email,
-            calendarType: account.calendarType,
-          })
-        "
+        @click="openRemoveDialog"
         ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
       >
     </div>
@@ -151,6 +146,15 @@ export default {
     showAccount() {
       return !(this.toggleState && this.accountHasError)
     },
+    reauthenticateBtnText() {
+      if (this.account.calendarType == calendarTypes.GOOGLE) {
+        return "Calendar access not granted, click to reauthenticate"
+      } else if (this.account.calendarType == calendarTypes.APPLE) {
+        return "Error with Apple Calendar account, click to remove"
+      } else if (this.account.calendarType == calendarTypes.OUTLOOK) {
+        return "Error with Outlook Calendar account, click to remove"
+      }
+    },
   },
 
   methods: {
@@ -162,25 +166,29 @@ export default {
             ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
             : authTypes.ADD_CALENDAR_ACCOUNT,
           eventId: this.eventId,
-          calendarType: calendarTypes.GOOGLE,
         },
         requestCalendarPermission: true,
         selectAccount: true,
       })
     },
     reauthenticateCalendarAccount() {
-      signInGoogle({
-        state: {
-          type: this.toggleState
-            ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
-            : authTypes.ADD_CALENDAR_ACCOUNT,
-          eventId: this.eventId,
-          calendarType: calendarTypes.GOOGLE,
-        },
-        requestCalendarPermission: true,
-        selectAccount: false,
-        loginHint: this.account.email,
-      })
+      if (this.account.calendarType == calendarTypes.GOOGLE) {
+        signInGoogle({
+          state: {
+            type: this.toggleState
+              ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
+              : authTypes.ADD_CALENDAR_ACCOUNT,
+            eventId: this.eventId,
+          },
+          requestCalendarPermission: true,
+          selectAccount: false,
+          loginHint: this.account.email,
+        })
+      } else if (this.account.calendarType == calendarTypes.APPLE) {
+        this.openRemoveDialog()
+      } else if (this.account.calendarType == calendarTypes.OUTLOOK) {
+        this.openRemoveDialog()
+      }
     },
     toggleSubCalendarAccount(enabled, subCalendarId) {
       if (this.syncWithBackend) {
@@ -221,6 +229,12 @@ export default {
           enabled,
         })
       }
+    },
+    openRemoveDialog() {
+      this.$emit("openRemoveDialog", {
+        email: this.account.email,
+        calendarType: this.account.calendarType,
+      })
     },
   },
 }

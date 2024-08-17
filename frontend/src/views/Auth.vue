@@ -24,11 +24,7 @@ export default {
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT ||
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
       ) {
-        if (state.calendarType === calendarTypes.GOOGLE) {
-          await post("/user/add-google-calendar-account", { code })
-        } else {
-          await post("/user/add-calendar-account", { code })
-        }
+        await post("/user/add-google-calendar-account", { code })
       } else {
         await post("/auth/sign-in", {
           code,
