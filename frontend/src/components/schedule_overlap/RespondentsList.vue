@@ -366,13 +366,15 @@ export default {
   components: { UserAvatarContent, EventOptions, OverflowGradient },
 
   props: {
+    eventId: { type: String, required: true },
+    event: { type: Object, required: true },
+    days: { type: Array, required: true },
+    times: { type: Array, required: true },
     curDate: { type: Date, required: false }, // Date of the current timeslot
     curRespondent: { type: String, required: true },
     curRespondents: { type: Array, required: true },
     curTimeslot: { type: Object, required: true },
     curTimeslotAvailability: { type: Object, required: true },
-    eventId: { type: String, required: true },
-    event: { type: Object, required: true },
     respondents: { type: Array, required: true },
     parsedResponses: { type: Object, required: true },
     isOwner: { type: Boolean, required: true },
@@ -615,16 +617,27 @@ export default {
         }
       } else if (this.exportCsvDialog.type === "nameToDates") {
         csv.push(["Name", "Date / Times available"])
-        for (const response of Object.values(this.parsedResponses)) {
-          const dateTimesAvailable = [
-            ...response.availability,
-            ...response.ifNeeded,
-          ]
-          dateTimesAvailable.sort((a, b) => a - b)
-          csv.push([
-            `${response.user.firstName} ${response.user.lastName}`,
-            ...dateTimesAvailable.map((d) => this.getDateString(new Date(d))),
-          ])
+        const responses = Object.values(this.parsedResponses).sort((a, b) =>
+          a.user.firstName.localeCompare(b.user.firstName)
+        )
+        for (const response of responses) {
+          const row = [`${response.user.firstName} ${response.user.lastName}`]
+          for (const day of this.days) {
+            const date = day.dateObject
+            for (const time of this.times) {
+              const curDate = new Date(date)
+              curDate.setHours(curDate.getHours() + time.hoursOffset)
+              if (
+                response.availability.has(curDate.getTime()) ||
+                response.ifNeeded.has(curDate.getTime())
+              ) {
+                row.push(this.getDateString(curDate))
+              } else {
+                row.push("")
+              }
+            }
+          }
+          csv.push(row)
         }
       }
 
