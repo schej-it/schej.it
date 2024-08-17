@@ -626,7 +626,7 @@ export default {
             const date = day.dateObject
             for (const time of this.times) {
               const curDate = new Date(date)
-              curDate.setHours(curDate.getHours() + time.hoursOffset)
+              curDate.setMinutes(curDate.getMinutes() + time.hoursOffset * 60)
               if (
                 response.availability.has(curDate.getTime()) ||
                 response.ifNeeded.has(curDate.getTime())
