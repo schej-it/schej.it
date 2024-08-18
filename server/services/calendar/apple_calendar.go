@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/emersion/go-ical"
-	"github.com/emersion/go-webdav"
-	"github.com/emersion/go-webdav/caldav"
+	"github.com/jonyTF/go-webdav"
+	"github.com/jonyTF/go-webdav/caldav"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/models"
 	"schej.it/server/utils"
@@ -76,6 +76,10 @@ func (calendar *AppleCalendar) GetCalendarEvents(calendarId string, timeMin time
 					"DURATION",
 				},
 			}},
+			Expand: &caldav.CalendarExpandRequest{
+				Start: timeMin,
+				End:   timeMax,
+			},
 		},
 		CompFilter: caldav.CompFilter{
 			Name: "VCALENDAR",

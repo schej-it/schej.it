@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/emersion/go-webdav"
-	"github.com/emersion/go-webdav/caldav"
+	"github.com/jonyTF/go-webdav"
+	"github.com/jonyTF/go-webdav/caldav"
 	"schej.it/server/utils"
 )
 
@@ -69,6 +69,10 @@ func main() {
 						"DURATION",
 					},
 				}},
+				Expand: &caldav.CalendarExpandRequest{
+					Start: time.Now(),
+					End:   time.Now().Add(time.Hour * 7 * 24),
+				},
 			},
 			CompFilter: caldav.CompFilter{
 				Name: "VCALENDAR",
@@ -82,6 +86,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		utils.PrintJson(events)
 
 		var filteredEvents []caldav.CalendarObject
 		for _, event := range events {
