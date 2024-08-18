@@ -42,7 +42,7 @@
                 <v-card>
                   <v-card-title>Export CSV</v-card-title>
                   <v-card-text>
-                    <div class="tw-mb-2">Select CSV format:</div>
+                    <div class="tw-mb-1">Select CSV format:</div>
                     <v-select
                       v-model="exportCsvDialog.type"
                       solo
@@ -598,35 +598,66 @@ export default {
     },
     async exportCsv() {
       const csv = []
+      const increment = 15
+      const numIterations = this.event.daysOnly
+        ? 1
+        : (this.event.duration * 60) / increment
+
+      // Get responses sorted by first name
+      const responses = Object.values(this.parsedResponses).sort((a, b) =>
+        a.user.firstName.localeCompare(b.user.firstName)
+      )
+
       if (this.exportCsvDialog.type === "datesToAvailable") {
-        csv.push(["Date / Time", "Available"])
+        // Write CSV header
+        const header = ["Date / Time"]
+        header.push(
+          ...responses.map((r) => r.user.firstName + " " + r.user.lastName)
+        )
+        csv.push(header)
+
+        // Iterate through the dates
         for (const date of this.event.dates) {
-          let curDate = new Date(date)
-          const numIterations = this.event.daysOnly
-            ? 1
-            : this.event.duration * 4
+          const curDate = new Date(date)
+
+          // Iterate through the timeslots for the current date
           for (let i = 0; i < numIterations; ++i) {
-            const userIds = this.responsesFormatted.get(curDate.getTime())
-            const users = [...userIds].map((id) => {
-              const user = this.parsedResponses[id].user
-              return user.firstName + " " + user.lastName
-            })
-            csv.push([this.getDateString(curDate), ...users])
-            curDate.setMinutes(curDate.getMinutes() + 15)
+            const row = [this.getDateString(curDate)]
+
+            // Iterate through the responses and mark whether they are available or not
+            for (const response of responses) {
+              if (response.availability.has(curDate.getTime())) {
+                row.push("Available")
+              } else if (response.ifNeeded.has(curDate.getTime())) {
+                row.push("If needed")
+              } else {
+                row.push("")
+              }
+            }
+
+            // Add row to CSV
+            csv.push(row)
+
+            // Increment curDate by the selected amount
+            curDate.setMinutes(curDate.getMinutes() + increment)
           }
         }
       } else if (this.exportCsvDialog.type === "nameToDates") {
+        // Write CSV header
         csv.push(["Name", "Date / Times available"])
-        const responses = Object.values(this.parsedResponses).sort((a, b) =>
-          a.user.firstName.localeCompare(b.user.firstName)
-        )
+
+        // Iterate through the responses
         for (const response of responses) {
+          // The first row is the name
           const row = [`${response.user.firstName} ${response.user.lastName}`]
-          for (const day of this.days) {
-            const date = day.dateObject
-            for (const time of this.times) {
-              const curDate = new Date(date)
-              curDate.setMinutes(curDate.getMinutes() + time.hoursOffset * 60)
+
+          // Iterate through the dates
+          for (const date of this.event.dates) {
+            const curDate = new Date(date)
+
+            // Iterate through the timeslots for the current date
+            for (let i = 0; i < numIterations; ++i) {
+              // If the user is available for the current timeslot, add the date to the row
               if (
                 response.availability.has(curDate.getTime()) ||
                 response.ifNeeded.has(curDate.getTime())
@@ -635,6 +666,9 @@ export default {
               } else {
                 row.push("")
               }
+
+              // Increment curDate by the selected amount
+              curDate.setMinutes(curDate.getMinutes() + increment)
             }
           }
           csv.push(row)
