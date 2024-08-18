@@ -42,7 +42,7 @@
                 <v-card>
                   <v-card-title>Export CSV</v-card-title>
                   <v-card-text>
-                    <div class="tw-mb-2">Select CSV format:</div>
+                    <div class="tw-mb-1">Select CSV format:</div>
                     <v-select
                       v-model="exportCsvDialog.type"
                       solo
@@ -103,7 +103,7 @@
     >
       <div
         ref="respondentsScrollView"
-        class="-tw-ml-2 tw-grid tw-grid-cols-2 tw-gap-x-2 tw-pl-2 tw-pt-2 tw-text-sm sm:tw-block"
+        class="-tw-ml-2 tw-pl-2 tw-pt-2 tw-text-sm"
         :class="
           isPhone && !maxHeight
             ? 'tw-overflow-hidden'
@@ -120,73 +120,80 @@
           <span class="tw-text-very-dark-gray" v-else>No responses yet!</span>
         </div>
         <template v-else>
-          <div
-            v-for="(user, i) in respondents"
-            :key="user._id"
-            class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-py-1"
-            @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
-            @mouseleave="$emit('mouseLeaveRespondent')"
-            @click="(e) => clickRespondent(e, user._id)"
+          <transition-group
+            name="list"
+            class="tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
           >
-            <div class="tw-relative tw-flex tw-items-center">
-              <UserAvatarContent
-                v-if="!isGuest(user)"
-                :user="user"
-                class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-              ></UserAvatarContent>
-              <v-icon v-else class="tw-ml-1 tw-mr-3" small>mdi-account</v-icon>
-
-              <v-simple-checkbox
-                @click="(e) => $emit('clickRespondent', e, user._id)"
-                color="primary"
-                :value="respondentSelected(user._id)"
-                class="tw-absolute tw-left-0 tw-top-0 -tw-translate-y-1 tw-bg-white tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
-                :class="
-                  respondentSelected(user._id)
-                    ? 'tw-opacity-100'
-                    : 'tw-opacity-0'
-                "
-              />
-            </div>
             <div
-              class="tw-mr-1 tw-transition-all"
-              :class="respondentClass(user._id)"
+              v-for="(user, i) in orderedRespondents"
+              :key="user._id"
+              class="tw-group tw-relative tw-flex tw-cursor-pointer tw-items-center tw-py-1"
+              @mouseover="(e) => $emit('mouseOverRespondent', e, user._id)"
+              @mouseleave="$emit('mouseLeaveRespondent')"
+              @click="(e) => clickRespondent(e, user._id)"
             >
-              {{
-                user.firstName +
-                " " +
-                user.lastName +
-                (respondentIfNeeded(user._id) ? "*" : "")
-              }}
-            </div>
+              <div class="tw-relative tw-flex tw-items-center">
+                <UserAvatarContent
+                  v-if="!isGuest(user)"
+                  :user="user"
+                  class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
+                ></UserAvatarContent>
+                <v-icon v-else class="tw-ml-1 tw-mr-3" small
+                  >mdi-account</v-icon
+                >
 
-            <!-- <div v-if="isGroup" class="tw-ml-1">
+                <v-simple-checkbox
+                  @click="(e) => $emit('clickRespondent', e, user._id)"
+                  color="primary"
+                  :value="respondentSelected(user._id)"
+                  class="tw-absolute tw-left-0 tw-top-0 -tw-translate-y-1 tw-bg-white tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+                  :class="
+                    respondentSelected(user._id)
+                      ? 'tw-opacity-100'
+                      : 'tw-opacity-0'
+                  "
+                />
+              </div>
+              <div
+                class="tw-mr-1 tw-transition-all"
+                :class="respondentClass(user._id)"
+              >
+                {{
+                  user.firstName +
+                  " " +
+                  user.lastName +
+                  (respondentIfNeeded(user._id) ? "*" : "")
+                }}
+              </div>
+
+              <!-- <div v-if="isGroup" class="tw-ml-1">
               <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
             </div> -->
 
-            <div
-              class="tw-absolute tw-right-0 tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
-            >
-              <v-btn
-                v-if="isGuest(user)"
-                small
-                icon
-                class="tw-bg-white"
-                @click="$emit('editGuestAvailability', user._id)"
-                ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
+              <div
+                class="tw-absolute tw-right-0 tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
               >
-              <v-btn
-                v-if="isOwner && !isGroup"
-                small
-                icon
-                class="tw-bg-white"
-                @click="() => showDeleteAvailabilityDialog(user)"
-                ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
-                  >mdi-delete</v-icon
-                ></v-btn
-              >
+                <v-btn
+                  v-if="isGuest(user)"
+                  small
+                  icon
+                  class="tw-bg-white"
+                  @click="$emit('editGuestAvailability', user._id)"
+                  ><v-icon small color="#4F4F4F">mdi-pencil</v-icon></v-btn
+                >
+                <v-btn
+                  v-if="isOwner && !isGroup"
+                  small
+                  icon
+                  class="tw-bg-white"
+                  @click="() => showDeleteAvailabilityDialog(user)"
+                  ><v-icon small class="hover:tw-text-red" color="#4F4F4F"
+                    >mdi-delete</v-icon
+                  ></v-btn
+                >
+              </div>
             </div>
-          </div>
+          </transition-group>
           <div class="tw-h-2"></div>
         </template>
       </div>
@@ -340,6 +347,12 @@
   </div>
 </template>
 
+<style scoped>
+.list-move {
+  transition: transform 0.5s;
+}
+</style>
+
 <script>
 import { _delete, getDateHoursOffset, getLocale, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
@@ -353,13 +366,15 @@ export default {
   components: { UserAvatarContent, EventOptions, OverflowGradient },
 
   props: {
+    eventId: { type: String, required: true },
+    event: { type: Object, required: true },
+    days: { type: Array, required: true },
+    times: { type: Array, required: true },
     curDate: { type: Date, required: false }, // Date of the current timeslot
     curRespondent: { type: String, required: true },
     curRespondents: { type: Array, required: true },
     curTimeslot: { type: Object, required: true },
     curTimeslotAvailability: { type: Object, required: true },
-    eventId: { type: String, required: true },
-    event: { type: Object, required: true },
     respondents: { type: Array, required: true },
     parsedResponses: { type: Object, required: true },
     isOwner: { type: Boolean, required: true },
@@ -392,8 +407,10 @@ export default {
         ],
       },
       userToDelete: null,
-
       desktopMaxHeight: 0,
+
+      oldCurRespondents: [],
+      curRespondentsAddedTime: {}, // Map of respondent id to time they were added
 
       hasMounted: false,
     }
@@ -462,6 +479,36 @@ export default {
     },
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    orderedRespondents() {
+      const orderedRespondents = [...this.respondents]
+      orderedRespondents.sort((a, b) => {
+        // Sort by added time if both are in curRespondents
+        // Sort curRespondents before others
+        if (
+          this.curRespondentsSet.has(a._id) &&
+          this.curRespondentsSet.has(b._id)
+        ) {
+          return (
+            this.curRespondentsAddedTime[a._id] -
+            this.curRespondentsAddedTime[b._id]
+          )
+        } else if (
+          this.curRespondentsSet.has(a._id) &&
+          !this.curRespondentsSet.has(b._id)
+        ) {
+          return -1
+        } else if (
+          !this.curRespondentsSet.has(a._id) &&
+          this.curRespondentsSet.has(b._id)
+        ) {
+          return 1
+        }
+
+        // Otherwise, sort by first name
+        return a.firstName.localeCompare(b.firstName)
+      })
+      return orderedRespondents
     },
   },
 
@@ -551,35 +598,80 @@ export default {
     },
     async exportCsv() {
       const csv = []
+      const increment = 15
+      const numIterations = this.event.daysOnly
+        ? 1
+        : (this.event.duration * 60) / increment
+
+      // Get responses sorted by first name
+      const responses = Object.values(this.parsedResponses).sort((a, b) =>
+        a.user.firstName.localeCompare(b.user.firstName)
+      )
+
       if (this.exportCsvDialog.type === "datesToAvailable") {
-        csv.push(["Date / Time", "Available"])
+        // Write CSV header
+        const header = ["Date / Time"]
+        header.push(
+          ...responses.map((r) => r.user.firstName + " " + r.user.lastName)
+        )
+        csv.push(header)
+
+        // Iterate through the dates
         for (const date of this.event.dates) {
-          let curDate = new Date(date)
-          const numIterations = this.event.daysOnly
-            ? 1
-            : this.event.duration * 4
+          const curDate = new Date(date)
+
+          // Iterate through the timeslots for the current date
           for (let i = 0; i < numIterations; ++i) {
-            const userIds = this.responsesFormatted.get(curDate.getTime())
-            const users = [...userIds].map((id) => {
-              const user = this.parsedResponses[id].user
-              return user.firstName + " " + user.lastName
-            })
-            csv.push([this.getDateString(curDate), ...users])
-            curDate.setMinutes(curDate.getMinutes() + 15)
+            const row = [this.getDateString(curDate)]
+
+            // Iterate through the responses and mark whether they are available or not
+            for (const response of responses) {
+              if (response.availability.has(curDate.getTime())) {
+                row.push("Available")
+              } else if (response.ifNeeded.has(curDate.getTime())) {
+                row.push("If needed")
+              } else {
+                row.push("")
+              }
+            }
+
+            // Add row to CSV
+            csv.push(row)
+
+            // Increment curDate by the selected amount
+            curDate.setMinutes(curDate.getMinutes() + increment)
           }
         }
       } else if (this.exportCsvDialog.type === "nameToDates") {
+        // Write CSV header
         csv.push(["Name", "Date / Times available"])
-        for (const response of Object.values(this.parsedResponses)) {
-          const dateTimesAvailable = [
-            ...response.availability,
-            ...response.ifNeeded,
-          ]
-          dateTimesAvailable.sort((a, b) => a - b)
-          csv.push([
-            `${response.user.firstName} ${response.user.lastName}`,
-            ...dateTimesAvailable.map((d) => this.getDateString(new Date(d))),
-          ])
+
+        // Iterate through the responses
+        for (const response of responses) {
+          // The first row is the name
+          const row = [`${response.user.firstName} ${response.user.lastName}`]
+
+          // Iterate through the dates
+          for (const date of this.event.dates) {
+            const curDate = new Date(date)
+
+            // Iterate through the timeslots for the current date
+            for (let i = 0; i < numIterations; ++i) {
+              // If the user is available for the current timeslot, add the date to the row
+              if (
+                response.availability.has(curDate.getTime()) ||
+                response.ifNeeded.has(curDate.getTime())
+              ) {
+                row.push(this.getDateString(curDate))
+              } else {
+                row.push("")
+              }
+
+              // Increment curDate by the selected amount
+              curDate.setMinutes(curDate.getMinutes() + increment)
+            }
+          }
+          csv.push(row)
         }
       }
 
@@ -623,6 +715,36 @@ export default {
   beforeDestroy() {
     removeEventListener("resize", this.setDesktopMaxHeight)
     // removeEventListener("scroll", this.setDesktopMaxHeight)
+  },
+
+  watch: {
+    curRespondents: {
+      deep: true,
+      handler() {
+        const oldSet = new Set(this.oldCurRespondents)
+        const newSet = new Set(this.curRespondents)
+
+        // Get added respondents (in newSet but not in oldSet)
+        const addedRespondents = this.curRespondents.filter(
+          (id) => !oldSet.has(id)
+        )
+
+        // Get removed respondents (in oldSet but not in newSet)
+        const removedRespondents = this.oldCurRespondents.filter(
+          (id) => !newSet.has(id)
+        )
+
+        // Update curRespondentsAddedTime
+        for (const id of addedRespondents) {
+          this.$set(this.curRespondentsAddedTime, id, new Date().getTime())
+        }
+        for (const id of removedRespondents) {
+          this.$delete(this.curRespondentsAddedTime, id)
+        }
+
+        this.oldCurRespondents = [...this.curRespondents]
+      },
+    },
   },
 }
 </script>

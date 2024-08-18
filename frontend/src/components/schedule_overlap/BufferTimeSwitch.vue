@@ -56,6 +56,7 @@ export default {
         { text: "15 min", value: 15 },
         { text: "30 min", value: 30 },
         { text: "45 min", value: 45 },
+        { text: "1 hour", value: 60 },
       ],
     }
   },
