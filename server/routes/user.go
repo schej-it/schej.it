@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/db"
+	"schej.it/server/errs"
 	"schej.it/server/logger"
 	"schej.it/server/middleware"
 	"schej.it/server/models"
@@ -32,6 +33,7 @@ func InitUser(router *gin.RouterGroup) {
 	userRouter.GET("/events", getEvents)
 	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-google-calendar-account", addGoogleCalendarAccount)
+	userRouter.POST("/add-apple-calendar-account", addAppleCalendarAccount)
 	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
 	userRouter.POST("/toggle-calendar", toggleCalendar)
 	userRouter.POST("/toggle-sub-calendar", toggleSubCalendar)
@@ -238,9 +240,6 @@ func addGoogleCalendarAccount(c *gin.Context) {
 		return
 	}
 
-	// Get auth user
-	authUser := utils.GetAuthUser(c)
-
 	// Get tokens
 	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
 
@@ -252,21 +251,99 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
 
-	// Define a new calendar account
+	auth := &models.GoogleCalendarAuth{
+		AccessToken:           tokens.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          tokens.RefreshToken,
+	}
+
+	addCalendarAccount(c, addCalendarAccountArgs{
+		calendarType:       models.GoogleCalendarType,
+		googleCalendarAuth: auth,
+		email:              email,
+		picture:            picture,
+	})
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Adds an apple calendar account
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string,password=string} true "Object containing the email and app password of the apple account"
+// @Success 200
+// @Router /user/add-apple-calendar-account [post]
+func addAppleCalendarAccount(c *gin.Context) {
+	payload := struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	encryptedPassword, err := utils.Encrypt(payload.Password)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	auth := &models.AppleCalendarAuth{
+		Email:    payload.Email,
+		Password: encryptedPassword,
+	}
+
+	// Check if the provided credentials are valid
+	calendarProvider := calendar.AppleCalendar{
+		AppleCalendarAuth: *auth,
+	}
+	_, err = calendarProvider.GetCalendarList()
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.InvalidCredentials})
+		return
+	}
+
+	addCalendarAccount(c, addCalendarAccountArgs{
+		calendarType:      models.AppleCalendarType,
+		appleCalendarAuth: auth,
+		email:             payload.Email,
+		picture:           "",
+	})
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// Implements the shared functionality for adding a calendar account
+type addCalendarAccountArgs struct {
+	calendarType        models.CalendarType
+	googleCalendarAuth  *models.GoogleCalendarAuth
+	appleCalendarAuth   *models.AppleCalendarAuth
+	outlookCalendarAuth *models.OutlookCalendarAuth
+	email               string
+	picture             string
+}
+
+func addCalendarAccount(c *gin.Context, args addCalendarAccountArgs) {
+	// Get auth user
+	authUser := utils.GetAuthUser(c)
+
+	// Create calendar account object
 	calendarAccount := models.CalendarAccount{
-		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarAuth: &models.GoogleCalendarAuth{
+		CalendarType: args.calendarType,
 
-			AccessToken:           tokens.AccessToken,
-			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-			RefreshToken:          tokens.RefreshToken,
-		},
-
-		Email:   email,
-		Picture: picture,
+		Email:   args.email,
+		Picture: args.picture,
 		Enabled: utils.TruePtr(), // Workaround to pass a boolean pointer
 	}
-	calendarAccountKey := utils.GetCalendarAccountKey(email, models.GoogleCalendarType)
+	switch args.calendarType {
+	case models.GoogleCalendarType:
+		calendarAccount.GoogleCalendarAuth = args.googleCalendarAuth
+	case models.AppleCalendarType:
+		calendarAccount.AppleCalendarAuth = args.appleCalendarAuth
+	case models.OutlookCalendarType:
+		calendarAccount.OutlookCalendarAuth = args.outlookCalendarAuth
+	}
+	calendarAccountKey := utils.GetCalendarAccountKey(args.email, args.calendarType)
 
 	// Set subcalendars map based on whether calendar account already exists
 	if oldCalendarAccount, ok := authUser.CalendarAccounts[calendarAccountKey]; ok && oldCalendarAccount.SubCalendars != nil {
@@ -287,8 +364,6 @@ func addGoogleCalendarAccount(c *gin.Context) {
 		bson.M{"_id": authUser.Id},
 		bson.M{"$set": authUser},
 	)
-
-	c.JSON(http.StatusOK, gin.H{})
 }
 
 // @Summary Removes an existing calendar account

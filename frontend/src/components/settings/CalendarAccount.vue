@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showAccount()" class="tw-flex tw-flex-col">
+  <div v-if="showAccount" class="tw-flex tw-flex-col">
     <div
       class="tw-group tw-flex tw-h-10 tw-flex-row tw-items-center tw-justify-between tw-text-black"
     >
@@ -38,7 +38,7 @@
         >
           {{ account.email }}
         </div>
-        <v-tooltip top v-if="accountHasError()">
+        <v-tooltip top v-if="accountHasError">
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               icon
@@ -49,7 +49,7 @@
               <v-icon>mdi-alert-circle</v-icon>
             </v-btn>
           </template>
-          <span>Sign in again</span>
+          <span>{{ reauthenticateBtnText }}</span>
         </v-tooltip>
       </div>
       <!-- Needed to make sure tailwind classes compile -->
@@ -60,14 +60,9 @@
         icon
         :class="`tw-opacity-${
           account.email == selectedRemoveEmail && removeDialog ? '100' : '0'
-        } ${account.email == authUser.email || toggleState ? 'tw-hidden' : ''}`"
+        } ${!allowDelete ? 'tw-hidden' : ''}`"
         class="group-hover:tw-opacity-100"
-        @click="
-          $emit('openRemoveDialog', {
-            email: account.email,
-            calendarType: account.calendarType,
-          })
-        "
+        @click="openRemoveDialog"
         ><v-icon color="#4F4F4F">mdi-close</v-icon></v-btn
       >
     </div>
@@ -131,27 +126,39 @@ export default {
 
   data: () => ({
     showSubCalendars: false,
-    calendarEventsMapCopy: null,
   }),
 
   computed: {
     ...mapState(["authUser"]),
+    allowDelete() {
+      return !(
+        (this.account.calendarType == calendarTypes.GOOGLE &&
+          this.account.email == this.authUser.email) ||
+        this.toggleState
+      )
+    },
+    accountHasError() {
+      return this.calendarEventsMap?.[
+        getCalendarAccountKey(this.account.email, this.account.calendarType)
+      ]?.error
+    },
+    /** don't show account if in toggle state and account has an error */
+    showAccount() {
+      return !(this.toggleState && this.accountHasError)
+    },
+    reauthenticateBtnText() {
+      if (this.account.calendarType == calendarTypes.GOOGLE) {
+        return "Calendar access not granted, click to reauthenticate"
+      } else if (this.account.calendarType == calendarTypes.APPLE) {
+        return "Error with Apple Calendar account, click to remove"
+      } else if (this.account.calendarType == calendarTypes.OUTLOOK) {
+        return "Error with Outlook Calendar account, click to remove"
+      }
+    },
   },
 
   methods: {
     ...mapActions(["showError"]),
-    accountHasError() {
-      return (
-        this.calendarEventsMapCopy &&
-        this.calendarEventsMapCopy[
-          getCalendarAccountKey(this.account.email, this.account.calendarType)
-        ]?.error
-      )
-    },
-    /** don't show account if in toggle state and account has an error */
-    showAccount() {
-      return !(this.toggleState && this.accountHasError(this.account))
-    },
     addCalendarAccount() {
       signInGoogle({
         state: {
@@ -159,25 +166,29 @@ export default {
             ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
             : authTypes.ADD_CALENDAR_ACCOUNT,
           eventId: this.eventId,
-          calendarType: calendarTypes.GOOGLE,
         },
         requestCalendarPermission: true,
         selectAccount: true,
       })
     },
     reauthenticateCalendarAccount() {
-      signInGoogle({
-        state: {
-          type: this.toggleState
-            ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
-            : authTypes.ADD_CALENDAR_ACCOUNT,
-          eventId: this.eventId,
-          calendarType: calendarTypes.GOOGLE,
-        },
-        requestCalendarPermission: true,
-        selectAccount: false,
-        loginHint: this.account.email,
-      })
+      if (this.account.calendarType == calendarTypes.GOOGLE) {
+        signInGoogle({
+          state: {
+            type: this.toggleState
+              ? authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
+              : authTypes.ADD_CALENDAR_ACCOUNT,
+            eventId: this.eventId,
+          },
+          requestCalendarPermission: true,
+          selectAccount: false,
+          loginHint: this.account.email,
+        })
+      } else if (this.account.calendarType == calendarTypes.APPLE) {
+        this.openRemoveDialog()
+      } else if (this.account.calendarType == calendarTypes.OUTLOOK) {
+        this.openRemoveDialog()
+      }
     },
     toggleSubCalendarAccount(enabled, subCalendarId) {
       if (this.syncWithBackend) {
@@ -219,28 +230,12 @@ export default {
         })
       }
     },
-  },
-
-  watch: {
-    calendarEventsMapCopy: {
-      immediate: true,
-      async handler() {
-        // Do a test request to calendarevents route to check if calendar access is allowed for each account
-        if (!this.calendarEventsMapCopy) {
-          try {
-            this.calendarEventsMapCopy = await get(
-              `/user/calendars?timeMin=${new Date().toISOString()}&timeMax=${new Date().toISOString()}`
-            )
-          } catch (err) {
-            console.error(err)
-          }
-        }
-      },
+    openRemoveDialog() {
+      this.$emit("openRemoveDialog", {
+        email: this.account.email,
+        calendarType: this.account.calendarType,
+      })
     },
-  },
-
-  created() {
-    this.calendarEventsMapCopy = this.calendarEventsMap
   },
 }
 </script>

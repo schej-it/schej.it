@@ -49,8 +49,8 @@
 <script>
 import { get, isPhone, signInGoogle } from "@/utils"
 import { authTypes } from "@/constants"
-import CalendarPermissionsCard from "@/components/CalendarPermissionsCard"
-import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog"
+import CalendarPermissionsCard from "@/components/calendar_permission_dialogs/CalendarPermissionsCard.vue"
+import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import isWebview from "is-ua-webview"
 

@@ -34,7 +34,7 @@ import (
 // @version 1.0
 // @description This is the API for Schej.it!
 
-// @host localhost:3002
+// @host localhost:3002/api
 
 func main() {
 	// Set release flag

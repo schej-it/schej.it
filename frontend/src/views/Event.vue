@@ -3,8 +3,11 @@
     <!-- Mark availability option dialog -->
     <MarkAvailabilityDialog
       v-model="choiceDialog"
+      :initialState="linkApple ? 'create_account_apple' : 'choices'"
+      @signInLinkApple="signInLinkApple"
       @setAvailabilityAutomatically="setAvailabilityAutomatically"
       @setAvailabilityManually="setAvailabilityManually"
+      @addedAppleCalendar="addedAppleCalendar"
     />
 
     <!-- Google sign in not supported dialog -->
@@ -355,7 +358,7 @@ import GuestDialog from "@/components/GuestDialog.vue"
 import { errors, authTypes, eventTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
-import MarkAvailabilityDialog from "@/components/MarkAvailabilityDialog.vue"
+import MarkAvailabilityDialog from "@/components/calendar_permission_dialogs/MarkAvailabilityDialog.vue"
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import HelpDialog from "@/components/HelpDialog.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
@@ -366,6 +369,7 @@ export default {
   props: {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
+    linkApple: { type: Boolean, default: false },
     initialTimezone: { type: Object, default: () => ({}) },
     contactsPayload: { type: Object, default: () => ({}) },
   },
@@ -411,6 +415,11 @@ export default {
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
     this.editEventDialog = Object.keys(this.contactsPayload).length > 0
+
+    // If coming from signing in to link apple calendar, show the mark availability dialog
+    if (this.linkApple) {
+      this.choiceDialog = true
+    }
   },
 
   computed: {
@@ -527,6 +536,7 @@ export default {
       this.showInfo(this.isGroup ? "Left group!" : "Availability deleted!")
       this.scheduleOverlapComponent.stopEditing()
     },
+
     editEvent() {
       /* Show edit event dialog */
       this.editEventDialog = true
@@ -536,6 +546,7 @@ export default {
       this.event = await get(`/events/${this.eventId}`)
       processEvent(this.event)
     },
+
     setAvailabilityAutomatically() {
       /* Prompts user to sign in when "set availability automatically" button clicked */
       if (isWebview(navigator.userAgent)) {
@@ -590,6 +601,7 @@ export default {
         )
       })
     },
+
     async saveChanges(ignorePagesNotVisited = false) {
       /* Shows guest dialog if not signed in, otherwise saves auth user's availability */
       if (!this.scheduleOverlapComponent) return
@@ -639,6 +651,7 @@ export default {
         this.addingAvailabilityAsGuest = false
       }
     },
+
     scheduleEvent() {
       this.scheduleOverlapComponent?.scheduleEvent()
     },
@@ -665,6 +678,28 @@ export default {
           }, 100)
         }, 100)
       }, 100)
+    },
+
+    /** Sign in with google to link apple calendar */
+    signInLinkApple() {
+      if (isWebview(navigator.userAgent)) {
+        // Show dialog prompting user to use a real browser
+        this.webviewDialog = true
+      } else {
+        signInGoogle({
+          state: {
+            type: authTypes.EVENT_SIGN_IN_LINK_APPLE,
+            eventId: this.eventId,
+          },
+          selectAccount: true,
+        })
+      }
+    },
+    /** Called when user adds apple calendar account */
+    addedAppleCalendar() {
+      this.choiceDialog = false
+      this.scheduleOverlapComponent?.startEditing()
+      this.scheduleOverlapComponent?.setAvailabilityAutomatically()
     },
 
     /** Refresh calendar availabilities of everybody in the group */
@@ -858,6 +893,9 @@ export default {
     },
     weekOffset() {
       this.refreshCalendar()
+    },
+    [`authUser.calendarAccounts`]() {
+      this.fetchAuthUserCalendarEvents()
     },
   },
 }

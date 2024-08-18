@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/emersion/go-webdav"
-	"github.com/emersion/go-webdav/caldav"
+	"github.com/jonyTF/go-webdav"
+	"github.com/jonyTF/go-webdav/caldav"
 	"schej.it/server/utils"
 )
 
@@ -38,9 +38,20 @@ func main() {
 		panic(err)
 	}
 
-	utils.PrintJson(calendars)
-
+	// Only include calendars that support VEVENT
+	var filteredCalendars []caldav.Calendar
 	for _, calendar := range calendars {
+		for _, supportedComponent := range calendar.SupportedComponentSet {
+			if supportedComponent == "VEVENT" {
+				filteredCalendars = append(filteredCalendars, calendar)
+				break
+			}
+		}
+	}
+
+	utils.PrintJson(filteredCalendars)
+
+	for _, calendar := range filteredCalendars {
 		if calendar.Name != "idk" {
 			continue
 		}
@@ -58,6 +69,10 @@ func main() {
 						"DURATION",
 					},
 				}},
+				Expand: &caldav.CalendarExpandRequest{
+					Start: time.Now(),
+					End:   time.Now().Add(time.Hour * 7 * 24),
+				},
 			},
 			CompFilter: caldav.CompFilter{
 				Name: "VCALENDAR",
@@ -71,6 +86,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		utils.PrintJson(events)
 
 		var filteredEvents []caldav.CalendarObject
 		for _, event := range events {

@@ -25,13 +25,13 @@
       <span v-if="showCalendars">
         <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'">
           <CalendarAccount
-            v-for="account in calendarAccounts"
-            :key="account.email"
+            v-for="(account, key) in calendarAccounts"
+            :key="key"
             :syncWithBackend="syncWithBackend"
             :toggleState="toggleState"
             :account="account"
             :eventId="eventId"
-            :calendarEventsMap="calendarEventsMap"
+            :calendarEventsMap="calendarEventsMapCopy"
             :removeDialog="removeDialog"
             :selectedRemoveEmail="removePayload.email"
             :fillSpace="fillSpace"
@@ -44,16 +44,30 @@
             @openRemoveDialog="openRemoveDialog"
           ></CalendarAccount>
         </div>
-        <v-btn
+        <v-dialog
           v-if="allowAddCalendarAccount"
-          text
-          color="primary"
-          :class="
-            toggleState ? '-tw-ml-2 tw-mt-0 tw-w-min tw-px-2' : 'tw-w-full'
-          "
-          @click="addCalendarAccount"
-          >+ Add calendar</v-btn
+          v-model="addCalendarAccountDialog"
+          width="400"
+          content-class="tw-m-0"
         >
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              text
+              color="primary"
+              :class="
+                toggleState ? '-tw-ml-2 tw-mt-0 tw-w-min tw-px-2' : 'tw-w-full'
+              "
+              v-bind="attrs"
+              v-on="on"
+              >+ Add calendar</v-btn
+            >
+          </template>
+          <CalendarTypeSelector
+            @addGoogleCalendar="addGoogleCalendar"
+            @addedAppleCalendar="addedAppleCalendar"
+            @addOutlookCalendar="addOutlookCalendar"
+          />
+        </v-dialog>
       </span>
     </v-expand-transition>
     <v-dialog v-model="removeDialog" width="500" persistent>
@@ -76,8 +90,15 @@
 <script>
 import { mapState, mapActions, mapMutations } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
-import { get, _delete, signInGoogle, getCalendarAccountKey } from "@/utils"
+import {
+  get,
+  post,
+  _delete,
+  signInGoogle,
+  getCalendarAccountKey,
+} from "@/utils"
 import CalendarAccount from "@/components/settings/CalendarAccount.vue"
+import CalendarTypeSelector from "@/components/settings/CalendarTypeSelector.vue"
 
 export default {
   name: "CalendarAccounts",
@@ -95,11 +116,16 @@ export default {
   data: () => ({
     removeDialog: false,
     removePayload: {},
+
+    addCalendarAccountDialog: false,
+
     calendarAccounts: {},
     showCalendars:
       localStorage["showCalendars"] == undefined
         ? true
         : localStorage["showCalendars"] == "true",
+
+    calendarEventsMapCopy: {},
   }),
 
   computed: {
@@ -113,9 +139,9 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError"]),
+    ...mapActions(["showError", "showInfo", "refreshAuthUser"]),
     ...mapMutations(["setAuthUser"]),
-    addCalendarAccount() {
+    addGoogleCalendar() {
       signInGoogle({
         state: {
           type: this.toggleState
@@ -127,6 +153,13 @@ export default {
         requestCalendarPermission: true,
         selectAccount: true,
       })
+    },
+    addedAppleCalendar() {
+      this.addCalendarAccountDialog = false
+      this.calendarAccounts = this.authUser.calendarAccounts
+    },
+    addOutlookCalendar() {
+      this.showInfo("Outlook Calendar integration coming soon!")
     },
     openRemoveDialog(payload) {
       this.removeDialog = true
@@ -160,6 +193,32 @@ export default {
 
   components: {
     CalendarAccount,
+    CalendarTypeSelector,
+  },
+
+  watch: {
+    calendarEventsMap: {
+      immediate: true,
+      async handler() {
+        // Do a test request to calendarevents route to check if calendar access is allowed for each account
+        if (
+          !this.calendarEventsMap ||
+          Object.keys(this.calendarEventsMap).length === 0
+        ) {
+          const timeMin = new Date()
+          const timeMax = new Date()
+          try {
+            this.calendarEventsMapCopy = await get(
+              `/user/calendars?timeMin=${timeMin.toISOString()}&timeMax=${timeMax.toISOString()}`
+            )
+          } catch (err) {
+            console.error(err)
+          }
+        } else {
+          this.calendarEventsMapCopy = this.calendarEventsMap
+        }
+      },
+    },
   },
 }
 </script>

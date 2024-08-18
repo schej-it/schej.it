@@ -1,131 +1,25 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
-   width="4.7624998mm"
-   height="4.7624998mm"
-   viewBox="0 0 4.7624998 4.7624998"
    version="1.1"
-   id="svg5"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
-  <defs
-     id="defs2">
-    <filter
-       x="-0.059999999"
-       y="-0.059999999"
-       width="1.12"
-       height="1.145"
-       filterUnits="objectBoundingBox"
-       id="filter-1">
-      <feOffset
-         dx="0"
-         dy="1"
-         in="SourceAlpha"
-         result="shadowOffsetOuter1"
-         id="feOffset828" />
-      <feGaussianBlur
-         stdDeviation="0.5"
-         in="shadowOffsetOuter1"
-         result="shadowBlurOuter1"
-         id="feGaussianBlur830" />
-      <feColorMatrix
-         values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.168 0"
-         in="shadowBlurOuter1"
-         type="matrix"
-         result="shadowMatrixOuter1"
-         id="feColorMatrix832" />
-      <feOffset
-         dx="0"
-         dy="0"
-         in="SourceAlpha"
-         result="shadowOffsetOuter2"
-         id="feOffset834" />
-      <feGaussianBlur
-         stdDeviation="0.5"
-         in="shadowOffsetOuter2"
-         result="shadowBlurOuter2"
-         id="feGaussianBlur836" />
-      <feColorMatrix
-         values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.084 0"
-         in="shadowBlurOuter2"
-         type="matrix"
-         result="shadowMatrixOuter2"
-         id="feColorMatrix838" />
-      <feMerge
-         id="feMerge846">
-        <feMergeNode
-           in="shadowMatrixOuter1"
-           id="feMergeNode840" />
-        <feMergeNode
-           in="shadowMatrixOuter2"
-           id="feMergeNode842" />
-        <feMergeNode
-           in="SourceGraphic"
-           id="feMergeNode844" />
-      </feMerge>
-    </filter>
-    <rect
-       id="path-2"
-       x="0"
-       y="0"
-       width="40"
-       height="40"
-       rx="2" />
-  </defs>
-  <g
-     id="layer1"
-     transform="translate(-112.55307,-116.52075)">
-    <g
-       id="Google-Button"
-       stroke="none"
-       stroke-width="1"
-       fill="none"
-       fill-rule="evenodd"
-       sketch:type="MSPage"
-       transform="matrix(0.26458333,0,0,0.26458333,108.8489,112.81658)">
-      <g
-         id="9-PATCH"
-         sketch:type="MSArtboardGroup"
-         transform="translate(-608,-160)" />
-      <g
-         id="btn_google_light_normal"
-         sketch:type="MSArtboardGroup"
-         transform="translate(-1,-1)">
-        <g
-           id="logo_googleg_48dp"
-           sketch:type="MSLayerGroup"
-           transform="translate(15,15)">
-          <path
-             d="m 17.64,9.2045455 c 0,-0.6381819 -0.05727,-1.2518182 -0.163636,-1.8409091 H 9 V 10.845 h 4.843636 C 13.635,11.97 13.000909,12.923182 12.047727,13.561364 v 2.258182 h 2.908637 C 16.658182,14.252727 17.64,11.945455 17.64,9.2045455 Z"
-             id="Shape"
-             fill="#4285f4"
-             sketch:type="MSShapeGroup" />
-          <path
-             d="m 9,18 c 2.43,0 4.467273,-0.805909 5.956364,-2.180454 L 12.047727,13.561364 C 11.241818,14.101364 10.210909,14.420455 9,14.420455 6.6559091,14.420455 4.6718182,12.837273 3.9640909,10.71 H 0.95727273 v 2.331818 C 2.4381818,15.983182 5.4818182,18 9,18 Z"
-             id="path864"
-             fill="#34a853"
-             sketch:type="MSShapeGroup" />
-          <path
-             d="M 3.9640909,10.71 C 3.7840909,10.17 3.6818182,9.5931818 3.6818182,9 c 0,-0.5931818 0.1022727,-1.17 0.2822727,-1.71 V 4.9581818 H 0.95727273 C 0.34772727,6.1731818 0,7.5477273 0,9 c 0,1.452273 0.34772727,2.826818 0.95727273,4.041818 z"
-             id="path866"
-             fill="#fbbc05"
-             sketch:type="MSShapeGroup" />
-          <path
-             d="m 9,3.5795455 c 1.321364,0 2.507727,0.4540909 3.440455,1.3459091 L 15.021818,2.3440909 C 13.463182,0.89181818 11.425909,0 9,0 5.4818182,0 2.4381818,2.0168182 0.95727273,4.9581818 L 3.9640909,7.29 C 4.6718182,5.1627273 6.6559091,3.5795455 9,3.5795455 Z"
-             id="path868"
-             fill="#ea4335"
-             sketch:type="MSShapeGroup" />
-          <path
-             d="M 0,0 H 18 V 18 H 0 Z"
-             id="path870"
-             sketch:type="MSShapeGroup" />
-        </g>
-        <g
-           id="handles_square"
-           sketch:type="MSLayerGroup" />
-      </g>
-    </g>
-  </g>
+   viewBox="0 0 48 48"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   style="display: block"
+>
+   <path
+   fill="#EA4335"
+   d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+   ></path>
+   <path
+   fill="#4285F4"
+   d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+   ></path>
+   <path
+   fill="#FBBC05"
+   d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+   ></path>
+   <path
+   fill="#34A853"
+   d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+   ></path>
+   <path fill="none" d="M0 0h48v48H0z"></path>
 </svg>

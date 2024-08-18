@@ -816,7 +816,50 @@ var doc = `{
                 }
             }
         },
-        "/user/add-calendar-account": {
+        "/user/add-apple-calendar-account": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Adds an apple calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the email and app password of the apple account",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "password": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/user/add-google-calendar-account": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -1061,7 +1104,7 @@ var doc = `{
                 "summary": "Removes an existing calendar account",
                 "parameters": [
                     {
-                        "description": "Object containing the email of the calendar account to remove",
+                        "description": "Object containing the email + type of the calendar account to remove",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -1073,6 +1116,9 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "calendarType": {
+                                            "$ref": "#/definitions/models.CalendarType"
+                                        },
                                         "email": {
                                             "type": "string"
                                         }
@@ -1144,7 +1190,7 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "email": {
+                                        "calendarAccountKey": {
                                             "type": "string"
                                         },
                                         "enabled": {
@@ -1187,7 +1233,7 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "email": {
+                                        "calendarAccountKey": {
                                             "type": "string"
                                         },
                                         "enabled": {
@@ -1278,8 +1324,7 @@ var doc = `{
                     }
                 },
                 "error": {
-                    "type": "object",
-                    "$ref": "#/definitions/errs.GoogleAPIError"
+                    "type": "error"
                 }
             }
         },
@@ -1298,25 +1343,8 @@ var doc = `{
                 }
             }
         },
-        "errs.GoogleAPIError": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "details": {
-                    "type": "object"
-                },
-                "errors": {
-                    "type": "object"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
+        "models.AppleCalendarAuth": {
+            "type": "object"
         },
         "models.Attendee": {
             "type": "object",
@@ -1343,11 +1371,27 @@ var doc = `{
         "models.CalendarAccount": {
             "type": "object",
             "properties": {
+                "appleCalendarAuth": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.AppleCalendarAuth"
+                },
+                "calendarType": {
+                    "type": "string"
+                },
                 "email": {
+                    "description": "Email is required for all calendar accounts",
                     "type": "string"
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "googleCalendarAuth": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.GoogleCalendarAuth"
+                },
+                "outlookCalendarAuth": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.OutlookCalendarAuth"
                 },
                 "picture": {
                     "type": "string"
@@ -1397,6 +1441,9 @@ var doc = `{
                 }
             }
         },
+        "models.CalendarType": {
+            "type": "string"
+        },
         "models.Event": {
             "type": "object",
             "properties": {
@@ -1416,6 +1463,9 @@ var doc = `{
                 },
                 "calendarEventId": {
                     "type": "string"
+                },
+                "collectEmails": {
+                    "type": "boolean"
                 },
                 "dates": {
                     "type": "string"
@@ -1472,6 +1522,9 @@ var doc = `{
         "models.EventType": {
             "type": "string"
         },
+        "models.GoogleCalendarAuth": {
+            "type": "object"
+        },
         "models.Location": {
             "type": "object",
             "properties": {
@@ -1498,6 +1551,9 @@ var doc = `{
                 }
             }
         },
+        "models.OutlookCalendarAuth": {
+            "type": "object"
+        },
         "models.Remindee": {
             "type": "object",
             "properties": {
@@ -1513,11 +1569,15 @@ var doc = `{
             "type": "object",
             "properties": {
                 "availability": {
+                    "description": "Availability",
                     "type": "string"
                 },
                 "calendarOptions": {
                     "type": "object",
                     "$ref": "#/definitions/models.CalendarOptions"
+                },
+                "email": {
+                    "type": "string"
                 },
                 "enabledCalendars": {
                     "description": "Maps email to an array of sub calendar ids",
@@ -1543,6 +1603,7 @@ var doc = `{
                     }
                 },
                 "name": {
+                    "description": "Guest information",
                     "type": "string"
                 },
                 "useCalendarAvailability": {
@@ -1554,6 +1615,7 @@ var doc = `{
                     "$ref": "#/definitions/models.User"
                 },
                 "userId": {
+                    "description": "User information",
                     "type": "string"
                 }
             }
@@ -1577,7 +1639,7 @@ var doc = `{
                     "type": "string"
                 },
                 "calendarAccounts": {
-                    "description": "CalendarAccounts is a mapping from {email =\u003e CalendarAccount} that contains all the\nadditional accounts the user wants to see google calendar events for",
+                    "description": "CalendarAccounts is a mapping from {` + "`" + `email_CALENDARTYPE` + "`" + ` =\u003e CalendarAccount} that contains all the\nadditional accounts the user wants to see google calendar events for",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/models.CalendarAccount"
@@ -1649,7 +1711,7 @@ type swaggerInfo struct {
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
-	Host:        "localhost:3002",
+	Host:        "localhost:3002/api",
 	BasePath:    "",
 	Schemes:     []string{},
 	Title:       "Schej.it API",
