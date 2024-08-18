@@ -108,20 +108,22 @@
           />
 
           <v-expand-transition>
-            <v-input
-              v-if="selectedDateOption === dateOptions.SPECIFIC || daysOnly"
-              v-model="selectedDays"
-              hint="Drag to select multiple dates"
-              persistent-hint
-              hide-details="auto"
-              :rules="selectedDaysRules"
-              key="date-picker"
-            >
-              <DatePicker
+            <div v-if="selectedDateOption === dateOptions.SPECIFIC || daysOnly">
+              <div class="tw-mb-2 tw-text-xs tw-text-dark-gray">
+                Drag to select multiple dates
+              </div>
+              <v-input
                 v-model="selectedDays"
-                :minCalendarDate="minCalendarDate"
-              />
-            </v-input>
+                hide-details="auto"
+                :rules="selectedDaysRules"
+                key="date-picker"
+              >
+                <DatePicker
+                  v-model="selectedDays"
+                  :minCalendarDate="minCalendarDate"
+                />
+              </v-input>
+            </div>
             <v-input
               v-else-if="selectedDateOption === dateOptions.DOW"
               v-model="selectedDaysOfWeek"
