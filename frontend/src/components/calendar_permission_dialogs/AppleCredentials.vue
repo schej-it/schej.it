@@ -91,6 +91,8 @@ export default {
         .then(async () => {
           await this.refreshAuthUser()
           this.$emit("addedAppleCalendar")
+
+          this.$posthog.capture("Apple Calendar Added")
         })
         .catch((err) => {
           if (err.error === errors.InvalidCredentials) {
