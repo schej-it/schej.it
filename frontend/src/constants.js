@@ -24,6 +24,45 @@ export const authTypes = Object.freeze({
   ADD_CALENDAR_ACCOUNT_FROM_EDIT: "add-calendar-account-from-edit",
 })
 
+// Pricing Plans
+export const pricingPlans = Object.freeze({
+  FREE: {
+    header: "Free",
+    price: "$0",
+    subtitle: "free, forever",
+    features: [
+      "unlimited events",
+      "unlimited availability groups",
+      "unlimited respondents",
+      "unlimited timeslots",
+      "if there's a paid feature you think should be free, let us know :)",
+    ],
+  },
+  PRO: {
+    header: "Pro",
+    specialText: "LIMITED TIME",
+    price: "$20",
+    priceText: "for lifetime access",
+    subtitle: "one-time payment",
+    features: [
+      "text -> availability",
+      "folder organization",
+      "...any and all pro features we release in the future",
+      "support the Schej team :)",
+    ],
+  },
+  ENTERPRISE: {
+    header: "Enterprise",
+    price: "Custom",
+    subtitle: "billed monthly",
+    features: [
+      "everything in Pro",
+      "whitelabeling",
+      "any other features you need!",
+    ],
+  },
+})
+
 export const eventTypes = Object.freeze({
   SPECIFIC_DATES: "specific_dates",
   DOW: "dow",

@@ -18,6 +18,11 @@ const routes = [
     props: true,
   },
   {
+    path: "/pricing",
+    name: "pricing",
+    component: () => import("@/views/Pricing.vue"),
+  },
+  {
     path: "/settings",
     name: "settings",
     component: () => import("@/views/Settings.vue"),
@@ -65,7 +70,7 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authRoutes = ["home", "settings"]
-  const noAuthRoutes = ["landing"]
+  const noAuthRoutes = ["landing", "pricing"]
   try {
     await get("/auth/status")
 
