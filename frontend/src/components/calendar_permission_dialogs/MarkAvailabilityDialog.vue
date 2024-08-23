@@ -70,7 +70,7 @@
           v-show="state === states.GCAL_PERMISSIONS"
           cancelLabel="Back"
           @cancel="showChoices"
-          @allow="setAvailabilityAutomatically"
+          @allow="$emit('allowGoogleCalendar')"
         />
       </v-expand-transition>
       <v-expand-transition>
@@ -134,9 +134,6 @@ export default {
 
   methods: {
     ...mapActions(["showInfo"]),
-    setAvailabilityAutomatically() {
-      this.$emit("setAvailabilityAutomatically")
-    },
     setAvailabilityManually() {
       this.$emit("setAvailabilityManually")
     },
@@ -151,7 +148,7 @@ export default {
       }
     },
     autofillWithOutlook() {
-      this.showInfo("Outlook Calendar integration coming soon!")
+      this.$emit("allowOutlookCalendar")
     },
     showChoices() {
       this.state = this.states.CHOICES

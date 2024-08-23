@@ -24,7 +24,13 @@ export default {
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT ||
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
       ) {
-        await post("/user/add-google-calendar-account", { code })
+        if (state.calendarType === calendarTypes.GOOGLE) {
+          await post("/user/add-google-calendar-account", { code })
+        } else if (state.calendarType === calendarTypes.OUTLOOK) {
+          await post("/user/add-outlook-calendar-account", { code })
+        } else {
+          throw new Error("Invalid calendar type")
+        }
       } else {
         await post("/auth/sign-in", {
           code,

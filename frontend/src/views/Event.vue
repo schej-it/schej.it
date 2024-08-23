@@ -5,7 +5,12 @@
       v-model="choiceDialog"
       :initialState="linkApple ? 'create_account_apple' : 'choices'"
       @signInLinkApple="signInLinkApple"
-      @setAvailabilityAutomatically="setAvailabilityAutomatically"
+      @allowGoogleCalendar="
+        () => setAvailabilityAutomatically(calendarTypes.GOOGLE)
+      "
+      @allowOutlookCalendar="
+        () => setAvailabilityAutomatically(calendarTypes.OUTLOOK)
+      "
       @setAvailabilityManually="setAvailabilityManually"
       @addedAppleCalendar="addedAppleCalendar"
     />
@@ -344,6 +349,7 @@
 import {
   get,
   signInGoogle,
+  signInOutlook,
   isPhone,
   processEvent,
   getCalendarEventsMap,
@@ -355,7 +361,7 @@ import { mapActions, mapState } from "vuex"
 import NewDialog from "@/components/NewDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
-import { errors, authTypes, eventTypes } from "@/constants"
+import { errors, authTypes, eventTypes, calendarTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
 import MarkAvailabilityDialog from "@/components/calendar_permission_dialogs/MarkAvailabilityDialog.vue"
@@ -426,6 +432,9 @@ export default {
     ...mapState(["authUser", "events"]),
     allowScheduleEvent() {
       return this.scheduleOverlapComponent?.allowScheduleEvent
+    },
+    calendarTypes() {
+      return calendarTypes
     },
     dateString() {
       return getDateRangeStringForEvent(this.event)
@@ -547,16 +556,17 @@ export default {
       processEvent(this.event)
     },
 
-    setAvailabilityAutomatically() {
+    setAvailabilityAutomatically(calendarType = calendarTypes.GOOGLE) {
       /* Prompts user to sign in when "set availability automatically" button clicked */
       if (isWebview(navigator.userAgent)) {
         // Show dialog prompting user to use a real browser
         this.webviewDialog = true
       } else {
         // Or sign in if user is already using a real browser
+        let signInParams
         if (this.authUser) {
           // Request permission if calendar permissions not yet granted
-          signInGoogle({
+          signInParams = {
             state: {
               type: this.isGroup
                 ? authTypes.GROUP_ADD_AVAILABILITY
@@ -565,17 +575,23 @@ export default {
             },
             selectAccount: false,
             requestCalendarPermission: true,
-          })
+          }
         } else {
           // Ask the user to select the account they want to sign in with if not logged in yet
-          signInGoogle({
+          signInParams = {
             state: {
               type: authTypes.EVENT_ADD_AVAILABILITY,
               eventId: this.eventId,
             },
             selectAccount: true,
             requestCalendarPermission: true,
-          })
+          }
+        }
+
+        if (calendarType === calendarTypes.GOOGLE) {
+          signInGoogle(signInParams)
+        } else if (calendarType === calendarTypes.OUTLOOK) {
+          signInOutlook(signInParams)
         }
       }
       this.choiceDialog = false
