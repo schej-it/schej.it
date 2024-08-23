@@ -36,21 +36,22 @@ func InitAuth(router *gin.RouterGroup) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param payload body object{code=string,timezoneOffset=int} true "Object containing the Google authorization code and the user's timezone offset"
+// @Param payload body object{code=string,scope=string,timezoneOffset=int} true "Object containing the Google authorization code, scope, and the user's timezone offset"
 // @Success 200
 // @Router /auth/sign-in [post]
 func signIn(c *gin.Context) {
 	payload := struct {
 		Code           string `json:"code" binding:"required"`
+		Scope          string `json:"scope" binding:"required"`
 		TimezoneOffset int    `json:"timezoneOffset" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
-	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
+	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c), payload.Scope, models.GoogleCalendarType)
 
-	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
+	signInHelper(c, tokens, models.WEB, payload.TimezoneOffset)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
@@ -60,13 +61,14 @@ func signIn(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param payload body object{timezoneOffset=int,accessToken=string,idToken=string,expiresIn=int,refreshToken=string,scope=string} true "Object containing the Google authorization code and the user's timezone offset"
+// @Param payload body object{timezoneOffset=int,accessToken=string,scope=string,idToken=string,expiresIn=int,refreshToken=string,tokenOrigin=string} true "Object containing the Google authorization code and the user's timezone offset"
 // @Success 200
 // @Router /auth/sign-in-mobile [post]
 func signInMobile(c *gin.Context) {
 	payload := struct {
 		TimezoneOffset int                    `json:"timezoneOffset" binding:"required"`
 		AccessToken    string                 `json:"accessToken" binding:"required"`
+		Scope          string                 `json:"scope" binding:"required"`
 		IdToken        string                 `json:"idToken" binding:"required"`
 		ExpiresIn      int                    `json:"expiresIn" binding:"required"`
 		RefreshToken   string                 `json:"refreshToken" binding:"required"`
@@ -76,18 +78,18 @@ func signInMobile(c *gin.Context) {
 		return
 	}
 
-	signInHelper(c, payload.AccessToken, payload.IdToken, payload.ExpiresIn, payload.RefreshToken, payload.TimezoneOffset, payload.TokenOrigin)
+	signInHelper(c, auth.TokenResponse{AccessToken: payload.AccessToken, IdToken: payload.IdToken, ExpiresIn: payload.ExpiresIn, RefreshToken: payload.RefreshToken, Scope: payload.Scope}, payload.TokenOrigin, payload.TimezoneOffset)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Helper function to sign user in with the given parameters from the google oauth route
-func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn int, refreshToken string, timezoneOffset int, tokenOrigin models.TokenOriginType) {
+func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.TokenOriginType, timezoneOffset int) {
 	// Get access token expire time
-	accessTokenExpireDate := utils.GetAccessTokenExpireDate(expiresIn)
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(token.ExpiresIn)
 
 	// Get user info from JWT
-	claims := utils.ParseJWT(idToken)
+	claims := utils.ParseJWT(token.IdToken)
 	email, _ := claims.GetStr("email")
 	firstName, _ := claims.GetStr("given_name")
 	lastName, _ := claims.GetStr("family_name")
@@ -106,10 +108,11 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 
 	calendarAccount := models.CalendarAccount{
 		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarAuth: &models.GoogleCalendarAuth{
-			AccessToken:           accessToken,
+		OAuth2CalendarAuth: &models.OAuth2CalendarAuth{
+			AccessToken:           token.AccessToken,
 			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-			RefreshToken:          refreshToken,
+			RefreshToken:          token.RefreshToken,
+			Scope:                 token.Scope,
 		},
 
 		Email:   email,

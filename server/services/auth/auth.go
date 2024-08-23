@@ -17,30 +17,23 @@ import (
 	"schej.it/server/utils"
 )
 
-type GoogleApiTokenResponse struct {
-	AccessToken      string `json:"access_token"`
-	IdToken          string `json:"id_token"`
-	ExpiresIn        int    `json:"expires_in"`
-	RefreshToken     string `json:"refresh_token"`
-	Scope            string `json:"scope"`
-	TokenType        string `json:"token_type"`
-	Error            string `json:"error"`
-	ErrorDescription string `json:"error_description"`
-}
-
 // Returns access, refresh, and id tokens from the auth code
-func GetTokensFromAuthCode(code string, origin string) GoogleApiTokenResponse {
+func GetTokensFromAuthCode(code string, scope string, origin string, calendarType models.CalendarType) TokenResponse {
+	clientId, clientSecret := getCredentialsFromCalendarType(calendarType)
+	tokenEndpoint := getTokenEndpointFromCalendarType(calendarType)
+
 	// Call Google oauth token endpoint
 	redirectUri := fmt.Sprintf("%s/auth", origin)
 	values := url.Values{
-		"client_id":     {os.Getenv("CLIENT_ID")},
-		"client_secret": {os.Getenv("CLIENT_SECRET")},
+		"client_id":     {clientId},
+		"client_secret": {clientSecret},
 		"code":          {code},
-		"grant_type":    {"authorization_code"},
+		"scope":         {scope},
 		"redirect_uri":  {redirectUri},
+		"grant_type":    {"authorization_code"},
 	}
 	resp, err := http.PostForm(
-		"https://oauth2.googleapis.com/token",
+		tokenEndpoint,
 		values,
 	)
 	if err != nil {
@@ -48,7 +41,7 @@ func GetTokensFromAuthCode(code string, origin string) GoogleApiTokenResponse {
 	}
 	defer resp.Body.Close()
 
-	var res GoogleApiTokenResponse
+	var res TokenResponse
 
 	json.NewDecoder(resp.Body).Decode(&res)
 	if len(res.Error) > 0 {
@@ -59,24 +52,19 @@ func GetTokensFromAuthCode(code string, origin string) GoogleApiTokenResponse {
 	return res
 }
 
-type GoogleApiAccessTokenResponse struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	Scope       string `json:"scope"`
-	TokenType   string `json:"token_type"`
-	Error       bson.M `json:"error"`
-}
-
-func RefreshAccessToken(refreshToken string) GoogleApiAccessTokenResponse {
+func RefreshAccessToken(accountAuth *models.OAuth2CalendarAuth, calendarType models.CalendarType) AccessTokenResponse {
+	clientId, clientSecret := getCredentialsFromCalendarType(calendarType)
+	tokenEndpoint := getTokenEndpointFromCalendarType(calendarType)
 	values := url.Values{
-		"client_id":     {os.Getenv("CLIENT_ID")},
+		"client_id":     {clientId},
+		"client_secret": {clientSecret},
+		"refresh_token": {accountAuth.RefreshToken},
+		"scope":         {accountAuth.Scope},
 		"grant_type":    {"refresh_token"},
-		"refresh_token": {refreshToken},
-		"client_secret": {os.Getenv("CLIENT_SECRET")},
 	}
 
 	resp, err := http.PostForm(
-		"https://oauth2.googleapis.com/token",
+		tokenEndpoint,
 		values,
 	)
 	if err != nil {
@@ -84,19 +72,19 @@ func RefreshAccessToken(refreshToken string) GoogleApiAccessTokenResponse {
 	}
 	defer resp.Body.Close()
 
-	var res GoogleApiAccessTokenResponse
+	var res AccessTokenResponse
 	json.NewDecoder(resp.Body).Decode(&res)
 
 	return res
 }
 
 type RefreshAccessTokenData struct {
-	TokenResponse GoogleApiAccessTokenResponse
+	TokenResponse AccessTokenResponse
 	Email         string
 	Error         *interface{}
 }
 
-func RefreshAccessTokenAsync(refreshToken string, email string, c chan RefreshAccessTokenData) {
+func RefreshAccessTokenAsync(email string, accountAuth *models.OAuth2CalendarAuth, calendarType models.CalendarType, c chan RefreshAccessTokenData) {
 	// Recover from panics
 	defer func() {
 		if err := recover(); err != nil {
@@ -104,7 +92,7 @@ func RefreshAccessTokenAsync(refreshToken string, email string, c chan RefreshAc
 		}
 	}()
 
-	tokenResponse := RefreshAccessToken(refreshToken)
+	tokenResponse := RefreshAccessToken(accountAuth, calendarType)
 
 	c <- RefreshAccessTokenData{tokenResponse, email, nil}
 }
@@ -120,12 +108,12 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 	// Refresh calendar account access tokens if necessary
 	for _, account := range u.CalendarAccounts {
-		if account.CalendarType == models.GoogleCalendarType { // Only refresh access tokens for Google calendar accounts
-			accountAuth := account.GoogleCalendarAuth
+		if account.CalendarType == models.GoogleCalendarType || account.CalendarType == models.OutlookCalendarType { // Only refresh access tokens for Google and Outlook calendar accounts
+			accountAuth := account.OAuth2CalendarAuth
 
 			if _, ok := accounts[account.Email]; ok || updateAllAccounts {
 				if time.Now().After(accountAuth.AccessTokenExpireDate.Time()) && len(accountAuth.RefreshToken) > 0 {
-					go RefreshAccessTokenAsync(accountAuth.RefreshToken, account.Email, refreshTokenChan)
+					go RefreshAccessTokenAsync(account.Email, accountAuth, account.CalendarType, refreshTokenChan)
 					numAccountsToUpdate++
 				}
 			}
@@ -144,8 +132,8 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 		calendarAccountKey := utils.GetCalendarAccountKey(res.Email, models.GoogleCalendarType)
 		if calendarAccount, ok := u.CalendarAccounts[calendarAccountKey]; ok {
-			calendarAccount.GoogleCalendarAuth.AccessToken = res.TokenResponse.AccessToken
-			calendarAccount.GoogleCalendarAuth.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
+			calendarAccount.OAuth2CalendarAuth.AccessToken = res.TokenResponse.AccessToken
+			calendarAccount.OAuth2CalendarAuth.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
 			u.CalendarAccounts[calendarAccountKey] = calendarAccount
 		}
 	}
@@ -158,4 +146,24 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 			bson.M{"$set": u},
 		)
 	}
+}
+
+func getCredentialsFromCalendarType(calendarType models.CalendarType) (string, string) {
+	if calendarType == models.GoogleCalendarType {
+		return os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET")
+	} else if calendarType == models.OutlookCalendarType {
+		return os.Getenv("MICROSOFT_CLIENT_ID"), os.Getenv("MICROSOFT_CLIENT_SECRET")
+	}
+
+	return "", ""
+}
+
+func getTokenEndpointFromCalendarType(calendarType models.CalendarType) string {
+	if calendarType == models.GoogleCalendarType {
+		return "https://oauth2.googleapis.com/token"
+	} else if calendarType == models.OutlookCalendarType {
+		return "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+	}
+
+	return ""
 }

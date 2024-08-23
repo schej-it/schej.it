@@ -13,7 +13,7 @@ export default {
   },
 
   async created() {
-    let { error, code, state } = this.$route.query
+    let { error, code, scope, state } = this.$route.query
     if (error) this.$router.replace({ name: "home" })
 
     if (state) state = JSON.parse(state)
@@ -25,15 +25,16 @@ export default {
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
       ) {
         if (state.calendarType === calendarTypes.GOOGLE) {
-          await post("/user/add-google-calendar-account", { code })
+          await post("/user/add-google-calendar-account", { code, scope })
         } else if (state.calendarType === calendarTypes.OUTLOOK) {
-          await post("/user/add-outlook-calendar-account", { code })
+          await post("/user/add-outlook-calendar-account", { code, scope })
         } else {
           throw new Error("Invalid calendar type")
         }
       } else {
         await post("/auth/sign-in", {
           code,
+          scope,
           timezoneOffset: new Date().getTimezoneOffset(),
         })
         const authUser = await get("/user/profile")

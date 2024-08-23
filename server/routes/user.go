@@ -34,6 +34,7 @@ func InitUser(router *gin.RouterGroup) {
 	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-google-calendar-account", addGoogleCalendarAccount)
 	userRouter.POST("/add-apple-calendar-account", addAppleCalendarAccount)
+	userRouter.POST("/add-outlook-calendar-account", addOutlookCalendarAccount)
 	userRouter.DELETE("/remove-calendar-account", removeCalendarAccount)
 	userRouter.POST("/toggle-calendar", toggleCalendar)
 	userRouter.POST("/toggle-sub-calendar", toggleSubCalendar)
@@ -229,19 +230,20 @@ func getCalendars(c *gin.Context) {
 // @Tags user
 // @Accept json
 // @Produce json
-// @Param payload body object{code=string} true "Object containing the Google authorization code"
+// @Param payload body object{code=string,scope=string} true "Object containing the Google authorization code and scope"
 // @Success 200
 // @Router /user/add-google-calendar-account [post]
 func addGoogleCalendarAccount(c *gin.Context) {
 	payload := struct {
-		Code string `json:"code" binding:"required"`
+		Code  string `json:"code" binding:"required"`
+		Scope string `json:"scope" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
 	// Get tokens
-	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
+	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.GoogleCalendarType)
 
 	// Get user info from JWT
 	claims := utils.ParseJWT(tokens.IdToken)
@@ -251,7 +253,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
 
-	auth := &models.GoogleCalendarAuth{
+	auth := &models.OAuth2CalendarAuth{
 		AccessToken:           tokens.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          tokens.RefreshToken,
@@ -259,7 +261,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 
 	addCalendarAccount(c, addCalendarAccountArgs{
 		calendarType:       models.GoogleCalendarType,
-		googleCalendarAuth: auth,
+		oAuth2CalendarAuth: auth,
 		email:              email,
 		picture:            picture,
 	})
@@ -313,14 +315,57 @@ func addAppleCalendarAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
+// @Summary Adds a new outlook calendar account
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param payload body object{code=string,scope=string} true "Object containing the Outlook authorization code and scope"
+// @Success 200
+// @Router /user/add-outlook-calendar-account [post]
+func addOutlookCalendarAccount(c *gin.Context) {
+	payload := struct {
+		Code  string `json:"code" binding:"required"`
+		Scope string `json:"scope" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	// Get tokens
+	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.OutlookCalendarType)
+
+	// TODO: change this to use the userinfo endpoint
+	claims := utils.ParseJWT(tokens.IdToken)
+	email, _ := claims.GetStr("email")
+	picture, _ := claims.GetStr("picture")
+
+	// Get access token expire time
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
+
+	auth := &models.OAuth2CalendarAuth{
+		AccessToken:           tokens.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          tokens.RefreshToken,
+		Scope:                 payload.Scope,
+	}
+
+	addCalendarAccount(c, addCalendarAccountArgs{
+		calendarType:       models.OutlookCalendarType,
+		oAuth2CalendarAuth: auth,
+		email:              email,
+		picture:            picture,
+	})
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
 // Implements the shared functionality for adding a calendar account
 type addCalendarAccountArgs struct {
-	calendarType        models.CalendarType
-	googleCalendarAuth  *models.GoogleCalendarAuth
-	appleCalendarAuth   *models.AppleCalendarAuth
-	outlookCalendarAuth *models.OutlookCalendarAuth
-	email               string
-	picture             string
+	calendarType       models.CalendarType
+	oAuth2CalendarAuth *models.OAuth2CalendarAuth
+	appleCalendarAuth  *models.AppleCalendarAuth
+	email              string
+	picture            string
 }
 
 func addCalendarAccount(c *gin.Context, args addCalendarAccountArgs) {
@@ -337,11 +382,11 @@ func addCalendarAccount(c *gin.Context, args addCalendarAccountArgs) {
 	}
 	switch args.calendarType {
 	case models.GoogleCalendarType:
-		calendarAccount.GoogleCalendarAuth = args.googleCalendarAuth
+		calendarAccount.OAuth2CalendarAuth = args.oAuth2CalendarAuth
+	case models.OutlookCalendarType:
+		calendarAccount.OAuth2CalendarAuth = args.oAuth2CalendarAuth
 	case models.AppleCalendarType:
 		calendarAccount.AppleCalendarAuth = args.appleCalendarAuth
-	case models.OutlookCalendarType:
-		calendarAccount.OutlookCalendarAuth = args.outlookCalendarAuth
 	}
 	calendarAccountKey := utils.GetCalendarAccountKey(args.email, args.calendarType)
 

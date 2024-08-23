@@ -13,11 +13,12 @@ const (
 	OutlookCalendarType CalendarType = "outlook"
 )
 
-// GoogleCalendarAuth contains necessary auth info for the user's google calendar account
-type GoogleCalendarAuth struct {
+// OAuth2CalendarAuth contains necessary auth info for the user's google calendar account
+type OAuth2CalendarAuth struct {
 	AccessToken           string             `json:"-" bson:"accessToken,omitempty"`
 	AccessTokenExpireDate primitive.DateTime `json:"-" bson:"accessTokenExpireDate,omitempty"`
 	RefreshToken          string             `json:"-" bson:"refreshToken,omitempty"`
+	Scope                 string             `json:"-" bson:"scope,omitempty"`
 }
 
 // AppleCalendarAuth contains necessary auth info for the user's apple calendar account
@@ -26,16 +27,11 @@ type AppleCalendarAuth struct {
 	Password string `json:"-" bson:"password,omitempty"`
 }
 
-// OutlookCalendarAuth contains necessary auth info for the user's outlook calendar account
-type OutlookCalendarAuth struct {
-}
-
 // CalendarAccount contains info about the user's other signed in calendar accounts
 type CalendarAccount struct {
-	CalendarType        CalendarType         `json:"calendarType" bson:"calendarType,omitempty"`
-	GoogleCalendarAuth  *GoogleCalendarAuth  `json:"googleCalendarAuth" bson:"googleCalendarAuth,omitempty"`
-	AppleCalendarAuth   *AppleCalendarAuth   `json:"appleCalendarAuth" bson:"appleCalendarAuth,omitempty"`
-	OutlookCalendarAuth *OutlookCalendarAuth `json:"outlookCalendarAuth" bson:"outlookCalendarAuth,omitempty"`
+	CalendarType       CalendarType        `json:"calendarType" bson:"calendarType,omitempty"`
+	OAuth2CalendarAuth *OAuth2CalendarAuth `json:"oAuth2CalendarAuth" bson:"oAuth2CalendarAuth,omitempty"`
+	AppleCalendarAuth  *AppleCalendarAuth  `json:"appleCalendarAuth" bson:"appleCalendarAuth,omitempty"`
 
 	Email        string                  `json:"email" bson:"email"` // Email is required for all calendar accounts
 	Picture      string                  `json:"picture" bson:"picture,omitempty"`

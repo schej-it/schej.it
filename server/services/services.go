@@ -34,7 +34,7 @@ func CallGoogleApi(user *models.User, method string, url string, body *bson.M) *
 		req, _ = http.NewRequest(method, url, nil)
 	}
 	calendarAccountKey := utils.GetCalendarAccountKey(user.Email, models.GoogleCalendarType)
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.CalendarAccounts[calendarAccountKey].GoogleCalendarAuth.AccessToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", user.CalendarAccounts[calendarAccountKey].OAuth2CalendarAuth.AccessToken))
 
 	// Execute request
 	response, err := http.DefaultClient.Do(req)
