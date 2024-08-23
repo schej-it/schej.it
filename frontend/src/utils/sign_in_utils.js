@@ -53,9 +53,9 @@ export const signInOutlook = ({
   const tenant = "common"
   const redirectUri = encodeURIComponent(`${window.location.origin}/auth`)
 
-  let scope = "offline_access"
+  let scope = "offline_access User.Read"
   if (requestCalendarPermission) {
-    scope += " calendars.read.shared"
+    scope += " Calendars.Read.Shared"
   }
   scope = encodeURIComponent(scope)
 
