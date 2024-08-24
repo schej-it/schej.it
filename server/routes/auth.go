@@ -49,7 +49,7 @@ func signIn(c *gin.Context) {
 		return
 	}
 
-	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c), payload.Scope, models.GoogleCalendarType)
+	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.GoogleCalendarType)
 
 	signInHelper(c, tokens, models.WEB, payload.TimezoneOffset)
 
