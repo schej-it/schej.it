@@ -108,7 +108,7 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 	// Refresh calendar account access tokens if necessary
 	for _, account := range u.CalendarAccounts {
-		if account.CalendarType == models.GoogleCalendarType || account.CalendarType == models.OutlookCalendarType { // Only refresh access tokens for Google and Outlook calendar accounts
+		if account.OAuth2CalendarAuth != nil { // Only refresh access tokens for OAuth2 calendar accounts
 			accountAuth := account.OAuth2CalendarAuth
 
 			if _, ok := accounts[account.Email]; ok || updateAllAccounts {
