@@ -18,6 +18,7 @@ import (
 	"schej.it/server/services/auth"
 	"schej.it/server/services/calendar"
 	"schej.it/server/services/listmonk"
+	"schej.it/server/services/microsoftgraph"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -102,6 +103,14 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(token.ExpiresIn)
 
+	// Construct calendar auth object
+	calendarAuth := models.OAuth2CalendarAuth{
+		AccessToken:           token.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          token.RefreshToken,
+		Scope:                 token.Scope,
+	}
+
 	var email, firstName, lastName, picture string
 	if calendarType == models.GoogleCalendarType {
 		// Get user info from JWT
@@ -111,8 +120,12 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 		lastName, _ = claims.GetStr("family_name")
 		picture, _ = claims.GetStr("picture")
 	} else if calendarType == models.OutlookCalendarType {
-		// TODO: Get user info from outlook
-		email = "test@test.com"
+		// Get user info from microsoft graph
+		userInfo := microsoftgraph.GetUserInfo(nil, &calendarAuth)
+		email = userInfo.Email
+		firstName = userInfo.FirstName
+		lastName = userInfo.LastName
+		picture = ""
 	}
 
 	primaryAccountKey := utils.GetCalendarAccountKey(email, calendarType)
@@ -131,13 +144,8 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 	}
 
 	calendarAccount := models.CalendarAccount{
-		CalendarType: models.GoogleCalendarType,
-		OAuth2CalendarAuth: &models.OAuth2CalendarAuth{
-			AccessToken:           token.AccessToken,
-			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-			RefreshToken:          token.RefreshToken,
-			Scope:                 token.Scope,
-		},
+		CalendarType:       models.GoogleCalendarType,
+		OAuth2CalendarAuth: &calendarAuth,
 
 		Email:   email,
 		Picture: picture,

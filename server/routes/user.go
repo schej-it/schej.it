@@ -20,6 +20,7 @@ import (
 	"schej.it/server/services/auth"
 	"schej.it/server/services/calendar"
 	"schej.it/server/services/contacts"
+	"schej.it/server/services/microsoftgraph"
 	"schej.it/server/utils"
 )
 
@@ -253,7 +254,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
 
-	auth := &models.OAuth2CalendarAuth{
+	calendarAuth := &models.OAuth2CalendarAuth{
 		AccessToken:           tokens.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          tokens.RefreshToken,
@@ -261,7 +262,7 @@ func addGoogleCalendarAccount(c *gin.Context) {
 
 	addCalendarAccount(c, addCalendarAccountArgs{
 		calendarType:       models.GoogleCalendarType,
-		oAuth2CalendarAuth: auth,
+		oAuth2CalendarAuth: calendarAuth,
 		email:              email,
 		picture:            picture,
 	})
@@ -331,17 +332,16 @@ func addOutlookCalendarAccount(c *gin.Context) {
 		return
 	}
 
+	// Get auth user
+	authUser := utils.GetAuthUser(c)
+
 	// Get tokens
 	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), models.OutlookCalendarType)
-
-	// TODO: change this to use the userinfo endpoint
-	claims := utils.ParseJWT(tokens.IdToken)
-	email, _ := claims.GetStr("email")
-	picture, _ := claims.GetStr("picture")
 
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
 
+	// Construct auth object
 	auth := &models.OAuth2CalendarAuth{
 		AccessToken:           tokens.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
@@ -349,11 +349,14 @@ func addOutlookCalendarAccount(c *gin.Context) {
 		Scope:                 payload.Scope,
 	}
 
+	// Get user info
+	userInfo := microsoftgraph.GetUserInfo(authUser, auth)
+
 	addCalendarAccount(c, addCalendarAccountArgs{
 		calendarType:       models.OutlookCalendarType,
 		oAuth2CalendarAuth: auth,
-		email:              email,
-		picture:            picture,
+		email:              userInfo.Email,
+		picture:            "",
 	})
 
 	c.JSON(http.StatusOK, gin.H{})
