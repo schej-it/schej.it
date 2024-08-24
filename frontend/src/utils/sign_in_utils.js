@@ -1,8 +1,9 @@
+import { calendarTypes } from "@/constants"
 import store from "@/store"
 
 /** Redirects user to the correct google sign in page */
 export const signInGoogle = ({
-  state = null,
+  state = {},
   selectAccount = false,
   requestCalendarPermission = false,
   requestContactsPermission = false,
@@ -24,10 +25,9 @@ export const signInGoogle = ({
   scope = encodeURIComponent(scope)
 
   let stateString = ""
-  if (state !== null) {
-    state = encodeURIComponent(JSON.stringify(state))
-    stateString = `&state=${state}`
-  }
+  state.calendarType = calendarTypes.GOOGLE
+  state = encodeURIComponent(JSON.stringify(state))
+  stateString = `&state=${state}`
 
   let promptString = ""
   if (selectAccount) {
@@ -46,7 +46,7 @@ export const signInGoogle = ({
 }
 
 export const signInOutlook = ({
-  state = null,
+  state = {},
   requestCalendarPermission = false,
 }) => {
   const clientId = "d27c1c46-4be7-45c4-ad98-626b2fa3a527"
@@ -60,10 +60,9 @@ export const signInOutlook = ({
   scope = encodeURIComponent(scope)
 
   let stateString = ""
-  if (state !== null) {
-    state = encodeURIComponent(JSON.stringify(state))
-    stateString = `&state=${state}`
-  }
+  state.calendarType = calendarTypes.OUTLOOK
+  state = encodeURIComponent(JSON.stringify(state))
+  stateString = `&state=${state}`
 
   const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}${stateString}`
   window.location.href = url

@@ -35,6 +35,7 @@ export default {
         await post("/auth/sign-in", {
           code,
           scope,
+          calendarType: state.calendarType,
           timezoneOffset: new Date().getTimezoneOffset(),
         })
         const authUser = await get("/user/profile")
