@@ -61,6 +61,7 @@ export const signInOutlook = ({
 
   let stateString = ""
   state.calendarType = calendarTypes.OUTLOOK
+  state.scope = scope
   state = encodeURIComponent(JSON.stringify(state))
   stateString = `&state=${state}`
 

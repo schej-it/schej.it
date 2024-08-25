@@ -16,7 +16,7 @@ export default {
     let { error, code, scope, state } = this.$route.query
     if (error) this.$router.replace({ name: "home" })
 
-    if (state) state = JSON.parse(state)
+    if (state) state = JSON.parse(decodeURIComponent(state))
 
     // Sign in and set auth user
     try {
@@ -27,7 +27,10 @@ export default {
         if (state.calendarType === calendarTypes.GOOGLE) {
           await post("/user/add-google-calendar-account", { code, scope })
         } else if (state.calendarType === calendarTypes.OUTLOOK) {
-          await post("/user/add-outlook-calendar-account", { code, scope })
+          await post("/user/add-outlook-calendar-account", {
+            code,
+            scope: state.scope,
+          })
         } else {
           throw new Error("Invalid calendar type")
         }

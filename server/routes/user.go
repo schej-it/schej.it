@@ -341,8 +341,8 @@ func addOutlookCalendarAccount(c *gin.Context) {
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(tokens.ExpiresIn)
 
-	// Construct auth object
-	auth := &models.OAuth2CalendarAuth{
+	// Construct calendarAuth object
+	calendarAuth := &models.OAuth2CalendarAuth{
 		AccessToken:           tokens.AccessToken,
 		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
 		RefreshToken:          tokens.RefreshToken,
@@ -350,11 +350,11 @@ func addOutlookCalendarAccount(c *gin.Context) {
 	}
 
 	// Get user info
-	userInfo := microsoftgraph.GetUserInfo(authUser, auth)
+	userInfo := microsoftgraph.GetUserInfo(authUser, calendarAuth)
 
 	addCalendarAccount(c, addCalendarAccountArgs{
 		calendarType:       models.OutlookCalendarType,
-		oAuth2CalendarAuth: auth,
+		oAuth2CalendarAuth: calendarAuth,
 		email:              userInfo.Email,
 		picture:            "",
 	})
