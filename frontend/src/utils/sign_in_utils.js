@@ -55,7 +55,7 @@ export const signInOutlook = ({
 
   let scope = "offline_access User.Read"
   if (requestCalendarPermission) {
-    scope += " Calendars.Read.Shared"
+    scope += " Calendars.ReadBasic"
   }
   scope = encodeURIComponent(scope)
 

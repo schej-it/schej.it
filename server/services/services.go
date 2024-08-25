@@ -12,9 +12,12 @@ import (
 	"schej.it/server/services/auth"
 )
 
-// Calls the given url with the given method using the user's google api access token
+// Calls the given url with the given method using the user's OAuth 2 access token.
+// Set user to nil if refreshing the token is not necessary
 func CallApi(user *models.User, calendarAuth *models.OAuth2CalendarAuth, method string, url string, body *bson.M) *http.Response {
-	auth.RefreshUserTokenIfNecessary(user, nil)
+	if user != nil {
+		auth.RefreshUserTokenIfNecessary(user, nil)
+	}
 
 	// Format body as a buffer if not nil
 	var bodyBuffer *bytes.Buffer

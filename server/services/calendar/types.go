@@ -17,6 +17,10 @@ func GetCalendarProvider(calendarAccount models.CalendarAccount) CalendarProvide
 		return &GoogleCalendar{
 			OAuth2CalendarAuth: *calendarAccount.OAuth2CalendarAuth,
 		}
+	case models.OutlookCalendarType:
+		return &OutlookCalendar{
+			OAuth2CalendarAuth: *calendarAccount.OAuth2CalendarAuth,
+		}
 	case models.AppleCalendarType:
 		return &AppleCalendar{
 			AppleCalendarAuth: *calendarAccount.AppleCalendarAuth,
