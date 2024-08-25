@@ -543,7 +543,8 @@ export default {
     },
     /** Refresh event details */
     async refreshEvent() {
-      this.event = await get(`/events/${this.eventId}`)
+      let sanitizedId = this.eventId.replaceAll(".", "")
+      this.event = await get(`/events/${sanitizedId}`)
       processEvent(this.event)
     },
 
