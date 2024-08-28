@@ -129,6 +129,8 @@ export default {
               })
             }
             break
+          default:
+            this.$router.replace({ name: "home" })
         }
       } else {
         this.$router.replace({ name: "home" })

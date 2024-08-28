@@ -25,6 +25,7 @@ export const signInGoogle = ({
   scope = encodeURIComponent(scope)
 
   let stateString = ""
+  if (!state) state = {}
   state.calendarType = calendarTypes.GOOGLE
   state = encodeURIComponent(JSON.stringify(state))
   stateString = `&state=${state}`
@@ -60,6 +61,7 @@ export const signInOutlook = ({
   scope = encodeURIComponent(scope)
 
   let stateString = ""
+  if (!state) state = {}
   state.calendarType = calendarTypes.OUTLOOK
   state.scope = scope
   state = encodeURIComponent(JSON.stringify(state))
