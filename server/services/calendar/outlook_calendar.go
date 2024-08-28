@@ -3,7 +3,6 @@ package calendar
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,7 +16,7 @@ type OutlookCalendar struct {
 }
 
 func (calendar *OutlookCalendar) GetCalendarList() (map[string]models.SubCalendar, error) {
-	response := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", "https://graph.microsoft.com/v1.0/me/calendars", nil)
+	response := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name", nil)
 	defer response.Body.Close()
 
 	responseBody := struct {
@@ -48,9 +47,10 @@ func (calendar *OutlookCalendar) GetCalendarList() (map[string]models.SubCalenda
 }
 
 func (calendar *OutlookCalendar) GetCalendarEvents(calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, error) {
-	filter := fmt.Sprintf("startDateTime ge %s and endDateTime le %s", timeMin.Format(time.RFC3339), timeMax.Format(time.RFC3339))
-	encodedFilter := url.QueryEscape(filter)
-	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/calendars/%s/events?$filter=%s", calendarId, encodedFilter)
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/calendars/%s/events?startdatetime=%s&enddatetime=%s&$select=id,subject,start,end,showAs",
+		calendarId,
+		timeMin.Format(time.RFC3339),
+		timeMax.Format(time.RFC3339))
 	response := services.CallApi(nil, &calendar.OAuth2CalendarAuth, "GET", url, nil)
 	defer response.Body.Close()
 
