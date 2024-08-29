@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/models"
 	"schej.it/server/services"
@@ -24,16 +25,17 @@ func (calendar *OutlookCalendar) GetCalendarList() (map[string]models.SubCalenda
 			Id   string `json:"id"`
 			Name string `json:"name"`
 		} `json:"value"`
+		Error bson.M `json:"error"`
 	}{}
-
-	utils.PrintHttpResponse(response)
 
 	err := json.NewDecoder(response.Body).Decode(&responseBody)
 	if err != nil {
 		return nil, err
 	}
 
-	utils.PrintJson(responseBody)
+	if responseBody.Error != nil {
+		return nil, fmt.Errorf("error fetching Outlook calendars: %v", responseBody.Error)
+	}
 
 	calendars := make(map[string]models.SubCalendar)
 	for _, calendar := range responseBody.Value {
@@ -66,10 +68,15 @@ func (calendar *OutlookCalendar) GetCalendarEvents(calendarId string, timeMin ti
 			} `json:"end"`
 			ShowAs string `json:"showAs"`
 		} `json:"value"`
+		Error bson.M `json:"error"`
 	}{}
 	err := json.NewDecoder(response.Body).Decode(&responseBody)
 	if err != nil {
 		return nil, err
+	}
+
+	if responseBody.Error != nil {
+		return nil, fmt.Errorf("error fetching Outlook events: %v", responseBody.Error)
 	}
 
 	calendarEvents := make([]models.CalendarEvent, 0)

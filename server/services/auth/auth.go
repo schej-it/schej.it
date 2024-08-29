@@ -81,6 +81,7 @@ func RefreshAccessToken(accountAuth *models.OAuth2CalendarAuth, calendarType mod
 type RefreshAccessTokenData struct {
 	TokenResponse AccessTokenResponse
 	Email         string
+	CalendarType  models.CalendarType
 	Error         *interface{}
 }
 
@@ -94,7 +95,7 @@ func RefreshAccessTokenAsync(email string, accountAuth *models.OAuth2CalendarAut
 
 	tokenResponse := RefreshAccessToken(accountAuth, calendarType)
 
-	c <- RefreshAccessTokenData{tokenResponse, email, nil}
+	c <- RefreshAccessTokenData{tokenResponse, email, calendarType, nil}
 }
 
 // If access token has expired, get a new token for the primary account as well as all other calendar accounts, update the user object, and save it to the database
@@ -130,7 +131,7 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 
 		accessTokenExpireDate := utils.GetAccessTokenExpireDate(res.TokenResponse.ExpiresIn)
 
-		calendarAccountKey := utils.GetCalendarAccountKey(res.Email, models.GoogleCalendarType)
+		calendarAccountKey := utils.GetCalendarAccountKey(res.Email, res.CalendarType)
 		if calendarAccount, ok := u.CalendarAccounts[calendarAccountKey]; ok {
 			calendarAccount.OAuth2CalendarAuth.AccessToken = res.TokenResponse.AccessToken
 			calendarAccount.OAuth2CalendarAuth.AccessTokenExpireDate = primitive.NewDateTimeFromTime(accessTokenExpireDate)
