@@ -67,6 +67,6 @@ export const signInOutlook = ({
   state = encodeURIComponent(JSON.stringify(state))
   stateString = `&state=${state}`
 
-  const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}${stateString}`
+  const url = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&response_mode=query&scope=${scope}${stateString}`
   window.location.href = url
 }
