@@ -37,7 +37,7 @@ export default {
       } else {
         await post("/auth/sign-in", {
           code,
-          scope,
+          scope: scope ?? state.scope,
           calendarType: state.calendarType,
           timezoneOffset: new Date().getTimezoneOffset(),
         })

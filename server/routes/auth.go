@@ -144,14 +144,14 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 	}
 
 	calendarAccount := models.CalendarAccount{
-		CalendarType:       models.GoogleCalendarType,
+		CalendarType:       calendarType,
 		OAuth2CalendarAuth: &calendarAuth,
 
 		Email:   email,
 		Picture: picture,
 		Enabled: utils.TruePtr(), // Workaround to pass a boolean pointer
 	}
-	calendarAccountKey := utils.GetCalendarAccountKey(email, models.GoogleCalendarType)
+	calendarAccountKey := utils.GetCalendarAccountKey(email, calendarType)
 
 	var userId primitive.ObjectID
 	findResult := db.UsersCollection.FindOne(context.Background(), bson.M{"email": email})
