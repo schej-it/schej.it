@@ -22,7 +22,7 @@
       My calendars
     </div>
     <v-expand-transition>
-      <span v-if="showCalendars">
+      <span v-if="showCalendars || !toggleState">
         <div :class="toggleState ? '' : 'tw-px-4 tw-py-2'">
           <CalendarAccount
             v-for="(account, key) in calendarAccounts"
