@@ -49,7 +49,7 @@ func (calendar *OutlookCalendar) GetCalendarList() (map[string]models.SubCalenda
 }
 
 func (calendar *OutlookCalendar) GetCalendarEvents(calendarId string, timeMin time.Time, timeMax time.Time) ([]models.CalendarEvent, error) {
-	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/calendars/%s/events?startdatetime=%s&enddatetime=%s&$select=id,subject,start,end,showAs",
+	url := fmt.Sprintf("https://graph.microsoft.com/v1.0/me/calendars/%s/calendarview?startdatetime=%s&enddatetime=%s&$select=id,subject,start,end,showAs",
 		calendarId,
 		timeMin.Format(time.RFC3339),
 		timeMax.Format(time.RFC3339))
