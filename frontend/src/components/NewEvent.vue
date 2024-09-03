@@ -759,7 +759,11 @@ export default {
             for (let date of this.event.dates) {
               date = getDateWithTimezone(date)
 
-              selectedDaysOfWeek.push(date.getUTCDay())
+              if (this.event.startOnMonday && date.getUTCDay() === 0) {
+                selectedDaysOfWeek.push(7)
+              } else {
+                selectedDaysOfWeek.push(date.getUTCDay())
+              }
             }
             this.selectedDaysOfWeek = selectedDaysOfWeek
             if (this.event.startOnMonday) {
