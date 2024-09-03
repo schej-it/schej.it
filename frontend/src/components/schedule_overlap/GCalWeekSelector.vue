@@ -19,6 +19,7 @@ export default {
 
   props: {
     weekOffset: { type: Number, required: true },
+    startOnMonday: { type: Boolean, default: false },
   },
 
   data() {
@@ -35,6 +36,10 @@ export default {
       date.setDate(date.getDate() - date.getDay())
       // Change date by the weekoffset
       date.setDate(date.getDate() + 7 * this.weekOffset)
+
+      if (this.startOnMonday) {
+        date.setDate(date.getDate() + 1)
+      }
 
       return dayjs(date).format("M/D")
     },
