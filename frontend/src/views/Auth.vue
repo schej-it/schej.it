@@ -35,19 +35,19 @@ export default {
           throw new Error("Invalid calendar type")
         }
       } else {
-        await post("/auth/sign-in", {
+        const user = await post("/auth/sign-in", {
           code,
           scope: scope ?? state.scope,
           calendarType: state.calendarType,
           timezoneOffset: new Date().getTimezoneOffset(),
         })
-        const authUser = await get("/user/profile")
-        this.setAuthUser(authUser)
+        console.log("user", user)
+        this.setAuthUser(user)
 
-        this.$posthog?.identify(authUser._id, {
-          email: authUser.email,
-          firstName: authUser.firstName,
-          lastName: authUser.lastName,
+        this.$posthog?.identify(user._id, {
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
         })
       }
 

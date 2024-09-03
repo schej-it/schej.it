@@ -53,9 +53,9 @@ func signIn(c *gin.Context) {
 
 	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
 
-	signInHelper(c, tokens, models.WEB, payload.CalendarType, payload.TimezoneOffset)
+	user := signInHelper(c, tokens, models.WEB, payload.CalendarType, payload.TimezoneOffset)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, user)
 }
 
 // @Summary Signs user in from mobile
@@ -99,7 +99,7 @@ func signInMobile(c *gin.Context) {
 }
 
 // Helper function to sign user in with the given parameters from the google oauth route
-func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.TokenOriginType, calendarType models.CalendarType, timezoneOffset int) {
+func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.TokenOriginType, calendarType models.CalendarType, timezoneOffset int) models.User {
 	// Get access token expire time
 	accessTokenExpireDate := utils.GetAccessTokenExpireDate(token.ExpiresIn)
 
@@ -225,6 +225,9 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 	session := sessions.Default(c)
 	session.Set("userId", userId.Hex())
 	session.Save()
+
+	userData.Id = userId
+	return userData
 }
 
 // @Summary Signs user out
