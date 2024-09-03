@@ -124,29 +124,38 @@
                 />
               </v-input>
             </div>
-            <v-input
-              v-else-if="selectedDateOption === dateOptions.DOW"
-              v-model="selectedDaysOfWeek"
-              hide-details="auto"
-              :rules="selectedDaysRules"
-              key="days-of-week"
-              class="tw-w-fit"
-            >
-              <v-btn-toggle
+            <div v-else-if="selectedDateOption === dateOptions.DOW">
+              <v-input
                 v-model="selectedDaysOfWeek"
-                multiple
-                solo
-                color="primary"
+                hide-details="auto"
+                :rules="selectedDaysRules"
+                key="days-of-week"
+                class="tw-w-fit"
               >
-                <v-btn depressed> S </v-btn>
-                <v-btn depressed> M </v-btn>
-                <v-btn depressed> T </v-btn>
-                <v-btn depressed> W </v-btn>
-                <v-btn depressed> T </v-btn>
-                <v-btn depressed> F </v-btn>
-                <v-btn depressed> S </v-btn>
-              </v-btn-toggle>
-            </v-input>
+                <v-btn-toggle
+                  v-model="selectedDaysOfWeek"
+                  multiple
+                  solo
+                  color="primary"
+                >
+                  <v-btn depressed v-show="!startOnMonday"> Sun </v-btn>
+                  <v-btn depressed> Mon </v-btn>
+                  <v-btn depressed> Tue </v-btn>
+                  <v-btn depressed> Wed </v-btn>
+                  <v-btn depressed> Thu </v-btn>
+                  <v-btn depressed> Fri </v-btn>
+                  <v-btn depressed> Sat </v-btn>
+                  <v-btn depressed v-show="startOnMonday"> Sun </v-btn>
+                </v-btn-toggle>
+              </v-input>
+              <v-checkbox class="tw-mt-2" v-model="startOnMonday" hide-details>
+                <template v-slot:label>
+                  <span class="tw-text-sm tw-text-very-dark-gray">
+                    Start on Monday
+                  </span>
+                </template>
+              </v-checkbox>
+            </div>
           </v-expand-transition>
         </div>
 
@@ -406,6 +415,7 @@ export default {
     loading: false,
     selectedDays: [],
     selectedDaysOfWeek: [],
+    startOnMonday: false,
     notificationsEnabled: false,
 
     daysOnly: false,
@@ -561,6 +571,11 @@ export default {
           type = eventTypes.DOW
 
           this.selectedDaysOfWeek.sort((a, b) => a - b)
+          this.selectedDaysOfWeek = this.selectedDaysOfWeek.filter(
+            (dayIndex) => {
+              return this.startOnMonday ? dayIndex !== 0 : dayIndex !== 7
+            }
+          )
           for (const dayIndex of this.selectedDaysOfWeek) {
             const day = dayIndexToDayString[dayIndex]
             const date = dayjs.tz(
@@ -587,6 +602,7 @@ export default {
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
         collectEmails: this.collectEmails,
+        startOnMonday: this.startOnMonday,
       }
       const posthogPayload = {
         eventName: this.name,
@@ -601,6 +617,7 @@ export default {
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
         eventCollectEmails: this.collectEmails,
+        eventStartOnMonday: this.startOnMonday,
       }
 
       if (!this.edit) {
@@ -742,9 +759,16 @@ export default {
             for (let date of this.event.dates) {
               date = getDateWithTimezone(date)
 
-              selectedDaysOfWeek.push(date.getUTCDay())
+              if (this.event.startOnMonday && date.getUTCDay() === 0) {
+                selectedDaysOfWeek.push(7)
+              } else {
+                selectedDaysOfWeek.push(date.getUTCDay())
+              }
             }
             this.selectedDaysOfWeek = selectedDaysOfWeek
+            if (this.event.startOnMonday) {
+              this.startOnMonday = true
+            }
           }
         }
       }

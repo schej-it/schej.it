@@ -66,6 +66,7 @@ export const dayIndexToDayString = Object.freeze([
   "2018-06-21", // Thursday
   "2018-06-22", // Friday
   "2018-06-23", // Saturday
+  "2018-06-24", // Sunday
 ])
 
 export const allTimezones = Object.freeze({

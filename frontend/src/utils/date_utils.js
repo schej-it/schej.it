@@ -162,13 +162,23 @@ export const getDateHoursOffset = (date, hoursOffset) => {
  * Returns a date, transformed to be in the same week of the dows array.
  * `reverse` determines whether to do the opposite calculation (dow date to date)
  */
-export const dateToDowDate = (dows, date, weekOffset, reverse = false) => {
+export const dateToDowDate = (
+  dows,
+  date,
+  weekOffset,
+  reverse = false,
+  startOnMonday = false
+) => {
   // Sort dows to make sure first date is not Saturday when there are multiple dates
   // (as such is the case when an event is created in Tokyo and you're answering in Mountain View)
   // This fixes the dayOffset calculation so that events are displayed in the correct week
   dows = [...dows].sort((date1, date2) => {
-    const day1 = new Date(date1).getDay()
-    const day2 = new Date(date2).getDay()
+    let day1 = new Date(date1).getDay()
+    let day2 = new Date(date2).getDay()
+    if (startOnMonday) {
+      if (day1 === 0) day1 = 7
+      if (day2 === 0) day2 = 7
+    }
     return day1 - day2
   })
 
@@ -424,7 +434,8 @@ export const splitCalendarEventsByDay = (
     event.duration,
     calendarEvents,
     event.type,
-    weekOffset
+    weekOffset,
+    event.startOnMonday
   )
 }
 
@@ -434,14 +445,27 @@ export const processCalendarEvents = (
   duration,
   calendarEvents,
   eventType = eventTypes.SPECIFIC_DATES,
-  weekOffset = 0
+  weekOffset = 0,
+  startOnMonday = false
 ) => {
   // Put calendarEvents into the correct format
   calendarEvents = JSON.parse(JSON.stringify(calendarEvents)) // Make a copy so we don't mutate original array
   calendarEvents = calendarEvents.map((e) => {
     if (eventType === eventTypes.DOW || eventType === eventTypes.GROUP) {
-      e.startDate = dateToDowDate(dates, e.startDate, weekOffset)
-      e.endDate = dateToDowDate(dates, e.endDate, weekOffset)
+      e.startDate = dateToDowDate(
+        dates,
+        e.startDate,
+        weekOffset,
+        false,
+        startOnMonday
+      )
+      e.endDate = dateToDowDate(
+        dates,
+        e.endDate,
+        weekOffset,
+        false,
+        startOnMonday
+      )
     } else {
       e.startDate = new Date(e.startDate)
       e.endDate = new Date(e.endDate)

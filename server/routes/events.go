@@ -56,6 +56,7 @@ func createEvent(c *gin.Context) {
 		Type     models.EventType     `json:"type" binding:"required"`
 
 		// Only for events (not groups)
+		StartOnMonday            *bool    `json:"startOnMonday"`
 		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
 		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
 		DaysOnly                 *bool    `json:"daysOnly"`
@@ -91,6 +92,7 @@ func createEvent(c *gin.Context) {
 		Name:                     payload.Name,
 		Duration:                 payload.Duration,
 		Dates:                    payload.Dates,
+		StartOnMonday:            payload.StartOnMonday,
 		NotificationsEnabled:     payload.NotificationsEnabled,
 		BlindAvailabilityEnabled: payload.BlindAvailabilityEnabled,
 		DaysOnly:                 payload.DaysOnly,
@@ -219,6 +221,7 @@ func editEvent(c *gin.Context) {
 		Description *string `json:"description"`
 
 		// Only for events (not groups)
+		StartOnMonday            *bool    `json:"startOnMonday"`
 		NotificationsEnabled     *bool    `json:"notificationsEnabled"`
 		BlindAvailabilityEnabled *bool    `json:"blindAvailabilityEnabled"`
 		DaysOnly                 *bool    `json:"daysOnly"`
@@ -264,6 +267,7 @@ func editEvent(c *gin.Context) {
 	event.Description = payload.Description
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
+	event.StartOnMonday = payload.StartOnMonday
 	event.NotificationsEnabled = payload.NotificationsEnabled
 	event.BlindAvailabilityEnabled = payload.BlindAvailabilityEnabled
 	event.DaysOnly = payload.DaysOnly
