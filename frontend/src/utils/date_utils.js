@@ -173,15 +173,14 @@ export const dateToDowDate = (
   // (as such is the case when an event is created in Tokyo and you're answering in Mountain View)
   // This fixes the dayOffset calculation so that events are displayed in the correct week
   dows = [...dows].sort((date1, date2) => {
-    const day1 = new Date(date1).getDay()
-    const day2 = new Date(date2).getDay()
+    let day1 = new Date(date1).getDay()
+    let day2 = new Date(date2).getDay()
+    if (startOnMonday) {
+      if (day1 === 0) day1 = 7
+      if (day2 === 0) day2 = 7
+    }
     return day1 - day2
   })
-
-  // Adjust weekOffset if event starts on Monday
-  if (startOnMonday) {
-    weekOffset += 1
-  }
 
   // Get Sunday of the week containing the dows
   const dowSunday = new Date(dows[0])
