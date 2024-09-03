@@ -602,6 +602,7 @@ export default {
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
         collectEmails: this.collectEmails,
+        startOnMonday: this.startOnMonday,
       }
       const posthogPayload = {
         eventName: this.name,
@@ -616,6 +617,7 @@ export default {
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
         eventCollectEmails: this.collectEmails,
+        eventStartOnMonday: this.startOnMonday,
       }
 
       if (!this.edit) {
@@ -760,6 +762,9 @@ export default {
               selectedDaysOfWeek.push(date.getUTCDay())
             }
             this.selectedDaysOfWeek = selectedDaysOfWeek
+            if (this.event.startOnMonday) {
+              this.startOnMonday = true
+            }
           }
         }
       }

@@ -29,6 +29,9 @@ type Event struct {
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
+	// Whether to start the event on Monday (as opposed to Sunday, used for DOW events)
+	StartOnMonday *bool `json:"startOnMonday" bson:"startOnMonday,omitempty"`
+
 	// Whether to enable blind availability
 	BlindAvailabilityEnabled *bool `json:"blindAvailabilityEnabled" bson:"blindAvailabilityEnabled,omitempty"`
 
