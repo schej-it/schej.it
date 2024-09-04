@@ -79,6 +79,7 @@
                 :state="state"
                 :states="states"
                 :cur-timezone.sync="curTimezone"
+                :start-calendar-on-monday.sync="startCalendarOnMonday"
                 :show-best-times.sync="showBestTimes"
                 :hide-if-needed.sync="hideIfNeeded"
                 :is-weekly="isWeekly"
@@ -915,6 +916,10 @@ export default {
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
       showCalendarEvents: false,
+      startCalendarOnMonday:
+        localStorage["startCalendarOnMonday"] == undefined
+          ? false
+          : localStorage["startCalendarOnMonday"] == "true",
 
       /* Dialogs */
       deleteAvailabilityDialog: false,
@@ -944,7 +949,6 @@ export default {
       manualAvailability: {},
 
       /** Constants */
-      daysOfWeek: ["sun", "mon", "tue", "wed", "thu", "fri", "sat"],
       months: [
         "jan",
         "feb",
@@ -963,6 +967,12 @@ export default {
   },
   computed: {
     ...mapState(["authUser", "overlayAvailabilitiesEnabled"]),
+    /** Returns the days of the week in the correct order */
+    daysOfWeek() {
+      return !this.startCalendarOnMonday
+        ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+        : ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    },
     /** Only allow scheduling when a curScheduledEvent exists */
     allowScheduleEvent() {
       return !!this.curScheduledEvent
@@ -1151,9 +1161,14 @@ export default {
       let numDaysFromPrevMonth = 0
       const numDaysInCurMonth = lastDayOfCurMonth.getUTCDate()
       const numDaysFromNextMonth = 6 - lastDayOfCurMonth.getUTCDay()
-      if (lastDayOfPrevMonth.getUTCDay() < 6) {
+      const hasDaysFromPrevMonth = !this.startCalendarOnMonday
+        ? lastDayOfPrevMonth.getUTCDay() < 6
+        : lastDayOfPrevMonth.getUTCDay() != 0
+      if (hasDaysFromPrevMonth) {
         curDate.setUTCDate(
-          curDate.getUTCDate() - lastDayOfPrevMonth.getUTCDay()
+          curDate.getUTCDate() -
+            (lastDayOfPrevMonth.getUTCDay() -
+              (this.startCalendarOnMonday ? 1 : 0))
         )
         numDaysFromPrevMonth = lastDayOfPrevMonth.getUTCDay() + 1
       } else {
@@ -3267,6 +3282,9 @@ export default {
     },
     showBestTimes() {
       this.onShowBestTimesChange()
+    },
+    startCalendarOnMonday() {
+      localStorage["startCalendarOnMonday"] = this.startCalendarOnMonday
     },
     bufferTime(cur, prev) {
       if (cur.enabled !== prev.enabled || cur.enabled) {

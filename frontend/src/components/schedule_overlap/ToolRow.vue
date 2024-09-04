@@ -10,6 +10,20 @@
         `"
         class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-4"
       >
+        <!-- Start on monday -->
+        <v-switch
+          v-if="event.daysOnly"
+          inset
+          id="start-calendar-on-monday-toggle"
+          :input-value="startCalendarOnMonday"
+          @change="(val) => $emit('update:startCalendarOnMonday', !!val)"
+          hide-details
+        >
+          <template v-slot:label>
+            <div class="tw-text-sm tw-text-black">Start on Monday</div>
+          </template>
+        </v-switch>
+
         <!-- Select timezone -->
         <div v-if="!event.daysOnly" class="tw-flex tw-items-center tw-gap-2">
           <TimezoneSelector
@@ -143,6 +157,7 @@ export default {
     state: { type: String, required: true },
     states: { type: Object, required: true },
     curTimezone: { type: Object, required: true },
+    startCalendarOnMonday: { type: Boolean, default: false },
     showBestTimes: { type: Boolean, required: true },
     hideIfNeeded: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },
