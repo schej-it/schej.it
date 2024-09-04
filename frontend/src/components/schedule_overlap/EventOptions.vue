@@ -43,6 +43,20 @@
           <div class="tw-text-sm tw-text-black">Overlay calendar events</div>
         </template>
       </v-switch>
+
+      <!-- Start on monday -->
+      <v-switch
+        v-if="event.daysOnly"
+        inset
+        id="start-calendar-on-monday-toggle"
+        :input-value="startCalendarOnMonday"
+        @change="(val) => $emit('update:startCalendarOnMonday', !!val)"
+        hide-details
+      >
+        <template v-slot:label>
+          <div class="tw-text-sm tw-text-black">Start on Monday</div>
+        </template>
+      </v-switch>
     </div>
   </ExpandableSection>
 </template>
@@ -65,7 +79,8 @@ export default {
     hideIfNeeded: { type: Boolean, required: true },
     numResponses: { type: Number, required: true },
     showEventOptions: { type: Boolean, required: true },
-    showCalendarEvents: { type: Boolean, required: false },
+    showCalendarEvents: { type: Boolean, default: false },
+    startCalendarOnMonday: { type: Boolean, default: false },
   },
 
   computed: {
