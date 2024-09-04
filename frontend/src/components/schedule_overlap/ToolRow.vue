@@ -58,6 +58,10 @@
             @update:hideIfNeeded="(val) => $emit('update:hideIfNeeded', val)"
             :showEventOptions="showEventOptions"
             @toggleShowEventOptions="$emit('toggleShowEventOptions')"
+            :startCalendarOnMonday="startCalendarOnMonday"
+            @update:startCalendarOnMonday="
+              (val) => $emit('update:startCalendarOnMonday', val)
+            "
             :numResponses="numResponses"
           />
         </template>
@@ -143,6 +147,7 @@ export default {
     state: { type: String, required: true },
     states: { type: Object, required: true },
     curTimezone: { type: Object, required: true },
+    startCalendarOnMonday: { type: Boolean, default: false },
     showBestTimes: { type: Boolean, required: true },
     hideIfNeeded: { type: Boolean, required: true },
     isWeekly: { type: Boolean, required: true },

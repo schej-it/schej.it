@@ -268,6 +268,10 @@
           @update:showCalendarEvents="
             (val) => $emit('update:showCalendarEvents', val)
           "
+          :startCalendarOnMonday="startCalendarOnMonday"
+          @update:startCalendarOnMonday="
+            (val) => $emit('update:startCalendarOnMonday', val)
+          "
           :numResponses="respondents.length"
         />
       </template>
@@ -386,6 +390,7 @@ export default {
     timezone: { type: Object, required: true },
     showBestTimes: { type: Boolean, required: true },
     hideIfNeeded: { type: Boolean, required: true },
+    startCalendarOnMonday: { type: Boolean, default: false },
     showEventOptions: { type: Boolean, required: true },
     guestAddedAvailability: { type: Boolean, required: true },
     addingAvailabilityAsGuest: { type: Boolean, required: true },
