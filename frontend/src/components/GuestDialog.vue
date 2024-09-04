@@ -28,6 +28,7 @@
             placeholder="Enter your name..."
             autofocus
             hide-details="auto"
+            autocomplete="name"
             solo
           ></v-text-field>
           <v-text-field
