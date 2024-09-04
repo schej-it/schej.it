@@ -1,12 +1,13 @@
 <template>
   <ExpandableSection
-    v-if="numResponses > 1"
+    v-if="event.daysOnly || numResponses >= 1"
     label="Options"
     :value="showEventOptions"
     @input="$emit('toggleShowEventOptions')"
   >
     <div class="tw-flex tw-flex-col tw-gap-4 tw-pt-2">
       <v-switch
+        v-if="numResponses > 1"
         inset
         id="show-best-times-toggle"
         :input-value="showBestTimes"
@@ -20,6 +21,7 @@
         </template>
       </v-switch>
       <v-switch
+        v-if="numResponses >= 1"
         inset
         id="hide-if-needed-toggle"
         :input-value="hideIfNeeded"
