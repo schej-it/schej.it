@@ -1,40 +1,42 @@
 <template>
-  <div class="tw-h-full tw-bg-light-gray tw-pt-24">
-    <h1 class="tw-text-center tw-text-3xl tw-font-medium md:tw-text-4xl">
-      Schej is free <br class="tw-block md:tw-hidden" />
-      for most people
-    </h1>
-    <div class="tw-mt-5 tw-text-center tw-text-base md:tw-text-lg">
-      Pay us if you want to support us :)
+  <div class="tw-h-full tw-pt-24">
+    <div class="tw-flex tw-justify-center">
+      <div
+        class="tw-w-fit tw-bg-gradient-to-r tw-from-lightest-green tw-to-darkest-green tw-bg-clip-text tw-pb-2 tw-text-center tw-text-5xl tw-font-medium tw-text-transparent"
+      >
+        Free to Schej,
+        <br tw="tw-block" />
+        upgrade as you go!
+      </div>
     </div>
     <div
-      class="tw-mt-10 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-6 tw-p-4 md:tw-flex-row md:tw-items-start"
+      class="tw-text-md tw-mt-5 tw-px-10 tw-text-center tw-text-base tw-text-very-dark-gray"
+    >
+      Support the Schej team and unlock more scheduling features.
+    </div>
+    <div
+      class="tw-mt-10 tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-6 tw-p-4 md:tw-flex-row md:tw-items-end"
     >
       <PricingCard v-bind="pricingPlans.FREE">
         <template #button>
-          <v-btn color="primary" class="tw-w-full tw-text-white"
+          <v-btn
+            color="tw-bg-white"
+            class="tw-w-full"
+            style="box-shadow: 0 0 #0000 !important"
             >Create an event</v-btn
           >
         </template>
       </PricingCard>
       <PricingCard v-bind="pricingPlans.PRO">
         <template #button>
-          <v-btn
-            color="tw-bg-very-light-gray"
-            class="tw-w-full"
-            style="box-shadow: 0 0 #0000 !important"
-            >Continue with Pro</v-btn
+          <v-btn color="tw-bg-white" class="tw-w-full tw-text-green"
+            >Upgrade to Pro</v-btn
           >
         </template>
       </PricingCard>
       <PricingCard v-bind="pricingPlans.ENTERPRISE">
         <template #button>
-          <v-btn
-            color="tw-bg-very-light-gray"
-            class="tw-w-full"
-            style="box-shadow: 0 0 #0000 !important"
-            >Contact us</v-btn
-          >
+          <v-btn color="tw-bg-white" class="tw-w-full">Contact us</v-btn>
         </template>
       </PricingCard>
     </div>

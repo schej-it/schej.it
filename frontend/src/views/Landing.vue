@@ -18,6 +18,7 @@
           <LandingPageHeader>
             <v-btn text href="#how-it-works">How it works</v-btn>
             <v-btn text href="/blog">Blog</v-btn>
+            <v-btn text href="/pricing">Pricing</v-btn>
             <v-btn text @click="signIn">Sign in</v-btn>
           </LandingPageHeader>
         </div>

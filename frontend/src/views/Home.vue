@@ -15,7 +15,7 @@
     </template>
     <v-fade-transition>
       <div
-        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
+        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366] tw-relative"
         v-if="!loading || eventsNotEmpty"
       >
         <div class="tw-grid tw-gap-4 sm:tw-gap-8">
@@ -24,6 +24,12 @@
             :key="t"
             :eventType="eventType"
           ></EventType>
+        </div>
+
+        <!-- Temporary add button -->
+
+        <div class="tw-absolute tw-top-3 tw-right-6">
+          <AddButton></AddButton>
         </div>
       </div>
     </v-fade-transition>
@@ -39,6 +45,7 @@
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
+import AddButton from "@/components/home/AddButton.vue"
 import { mapState, mapActions } from "vuex"
 import { eventTypes } from "@/constants"
 import { isPhone } from "@/utils"
@@ -54,6 +61,7 @@ export default {
     EventType,
     BottomFab,
     CreateSpeedDial,
+    AddButton,
   },
 
   props: {
