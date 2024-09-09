@@ -21,7 +21,7 @@
         </template>
       </v-switch>
       <v-switch
-        v-if="numResponses >= 1"
+        v-if="numResponses >= 1 && !isGroup"
         inset
         id="hide-if-needed-toggle"
         :input-value="hideIfNeeded"
