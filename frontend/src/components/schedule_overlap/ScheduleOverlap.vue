@@ -3078,7 +3078,7 @@ export default {
     toggleSubCalendarAccount(payload) {
       this.sharedCalendarAccounts[
         getCalendarAccountKey(payload.email, payload.calendarType)
-      ].enabled = payload.enabled
+      ].subCalendars[payload.subCalendarId].enabled = payload.enabled
       this.sharedCalendarAccounts = JSON.parse(
         JSON.stringify(this.sharedCalendarAccounts)
       )

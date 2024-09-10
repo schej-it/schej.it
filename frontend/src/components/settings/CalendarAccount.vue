@@ -9,6 +9,7 @@
       >
         <div v-if="toggleState" class="tw-flex tw-items-center">
           <v-checkbox
+            v-model="account.enabled"
             @change="(enabled) => toggleCalendarAccount(enabled)"
             hide-details
           />
