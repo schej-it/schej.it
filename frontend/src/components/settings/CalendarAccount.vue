@@ -9,7 +9,6 @@
       >
         <div v-if="toggleState" class="tw-flex tw-items-center">
           <v-checkbox
-            v-model="account.enabled"
             @change="(enabled) => toggleCalendarAccount(enabled)"
             hide-details
           />
@@ -95,10 +94,9 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapMutations } from "vuex"
+import { mapState, mapActions } from "vuex"
 import { authTypes, calendarTypes } from "@/constants"
 import {
-  get,
   post,
   _delete,
   signInGoogle,
@@ -205,12 +203,14 @@ export default {
       } else {
         this.$emit("toggleSubCalendarAccount", {
           email: this.account.email,
+          calendarType: this.account.calendarType,
           enabled,
           subCalendarId,
         })
       }
     },
     toggleCalendarAccount(enabled) {
+
       if (!enabled) this.showSubCalendars = false
 
       if (this.syncWithBackend) {
@@ -226,6 +226,7 @@ export default {
       } else {
         this.$emit("toggleCalendarAccount", {
           email: this.account.email,
+          calendarType: this.account.calendarType,
           enabled,
         })
       }

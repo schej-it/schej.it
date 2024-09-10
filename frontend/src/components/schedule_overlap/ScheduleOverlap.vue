@@ -788,6 +788,7 @@ import {
   lightOrDark,
   removeTransparencyFromHex,
   userPrefers12h,
+  getCalendarAccountKey,
   getISODateString,
   getDateWithTimezone,
   timeNumToTimeString,
@@ -3065,7 +3066,9 @@ export default {
 
     /** Toggles calendar account - in groups to enable/disable calendars */
     toggleCalendarAccount(payload) {
-      this.sharedCalendarAccounts[payload.email].enabled = payload.enabled
+      this.sharedCalendarAccounts[
+        getCalendarAccountKey(payload.email, payload.calendarType)
+      ].enabled = payload.enabled
       this.sharedCalendarAccounts = JSON.parse(
         JSON.stringify(this.sharedCalendarAccounts)
       )
@@ -3073,8 +3076,8 @@ export default {
 
     /** Toggles sub calendar account - in groups to enable/disable sub calendars */
     toggleSubCalendarAccount(payload) {
-      this.sharedCalendarAccounts[payload.email].subCalendars[
-        payload.subCalendarId
+      this.sharedCalendarAccounts[
+        getCalendarAccountKey(payload.email, payload.calendarType)
       ].enabled = payload.enabled
       this.sharedCalendarAccounts = JSON.parse(
         JSON.stringify(this.sharedCalendarAccounts)
