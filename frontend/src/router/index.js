@@ -70,7 +70,7 @@ const router = new VueRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authRoutes = ["home", "settings"]
-  const noAuthRoutes = ["landing", "pricing"]
+  const noAuthRoutes = ["landing"]
   try {
     await get("/auth/status")
 

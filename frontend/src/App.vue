@@ -49,6 +49,7 @@
         >
           Donate
         </v-btn>
+        <v-btn v-if="$route.name !== 'pricing' && !isPhone" text href="/pricing">Pricing</v-btn>
         <v-btn
           v-if="$route.name === 'home' && !isPhone"
           color="primary"

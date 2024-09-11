@@ -2,7 +2,7 @@
   <div class="tw-h-full tw-pt-24">
     <div class="tw-flex tw-justify-center">
       <div
-        class="tw-w-fit tw-bg-gradient-to-r tw-from-lightest-green tw-to-darkest-green tw-bg-clip-text tw-pb-2 tw-text-center tw-text-5xl tw-font-medium tw-text-transparent"
+        class="tw-w-fit tw-bg-gradient-to-r tw-from-lightest-green tw-to-darkest-green tw-bg-clip-text tw-pb-2 tw-text-center tw-text-4xl tw-font-medium tw-text-transparent sm:tw-text-5xl"
       >
         Free to Schej,
         <br tw="tw-block" />
@@ -20,6 +20,7 @@
       <PricingCard v-bind="pricingPlans.FREE">
         <template #button>
           <v-btn
+            href="/"
             color="tw-bg-white"
             class="tw-w-full"
             style="box-shadow: 0 0 #0000 !important"
@@ -29,7 +30,10 @@
       </PricingCard>
       <PricingCard v-bind="pricingPlans.PRO">
         <template #button>
-          <v-btn color="tw-bg-white" class="tw-w-full tw-text-green"
+          <v-btn
+            href="/upgrade-to-pro"
+            color="tw-bg-white"
+            class="tw-w-full tw-text-green"
             >Upgrade to Pro</v-btn
           >
         </template>
@@ -49,8 +53,23 @@ import { pricingPlans } from "@/constants"
 
 export default {
   name: "Pricing",
+
+  metaInfo: {
+    title: "Pricing - Schej",
+  },
+
   components: {
     PricingCard,
+  },
+
+  methods: {
+    createNew() {
+      this.$emit("setNewDialogOptions", {
+        show: true,
+        contactsPayload: {},
+        openNewGroup: false,
+      })
+    },
   },
 
   computed: {
