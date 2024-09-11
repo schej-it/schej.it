@@ -45,10 +45,13 @@ export default {
     this.scrollContainer.removeEventListener("scroll", this.checkScroll)
   },
   methods: {
+    /**
+     * Checks if the scroll bar is scrolled to the bottom of the client
+     */
     checkScroll() {
       const { scrollHeight, clientHeight, scrollTop } = this.scrollContainer
       this.showGradient =
-        scrollHeight > clientHeight && scrollTop < scrollHeight - clientHeight
+        scrollHeight > clientHeight && scrollTop < scrollHeight - clientHeight - 1 // 1px tolerance
     },
     scrollToBottom() {
       this.scrollContainer.scrollTop = this.scrollContainer.scrollHeight
