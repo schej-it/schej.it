@@ -8,6 +8,12 @@
     >
       mdi-apple
     </v-icon>
+    <div
+      v-else
+      class="tw-flex tw-size-full tw-items-center tw-justify-center tw-bg-green tw-text-white"
+    >
+      {{ user.firstName?.charAt(0) ?? user.email?.charAt(0) ?? "" }}
+    </div>
   </v-avatar>
 </template>
 
