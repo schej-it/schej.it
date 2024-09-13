@@ -9,6 +9,7 @@ import (
 	"schej.it/server/logger"
 	"schej.it/server/models"
 	"schej.it/server/services"
+	"schej.it/server/utils"
 )
 
 func SearchContacts(user *models.User, query string) ([]models.User, *errs.GoogleAPIError) {
@@ -25,9 +26,13 @@ func SearchContacts(user *models.User, query string) ([]models.User, *errs.Googl
 		} `json:"emailAddresses"`
 	}
 
+	// Set calendar auth to the user's primary google calendar account
+	calendarAuth := user.CalendarAccounts[utils.GetCalendarAccountKey(user.Email, models.GoogleCalendarType)].OAuth2CalendarAuth
+
 	// Search contacts
-	response := services.CallGoogleApi(
+	response := services.CallApi(
 		user,
+		calendarAuth,
 		"GET",
 		fmt.Sprintf("https://people.googleapis.com/v1/people:searchContacts?query=%s&pageSize=10&readMask=names,emailAddresses,photos", url.QueryEscape(query)),
 		nil,
@@ -51,8 +56,9 @@ func SearchContacts(user *models.User, query string) ([]models.User, *errs.Googl
 	}{}
 	if len(query) > 0 {
 		// Search Directory
-		response = services.CallGoogleApi(
+		response = services.CallApi(
 			user,
+			calendarAuth,
 			"GET",
 			fmt.Sprintf("https://people.googleapis.com/v1/people:searchDirectoryPeople?query=%s&pageSize=10&readMask=names,emailAddresses,photos&sources=DIRECTORY_SOURCE_TYPE_DOMAIN_PROFILE", url.QueryEscape(query)),
 			nil,

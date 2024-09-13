@@ -153,6 +153,15 @@ func GetCalendarAccountKey(email string, calendarType models.CalendarType) strin
 	return fmt.Sprintf("%s_%s", email, calendarType)
 }
 
+func GetPrimaryAccountKey(user *models.User) string {
+	// Before primary account key was added, primary account was always the user's google calendar
+	if user.PrimaryAccountKey == nil {
+		return GetCalendarAccountKey(user.Email, models.GoogleCalendarType)
+	}
+
+	return *user.PrimaryAccountKey
+}
+
 func Encode(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }

@@ -15,7 +15,7 @@ import (
 )
 
 type GoogleCalendar struct {
-	models.GoogleCalendarAuth
+	models.OAuth2CalendarAuth
 }
 
 func (calendar GoogleCalendar) GetCalendarList() (map[string]models.SubCalendar, error) {

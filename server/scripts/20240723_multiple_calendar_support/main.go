@@ -63,7 +63,7 @@ func main() {
 		for _, calendarAccount := range oldUser.CalendarAccounts {
 			newCalendarAccount := models.CalendarAccount{
 				CalendarType: models.GoogleCalendarType,
-				GoogleCalendarAuth: &models.GoogleCalendarAuth{
+				OAuth2CalendarAuth: &models.OAuth2CalendarAuth{
 					AccessToken:           calendarAccount.AccessToken,
 					AccessTokenExpireDate: calendarAccount.AccessTokenExpireDate,
 					RefreshToken:          calendarAccount.RefreshToken,

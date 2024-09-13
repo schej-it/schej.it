@@ -22,6 +22,9 @@ type User struct {
 	// additional accounts the user wants to see google calendar events for
 	CalendarAccounts map[string]CalendarAccount `json:"calendarAccounts" bson:"calendarAccounts,omitempty"`
 
+	// The calendarAccountKey of the account the user first signed in with
+	PrimaryAccountKey *string `json:"primaryAccountKey" bson:"primaryAccountKey,omitempty"`
+
 	// Google OAuth stuff
 	TokenOrigin TokenOriginType `json:"-" bson:"tokenOrigin,omitempty"`
 

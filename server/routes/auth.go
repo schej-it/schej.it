@@ -18,6 +18,7 @@ import (
 	"schej.it/server/services/auth"
 	"schej.it/server/services/calendar"
 	"schej.it/server/services/listmonk"
+	"schej.it/server/services/microsoftgraph"
 	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
@@ -36,23 +37,25 @@ func InitAuth(router *gin.RouterGroup) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param payload body object{code=string,timezoneOffset=int} true "Object containing the Google authorization code and the user's timezone offset"
+// @Param payload body object{code=string,scope=string,calendarType=string,timezoneOffset=int} true "Object containing the Google authorization code, scope, calendar type, and the user's timezone offset"
 // @Success 200
 // @Router /auth/sign-in [post]
 func signIn(c *gin.Context) {
 	payload := struct {
-		Code           string `json:"code" binding:"required"`
-		TimezoneOffset int    `json:"timezoneOffset" binding:"required"`
+		Code           string              `json:"code" binding:"required"`
+		Scope          string              `json:"scope" binding:"required"`
+		CalendarType   models.CalendarType `json:"calendarType" binding:"required"`
+		TimezoneOffset int                 `json:"timezoneOffset" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
-	tokens := auth.GetTokensFromAuthCode(payload.Code, utils.GetOrigin(c))
+	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
 
-	signInHelper(c, tokens.AccessToken, tokens.IdToken, tokens.ExpiresIn, tokens.RefreshToken, payload.TimezoneOffset, models.WEB)
+	user := signInHelper(c, tokens, models.WEB, payload.CalendarType, payload.TimezoneOffset)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, user)
 }
 
 // @Summary Signs user in from mobile
@@ -60,38 +63,72 @@ func signIn(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param payload body object{timezoneOffset=int,accessToken=string,idToken=string,expiresIn=int,refreshToken=string,scope=string} true "Object containing the Google authorization code and the user's timezone offset"
+// @Param payload body object{timezoneOffset=int,accessToken=string,scope=string,idToken=string,expiresIn=int,refreshToken=string,tokenOrigin=string,calendarType=string} true "Object containing the Google authorization code, calendar type, and the user's timezone offset"
 // @Success 200
 // @Router /auth/sign-in-mobile [post]
 func signInMobile(c *gin.Context) {
 	payload := struct {
-		TimezoneOffset int                    `json:"timezoneOffset" binding:"required"`
 		AccessToken    string                 `json:"accessToken" binding:"required"`
+		Scope          string                 `json:"scope" binding:"required"`
 		IdToken        string                 `json:"idToken" binding:"required"`
 		ExpiresIn      int                    `json:"expiresIn" binding:"required"`
 		RefreshToken   string                 `json:"refreshToken" binding:"required"`
 		TokenOrigin    models.TokenOriginType `json:"tokenOrigin" binding:"required"`
+		CalendarType   models.CalendarType    `json:"calendarType" binding:"required"`
+		TimezoneOffset int                    `json:"timezoneOffset" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
-	signInHelper(c, payload.AccessToken, payload.IdToken, payload.ExpiresIn, payload.RefreshToken, payload.TimezoneOffset, payload.TokenOrigin)
+	signInHelper(
+		c,
+		auth.TokenResponse{
+			AccessToken:  payload.AccessToken,
+			IdToken:      payload.IdToken,
+			ExpiresIn:    payload.ExpiresIn,
+			RefreshToken: payload.RefreshToken,
+			Scope:        payload.Scope,
+		},
+		payload.TokenOrigin,
+		payload.CalendarType,
+		payload.TimezoneOffset,
+	)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Helper function to sign user in with the given parameters from the google oauth route
-func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn int, refreshToken string, timezoneOffset int, tokenOrigin models.TokenOriginType) {
+func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.TokenOriginType, calendarType models.CalendarType, timezoneOffset int) models.User {
 	// Get access token expire time
-	accessTokenExpireDate := utils.GetAccessTokenExpireDate(expiresIn)
+	accessTokenExpireDate := utils.GetAccessTokenExpireDate(token.ExpiresIn)
 
-	// Get user info from JWT
-	claims := utils.ParseJWT(idToken)
-	email, _ := claims.GetStr("email")
-	firstName, _ := claims.GetStr("given_name")
-	lastName, _ := claims.GetStr("family_name")
-	picture, _ := claims.GetStr("picture")
+	// Construct calendar auth object
+	calendarAuth := models.OAuth2CalendarAuth{
+		AccessToken:           token.AccessToken,
+		AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
+		RefreshToken:          token.RefreshToken,
+		Scope:                 token.Scope,
+	}
+
+	var email, firstName, lastName, picture string
+	if calendarType == models.GoogleCalendarType {
+		// Get user info from JWT
+		claims := utils.ParseJWT(token.IdToken)
+		email, _ = claims.GetStr("email")
+		firstName, _ = claims.GetStr("given_name")
+		lastName, _ = claims.GetStr("family_name")
+		picture, _ = claims.GetStr("picture")
+	} else if calendarType == models.OutlookCalendarType {
+		// Get user info from microsoft graph
+		userInfo := microsoftgraph.GetUserInfo(nil, &calendarAuth)
+		email = userInfo.Email
+		firstName = userInfo.FirstName
+		lastName = userInfo.LastName
+		picture = ""
+	}
+
+	primaryAccountKey := utils.GetCalendarAccountKey(email, calendarType)
 
 	// Create user object to create new user or update existing user
 	userData := models.User{
@@ -100,23 +137,21 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 		LastName:  lastName,
 		Picture:   picture,
 
+		PrimaryAccountKey: &primaryAccountKey,
+
 		TimezoneOffset: timezoneOffset,
 		TokenOrigin:    tokenOrigin,
 	}
 
 	calendarAccount := models.CalendarAccount{
-		CalendarType: models.GoogleCalendarType,
-		GoogleCalendarAuth: &models.GoogleCalendarAuth{
-			AccessToken:           accessToken,
-			AccessTokenExpireDate: primitive.NewDateTimeFromTime(accessTokenExpireDate),
-			RefreshToken:          refreshToken,
-		},
+		CalendarType:       calendarType,
+		OAuth2CalendarAuth: &calendarAuth,
 
 		Email:   email,
 		Picture: picture,
 		Enabled: utils.TruePtr(), // Workaround to pass a boolean pointer
 	}
-	calendarAccountKey := utils.GetCalendarAccountKey(email, models.GoogleCalendarType)
+	calendarAccountKey := utils.GetCalendarAccountKey(email, calendarType)
 
 	var userId primitive.ObjectID
 	findResult := db.UsersCollection.FindOne(context.Background(), bson.M{"email": email})
@@ -190,6 +225,9 @@ func signInHelper(c *gin.Context, accessToken string, idToken string, expiresIn 
 	session := sessions.Default(c)
 	session.Set("userId", userId.Hex())
 	session.Save()
+
+	userData.Id = userId
+	return userData
 }
 
 // @Summary Signs user out

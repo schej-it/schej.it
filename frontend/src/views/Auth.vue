@@ -13,10 +13,10 @@ export default {
   },
 
   async created() {
-    let { error, code, state } = this.$route.query
+    let { error, code, scope, state } = this.$route.query
     if (error) this.$router.replace({ name: "home" })
 
-    if (state) state = JSON.parse(state)
+    if (state) state = JSON.parse(decodeURIComponent(state))
 
     // Sign in and set auth user
     try {
@@ -24,19 +24,30 @@ export default {
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT ||
         state?.type === authTypes.ADD_CALENDAR_ACCOUNT_FROM_EDIT
       ) {
-        await post("/user/add-google-calendar-account", { code })
+        if (state.calendarType === calendarTypes.GOOGLE) {
+          await post("/user/add-google-calendar-account", { code, scope })
+        } else if (state.calendarType === calendarTypes.OUTLOOK) {
+          await post("/user/add-outlook-calendar-account", {
+            code,
+            scope: state.scope,
+          })
+        } else {
+          throw new Error("Invalid calendar type")
+        }
       } else {
-        await post("/auth/sign-in", {
+        const user = await post("/auth/sign-in", {
           code,
+          scope: scope ?? state.scope,
+          calendarType: state.calendarType,
           timezoneOffset: new Date().getTimezoneOffset(),
         })
-        const authUser = await get("/user/profile")
-        this.setAuthUser(authUser)
+        console.log("user", user)
+        this.setAuthUser(user)
 
-        this.$posthog?.identify(authUser._id, {
-          email: authUser.email,
-          firstName: authUser.firstName,
-          lastName: authUser.lastName,
+        this.$posthog?.identify(user._id, {
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
         })
       }
 
@@ -118,6 +129,8 @@ export default {
               })
             }
             break
+          default:
+            this.$router.replace({ name: "home" })
         }
       } else {
         this.$router.replace({ name: "home" })
