@@ -138,9 +138,11 @@ export default {
       )
     },
     accountHasError() {
-      return this.calendarEventsMap?.[
-        getCalendarAccountKey(this.account.email, this.account.calendarType)
-      ]?.error
+      const account =
+        this.calendarEventsMap?.[
+          getCalendarAccountKey(this.account.email, this.account.calendarType)
+        ]
+      return account?.error && account?.calendarEvents?.length === 0
     },
     /** don't show account if in toggle state and account has an error */
     showAccount() {
