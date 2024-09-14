@@ -413,6 +413,7 @@ export default {
     weekOffset: 0,
 
     availabilityBtnOpacity: 1,
+    hasRefetchedAuthUserCalendarEvents: false,
 
     // Availability Groups
     calendarAvailabilities: {}, // maps userId to their calendar events
@@ -754,17 +755,17 @@ export default {
         .then((eventsMap) => {
           // If all calendars have error, then set calendarPermissionGranted to false
           // TODO: What happens if user signed in without enabling calendar??
-          let noError = false
-          for (const key in eventsMap) {
-            if (!eventsMap[key].error) {
-              noError = true
-              break
-            }
-          }
-          if (!noError) {
-            this.calendarPermissionGranted = false
-            return
-          }
+          // let noError = false
+          // for (const key in eventsMap) {
+          //   if (!eventsMap[key].error) {
+          //     noError = true
+          //     break
+          //   }
+          // }
+          // if (!noError) {
+          //   this.calendarPermissionGranted = false
+          //   return
+          // }
 
           // Don't set calendar events / set availability if user has already
           // selected a different weekoffset by the time these calendar events load
@@ -789,6 +790,20 @@ export default {
           this.calendarPermissionGranted = !Object.values(
             this.calendarEventsMap
           ).every((c) => Boolean(c.error))
+
+          if (!this.hasRefetchedAuthUserCalendarEvents) {
+            const hasAtLeastOneError = Object.values(
+              this.calendarEventsMap
+            ).some((c) => Boolean(c.error))
+
+            // Refetch calendar if there is an error
+            if (hasAtLeastOneError) {
+              this.hasRefetchedAuthUserCalendarEvents = true
+              setTimeout(() => {
+                this.fetchAuthUserCalendarEvents()
+              }, 1000)
+            }
+          }
         })
         .catch((err) => {
           console.error(err)
