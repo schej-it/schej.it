@@ -256,6 +256,21 @@
             authUser ? "+ Add guest availability" : "+ Add availability"
           }}</v-btn
         >
+        <v-switch
+          v-if="respondents.length > 1"
+          class="tw-mb-2"
+          inset
+          id="show-best-times-toggle"
+          :input-value="showBestTimes"
+          @change="(val) => $emit('update:showBestTimes', !!val)"
+          hide-details
+        >
+          <template v-slot:label>
+            <div class="tw-text-sm tw-text-black">
+              Show best {{ event.daysOnly ? "days" : "times" }}
+            </div>
+          </template>
+        </v-switch>
         <EventOptions
           :event="event"
           :showEventOptions="showEventOptions"

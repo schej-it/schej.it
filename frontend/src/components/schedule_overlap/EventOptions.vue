@@ -7,7 +7,7 @@
   >
     <div class="tw-flex tw-flex-col tw-gap-4 tw-pt-2">
       <v-switch
-        v-if="numResponses > 1"
+        v-if="numResponses > 1 && isPhone"
         inset
         id="show-best-times-toggle"
         :input-value="showBestTimes"
