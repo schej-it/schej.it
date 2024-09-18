@@ -258,7 +258,7 @@
         >
         <v-switch
           v-if="respondents.length > 1"
-          class="tw-mb-2"
+          class="tw-mb-4"
           inset
           id="show-best-times-toggle"
           :input-value="showBestTimes"
