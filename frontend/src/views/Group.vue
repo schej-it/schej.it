@@ -54,7 +54,7 @@ export default {
 
       let found = false
       for (const attendee of attendees) {
-        if (attendee.email === this.authUser.email) {
+        if (attendee.email.toLowerCase() === this.authUser.email.toLowerCase()) {
           // The line below is commented out because we want attendee to be able to rejoin group after declining
           // if (attendee.declined) return true
 
