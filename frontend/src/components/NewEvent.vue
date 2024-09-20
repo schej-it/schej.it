@@ -75,17 +75,21 @@
                 class="tw-mb-6 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
               >
                 <v-select
-                  v-model="startTime"
+                  :value="startTime"
+                  @input="(t) => (startTime = t.time)"
                   menu-props="auto"
                   :items="times"
+                  return-object
                   hide-details
                   solo
                 ></v-select>
                 <div>to</div>
                 <v-select
-                  v-model="endTime"
+                  :value="endTime"
+                  @input="(t) => (endTime = t.time)"
                   menu-props="auto"
                   :items="times"
+                  return-object
                   hide-details
                   solo
                 ></v-select>

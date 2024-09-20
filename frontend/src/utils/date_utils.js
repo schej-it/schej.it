@@ -360,20 +360,22 @@ export const getTimeOptions = () => {
 
   const times = []
   if (prefers12h) {
+    times.push({ text: "12 am", time: 0, value: 0 })
     for (let h = 1; h < 12; ++h) {
-      times.push({ text: `${h} am`, value: h })
+      times.push({ text: `${h} am`, time: h, value: h })
     }
     for (let h = 0; h < 12; ++h) {
-      times.push({ text: `${h == 0 ? 12 : h} pm`, value: h + 12 })
+      times.push({ text: `${h == 0 ? 12 : h} pm`, time: h + 12, value: h + 12 })
     }
-    times.push({ text: "12 am", value: 0 })
+    times.push({ text: "12 am", time: 0, value: 24 })
 
     return times
   }
 
   for (let h = 0; h < 24; ++h) {
-    times.push({ text: `${h}:00`, value: h })
+    times.push({ text: `${h}:00`, time: h, value: h })
   }
+  times.push({ text: "0:00", time: 0, value: 24 })
   return times
 }
 

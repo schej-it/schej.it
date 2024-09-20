@@ -18,10 +18,11 @@
               menu-props="auto"
               dense
               hide-details
+              return-object
               class="-tw-mt-0.5 tw-w-20 tw-text-xs"
               :items="times"
               :value="workingHours.startTime"
-              @input="(val) => updateWorkingHours('startTime', val)"
+              @input="(val) => updateWorkingHours('startTime', val.time)"
               @click="
                 (e) => {
                   e.preventDefault()
@@ -34,10 +35,11 @@
               menu-props="auto"
               dense
               hide-details
+              return-object
               class="-tw-mt-0.5 tw-w-20 tw-text-xs"
               :items="times"
               :value="workingHours.endTime"
-              @input="(val) => updateWorkingHours('endTime', val)"
+              @input="(val) => updateWorkingHours('endTime', val.time)"
               @click="
                 (e) => {
                   e.preventDefault()
