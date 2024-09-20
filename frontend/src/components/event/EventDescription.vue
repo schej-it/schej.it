@@ -1,24 +1,17 @@
 <template>
   <div class="tw-mt-1 tw-max-w-full sm:tw-mt-2 sm:tw-max-w-[calc(100%-236px)]">
-    <v-dialog v-model="showFullDescription" width="500" content-class="tw-m-0">
-      <v-card>
-        <v-card-title class="tw-flex tw-items-center tw-justify-between">
-          Description
-          <v-btn icon @click="showFullDescription = false" class="-tw-mr-2">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>{{ event.description }}</v-card-text>
-      </v-card>
-    </v-dialog>
-
     <div
       v-if="event.description && !isEditing"
-      class="tw-inline-flex tw-max-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-light-gray-stroke tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
-      @click="showFullDescription = true"
+      class="tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-light-gray-stroke tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
     >
-      <div class="tw-grow tw-truncate">
-        {{ event.description }}
+      <div class="tw-grow tw-space-y-2">
+        <div
+          class="tw-min-h-5 tw-leading-6"
+          v-for="(line, i) in event.description.split('\n')"
+          :key="i"
+        >
+          {{ line }}
+        </div>
       </div>
       <v-btn
         v-if="canEdit"
@@ -44,7 +37,7 @@
         <v-textarea
           v-model="newDescription"
           placeholder="Enter a description..."
-          class="-tw-mt-2 tw-flex-grow tw-text-xs sm:tw-text-sm"
+          class="-tw-mt-0.5 tw-flex-grow tw-p-2 tw-text-xs sm:tw-text-sm"
           autofocus
           :rows="1"
           auto-grow
@@ -90,7 +83,6 @@ export default {
     return {
       isEditing: false,
       newDescription: this.event.description ?? "",
-      showFullDescription: false,
     }
   },
 
