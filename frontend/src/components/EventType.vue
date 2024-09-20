@@ -38,7 +38,7 @@
       <v-expand-transition>
         <div
           v-if="showAll"
-          class="tw-gr id-cols-1 tw-grid tw-gap-2 sm:tw-grid-cols-2 sm:tw-gap-4 lg:tw-grid-cols-3"
+          class="tw-gr id-cols-1 tw-my-3 tw-grid tw-gap-3 sm:tw-grid-cols-2 lg:tw-grid-cols-3"
         >
           <EventItem
             v-for="(event, i) in sortedEvents.slice(
