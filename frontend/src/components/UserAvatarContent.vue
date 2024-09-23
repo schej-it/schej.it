@@ -16,7 +16,7 @@
     </v-icon>
     <div
       v-else
-      class="tw-flex tw-size-full tw-items-center tw-justify-center tw-bg-green tw-text-lg tw-text-white"
+      :class="`tw-flex tw-size-full tw-items-center tw-justify-center tw-bg-green tw-text-${textSize} tw-text-white`"
     >
       {{ user.firstName?.charAt(0) ?? user.email?.charAt(0) ?? "" }}
     </div>
@@ -36,6 +36,9 @@ export default {
   computed: {
     calendarTypes() {
       return calendarTypes
+    },
+    textSize() {
+      return this.size <= 24 ? "sm" : "lg"
     },
   },
 }

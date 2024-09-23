@@ -133,20 +133,22 @@
               @click="(e) => clickRespondent(e, user._id)"
             >
               <div class="tw-relative tw-flex tw-items-center">
-                <UserAvatarContent
-                  v-if="!isGuest(user)"
-                  :user="user"
-                  class="-tw-ml-3 -tw-mr-1 tw-h-4 tw-w-4"
-                ></UserAvatarContent>
-                <v-icon v-else class="tw-ml-1 tw-mr-3" small
-                  >mdi-account</v-icon
-                >
+                <div class="tw-ml-1 tw-mr-3">
+                  <UserAvatarContent
+                    v-if="!isGuest(user)"
+                    :user="user"
+                    :size="16"
+                  ></UserAvatarContent>
+                  <v-avatar v-else :size="16">
+                    <v-icon small>mdi-account</v-icon>
+                  </v-avatar>
+                </div>
 
                 <v-simple-checkbox
                   @click="(e) => $emit('clickRespondent', e, user._id)"
                   color="primary"
                   :value="respondentSelected(user._id)"
-                  class="tw-absolute tw-left-0 tw-top-0 -tw-translate-y-1 tw-bg-white tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+                  class="tw-absolute tw-left-0 -tw-top-[2px] tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
                   :class="
                     respondentSelected(user._id)
                       ? 'tw-opacity-100'
