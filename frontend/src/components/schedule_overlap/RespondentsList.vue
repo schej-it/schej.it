@@ -478,10 +478,10 @@ export default {
     pendingUsers() {
       if (!this.isGroup) return []
 
-      const respondentEmailsSet = new Set(this.respondents.map((r) => r.email))
+      const respondentEmailsSet = new Set(this.respondents.map((r) => r.email.toLowerCase()))
 
       return this.attendees.filter((a) => {
-        if (!a.declined && !respondentEmailsSet.has(a.email)) {
+        if (!a.declined && !respondentEmailsSet.has(a.email.toLowerCase())) {
           return true
         }
         return false

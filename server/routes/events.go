@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -572,7 +573,7 @@ func updateEventResponse(c *gin.Context) {
 			// Set declined to false (in case user declined group in the past)
 			if user != nil {
 				for i, attendee := range utils.Coalesce(event.Attendees) {
-					if attendee.Email == user.Email {
+					if strings.ToLower(attendee.Email) == strings.ToLower(user.Email) {
 						(*event.Attendees)[i].Declined = utils.FalsePtr()
 						break
 					}
@@ -747,7 +748,7 @@ func deleteEventResponse(c *gin.Context) {
 			user := db.GetUserById(userIdString)
 			if user != nil {
 				for i, attendee := range utils.Coalesce(event.Attendees) {
-					if attendee.Email == user.Email {
+					if strings.ToLower(attendee.Email) == strings.ToLower(user.Email) {
 						(*event.Attendees)[i].Declined = utils.TruePtr()
 						break
 					}
