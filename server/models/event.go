@@ -29,6 +29,11 @@ type Event struct {
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
+	// Sign up form details
+	IsSignUpForm    *bool                      `json:"isSignUpForm" bson:"isSignUpForm,omitempty"`
+	SignUpBlocks    *[]SignUpBlock             `json:"signUpBlocks" bson:"signUpBlocks,omitempty"`
+	SignUpResponses map[string]*SignUpResponse `json:"signUpResponses" bson:"signUpResponses,omitempty"`
+
 	// Whether to start the event on Monday (as opposed to Sunday, used for DOW events)
 	StartOnMonday *bool `json:"startOnMonday" bson:"startOnMonday,omitempty"`
 
@@ -85,6 +90,27 @@ type Remindee struct {
 type Attendee struct {
 	Email    string `json:"email" bson:"email,omitempty"`
 	Declined *bool  `json:"declined" bson:"declined,omitempty"`
+}
+
+type SignUpBlock struct {
+	Id        primitive.ObjectID  `json:"_id" bson:"_id,omitempty"`
+	Name      string              `json:"name" bson:"name,omitempty"`
+	Capacity  *int                `json:"capacity" bson:"capacity,omitempty"`
+	StartDate *primitive.DateTime `json:"startDate" bson:"startDate,omitempty"`
+	EndDate   *primitive.DateTime `json:"endDate" bson:"endDate,omitempty"`
+}
+
+type SignUpResponse struct {
+	// The IDs of the sign up blocks that the user has signed up for
+	SignUpBlockIds []primitive.ObjectID `json:"signUpBlockIds" bson:"signUpBlockIds,omitempty"`
+
+	// Guest information
+	Name  string `json:"name" bson:"name,omitempty"`
+	Email string `json:"email" bson:"email,omitempty"`
+
+	// User information
+	UserId primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
+	User   *User              `json:"user" bson:",omitempty"`
 }
 
 func (e *Event) GetId() string {
