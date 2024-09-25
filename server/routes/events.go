@@ -45,7 +45,7 @@ func InitEvents(router *gin.RouterGroup) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,when2meetHref=string,attendees=[]string} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,isSignUpForm=bool,signUpBlocks=[]models.SignUpBlock,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,when2meetHref=string,attendees=[]string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -55,6 +55,10 @@ func createEvent(c *gin.Context) {
 		Duration *float32             `json:"duration" binding:"required"`
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
+
+		// Only for sign up form events
+		IsSignUpForm *bool                 `json:"isSignUpForm"`
+		SignUpBlocks *[]models.SignUpBlock `json:"signUpBlocks"`
 
 		// Only for events (not groups)
 		StartOnMonday            *bool    `json:"startOnMonday"`
@@ -93,6 +97,8 @@ func createEvent(c *gin.Context) {
 		Name:                     payload.Name,
 		Duration:                 payload.Duration,
 		Dates:                    payload.Dates,
+		IsSignUpForm:             payload.IsSignUpForm,
+		SignUpBlocks:             payload.SignUpBlocks,
 		StartOnMonday:            payload.StartOnMonday,
 		NotificationsEnabled:     payload.NotificationsEnabled,
 		BlindAvailabilityEnabled: payload.BlindAvailabilityEnabled,
@@ -102,6 +108,7 @@ func createEvent(c *gin.Context) {
 		CollectEmails:            payload.CollectEmails,
 		Type:                     payload.Type,
 		Responses:                make(map[string]*models.Response),
+		SignUpResponses:          make(map[string]*models.SignUpResponse),
 	}
 
 	// Generate short id
@@ -207,7 +214,7 @@ func createEvent(c *gin.Context) {
 // @Tags events
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{name=string,description=string,duration=float32,dates=[]string,type=models.EventType,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to update"
+// @Param payload body object{name=string,description=string,duration=float32,dates=[]string,type=models.EventType,signUpBlocks=[]models.SignUpBlock,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,attendees=[]string} true "Object containing info about the event to update"
 // @Success 200
 // @Router /events/{eventId} [put]
 func editEvent(c *gin.Context) {
@@ -220,6 +227,9 @@ func editEvent(c *gin.Context) {
 
 		// For both events and groups
 		Description *string `json:"description"`
+
+		// Only for sign up form events
+		SignUpBlocks *[]models.SignUpBlock `json:"signUpBlocks"`
 
 		// Only for events (not groups)
 		StartOnMonday            *bool    `json:"startOnMonday"`
@@ -268,6 +278,7 @@ func editEvent(c *gin.Context) {
 	event.Description = payload.Description
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
+	event.SignUpBlocks = payload.SignUpBlocks
 	event.StartOnMonday = payload.StartOnMonday
 	event.NotificationsEnabled = payload.NotificationsEnabled
 	event.BlindAvailabilityEnabled = payload.BlindAvailabilityEnabled
@@ -441,6 +452,28 @@ func getEvent(c *gin.Context) {
 		event.Responses[userId].Availability = nil
 		event.Responses[userId].IfNeeded = nil
 		event.Responses[userId].ManualAvailability = nil
+	}
+
+	// Populate sign up form fields
+	for userId, response := range event.SignUpResponses {
+		user := db.GetUserById(userId)
+		if user == nil {
+			if len(response.Name) == 0 {
+				// User was deleted
+				delete(event.SignUpResponses, userId)
+				continue
+			} else {
+				// User is guest
+				userId = response.Name
+				response.User = &models.User{
+					FirstName: response.Name,
+					Email:     response.Email,
+				}
+			}
+		} else {
+			response.User = user
+		}
+		event.SignUpResponses[userId] = response
 	}
 
 	c.JSON(http.StatusOK, event)
