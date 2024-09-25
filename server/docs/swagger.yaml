@@ -46,11 +46,8 @@ definitions:
         type: string
       enabled:
         type: boolean
-      googleCalendarAuth:
-        $ref: '#/definitions/models.GoogleCalendarAuth'
-        type: object
-      outlookCalendarAuth:
-        $ref: '#/definitions/models.OutlookCalendarAuth'
+      oAuth2CalendarAuth:
+        $ref: '#/definitions/models.OAuth2CalendarAuth'
         type: object
       picture:
         type: string
@@ -107,8 +104,13 @@ definitions:
       daysOnly:
         description: Whether to only poll for days, not times
         type: boolean
+      description:
+        type: string
       duration:
         type: number
+      isSignUpForm:
+        description: Sign up form details
+        type: boolean
       name:
         type: string
       notificationsEnabled:
@@ -133,6 +135,18 @@ definitions:
         type: integer
       shortId:
         type: string
+      signUpBlocks:
+        items:
+          $ref: '#/definitions/models.SignUpBlock'
+        type: array
+      signUpResponses:
+        additionalProperties:
+          $ref: '#/definitions/models.SignUpResponse'
+        type: object
+      startOnMonday:
+        description: Whether to start the event on Monday (as opposed to Sunday, used
+          for DOW events)
+        type: boolean
       type:
         type: string
       when2meetHref:
@@ -140,8 +154,6 @@ definitions:
     type: object
   models.EventType:
     type: string
-  models.GoogleCalendarAuth:
-    type: object
   models.Location:
     properties:
       city:
@@ -159,7 +171,7 @@ definitions:
       state:
         type: string
     type: object
-  models.OutlookCalendarAuth:
+  models.OAuth2CalendarAuth:
     type: object
   models.Remindee:
     properties:
@@ -208,6 +220,38 @@ definitions:
         description: User information
         type: string
     type: object
+  models.SignUpBlock:
+    properties:
+      _id:
+        type: string
+      capacity:
+        type: integer
+      endDate:
+        type: string
+      name:
+        type: string
+      startDate:
+        type: string
+    type: object
+  models.SignUpResponse:
+    properties:
+      email:
+        type: string
+      name:
+        description: Guest information
+        type: string
+      signUpBlockIds:
+        description: The IDs of the sign up blocks that the user has signed up for
+        items:
+          type: string
+        type: array
+      user:
+        $ref: '#/definitions/models.User'
+        type: object
+      userId:
+        description: User information
+        type: string
+    type: object
   models.SubCalendar:
     properties:
       enabled:
@@ -242,6 +286,10 @@ definitions:
       lastName:
         type: string
       picture:
+        type: string
+      primaryAccountKey:
+        description: The calendarAccountKey of the account the user first signed in
+          with
         type: string
       timezoneOffset:
         type: integer
@@ -302,8 +350,8 @@ paths:
       - application/json
       description: Signs user in and sets the access token session variable
       parameters:
-      - description: Object containing the Google authorization code and the user's
-          timezone offset
+      - description: Object containing the Google authorization code, scope, calendar
+          type, and the user's timezone offset
         in: body
         name: payload
         required: true
@@ -311,7 +359,11 @@ paths:
           allOf:
           - type: object
           - properties:
+              calendarType:
+                type: string
               code:
+                type: string
+              scope:
                 type: string
               timezoneOffset:
                 type: integer
@@ -329,8 +381,8 @@ paths:
       - application/json
       description: Signs user in and sets the access token session variable
       parameters:
-      - description: Object containing the Google authorization code and the user's
-          timezone offset
+      - description: Object containing the Google authorization code, calendar type,
+          and the user's timezone offset
         in: body
         name: payload
         required: true
@@ -339,6 +391,8 @@ paths:
           - type: object
           - properties:
               accessToken:
+                type: string
+              calendarType:
                 type: string
               expiresIn:
                 type: integer
@@ -350,6 +404,8 @@ paths:
                 type: string
               timezoneOffset:
                 type: integer
+              tokenOrigin:
+                type: string
             type: object
       produces:
       - application/json
@@ -409,6 +465,8 @@ paths:
                 type: boolean
               duration:
                 type: number
+              isSignUpForm:
+                type: boolean
               name:
                 type: string
               notificationsEnabled:
@@ -419,6 +477,10 @@ paths:
                 type: array
               sendEmailAfterXResponses:
                 type: integer
+              signUpBlocks:
+                items:
+                  $ref: '#/definitions/models.SignUpBlock'
+                type: array
               type:
                 $ref: '#/definitions/models.EventType'
               when2meetHref:
@@ -498,6 +560,8 @@ paths:
                 type: array
               daysOnly:
                 type: boolean
+              description:
+                type: string
               duration:
                 type: number
               name:
@@ -510,6 +574,10 @@ paths:
                 type: array
               sendEmailAfterXResponses:
                 type: integer
+              signUpBlocks:
+                items:
+                  $ref: '#/definitions/models.SignUpBlock'
+                type: array
               type:
                 $ref: '#/definitions/models.EventType'
             type: object
@@ -797,7 +865,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Object containing the Google authorization code
+      - description: Object containing the Google authorization code and scope
         in: body
         name: payload
         required: true
@@ -807,12 +875,39 @@ paths:
           - properties:
               code:
                 type: string
+              scope:
+                type: string
             type: object
       produces:
       - application/json
       responses:
         "200": {}
       summary: Adds a new calendar account
+      tags:
+      - user
+  /user/add-outlook-calendar-account:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the Outlook authorization code and scope
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              code:
+                type: string
+              scope:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Adds a new outlook calendar account
       tags:
       - user
   /user/calendar-options:
