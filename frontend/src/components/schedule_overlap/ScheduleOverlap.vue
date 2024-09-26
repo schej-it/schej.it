@@ -288,6 +288,54 @@
                           </div>
                         </div>
 
+                        <!-- Sign up block being dragged -->
+                        <div v-if="state === states.EDIT_SIGN_UP_BLOCKS">
+                          <div
+                            v-if="dragStart && dragStart.col === d"
+                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                            :style="signUpBlockBeingDraggedStyle"
+                            style="pointer-events: none"
+                          >
+                            <div
+                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                            >
+                              <div class="tw-font-medium tw-text-white">
+                                Slot #{{ signUpBlocks.length }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Sign up blocks -->
+                        <div
+                          v-if="isSignUp"
+                        >
+                          <div
+                            v-for="(block, i) in signUpBlocks.filter(b => b.dayIndex === d)"
+                            :key="i"
+                          >
+                            <div
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              :style="{
+                                top: `calc(${block.hoursOffset} * 4 * 1rem)`,
+                                height: `calc(${block.hoursLength} * 4 * 1rem)`,
+                              }"
+                              style="pointer-events: none"
+                            >
+                              <div
+                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border-solid tw-border-2 tw-p-1 tw-text-xs tw-border-gray tw-bg-white"
+                              >
+                                <div
+                                  :class="`dark-gray`"
+                                  class="ph-no-capture tw-font-medium"
+                                >
+                                  Block
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         <!-- Overlaid availabilities -->
                         <div v-if="overlayAvailability">
                           <div
@@ -410,185 +458,191 @@
         >
           <div
             class="tw-flex tw-flex-col tw-gap-5"
-            v-if="state == states.EDIT_AVAILABILITY"
+            v-if="
+              state == states.EDIT_AVAILABILITY ||
+              state == states.EDIT_SIGN_UP_BLOCKS
+            "
           >
-            <div
-              v-if="
-                !(
+            <div v-if="!isSignUp">
+              <div
+                v-if="
+                  !(
+                    calendarPermissionGranted &&
+                    !event.daysOnly &&
+                    !addingAvailabilityAsGuest
+                  )
+                "
+                class="tw-text-sm tw-italic tw-text-dark-gray"
+              >
+                {{
+                  (userHasResponded && !addingAvailabilityAsGuest) || curGuestId
+                    ? "Editing"
+                    : "Adding"
+                }}
+                availability as
+                {{
+                  authUser && !addingAvailabilityAsGuest
+                    ? `${authUser.firstName} ${authUser.lastName}`
+                    : curGuestId?.length > 0
+                    ? curGuestId
+                    : "a guest"
+                }}
+              </div>
+              <AvailabilityTypeToggle
+                v-if="!isGroup && !isPhone"
+                class="tw-w-full"
+                v-model="availabilityType"
+              />
+              <!-- User's calendar accounts -->
+              <CalendarAccounts
+                v-if="
                   calendarPermissionGranted &&
                   !event.daysOnly &&
                   !addingAvailabilityAsGuest
-                )
-              "
-              class="tw-text-sm tw-italic tw-text-dark-gray"
-            >
-              {{
-                (userHasResponded && !addingAvailabilityAsGuest) || curGuestId
-                  ? "Editing"
-                  : "Adding"
-              }}
-              availability as
-              {{
-                authUser && !addingAvailabilityAsGuest
-                  ? `${authUser.firstName} ${authUser.lastName}`
-                  : curGuestId?.length > 0
-                  ? curGuestId
-                  : "a guest"
-              }}
-            </div>
-            <AvailabilityTypeToggle
-              v-if="!isGroup && !isPhone"
-              class="tw-w-full"
-              v-model="availabilityType"
-            />
-            <!-- User's calendar accounts -->
-            <CalendarAccounts
-              v-if="
-                calendarPermissionGranted &&
-                !event.daysOnly &&
-                !addingAvailabilityAsGuest
-              "
-              :toggleState="true"
-              :eventId="event._id"
-              :calendar-events-map="calendarEventsMap"
-              :syncWithBackend="!isGroup"
-              :allowAddCalendarAccount="!isGroup"
-              @toggleCalendarAccount="toggleCalendarAccount"
-              @toggleSubCalendarAccount="toggleSubCalendarAccount"
-              :initialCalendarAccountsData="
-                isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
-              "
-            ></CalendarAccounts>
+                "
+                :toggleState="true"
+                :eventId="event._id"
+                :calendar-events-map="calendarEventsMap"
+                :syncWithBackend="!isGroup"
+                :allowAddCalendarAccount="!isGroup"
+                @toggleCalendarAccount="toggleCalendarAccount"
+                @toggleSubCalendarAccount="toggleSubCalendarAccount"
+                :initialCalendarAccountsData="
+                  isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
+                "
+              ></CalendarAccounts>
 
-            <div v-if="showOverlayAvailabilityToggle">
-              <v-switch
-                id="overlay-availabilities-toggle"
-                inset
-                :input-value="overlayAvailability"
-                @change="updateOverlayAvailability"
-                hide-details
+              <div v-if="showOverlayAvailabilityToggle">
+                <v-switch
+                  id="overlay-availabilities-toggle"
+                  inset
+                  :input-value="overlayAvailability"
+                  @change="updateOverlayAvailability"
+                  hide-details
+                >
+                  <template v-slot:label>
+                    <div class="tw-text-sm tw-text-black">
+                      Overlay availabilities
+                    </div>
+                  </template>
+                </v-switch>
+
+                <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
+                  View everyone's availability while inputting your own
+                </div>
+              </div>
+
+              <!-- Options section -->
+              <div
+                v-if="!event.daysOnly && showCalendarOptions"
+                ref="optionsSection"
               >
-                <template v-slot:label>
-                  <div class="tw-text-sm tw-text-black">
-                    Overlay availabilities
-                  </div>
-                </template>
-              </v-switch>
+                <ExpandableSection
+                  label="Options"
+                  :value="showEditOptions"
+                  @input="toggleShowEditOptions"
+                >
+                  <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2.5">
+                    <v-dialog
+                      v-if="showCalendarOptions"
+                      v-model="calendarOptionsDialog"
+                      width="500"
+                    >
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                          outlined
+                          class="tw-border-gray tw-text-sm"
+                          v-on="on"
+                          v-bind="attrs"
+                        >
+                          Calendar options...
+                        </v-btn>
+                      </template>
 
-              <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
-                View everyone's availability while inputting your own
+                      <v-card>
+                        <v-card-title class="tw-flex">
+                          <div>Calendar options</div>
+                          <v-spacer />
+                          <v-btn icon @click="calendarOptionsDialog = false">
+                            <v-icon>mdi-close</v-icon>
+                          </v-btn>
+                        </v-card-title>
+                        <v-card-text
+                          class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
+                        >
+                          <AlertText v-if="isGroup" class="-tw-mb-4">
+                            Calendar options will only updated for the current
+                            group
+                          </AlertText>
+
+                          <BufferTimeSwitch
+                            :bufferTime.sync="bufferTime"
+                            :syncWithBackend="!isGroup"
+                          />
+
+                          <WorkingHoursToggle
+                            :workingHours.sync="workingHours"
+                            :timezone="curTimezone"
+                            :syncWithBackend="!isGroup"
+                          />
+                        </v-card-text>
+                      </v-card>
+                    </v-dialog>
+                  </div>
+                </ExpandableSection>
+              </div>
+
+              <!-- Delete availability button -->
+              <div
+                v-if="
+                  (!addingAvailabilityAsGuest && userHasResponded) || curGuestId
+                "
+              >
+                <v-dialog
+                  v-model="deleteAvailabilityDialog"
+                  width="500"
+                  persistent
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <span
+                      v-bind="attrs"
+                      v-on="on"
+                      class="tw-cursor-pointer tw-text-sm tw-text-red"
+                    >
+                      {{ !isGroup ? "Delete availability" : "Leave group" }}
+                    </span>
+                  </template>
+
+                  <v-card>
+                    <v-card-title>Are you sure?</v-card-title>
+                    <v-card-text class="tw-text-sm tw-text-dark-gray"
+                      >Are you sure you want to
+                      {{
+                        !isGroup
+                          ? "delete your availability from this event?"
+                          : "leave this group?"
+                      }}</v-card-text
+                    >
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn text @click="deleteAvailabilityDialog = false"
+                        >Cancel</v-btn
+                      >
+                      <v-btn
+                        text
+                        color="error"
+                        @click="
+                          $emit('deleteAvailability')
+                          deleteAvailabilityDialog = false
+                        "
+                        >{{ !isGroup ? "Delete" : "Leave" }}</v-btn
+                      >
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
               </div>
             </div>
-
-            <!-- Options section -->
-            <div
-              v-if="!event.daysOnly && showCalendarOptions"
-              ref="optionsSection"
-            >
-              <ExpandableSection
-                label="Options"
-                :value="showEditOptions"
-                @input="toggleShowEditOptions"
-              >
-                <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2.5">
-                  <v-dialog
-                    v-if="showCalendarOptions"
-                    v-model="calendarOptionsDialog"
-                    width="500"
-                  >
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn
-                        outlined
-                        class="tw-border-gray tw-text-sm"
-                        v-on="on"
-                        v-bind="attrs"
-                      >
-                        Calendar options...
-                      </v-btn>
-                    </template>
-
-                    <v-card>
-                      <v-card-title class="tw-flex">
-                        <div>Calendar options</div>
-                        <v-spacer />
-                        <v-btn icon @click="calendarOptionsDialog = false">
-                          <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                      </v-card-title>
-                      <v-card-text
-                        class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
-                      >
-                        <AlertText v-if="isGroup" class="-tw-mb-4">
-                          Calendar options will only updated for the current
-                          group
-                        </AlertText>
-
-                        <BufferTimeSwitch
-                          :bufferTime.sync="bufferTime"
-                          :syncWithBackend="!isGroup"
-                        />
-
-                        <WorkingHoursToggle
-                          :workingHours.sync="workingHours"
-                          :timezone="curTimezone"
-                          :syncWithBackend="!isGroup"
-                        />
-                      </v-card-text>
-                    </v-card>
-                  </v-dialog>
-                </div>
-              </ExpandableSection>
-            </div>
-
-            <!-- Delete availability button -->
-            <div
-              v-if="
-                (!addingAvailabilityAsGuest && userHasResponded) || curGuestId
-              "
-            >
-              <v-dialog
-                v-model="deleteAvailabilityDialog"
-                width="500"
-                persistent
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <span
-                    v-bind="attrs"
-                    v-on="on"
-                    class="tw-cursor-pointer tw-text-sm tw-text-red"
-                  >
-                    {{ !isGroup ? "Delete availability" : "Leave group" }}
-                  </span>
-                </template>
-
-                <v-card>
-                  <v-card-title>Are you sure?</v-card-title>
-                  <v-card-text class="tw-text-sm tw-text-dark-gray"
-                    >Are you sure you want to
-                    {{
-                      !isGroup
-                        ? "delete your availability from this event?"
-                        : "leave this group?"
-                    }}</v-card-text
-                  >
-                  <v-card-actions>
-                    <v-spacer />
-                    <v-btn text @click="deleteAvailabilityDialog = false"
-                      >Cancel</v-btn
-                    >
-                    <v-btn
-                      text
-                      color="error"
-                      @click="
-                        $emit('deleteAvailability')
-                        deleteAvailabilityDialog = false
-                      "
-                      >{{ !isGroup ? "Delete" : "Leave" }}</v-btn
-                    >
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
+            <template v-else> Put something here </template>
           </div>
           <template v-else>
             <RespondentsList
@@ -856,6 +910,7 @@ export default {
         SUBSET_AVAILABILITY: "subset_availability", // Show availability for a subset of people
         BEST_TIMES: "best_times", // Show only the times that work for most people
         EDIT_AVAILABILITY: "edit_availability", // Edit current user's availability
+        EDIT_SIGN_UP_BLOCKS: "edit_sign_up_blocks", // Edit the slots on a sign up form
         SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
       },
       state: "best_times",
@@ -875,6 +930,9 @@ export default {
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
+
+      /* Sign up form */
+      signUpBlocks: [], // The current event's sign up blocks
 
       /* Edit options */
       showEditOptions:
@@ -990,6 +1048,7 @@ export default {
     allowDrag() {
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
+        this.state === this.states.EDIT_SIGN_UP_BLOCKS ||
         this.state === this.states.SCHEDULE_EVENT
       )
     },
@@ -1229,7 +1288,7 @@ export default {
     },
     editing() {
       // Returns whether currently in the editing state
-      return this.state === this.states.EDIT_AVAILABILITY
+      return this.state === this.states.EDIT_AVAILABILITY || this.state === this.states.EDIT_SIGN_UP_BLOCKS
     },
     scheduling() {
       // Returns whether currently in the scheduling state
@@ -1249,6 +1308,9 @@ export default {
     },
     isGroup() {
       return this.event.type === eventTypes.GROUP
+    },
+    isSignUp() {
+      return this.event.isSignUpForm
     },
     respondents() {
       return Object.values(this.parsedResponses).map((r) => r.user)
@@ -1270,6 +1332,17 @@ export default {
       } else {
         top = this.curScheduledEvent.hoursOffset * 4
         height = this.curScheduledEvent.hoursLength * 4
+      }
+      style.top = `calc(${top} * 1rem)`
+      style.height = `calc(${height} * 1rem)`
+      return style
+    },
+    signUpBlockBeingDraggedStyle() {
+      const style = {}
+      let top = 0, height = 0
+      if (this.dragging) {
+        top = this.dragStart.row
+        height = this.dragCur.row - this.dragStart.row + 1
       }
       style.top = `calc(${top} * 1rem)`
       style.height = `calc(${height} * 1rem)`
@@ -2297,6 +2370,12 @@ export default {
         this.responsesFormatted.get(date.getTime()) ?? new Set()
 
       // Fill style
+
+      if (this.isSignUp) {
+        c += "tw-bg-light-gray "
+        return { class: c, style: s }
+      }
+
       if (
         !this.overlayAvailability &&
         this.state === this.states.EDIT_AVAILABILITY
@@ -2571,7 +2650,9 @@ export default {
     //#region Editing
     // -----------------------------------
     startEditing() {
-      this.state = this.states.EDIT_AVAILABILITY
+      this.state = this.isSignUp
+        ? this.states.EDIT_SIGN_UP_BLOCKS
+        : this.states.EDIT_AVAILABILITY
       this.availabilityType = availabilityTypes.AVAILABLE
       this.availability = new Set()
       this.ifNeeded = new Set()
@@ -2852,6 +2933,14 @@ export default {
         } else {
           this.curScheduledEvent = null
         }
+      } else if (this.state === this.states.EDIT_SIGN_UP_BLOCKS) {
+        // Update sign up blocks
+        const dayIndex = this.dragStart.col
+        const hoursOffset = this.dragStart.row / 4
+        const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
+        if (hoursLength > 0) {
+          this.signUpBlocks.push({ dayIndex, hoursOffset, hoursLength })
+        }
       }
 
       // Set dragging defaults
@@ -2923,6 +3012,8 @@ export default {
       if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
         return
       }
+      console.log("TRYING TO ENTER")
+      console.log(this.allowDrag)
 
       this.dragging = true
       this.dragStart = { row, col }
@@ -2932,7 +3023,9 @@ export default {
       e.preventDefault()
 
       // Set drag type
-      if (
+      if (this.isSignUp) {
+        this.dragType = this.DRAG_TYPES.ADD
+      } else if (
         (this.availabilityType === availabilityTypes.AVAILABLE &&
           this.availability.has(date.getTime())) ||
         (this.availabilityType === availabilityTypes.IF_NEEDED &&

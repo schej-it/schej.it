@@ -199,9 +199,7 @@
                   @click="() => addAvailability()"
                 >
                   {{
-                    userHasResponded || isGroup
-                      ? "Edit availability"
-                      : "Add availability"
+                    actionButtonText
                   }}
                 </v-btn>
               </template>
@@ -466,6 +464,9 @@ export default {
     isGroup() {
       return this.event?.type === eventTypes.GROUP
     },
+    isSignUp() {
+      return this.event?.isSignUpForm
+    },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges
     },
@@ -480,6 +481,11 @@ export default {
     },
     numResponses() {
       return this.scheduleOverlapComponent?.respondents.length
+    },
+    actionButtonText() {
+      if (this.isSignUp) return "Edit"
+      else if (this.userHasResponded || this.isGroup) return "Edit availability"
+      return "Add availability"
     },
     isIOS() {
       return isIOS()
