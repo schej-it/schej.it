@@ -41,6 +41,12 @@ const routes = [
     props: true,
   },
   {
+    path: "/s/:signUpId",
+    name: "signUp",
+    component: () => import("@/views/SignUp.vue"),
+    props: true,
+  },
+  {
     path: "/auth",
     name: "auth",
     component: () => import("@/views/Auth.vue"),

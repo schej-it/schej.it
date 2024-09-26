@@ -13,15 +13,19 @@
     </UnsavedChangesDialog>
     <v-card class="tw-pt-4">
       <div v-if="!_noTabs" class="tw-flex tw-rounded sm:-tw-mt-4 sm:tw-px-8">
-        <v-tabs v-model="tab">
-          <v-tab
+        <div class="tw-pt-4">
+          <v-btn
             v-for="t in tabs"
             :key="t.type"
             :tab-value="t.type"
-            class="tw-text-xs"
-            >{{ t.title }}</v-tab
+            text
+            small
+            @click="() => tab = t.type"
+            :class="`tw-text-xs tw-text-dark-gray tw-transition-all ${t.type == tab ? 'tw-text-green tw-bg-ligher-green' : ''}`"
           >
-        </v-tabs>
+            {{ t.title }}
+          </v-btn>
+        </div>
         <v-spacer />
         <v-btn
           absolute
@@ -56,6 +60,17 @@
           :show-help="!_noTabs"
           :contactsPayload="this.type == 'group' ? contactsPayload : {}"
         />
+        <NewSignUp
+          v-if="tab === 'signup'"
+          ref="signup"
+          key="signup"
+          :event="event"
+          :edit="edit"
+          :allow-notifications="allowNotifications"
+          @input="handleDialogInput"
+          :contactsPayload="this.type == 'signup' ? contactsPayload : {}"
+          :show-help="!_noTabs"
+        />
       </template>
     </v-card>
   </v-dialog>
@@ -66,6 +81,7 @@ import { isPhone } from "@/utils"
 import NewEvent from "@/components/NewEvent.vue"
 import UnsavedChangesDialog from "@/components/general/UnsavedChangesDialog.vue"
 import NewGroup from "./NewGroup.vue"
+import NewSignUp from "./NewSignUp.vue"
 import { mapState } from "vuex"
 
 export default {
@@ -86,6 +102,7 @@ export default {
   components: {
     NewEvent,
     NewGroup,
+    NewSignUp,
     UnsavedChangesDialog,
   },
 
@@ -94,12 +111,9 @@ export default {
       tab: this.type,
       tabs: [
         { title: "Event", type: "event" },
+        { title: "Sign up form", type: "signup" },
         { title: "Availability group", type: "group" },
       ],
-      TAB_TYPES: {
-        EVENT: "event",
-        GROUP: "group",
-      },
 
       unsavedChangesDialog: false,
     }
@@ -138,13 +152,12 @@ export default {
     groupsEnabled: {
       immediate: true,
       handler() {
+        this.tabs = [
+          { title: "Event", type: "event" },
+          { title: "Sign up form", type: "signup" },
+        ]
         if (this.groupsEnabled) {
-          this.tabs = [
-            { title: "Event", type: "event" },
-            { title: "Availability group", type: "group" },
-          ]
-        } else {
-          this.tabs = [{ title: "Event", type: "event" }]
+          this.tabs.push({ title: "Availability group", type: "group" })
         }
       },
     },
