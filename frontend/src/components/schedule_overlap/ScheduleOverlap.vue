@@ -300,18 +300,18 @@
                               class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
                             >
                               <div class="tw-font-medium tw-text-white">
-                                Slot #{{ signUpBlocks.length }}
+                                Slot #{{ signUpBlocksByDay.length + 1 }}
                               </div>
                             </div>
                           </div>
                         </div>
 
                         <!-- Sign up blocks -->
-                        <div
-                          v-if="isSignUp"
-                        >
+                        <div v-if="isSignUp">
                           <div
-                            v-for="(block, i) in signUpBlocks.filter(b => b.dayIndex === d)"
+                            v-for="(block, i) in signUpBlocksByDay[
+                              d + page * maxDaysPerPage
+                            ]"
                             :key="i"
                           >
                             <div
@@ -323,7 +323,7 @@
                               style="pointer-events: none"
                             >
                               <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border-solid tw-border-2 tw-p-1 tw-text-xs tw-border-gray tw-bg-white"
+                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border-2 tw-border-solid tw-border-gray tw-bg-white tw-p-1 tw-text-xs"
                               >
                                 <div
                                   :class="`dark-gray`"
@@ -830,7 +830,8 @@ import {
   clamp,
   isPhone,
   utcTimeToLocalTime,
-  splitCalendarEventsByDay,
+  splitTimeBlocksByDay,
+  getTimeBlock,
   dateToDowDate,
   _delete,
   get,
@@ -867,6 +868,7 @@ import WorkingHoursToggle from "./WorkingHoursToggle.vue"
 import AlertText from "../AlertText.vue"
 
 import dayjs from "dayjs"
+import ObjectID from "bson-objectid"
 import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
 import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
@@ -932,7 +934,7 @@ export default {
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
 
       /* Sign up form */
-      signUpBlocks: [], // The current event's sign up blocks
+      signUpBlocksByDay: [], // The current event's sign up blocks by day
 
       /* Edit options */
       showEditOptions:
@@ -1097,7 +1099,7 @@ export default {
 
       const eventsCopy = JSON.parse(JSON.stringify(events))
 
-      const calendarEventsByDay = splitCalendarEventsByDay(
+      const calendarEventsByDay = splitTimeBlocksByDay(
         this.event,
         eventsCopy,
         this.weekOffset
@@ -1114,7 +1116,7 @@ export default {
         if (userId === this.authUser._id) {
           userIdToEventsByDay[userId] = this.calendarEventsByDay
         } else if (userId in this.calendarAvailabilities) {
-          userIdToEventsByDay[userId] = splitCalendarEventsByDay(
+          userIdToEventsByDay[userId] = splitTimeBlocksByDay(
             this.event,
             this.calendarAvailabilities[userId],
             this.weekOffset
@@ -1288,7 +1290,10 @@ export default {
     },
     editing() {
       // Returns whether currently in the editing state
-      return this.state === this.states.EDIT_AVAILABILITY || this.state === this.states.EDIT_SIGN_UP_BLOCKS
+      return (
+        this.state === this.states.EDIT_AVAILABILITY ||
+        this.state === this.states.EDIT_SIGN_UP_BLOCKS
+      )
     },
     scheduling() {
       // Returns whether currently in the scheduling state
@@ -1339,7 +1344,8 @@ export default {
     },
     signUpBlockBeingDraggedStyle() {
       const style = {}
-      let top = 0, height = 0
+      let top = 0,
+        height = 0
       if (this.dragging) {
         top = this.dragStart.row
         height = this.dragCur.row - this.dragStart.row + 1
@@ -2939,7 +2945,10 @@ export default {
         const hoursOffset = this.dragStart.row / 4
         const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
         if (hoursLength > 0) {
-          this.signUpBlocks.push({ dayIndex, hoursOffset, hoursLength })
+          this.signUpBlocksByDay[dayIndex].push(
+            this.createSignUpBlock(dayIndex, hoursOffset, hoursLength)
+          )
+          console.log(this.signUpBlocksByDay)
         }
       }
 
@@ -3274,6 +3283,29 @@ export default {
     },
     //#endregion
 
+    // -----------------------------------
+    //#region Sign up form
+    // -----------------------------------
+
+    createSignUpBlock(dayIndex, hoursOffset, hoursLength) {
+      const timeBlock = getTimeBlock(
+        this.days[dayIndex].dateObject,
+        hoursOffset,
+        hoursLength
+      )
+
+      return {
+        _id: ObjectID().toString(),
+        capacity: 0,
+        name: `Slot #1`,
+        ...timeBlock,
+        hoursOffset,
+        hoursLength,
+      }
+    },
+
+    //#endregion
+
     /** Recalculate availability the calendar based on calendar events */
     reanimateAvailability() {
       if (
@@ -3448,6 +3480,13 @@ export default {
       timesEl.addEventListener("mousemove", this.moveDrag)
       timesEl.addEventListener("mouseup", this.endDrag)
     }
+    console.log(this.event)
+    console.log(this.event.signUpBlocks)
+
+    this.signUpBlocksByDay = splitTimeBlocksByDay(
+      this.event,
+      this.event.signUpBlocks
+    )
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)

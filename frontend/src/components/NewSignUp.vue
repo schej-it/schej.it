@@ -600,6 +600,7 @@ export default {
         remindees: this.emails,
         type: type,
         isSignUpForm: true,
+        signUpBlocks: [],
         sendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
