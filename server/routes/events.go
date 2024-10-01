@@ -74,6 +74,7 @@ func createEvent(c *gin.Context) {
 		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		fmt.Println(err)
 		return
 	}
 	session := sessions.Default(c)
@@ -540,7 +541,7 @@ func getResponses(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param eventId path string true "Event ID"
-// @Param payload body object{availability=[]string,ifNeeded=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[string][]string,calendarOptions=models.CalendarOptions} true "Object containing info about the event response to update"
+// @Param payload body object{availability=[]string,ifNeeded=[]string,guest=bool,name=string,useCalendarAvailability=bool,enabledCalendars=map[string][]string,manualAvailability=map[string][]string,calendarOptions=models.CalendarOptions,signUpBlockIds=[]string} true "Object containing info about the event response to update"
 // @Success 200
 // @Router /events/{eventId}/response [post]
 func updateEventResponse(c *gin.Context) {
@@ -558,6 +559,9 @@ func updateEventResponse(c *gin.Context) {
 		EnabledCalendars        *map[string][]string                         `json:"enabledCalendars"`
 		ManualAvailability      *map[primitive.DateTime][]primitive.DateTime `json:"manualAvailability"`
 		CalendarOptions         *models.CalendarOptions                      `json:"calendarOptions"`
+
+		// Sign up form variables
+		SignUpBlockIds []primitive.ObjectID `json:"signUpBlockIds"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		return
@@ -570,90 +574,130 @@ func updateEventResponse(c *gin.Context) {
 		return
 	}
 
-	var response models.Response
 	var userIdString string
-	// Populate response differently if guest vs signed in user
-	if *payload.Guest {
-		userIdString = payload.Name
+	var userHasResponded bool
+	if !utils.Coalesce(event.IsSignUpForm) {
+		// Populate response differently if guest vs signed in user
+		var response models.Response
+		if *payload.Guest {
+			userIdString = payload.Name
 
-		response = models.Response{
-			Name:         payload.Name,
-			Email:        payload.Email,
-			Availability: payload.Availability,
-			IfNeeded:     payload.IfNeeded,
+			response = models.Response{
+				Name:         payload.Name,
+				Email:        payload.Email,
+				Availability: payload.Availability,
+				IfNeeded:     payload.IfNeeded,
+			}
+		} else {
+			userIdInterface := session.Get("userId")
+			if userIdInterface == nil {
+				c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
+				c.Abort()
+				return
+			}
+			userIdString = userIdInterface.(string)
+
+			response = models.Response{
+				UserId:                  utils.StringToObjectID(userIdString),
+				Availability:            payload.Availability,
+				IfNeeded:                payload.IfNeeded,
+				UseCalendarAvailability: payload.UseCalendarAvailability,
+				EnabledCalendars:        payload.EnabledCalendars,
+				CalendarOptions:         payload.CalendarOptions,
+			}
+
+			if event.Type == models.GROUP {
+				user := db.GetUserById(userIdString)
+
+				// Set declined to false (in case user declined group in the past)
+				if user != nil {
+					for i, attendee := range utils.Coalesce(event.Attendees) {
+						if strings.ToLower(attendee.Email) == strings.ToLower(user.Email) {
+							(*event.Attendees)[i].Declined = utils.FalsePtr()
+							break
+						}
+					}
+				}
+
+				// Update manual availability
+				if _, ok := event.Responses[userIdString]; ok {
+					response.ManualAvailability = event.Responses[userIdString].ManualAvailability
+				}
+				if response.ManualAvailability == nil {
+					manualAvailability := make(map[primitive.DateTime][]primitive.DateTime)
+					response.ManualAvailability = &manualAvailability
+				}
+
+				// Replace availability on days that already exist in manual availability map
+				for day := range utils.Coalesce(response.ManualAvailability) {
+					for payloadDay, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
+						// Check if day is between start and end times of the payload day
+						endTime := payloadDay.Time().Add(time.Duration(*event.Duration) * time.Hour)
+						if day.Time().Compare(payloadDay.Time()) >= 0 && day.Time().Compare(endTime) <= 0 {
+							// Replace availability with updated availability
+							delete(*response.ManualAvailability, day)
+							(*response.ManualAvailability)[payloadDay] = availableTimes
+							delete(*payload.ManualAvailability, payloadDay)
+							break
+						}
+					}
+
+					// Break if no more items in manual availability
+					if len(utils.Coalesce(payload.ManualAvailability)) == 0 {
+						break
+					}
+				}
+
+				// Add the rest of manual availability that was not replaced
+				for day, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
+					(*response.ManualAvailability)[day] = availableTimes
+				}
+			}
 		}
+
+		// Check if user has responded to event before (edit response) or not (new response)
+		_, userHasResponded = event.Responses[userIdString]
+
+		// Update event responses
+		event.Responses[userIdString] = &response
 	} else {
-		userIdInterface := session.Get("userId")
-		if userIdInterface == nil {
-			c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
-			c.Abort()
-			return
-		}
-		userIdString = userIdInterface.(string)
+		var response models.SignUpResponse
+		var userIdString string
+		// Populate response differently if guest vs signed in user
+		if *payload.Guest {
+			userIdString = payload.Name
 
-		response = models.Response{
-			UserId:                  utils.StringToObjectID(userIdString),
-			Availability:            payload.Availability,
-			IfNeeded:                payload.IfNeeded,
-			UseCalendarAvailability: payload.UseCalendarAvailability,
-			EnabledCalendars:        payload.EnabledCalendars,
-			CalendarOptions:         payload.CalendarOptions,
-		}
+			response = models.SignUpResponse{
+				SignUpBlockIds: payload.SignUpBlockIds,
 
-		if event.Type == models.GROUP {
-			user := db.GetUserById(userIdString)
-
-			// Set declined to false (in case user declined group in the past)
-			if user != nil {
-				for i, attendee := range utils.Coalesce(event.Attendees) {
-					if strings.ToLower(attendee.Email) == strings.ToLower(user.Email) {
-						(*event.Attendees)[i].Declined = utils.FalsePtr()
-						break
-					}
-				}
+				Name:  payload.Name,
+				Email: payload.Email,
 			}
-
-			// Update manual availability
-			if _, ok := event.Responses[userIdString]; ok {
-				response.ManualAvailability = event.Responses[userIdString].ManualAvailability
+		} else {
+			userIdInterface := session.Get("userId")
+			if userIdInterface == nil {
+				c.JSON(http.StatusUnauthorized, responses.Error{Error: errs.NotSignedIn})
+				c.Abort()
+				return
 			}
-			if response.ManualAvailability == nil {
-				manualAvailability := make(map[primitive.DateTime][]primitive.DateTime)
-				response.ManualAvailability = &manualAvailability
-			}
+			userIdString = userIdInterface.(string)
 
-			// Replace availability on days that already exist in manual availability map
-			for day := range utils.Coalesce(response.ManualAvailability) {
-				for payloadDay, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
-					// Check if day is between start and end times of the payload day
-					endTime := payloadDay.Time().Add(time.Duration(*event.Duration) * time.Hour)
-					if day.Time().Compare(payloadDay.Time()) >= 0 && day.Time().Compare(endTime) <= 0 {
-						// Replace availability with updated availability
-						delete(*response.ManualAvailability, day)
-						(*response.ManualAvailability)[payloadDay] = availableTimes
-						delete(*payload.ManualAvailability, payloadDay)
-						break
-					}
-				}
+			response = models.SignUpResponse{
+				SignUpBlockIds: payload.SignUpBlockIds,
 
-				// Break if no more items in manual availability
-				if len(utils.Coalesce(payload.ManualAvailability)) == 0 {
-					break
-				}
-			}
-
-			// Add the rest of manual availability that was not replaced
-			for day, availableTimes := range utils.Coalesce(payload.ManualAvailability) {
-				(*response.ManualAvailability)[day] = availableTimes
+				UserId: utils.StringToObjectID(userIdString),
 			}
 		}
+
+		// Check if user has responded to event before (edit response) or not (new response)
+		_, userHasResponded = event.SignUpResponses[userIdString]
+
+		// Update event responses
+		if event.SignUpResponses == nil {
+			event.SignUpResponses = make(map[string]*models.SignUpResponse)
+		}
+		event.SignUpResponses[userIdString] = &response
 	}
-
-	// Check if user has responded to event before (edit response) or not (new response)
-	_, userHasResponded := event.Responses[userIdString]
-
-	// Update event responses
-	event.Responses[userIdString] = &response
 
 	// Send email to creator of event if creator enabled it
 	if (utils.Coalesce(event.NotificationsEnabled) || event.Type == models.GROUP) && !userHasResponded && userIdString != event.OwnerId.Hex() {
@@ -770,7 +814,11 @@ func deleteEventResponse(c *gin.Context) {
 
 	if *payload.Guest {
 		// Delete response
-		delete(event.Responses, payload.Name)
+		if utils.Coalesce(event.IsSignUpForm) {
+			delete(event.SignUpResponses, payload.Name)
+		} else {
+			delete(event.Responses, payload.Name)
+		}
 	} else {
 		userIdInterface := session.Get("userId")
 		if userIdInterface == nil {
@@ -788,7 +836,11 @@ func deleteEventResponse(c *gin.Context) {
 		}
 
 		// Delete response
-		delete(event.Responses, payload.UserId)
+		if utils.Coalesce(event.IsSignUpForm) {
+			delete(event.SignUpResponses, payload.UserId)
+		} else {
+			delete(event.Responses, payload.UserId)
+		}
 
 		// If this event is a Group, also make the attendee "leave the group" by setting "declined" to true
 		if event.Type == models.GROUP {

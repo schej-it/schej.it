@@ -303,6 +303,10 @@ definitions:
       startTime:
         type: number
     type: object
+  primitive.ObjectID:
+    items:
+      type: integer
+    type: array
   responses.Error:
     properties:
       error:
@@ -771,6 +775,10 @@ paths:
                 type: object
               name:
                 type: string
+              signUpBlockIds:
+                items:
+                  $ref: '#/definitions/primitive.ObjectID'
+                type: array
               useCalendarAvailability:
                 type: boolean
             type: object

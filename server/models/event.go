@@ -32,7 +32,7 @@ type Event struct {
 	// Sign up form details
 	IsSignUpForm    *bool                      `json:"isSignUpForm" bson:"isSignUpForm,omitempty"`
 	SignUpBlocks    *[]SignUpBlock             `json:"signUpBlocks" bson:"signUpBlocks,omitempty"`
-	SignUpResponses map[string]*SignUpResponse `json:"signUpResponses" bson:"signUpResponses,omitempty"`
+	SignUpResponses map[string]*SignUpResponse `json:"signUpResponses" bson:"signUpResponses"`
 
 	// Whether to start the event on Monday (as opposed to Sunday, used for DOW events)
 	StartOnMonday *bool `json:"startOnMonday" bson:"startOnMonday,omitempty"`

@@ -700,6 +700,12 @@ var doc = `{
                                         "name": {
                                             "type": "string"
                                         },
+                                        "signUpBlockIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/primitive.ObjectID"
+                                            }
+                                        },
                                         "useCalendarAvailability": {
                                             "type": "boolean"
                                         }
@@ -1826,6 +1832,12 @@ var doc = `{
                 "startTime": {
                     "type": "number"
                 }
+            }
+        },
+        "primitive.ObjectID": {
+            "type": "array",
+            "items": {
+                "type": "integer"
             }
         },
         "responses.Error": {
