@@ -226,7 +226,10 @@
         </div>
 
         <!-- Description -->
-        <EventDescription :event.sync="event" :canEdit="canEdit" />
+        <EventDescription
+          :event.sync="event"
+          :canEdit="event.ownerId != 0 && canEdit"
+        />
       </div>
 
       <!-- Calendar -->
