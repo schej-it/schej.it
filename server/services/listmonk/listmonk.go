@@ -15,6 +15,10 @@ import (
 // Adds the given user to the Listmonk contact list
 // If subscriberId is not nil, then UPDATE the user instead of adding user
 func AddUserToListmonk(email string, firstName string, lastName string, picture string, subscriberId *int) {
+	if os.Getenv("LISTMONK_ENABLED") == "false" {
+		return
+	}
+
 	url := os.Getenv("LISTMONK_URL")
 	username := os.Getenv("LISTMONK_USERNAME")
 	password := os.Getenv("LISTMONK_PASSWORD")
@@ -62,6 +66,10 @@ func AddUserToListmonk(email string, firstName string, lastName string, picture 
 // Check if the user is already in listmonk
 // Returns a bool representing whether the subscriber exists and the id of the subscriber if it does exist
 func DoesUserExist(email string) (bool, *int) {
+	if os.Getenv("LISTMONK_ENABLED") == "false" {
+		return false, nil
+	}
+
 	url := os.Getenv("LISTMONK_URL")
 	username := os.Getenv("LISTMONK_USERNAME")
 	password := os.Getenv("LISTMONK_PASSWORD")
@@ -99,6 +107,10 @@ func DoesUserExist(email string) (bool, *int) {
 
 // Send a transactional email using the specified template and data
 func SendEmail(email string, templateId int, data bson.M) {
+	if os.Getenv("LISTMONK_ENABLED") == "false" {
+		return
+	}
+
 	// Get listmonk url env vars
 	listmonkUrl := os.Getenv("LISTMONK_URL")
 	listmonkUsername := os.Getenv("LISTMONK_USERNAME")
@@ -112,7 +124,8 @@ func SendEmail(email string, templateId int, data bson.M) {
 		"content_type":     "html",
 	})
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
+		return
 	}
 
 	// Construct request
@@ -123,13 +136,17 @@ func SendEmail(email string, templateId int, data bson.M) {
 	// Execute request
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		logger.StdErr.Panicln(err)
+		logger.StdErr.Println(err)
 	}
 	defer response.Body.Close()
 }
 
 // Send a transactional email using the specified template and data. Adds subscriber if they don't exist
 func SendEmailAddSubscriberIfNotExist(email string, templateId int, data bson.M) {
+	if os.Getenv("LISTMONK_ENABLED") == "false" {
+		return
+	}
+
 	if exists, _ := DoesUserExist(email); !exists {
 		AddUserToListmonk(email, "", "", "", nil)
 	}
