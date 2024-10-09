@@ -1385,28 +1385,34 @@ export default {
     },
     times() {
       /* Returns the times that are encompassed by startTime and endTime */
-      const times = []
+      const times = [[], []]
+      let index = 1
 
       for (let i = 0; i < this.event.duration; ++i) {
         const utcTimeNum = this.event.startTime + i
         const localTimeNum = utcTimeToLocalTime(utcTimeNum, this.timezoneOffset)
 
-        times.push({
+        times[index].push({
           hoursOffset: i,
           text: timeNumToTimeText(
             localTimeNum,
             this.timeType === timeTypes.HOUR12
           ),
         })
-        times.push({
+        times[index].push({
           hoursOffset: i + 0.25,
         })
-        times.push({
+        times[index].push({
           hoursOffset: i + 0.5,
         })
-        times.push({
+        times[index].push({
           hoursOffset: i + 0.75,
         })
+
+        // If the time is past 12am, then we need to start a new array for the next day
+        if (index === 1 && i + 1 > 24) {
+          index = 0
+        }
       }
 
       return times
