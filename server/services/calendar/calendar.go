@@ -36,6 +36,13 @@ type GetCalendarEventsData struct {
 
 // Get the user's list of calendar events for the given calendar
 func GetCalendarEventsAsync(calendarAccountKey string, calendarProvider *CalendarProvider, calendarId string, timeMin time.Time, timeMax time.Time, c chan GetCalendarEventsData) {
+	// Recover from panics
+	defer func() {
+		if err := recover(); err != nil {
+			c <- GetCalendarEventsData{Error: err.(error)}
+		}
+	}()
+
 	calendarEvents, err := (*calendarProvider).GetCalendarEvents(calendarId, timeMin, timeMax)
 
 	c <- GetCalendarEventsData{CalendarEvents: calendarEvents, CalendarAccountKey: calendarAccountKey, Error: err}

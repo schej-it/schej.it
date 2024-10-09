@@ -626,6 +626,13 @@ func updateEventResponse(c *gin.Context) {
 	if (utils.Coalesce(event.NotificationsEnabled) || event.Type == models.GROUP) && !userHasResponded && userIdString != event.OwnerId.Hex() {
 		// Send email asynchronously
 		go func() {
+			// Recover from panics
+			defer func() {
+				if err := recover(); err != nil {
+					logger.StdErr.Println(err)
+				}
+			}()
+
 			creator := db.GetUserById(event.OwnerId.Hex())
 			if creator == nil {
 				return
@@ -667,6 +674,13 @@ func updateEventResponse(c *gin.Context) {
 
 		// Send email asynchronously
 		go func() {
+			// Recover from panics
+			defer func() {
+				if err := recover(); err != nil {
+					logger.StdErr.Println(err)
+				}
+			}()
+
 			creator := db.GetUserById(event.OwnerId.Hex())
 			if creator == nil {
 				return
@@ -960,6 +974,13 @@ func getCalendarAvailabilities(c *gin.Context) {
 
 				// Fetch calendar events
 				go func() {
+					// Recover from panics
+					defer func() {
+						if err := recover(); err != nil {
+							logger.StdErr.Println(err)
+						}
+					}()
+
 					calendarEvents, _ := calendar.GetUsersCalendarEvents(user, utils.ArrayToSet(enabledAccounts), payload.TimeMin, payload.TimeMax)
 					calendarEventsChan <- struct {
 						UserId string
