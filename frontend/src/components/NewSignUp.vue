@@ -362,7 +362,6 @@ import {
   dateToTimeNum,
   getISODateString,
   isPhone,
-  validateEmail,
   signInGoogle,
   getDateWithTimezone,
   getTimeOptions,
@@ -600,7 +599,6 @@ export default {
         remindees: this.emails,
         type: type,
         isSignUpForm: true,
-        signUpBlocks: [],
         sendEmailAfterXResponses: this.sendEmailAfterXResponsesEnabled
           ? parseInt(this.sendEmailAfterXResponses)
           : -1,
@@ -623,6 +621,8 @@ export default {
         eventCollectEmails: this.collectEmails,
         eventStartOnMonday: this.startOnMonday,
       }
+
+      console.log("EDITING THE EVENT")
 
       if (!this.edit) {
         // Create new event on backend
@@ -652,6 +652,9 @@ export default {
           })
       } else {
         // Edit event on backend
+          console.log("EDITING THE EVENT");
+          console.log(this.event._id)
+          console.log(payload)
         if (this.event) {
           put(`/events/${this.event._id}`, payload)
             .then(() => {
@@ -660,7 +663,7 @@ export default {
 
               // this.$emit("input", false)
               // this.reset()
-              window.location.reload()
+              // window.location.reload()
             })
             .catch((err) => {
               this.showError(

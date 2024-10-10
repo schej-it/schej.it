@@ -329,7 +329,7 @@
                                   :class="`dark-gray`"
                                   class="ph-no-capture tw-font-medium"
                                 >
-                                  Block
+                                  {{ block.name}}
                                 </div>
                               </div>
                             </div>
@@ -451,19 +451,18 @@
           </template>
         </div>
 
-        <!-- Respondents -->
+        <!-- Right hand side content -->
         <div
           v-if="!calendarOnly"
-          class="tw-w-full tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-w-[13rem] sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+          class="tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+          :class="`sm:tw-w-[${isSignUp ? 18 : 13}rem]`"
         >
-          <div
-            class="tw-flex tw-flex-col tw-gap-5"
-            v-if="
-              state == states.EDIT_AVAILABILITY ||
-              state == states.EDIT_SIGN_UP_BLOCKS
-            "
-          >
-            <div v-if="!isSignUp">
+          <!-- Show respondents if not sign up form, otherwise, show sign up blocks -->
+          <template v-if="!isSignUp">
+            <div
+              class="tw-flex tw-flex-col tw-gap-5"
+              v-if="state == states.EDIT_AVAILABILITY"
+            >
               <div
                 v-if="
                   !(
@@ -642,43 +641,47 @@
                 </v-dialog>
               </div>
             </div>
-            <template v-else> Put something here </template>
-          </div>
+            <template v-else>
+              <RespondentsList
+                ref="respondentsList"
+                :event="event"
+                :eventId="event._id"
+                :days="allDays"
+                :times="times"
+                :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
+                :curRespondent="curRespondent"
+                :curRespondents="curRespondents"
+                :curTimeslot="curTimeslot"
+                :curTimeslotAvailability="curTimeslotAvailability"
+                :respondents="respondents"
+                :parsedResponses="parsedResponses"
+                :isOwner="isOwner"
+                :isGroup="isGroup"
+                :attendees="event.attendees"
+                :showCalendarEvents.sync="showCalendarEvents"
+                :responsesFormatted="responsesFormatted"
+                :timezone="curTimezone"
+                :show-best-times.sync="showBestTimes"
+                :hide-if-needed.sync="hideIfNeeded"
+                :start-calendar-on-monday.sync="startCalendarOnMonday"
+                :show-event-options="showEventOptions"
+                :guestAddedAvailability="guestAddedAvailability"
+                :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
+                @toggleShowEventOptions="toggleShowEventOptions"
+                @addAvailability="$emit('addAvailability')"
+                @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
+                @mouseOverRespondent="mouseOverRespondent"
+                @mouseLeaveRespondent="mouseLeaveRespondent"
+                @clickRespondent="clickRespondent"
+                @editGuestAvailability="editGuestAvailability"
+                @refreshEvent="refreshEvent"
+              />
+            </template>
+          </template>
           <template v-else>
-            <RespondentsList
-              ref="respondentsList"
-              :event="event"
-              :eventId="event._id"
-              :days="allDays"
-              :times="times"
-              :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
-              :curRespondent="curRespondent"
-              :curRespondents="curRespondents"
-              :curTimeslot="curTimeslot"
-              :curTimeslotAvailability="curTimeslotAvailability"
-              :respondents="respondents"
-              :parsedResponses="parsedResponses"
-              :isOwner="isOwner"
-              :isGroup="isGroup"
-              :attendees="event.attendees"
-              :showCalendarEvents.sync="showCalendarEvents"
-              :responsesFormatted="responsesFormatted"
-              :timezone="curTimezone"
-              :show-best-times.sync="showBestTimes"
-              :hide-if-needed.sync="hideIfNeeded"
-              :start-calendar-on-monday.sync="startCalendarOnMonday"
-              :show-event-options="showEventOptions"
-              :guestAddedAvailability="guestAddedAvailability"
-              :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
-              @toggleShowEventOptions="toggleShowEventOptions"
-              @addAvailability="$emit('addAvailability')"
-              @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
-              @mouseOverRespondent="mouseOverRespondent"
-              @mouseLeaveRespondent="mouseLeaveRespondent"
-              @clickRespondent="clickRespondent"
-              @editGuestAvailability="editGuestAvailability"
-              @refreshEvent="refreshEvent"
-            />
+            <div>
+              <SignUpBlock v-for="signUpBlock in signUpBlocksByDay.flat()" :key="signUpBlock._id" :signUpBlock="signUpBlock" @update:signUpBlock="editSignUpBlock" :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"></SignUpBlock>
+            </div>
           </template>
         </div>
       </div>
@@ -826,6 +829,7 @@ import {
   dateCompare,
   getDateHoursOffset,
   post,
+  put,
   isBetween,
   clamp,
   isPhone,
@@ -858,6 +862,7 @@ import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import Advertisement from "@/components/event/Advertisement.vue"
+import SignUpBlock from "@/components/sign_up_form/SignUpBlock.vue"
 import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
@@ -2275,6 +2280,70 @@ export default {
       this.refreshEvent()
       this.unsavedChanges = false
     },
+    async submitNewSignUpBlocks() {
+      // const payload = {
+      //   signUpBlocks: this.signUpBlocksByDay.flat().map((block) => {
+      //     return {
+      //       _id: block._id,
+      //       name: block.name,
+      //       capacity: block.capacity,
+      //       startDate: block.startDate,
+      //       endDate: block.endDate,
+      //     }
+      //   })
+      // }
+
+      //       const payload = {
+      //     "name": "Rwar",
+      //     "duration": 8,
+      //     "dates": [
+      //         "2024-10-08T16:00:00.000Z",
+      //         "2024-10-09T16:00:00.000Z",
+      //         "2024-10-10T16:00:00.000Z",
+      //         "2024-10-11T16:00:00.000Z",
+      //         "2024-10-12T16:00:00.000Z"
+      //     ],
+      //     "notificationsEnabled": false,
+      //     "blindAvailabilityEnabled": false,
+      //     "daysOnly": false,
+      //     "remindees": [],
+      //     "type": "specific_dates",
+      //     "isSignUpForm": true,
+      //     "sendEmailAfterXResponses": -1,
+      //     "collectEmails": false,
+      //     "startOnMonday": false
+      // }
+
+      const payload = {
+        name: this.event.name,
+        duration: this.event.duration,
+        dates: this.event.dates,
+        type: this.event.type,
+        signUpBlocks: this.signUpBlocksByDay.flat().map((block) => {
+          return {
+            _id: block._id,
+            name: block.name,
+            capacity: block.capacity,
+            startDate: block.startDate,
+            endDate: block.endDate,
+          }
+        }),
+      }
+
+      console.log(payload)
+
+      put(`/events/${this.event._id}`, payload)
+        .then(() => {
+          // window.location.reload()
+        })
+        .catch((err) => {
+          console.log(err)
+          this.showError(
+            "There was a problem editing this event! Please try again later."
+          )
+        })
+    },
+
     async deleteAvailability(name = "") {
       const payload = {}
       if (this.authUser && !this.addingAvailabilityAsGuest) {
@@ -2948,7 +3017,6 @@ export default {
           this.signUpBlocksByDay[dayIndex].push(
             this.createSignUpBlock(dayIndex, hoursOffset, hoursLength)
           )
-          console.log(this.signUpBlocksByDay)
         }
       }
 
@@ -3021,8 +3089,6 @@ export default {
       if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
         return
       }
-      console.log("TRYING TO ENTER")
-      console.log(this.allowDrag)
 
       this.dragging = true
       this.dragStart = { row, col }
@@ -3296,12 +3362,24 @@ export default {
 
       return {
         _id: ObjectID().toString(),
-        capacity: 0,
-        name: `Slot #1`,
+        capacity: 1,
+        name: `Slot #${this.signUpBlocksByDay.flat().length + 1}`,
         ...timeBlock,
         hoursOffset,
         hoursLength,
       }
+    },
+
+    editSignUpBlock(signUpBlock) {
+      console.log(signUpBlock)
+      this.signUpBlocksByDay.forEach((blocksInDay, dayIndex) => {
+        blocksInDay.forEach((block, blockIndex) => {
+          if (signUpBlock._id === block._id) {
+            this.signUpBlocksByDay[dayIndex][blockIndex] = signUpBlock
+            return;
+          }
+        })
+      })
     },
 
     //#endregion
@@ -3480,12 +3558,12 @@ export default {
       timesEl.addEventListener("mousemove", this.moveDrag)
       timesEl.addEventListener("mouseup", this.endDrag)
     }
-    console.log(this.event)
+
     console.log(this.event.signUpBlocks)
 
     this.signUpBlocksByDay = splitTimeBlocksByDay(
       this.event,
-      this.event.signUpBlocks
+      this.event.signUpBlocks ?? []
     )
   },
   beforeDestroy() {
@@ -3507,6 +3585,7 @@ export default {
     Advertisement,
     GCalWeekSelector,
     WorkingHoursToggle,
+    SignUpBlock,
   },
 }
 </script>

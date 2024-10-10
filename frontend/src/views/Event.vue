@@ -29,7 +29,7 @@
     <!-- Edit event dialog -->
     <NewDialog
       v-model="editEventDialog"
-      :type="isGroup ? 'group' : 'event'"
+      :type="eventType"
       :event="event"
       :contactsPayload="contactsPayload"
       edit
@@ -467,6 +467,11 @@ export default {
     isSignUp() {
       return this.event?.isSignUpForm
     },
+    eventType() {
+      if (this.isGroup) return 'group'
+      else if (this.isSignUp) return 'signup'
+      else return 'event'
+    },
     areUnsavedChanges() {
       return this.scheduleOverlapComponent?.unsavedChanges
     },
@@ -658,8 +663,9 @@ export default {
         }
         return
       }
-
-      await this.scheduleOverlapComponent.submitAvailability()
+      console.log("GOT HERE!!!")
+      if (this.isSignUp) await this.scheduleOverlapComponent.submitNewSignUpBlocks();
+      else await this.scheduleOverlapComponent.submitAvailability()
 
       this.showInfo("Changes saved!")
       this.scheduleOverlapComponent.stopEditing()
