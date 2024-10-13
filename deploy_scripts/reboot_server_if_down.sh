@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# IMPORTANT: need to change the permissions of the log.txt if it's recreated
+# chmod 666 "$output_file"
+
 # Define the output file
 output_file="/schej.it/deploy_scripts/reboot_log.txt"
 
