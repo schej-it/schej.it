@@ -24,8 +24,37 @@
         </div>
         <div v-else class="tw-text-xs">{{ signUpBlock.capacity }}</div>
       </div>
-      <div class="tw-mt-2">
-        <a class="tw-text-green tw-text-xs" text @click="$emit('signUpForBlock', signUpBlock._id)">+ Join this slot</a>
+
+      <div v-if="signUpBlock.responses" class="tw-mt-2">
+        <div
+          v-for="(response, i) in signUpBlock.responses"
+          :key="i"
+          class="tw-relative tw-flex tw-items-center"
+        >
+          <div class="tw-ml-1 tw-mr-3">
+            <v-avatar v-if="response.user.picture != ''" :size="16">
+              <img
+                v-if="response.user.picture"
+                :src="response.user.picture"
+                referrerpolicy="no-referrer"
+              />
+            </v-avatar>
+            <v-avatar v-else :size="16">
+              <v-icon small>mdi-account</v-icon>
+            </v-avatar>
+          </div>
+          <div class="tw-mr-1 tw-transition-all">
+            {{ response.user.firstName + " " + response.user.lastName }}
+          </div>
+        </div>
+      </div>
+      <div v-if="!isOwner" class="tw-mt-2">
+        <a
+          class="tw-text-xs tw-text-green"
+          text
+          @click="$emit('signUpForBlock', signUpBlock._id)"
+          >+ Join this slot</a
+        >
       </div>
     </div>
   </v-container>

@@ -682,17 +682,20 @@
             </template>
           </template>
           <template v-else>
-            <div>
+            <transition-group
+              name="list"
+              class="tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
+            >
               <SignUpBlock
                 v-for="signUpBlock in signUpBlocksByDay.flat()"
                 :key="signUpBlock._id"
                 :signUpBlock="signUpBlock"
                 @update:signUpBlock="editSignUpBlock"
-                @signUpForBlock="signUpForBlock"
+                @signUpForBlock="$emit('signUpForBlock', $event)"
                 :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
                 :isOwner="isOwner"
               ></SignUpBlock>
-            </div>
+            </transition-group>
           </template>
         </div>
       </div>
@@ -2292,39 +2295,6 @@ export default {
       this.unsavedChanges = false
     },
     async submitNewSignUpBlocks() {
-      // const payload = {
-      //   signUpBlocks: this.signUpBlocksByDay.flat().map((block) => {
-      //     return {
-      //       _id: block._id,
-      //       name: block.name,
-      //       capacity: block.capacity,
-      //       startDate: block.startDate,
-      //       endDate: block.endDate,
-      //     }
-      //   })
-      // }
-
-      //       const payload = {
-      //     "name": "Rwar",
-      //     "duration": 8,
-      //     "dates": [
-      //         "2024-10-08T16:00:00.000Z",
-      //         "2024-10-09T16:00:00.000Z",
-      //         "2024-10-10T16:00:00.000Z",
-      //         "2024-10-11T16:00:00.000Z",
-      //         "2024-10-12T16:00:00.000Z"
-      //     ],
-      //     "notificationsEnabled": false,
-      //     "blindAvailabilityEnabled": false,
-      //     "daysOnly": false,
-      //     "remindees": [],
-      //     "type": "specific_dates",
-      //     "isSignUpForm": true,
-      //     "sendEmailAfterXResponses": -1,
-      //     "collectEmails": false,
-      //     "startOnMonday": false
-      // }
-
       const payload = {
         name: this.event.name,
         duration: this.event.duration,
@@ -2877,6 +2847,10 @@ export default {
     /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
     getRowColFromXY(x, y) {
       const { width, height } = this.timeslot
+      console.log(width)
+      console.log(height)
+      console.log(x)
+      console.log(y)
       let col = Math.floor(x / width)
       let row = Math.floor(y / height)
       row = this.clampRow(row)
@@ -3099,6 +3073,21 @@ export default {
       // Dont start dragging if day not included in daysonly event
       if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
         return
+      }
+
+      // If sign up form, check if trying to drag in a block
+      if (this.isSignUp) {
+        for (const block of this.signUpBlocksByDay[col]) {
+          if (
+            isBetween(
+              row,
+              block.hoursOffset * 4,
+              (block.hoursOffset + block.hoursLength) * 4 - 1
+            )
+          ) {
+            return
+          }
+        }
       }
 
       this.dragging = true
@@ -3392,8 +3381,23 @@ export default {
       })
     },
 
-    signUpForBlock(signUpBlockId) {
-      console.log(signUpBlockId)
+    reloadSignUpForm() {
+      this.signUpBlocksByDay = splitTimeBlocksByDay(
+        this.event,
+        this.event.signUpBlocks ?? []
+      )
+
+      for (const userId in this.event.signUpResponses) {
+        const signUpResponse = this.event.signUpResponses[userId]
+        for (const signUpBlockId of signUpResponse.signUpBlockIds) {
+          const signUpBlock = this.signUpBlocksByDay
+            .flat()
+            .find((signUpBlock) => signUpBlock._id === signUpBlockId)
+
+          if (!signUpBlock.responses) signUpBlock.responses = []
+          signUpBlock.responses.push(signUpResponse)
+        }
+      }
     },
 
     //#endregion
@@ -3574,11 +3578,12 @@ export default {
     }
 
     console.log(this.event.signUpBlocks)
+    console.log(this.event)
 
-    this.signUpBlocksByDay = splitTimeBlocksByDay(
-      this.event,
-      this.event.signUpBlocks ?? []
-    )
+    // Parse sign up blocks and responses
+    this.reloadSignUpForm()
+
+    console.log(this.signUpBlocksByDay.flat())
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)
