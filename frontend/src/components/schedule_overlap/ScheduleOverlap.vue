@@ -329,7 +329,7 @@
                                   :class="`dark-gray`"
                                   class="ph-no-capture tw-font-medium"
                                 >
-                                  {{ block.name}}
+                                  {{ block.name }}
                                 </div>
                               </div>
                             </div>
@@ -452,10 +452,13 @@
         </div>
 
         <!-- Right hand side content -->
+        <!-- Make sure tailwind classes are compiled -->
+        <div class="tw-rotate-0 tw-rotate-90"></div>
+
         <div
           v-if="!calendarOnly"
           class="tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
-          :class="`sm:tw-w-[${isSignUp ? 18 : 13}rem]`"
+          :class="`sm:tw-w-[${isSignUp ? 18 : 13}rem] tw-bg-red`"
         >
           <!-- Show respondents if not sign up form, otherwise, show sign up blocks -->
           <template v-if="!isSignUp">
@@ -680,7 +683,15 @@
           </template>
           <template v-else>
             <div>
-              <SignUpBlock v-for="signUpBlock in signUpBlocksByDay.flat()" :key="signUpBlock._id" :signUpBlock="signUpBlock" @update:signUpBlock="editSignUpBlock" :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"></SignUpBlock>
+              <SignUpBlock
+                v-for="signUpBlock in signUpBlocksByDay.flat()"
+                :key="signUpBlock._id"
+                :signUpBlock="signUpBlock"
+                @update:signUpBlock="editSignUpBlock"
+                @signUpForBlock="signUpForBlock"
+                :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
+                :isOwner="isOwner"
+              ></SignUpBlock>
             </div>
           </template>
         </div>
@@ -3371,15 +3382,18 @@ export default {
     },
 
     editSignUpBlock(signUpBlock) {
-      console.log(signUpBlock)
       this.signUpBlocksByDay.forEach((blocksInDay, dayIndex) => {
         blocksInDay.forEach((block, blockIndex) => {
           if (signUpBlock._id === block._id) {
             this.signUpBlocksByDay[dayIndex][blockIndex] = signUpBlock
-            return;
+            return
           }
         })
       })
+    },
+
+    signUpForBlock(signUpBlockId) {
+      console.log(signUpBlockId)
     },
 
     //#endregion

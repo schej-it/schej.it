@@ -174,7 +174,7 @@
                 <v-icon class="tw-text-green" v-else>mdi-share</v-icon>
               </v-btn>
             </div>
-            <div v-if="!isPhone" class="tw-flex tw-w-40">
+            <div v-if="!isPhone && (!isSignUp || canEdit)" class="tw-flex tw-w-40">
               <template v-if="!isEditing">
                 <v-btn
                   v-if="!isGroup && !authUser && selectedGuestRespondent"

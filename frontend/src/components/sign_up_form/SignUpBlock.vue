@@ -24,6 +24,9 @@
         </div>
         <div v-else class="tw-text-xs">{{ signUpBlock.capacity }}</div>
       </div>
+      <div class="tw-mt-2">
+        <a class="tw-text-green tw-text-xs" text @click="$emit('signUpForBlock', signUpBlock._id)">+ Join this slot</a>
+      </div>
     </div>
   </v-container>
 </template>
@@ -37,6 +40,7 @@ export default {
   props: {
     signUpBlock: { type: Object, required: true },
     isEditing: { type: Boolean, default: false },
+    isOwner: { type: Boolean, default: false },
   },
 
   data: () => ({
