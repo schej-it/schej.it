@@ -14,6 +14,17 @@ export const getDateString = (date, utc = false) => {
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
+/** Returns a string in the format "Mon, 9/23, 10 AM - 12 PM PDT" given a start date and end date */
+export const getStartEndDateString = (startDate, endDate) => {
+  const startDay = startDate.toLocaleString("en-US", { weekday: "short" })
+  const startMonth = startDate.toLocaleString("en-US", { month: "short" })
+  const startDayOfMonth = startDate.toLocaleString("en-US", { day: "numeric" })
+  const startTime = startDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric" })
+  const endTime = endDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric", timeZoneName: "short" })
+
+  return `${startDay}, ${startMonth} ${startDayOfMonth}, ${startTime} - ${endTime}`
+}
+
 /** Returns an ISO formatted date string */
 export const getISODateString = (date, utc = false) => {
   date = new Date(date)
@@ -424,35 +435,47 @@ export const getCalendarEventsMap = async (
 }
 
 /**
+ * Returns a time block object based on the date object and the hours offset and length
+ */
+export const getTimeBlock = (date, hoursOffset, hoursLength) => {
+  const startDate = new Date(date.getTime() + hoursOffset * 60 * 60 * 1000)
+  const endDate = new Date(startDate.getTime() + hoursLength * 60 * 60 * 1000)
+  return {
+    startDate: startDate,
+    endDate: endDate,
+  }
+}
+
+/**
   Returns an array of a user's calendar events split by date for a given event
 */
-export const splitCalendarEventsByDay = (
+export const splitTimeBlocksByDay = (
   event,
-  calendarEvents,
+  timeBlocks,
   weekOffset = 0
 ) => {
-  return processCalendarEvents(
+  return processTimeBlocks(
     event.dates,
     event.duration,
-    calendarEvents,
+    timeBlocks,
     event.type,
     weekOffset,
     event.startOnMonday
   )
 }
 
-/** Takes an array of calendar events and returns a new array separated by day and with hoursOffset and hoursLength properties */
-export const processCalendarEvents = (
+/** Takes an array of time blocks and returns a new array separated by day and with hoursOffset and hoursLength properties */
+export const processTimeBlocks = (
   dates,
   duration,
-  calendarEvents,
+  timeBlocks,
   eventType = eventTypes.SPECIFIC_DATES,
   weekOffset = 0,
   startOnMonday = false
 ) => {
-  // Put calendarEvents into the correct format
-  calendarEvents = JSON.parse(JSON.stringify(calendarEvents)) // Make a copy so we don't mutate original array
-  calendarEvents = calendarEvents.map((e) => {
+  // Put timeBlocks into the correct format
+  timeBlocks = JSON.parse(JSON.stringify(timeBlocks)) // Make a copy so we don't mutate original array
+  timeBlocks = timeBlocks.map((e) => {
     if (eventType === eventTypes.DOW || eventType === eventTypes.GROUP) {
       e.startDate = dateToDowDate(
         dates,
@@ -474,25 +497,25 @@ export const processCalendarEvents = (
     }
     return e
   })
-  calendarEvents.sort((a, b) => dateCompare(a.startDate, b.startDate))
+  timeBlocks.sort((a, b) => dateCompare(a.startDate, b.startDate))
 
   // Format array of calendar events by day
-  const calendarEventsByDay = []
+  const timeBlocksByDay = []
   for (const i in dates) {
-    calendarEventsByDay[i] = []
+    timeBlocksByDay[i] = []
   }
 
   // Iterate through all dates and add calendar events to array
   for (const i in dates) {
-    if (calendarEvents.length == 0) break
+    if (timeBlocks.length == 0) break
 
     const start = new Date(dates[i])
     const end = new Date(start)
     end.setHours(start.getHours() + duration)
 
     // Keep iterating through calendar events until it's empty or there are no more events for the current date
-    while (calendarEvents.length > 0 && end > calendarEvents[0].startDate) {
-      let [calendarEvent] = calendarEvents.splice(0, 1)
+    while (timeBlocks.length > 0 && end > timeBlocks[0].startDate) {
+      let [calendarEvent] = timeBlocks.splice(0, 1)
 
       // Check if calendar event overlaps with event time ranges
       const startDateWithinRange = isBetween(
@@ -542,7 +565,7 @@ export const processCalendarEvents = (
         // Don't display event if the event is 0 hours long
         if (hoursLength == 0) continue
 
-        calendarEventsByDay[i].push({
+        timeBlocksByDay[i].push({
           ...calendarEvent,
           hoursOffset,
           hoursLength,
@@ -551,7 +574,7 @@ export const processCalendarEvents = (
     }
   }
 
-  return calendarEventsByDay
+  return timeBlocksByDay
 }
 
 export const getCalendarAccountKey = (email, calendarType) => {

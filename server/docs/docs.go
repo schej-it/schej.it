@@ -83,7 +83,7 @@ var doc = `{
                 "summary": "Signs user in",
                 "parameters": [
                     {
-                        "description": "Object containing the Google authorization code and the user's timezone offset",
+                        "description": "Object containing the Google authorization code, scope, calendar type, and the user's timezone offset",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -95,7 +95,13 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "calendarType": {
+                                            "type": "string"
+                                        },
                                         "code": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
                                             "type": "string"
                                         },
                                         "timezoneOffset": {
@@ -127,7 +133,7 @@ var doc = `{
                 "summary": "Signs user in from mobile",
                 "parameters": [
                     {
-                        "description": "Object containing the Google authorization code and the user's timezone offset",
+                        "description": "Object containing the Google authorization code, calendar type, and the user's timezone offset",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -140,6 +146,9 @@ var doc = `{
                                     "type": "object",
                                     "properties": {
                                         "accessToken": {
+                                            "type": "string"
+                                        },
+                                        "calendarType": {
                                             "type": "string"
                                         },
                                         "expiresIn": {
@@ -156,6 +165,9 @@ var doc = `{
                                         },
                                         "timezoneOffset": {
                                             "type": "integer"
+                                        },
+                                        "tokenOrigin": {
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -251,6 +263,9 @@ var doc = `{
                                         "duration": {
                                             "type": "number"
                                         },
+                                        "isSignUpForm": {
+                                            "type": "boolean"
+                                        },
                                         "name": {
                                             "type": "string"
                                         },
@@ -265,6 +280,12 @@ var doc = `{
                                         },
                                         "sendEmailAfterXResponses": {
                                             "type": "integer"
+                                        },
+                                        "signUpBlocks": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.SignUpBlock"
+                                            }
                                         },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
@@ -374,6 +395,9 @@ var doc = `{
                                         "daysOnly": {
                                             "type": "boolean"
                                         },
+                                        "description": {
+                                            "type": "string"
+                                        },
                                         "duration": {
                                             "type": "number"
                                         },
@@ -391,6 +415,12 @@ var doc = `{
                                         },
                                         "sendEmailAfterXResponses": {
                                             "type": "integer"
+                                        },
+                                        "signUpBlocks": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.SignUpBlock"
+                                            }
                                         },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
@@ -670,6 +700,12 @@ var doc = `{
                                         "name": {
                                             "type": "string"
                                         },
+                                        "signUpBlockIds": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/primitive.ObjectID"
+                                            }
+                                        },
                                         "useCalendarAvailability": {
                                             "type": "boolean"
                                         }
@@ -873,7 +909,7 @@ var doc = `{
                 "summary": "Adds a new calendar account",
                 "parameters": [
                     {
-                        "description": "Object containing the Google authorization code",
+                        "description": "Object containing the Google authorization code and scope",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -886,6 +922,52 @@ var doc = `{
                                     "type": "object",
                                     "properties": {
                                         "code": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/user/add-outlook-calendar-account": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Adds a new outlook calendar account",
+                "parameters": [
+                    {
+                        "description": "Object containing the Outlook authorization code and scope",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "scope": {
                                             "type": "string"
                                         }
                                     }
@@ -1385,13 +1467,9 @@ var doc = `{
                 "enabled": {
                     "type": "boolean"
                 },
-                "googleCalendarAuth": {
+                "oAuth2CalendarAuth": {
                     "type": "object",
-                    "$ref": "#/definitions/models.GoogleCalendarAuth"
-                },
-                "outlookCalendarAuth": {
-                    "type": "object",
-                    "$ref": "#/definitions/models.OutlookCalendarAuth"
+                    "$ref": "#/definitions/models.OAuth2CalendarAuth"
                 },
                 "picture": {
                     "type": "string"
@@ -1474,8 +1552,15 @@ var doc = `{
                     "description": "Whether to only poll for days, not times",
                     "type": "boolean"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "duration": {
                     "type": "number"
+                },
+                "isSignUpForm": {
+                    "description": "Sign up form details",
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -1511,6 +1596,22 @@ var doc = `{
                 "shortId": {
                     "type": "string"
                 },
+                "signUpBlocks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SignUpBlock"
+                    }
+                },
+                "signUpResponses": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/models.SignUpResponse"
+                    }
+                },
+                "startOnMonday": {
+                    "description": "Whether to start the event on Monday (as opposed to Sunday, used for DOW events)",
+                    "type": "boolean"
+                },
                 "type": {
                     "type": "string"
                 },
@@ -1521,9 +1622,6 @@ var doc = `{
         },
         "models.EventType": {
             "type": "string"
-        },
-        "models.GoogleCalendarAuth": {
-            "type": "object"
         },
         "models.Location": {
             "type": "object",
@@ -1551,7 +1649,7 @@ var doc = `{
                 }
             }
         },
-        "models.OutlookCalendarAuth": {
+        "models.OAuth2CalendarAuth": {
             "type": "object"
         },
         "models.Remindee": {
@@ -1620,6 +1718,53 @@ var doc = `{
                 }
             }
         },
+        "models.SignUpBlock": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "type": "string"
+                },
+                "capacity": {
+                    "type": "integer"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SignUpResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Guest information",
+                    "type": "string"
+                },
+                "signUpBlockIds": {
+                    "description": "The IDs of the sign up blocks that the user has signed up for",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user": {
+                    "type": "object",
+                    "$ref": "#/definitions/models.User"
+                },
+                "userId": {
+                    "description": "User information",
+                    "type": "string"
+                }
+            }
+        },
         "models.SubCalendar": {
             "type": "object",
             "properties": {
@@ -1666,6 +1811,10 @@ var doc = `{
                 "picture": {
                     "type": "string"
                 },
+                "primaryAccountKey": {
+                    "description": "The calendarAccountKey of the account the user first signed in with",
+                    "type": "string"
+                },
                 "timezoneOffset": {
                     "type": "integer"
                 }
@@ -1683,6 +1832,12 @@ var doc = `{
                 "startTime": {
                     "type": "number"
                 }
+            }
+        },
+        "primitive.ObjectID": {
+            "type": "array",
+            "items": {
+                "type": "integer"
             }
         },
         "responses.Error": {

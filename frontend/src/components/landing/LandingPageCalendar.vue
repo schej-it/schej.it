@@ -24,7 +24,7 @@ import {
   getDateWithTimeNum,
   isPhone,
   dateToTimeNum,
-  processCalendarEvents,
+  processTimeBlocks,
 } from "@/utils"
 
 export default {
@@ -96,7 +96,7 @@ export default {
         })
       }
 
-      this.calendarEventsByDay = processCalendarEvents(
+      this.calendarEventsByDay = processTimeBlocks(
         this.dates,
         this.duration,
         events
