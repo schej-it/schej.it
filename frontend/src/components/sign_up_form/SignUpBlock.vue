@@ -48,7 +48,7 @@
           </div>
         </div>
       </div>
-      <div v-if="!isOwner" class="tw-mt-2">
+      <div v-if="!isOwner && hasCapacity" class="tw-mt-2">
         <a
           class="tw-text-xs tw-text-green"
           text
@@ -81,6 +81,12 @@ export default {
       return getStartEndDateString(
         this.signUpBlock.startDate,
         this.signUpBlock.endDate
+      )
+    },
+    hasCapacity() {
+      return (
+        !this.signUpBlock.responses ||
+        this.signUpBlock.capacity > this.signUpBlock.responses.length
       )
     },
   },

@@ -684,7 +684,6 @@
           <template v-else>
             <transition-group
               name="list"
-              class="tw-grid tw-grid-cols-2 tw-gap-x-2 sm:tw-block"
             >
               <SignUpBlock
                 v-for="signUpBlock in signUpBlocksByDay.flat()"
