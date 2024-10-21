@@ -2,7 +2,7 @@
   <span>
     <div class="tw-select-none tw-py-4" style="-webkit-touch-callout: none">
       <div class="tw-flex tw-flex-col sm:tw-flex-row">
-        <div class="tw-flex tw-grow tw-px-4">
+        <div class="tw-flex tw-grow tw-pl-4" :class="isSignUp ? '' : 'tw-pr-4'">
           <template v-if="event.daysOnly">
             <div class="tw-grow">
               <div class="tw-flex tw-items-center tw-justify-between">
@@ -296,23 +296,17 @@
                             :style="signUpBlockBeingDraggedStyle"
                             style="pointer-events: none"
                           >
-                            <div
-                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
-                            >
-                              <div class="tw-font-medium tw-text-white">
-                                Slot #{{ signUpBlocksByDay.length + 1 }}
-                              </div>
-                            </div>
+                            <SignUpCalendarBlock :title="newSignUpBlockName" unsaved />
                           </div>
                         </div>
 
-                        <!-- Sign up blocks -->
                         <div v-if="isSignUp">
+                          <!-- Sign up blocks -->
                           <div
                             v-for="(block, i) in signUpBlocksByDay[
                               d + page * maxDaysPerPage
                             ]"
-                            :key="i"
+                            :key="block._id"
                           >
                             <div
                               class="tw-absolute tw-w-full tw-select-none tw-p-px"
@@ -322,16 +316,26 @@
                               }"
                               style="pointer-events: none"
                             >
-                              <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border-2 tw-border-solid tw-border-gray tw-bg-white tw-p-1 tw-text-xs"
-                              >
-                                <div
-                                  :class="`dark-gray`"
-                                  class="ph-no-capture tw-font-medium"
-                                >
-                                  {{ block.name }}
-                                </div>
-                              </div>
+                              <SignUpCalendarBlock :title="block.name" />
+                            </div>
+                          </div>
+
+                          <!-- Sign up blocks to be added after hitting 'save' -->
+                          <div
+                            v-for="(block, i) in signUpBlocksToAddByDay[
+                              d + page * maxDaysPerPage
+                            ]"
+                            :key="block._id"
+                          >
+                            <div
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              :style="{
+                                top: `calc(${block.hoursOffset} * 4 * 1rem)`,
+                                height: `calc(${block.hoursLength} * 4 * 1rem)`,
+                              }"
+                              style="pointer-events: none"
+                            >
+                              <SignUpCalendarBlock :title="block.name" unsaved />
                             </div>
                           </div>
                         </div>
@@ -452,13 +456,11 @@
         </div>
 
         <!-- Right hand side content -->
-        <!-- Make sure tailwind classes are compiled -->
-        <div class="tw-rotate-0 tw-rotate-90"></div>
 
         <div
           v-if="!calendarOnly"
-          class="tw-bg-white tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
-          :class="`sm:tw-w-[${isSignUp ? 18 : 13}rem] tw-bg-red`"
+          class="tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+          :class="`sm:tw-w-[${isSignUp ? 18 : 13}rem]`"
         >
           <!-- Show respondents if not sign up form, otherwise, show sign up blocks -->
           <template v-if="!isSignUp">
@@ -682,9 +684,17 @@
             </template>
           </template>
           <template v-else>
-            <transition-group
-              name="list"
-            >
+            <transition-group name="list">
+              <SignUpBlock
+                v-for="signUpBlock in signUpBlocksToAddByDay.flat()"
+                :key="signUpBlock._id"
+                :signUpBlock="signUpBlock"
+                @update:signUpBlock="editSignUpBlock"
+                @signUpForBlock="$emit('signUpForBlock', $event)"
+                :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
+                :isOwner="isOwner"
+                unsaved
+              ></SignUpBlock>
               <SignUpBlock
                 v-for="signUpBlock in signUpBlocksByDay.flat()"
                 :key="signUpBlock._id"
@@ -695,6 +705,12 @@
                 :isOwner="isOwner"
               ></SignUpBlock>
             </transition-group>
+            <div
+              v-if="signUpBlocksByDay.flat().length === 0"
+              class="tw-text-sm tw-italic tw-text-dark-gray"
+            >
+              Click and drag on the grid to create a slot
+            </div>
           </template>
         </div>
       </div>
@@ -876,6 +892,7 @@ import UserAvatarContent from "@/components/UserAvatarContent.vue"
 import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import Advertisement from "@/components/event/Advertisement.vue"
 import SignUpBlock from "@/components/sign_up_form/SignUpBlock.vue"
+import SignUpCalendarBlock from "@/components/sign_up_form/SignUpCalendarBlock.vue"
 import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
@@ -953,6 +970,7 @@ export default {
 
       /* Sign up form */
       signUpBlocksByDay: [], // The current event's sign up blocks by day
+      signUpBlocksToAddByDay: [], // The sign up blocks to be added after hitting 'save'
 
       /* Edit options */
       showEditOptions:
@@ -1146,6 +1164,10 @@ export default {
     },
     curRespondentsSet() {
       return new Set(this.curRespondents)
+    },
+    /** [SPECIFIC TO SIGN UPS] Returns the name of the new sign up block being dragged */
+    newSignUpBlockName() {
+      return `Slot #${this.signUpBlocksByDay.flat().length + 1}`
     },
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
@@ -2294,6 +2316,11 @@ export default {
       this.unsavedChanges = false
     },
     async submitNewSignUpBlocks() {
+      for (let i = 0; i < this.signUpBlocksToAddByDay.length; ++i) {
+        this.signUpBlocksByDay[i] = this.signUpBlocksByDay[i].concat(this.signUpBlocksToAddByDay[i])
+        this.signUpBlocksToAddByDay[i] = []
+      }
+
       const payload = {
         name: this.event.name,
         duration: this.event.duration,
@@ -2846,10 +2873,6 @@ export default {
     /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
     getRowColFromXY(x, y) {
       const { width, height } = this.timeslot
-      console.log(width)
-      console.log(height)
-      console.log(x)
-      console.log(y)
       let col = Math.floor(x / width)
       let row = Math.floor(y / height)
       row = this.clampRow(row)
@@ -2998,7 +3021,7 @@ export default {
         const hoursOffset = this.dragStart.row / 4
         const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
         if (hoursLength > 0) {
-          this.signUpBlocksByDay[dayIndex].push(
+          this.signUpBlocksToAddByDay[dayIndex].push(
             this.createSignUpBlock(dayIndex, hoursOffset, hoursLength)
           )
         }
@@ -3362,7 +3385,7 @@ export default {
       return {
         _id: ObjectID().toString(),
         capacity: 1,
-        name: `Slot #${this.signUpBlocksByDay.flat().length + 1}`,
+        name: this.newSignUpBlockName,
         ...timeBlock,
         hoursOffset,
         hoursLength,
@@ -3381,11 +3404,19 @@ export default {
     },
 
     reloadSignUpForm() {
+      /** Split sign up blocks by day */
       this.signUpBlocksByDay = splitTimeBlocksByDay(
         this.event,
         this.event.signUpBlocks ?? []
       )
 
+      /** Initialize sign up blocks to be added array */
+      this.signUpBlocksToAddByDay = []
+      for (const day of this.signUpBlocksByDay) {
+        this.signUpBlocksToAddByDay.push([])
+      }
+
+      /** Populate sign up block responses */
       for (const userId in this.event.signUpResponses) {
         const signUpResponse = this.event.signUpResponses[userId]
         for (const signUpBlockId of signUpResponse.signUpBlockIds) {
@@ -3604,6 +3635,7 @@ export default {
     GCalWeekSelector,
     WorkingHoursToggle,
     SignUpBlock,
+    SignUpCalendarBlock,
   },
 }
 </script>

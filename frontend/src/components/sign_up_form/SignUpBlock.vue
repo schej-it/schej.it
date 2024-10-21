@@ -1,7 +1,8 @@
 <template>
   <v-container>
     <div
-      class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-border-light-gray-stroke tw-p-4"
+      class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-p-4"
+      :class="unsaved ? 'tw-border-light-green' : 'tw-border-light-gray-stroke'"
     >
       <div class="tw-font-medium">{{ signUpBlock.name }}</div>
       <div class="tw-text-xs tw-italic tw-text-dark-gray">
@@ -70,6 +71,7 @@ export default {
     signUpBlock: { type: Object, required: true },
     isEditing: { type: Boolean, default: false },
     isOwner: { type: Boolean, default: false },
+    unsaved: { type: Boolean, default: false },
   },
 
   data: () => ({
