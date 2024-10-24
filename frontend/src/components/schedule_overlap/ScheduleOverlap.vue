@@ -691,10 +691,12 @@
           </template>
           <template v-else>
             <SignUpBlocksList
+              ref="signUpBlocksList"
               :signUpBlocks="signUpBlocksByDay.flat()"
               :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
               :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
               :isOwner="isOwner"
+              @update:signUpBlock="editSignUpBlock"
               @signUpForBlock="$emit('signUpForBlock', $event)"
             />
           </template>
@@ -3382,6 +3384,7 @@ export default {
     },
 
     editSignUpBlock(signUpBlock) {
+      console.log(signUpBlock)
       this.signUpBlocksByDay.forEach((blocksInDay, dayIndex) => {
         blocksInDay.forEach((block, blockIndex) => {
           if (signUpBlock._id === block._id) {

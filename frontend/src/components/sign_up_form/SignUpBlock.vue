@@ -4,7 +4,34 @@
       class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-p-4"
       :class="unsaved ? 'tw-border-light-green' : 'tw-border-light-gray-stroke'"
     >
-      <div class="tw-font-medium">{{ signUpBlock.name }}</div>
+      <div class="tw-flex tw-items-center tw-justify-between">
+        <div v-if="!isEditingName" class="tw-font-medium tw-flex tw-items-center tw-gap-2">
+          {{ isEditing ? newName : signUpBlock.name }}
+          <v-btn
+            v-if="isEditing"
+            icon
+            x-small
+            @click="isEditingName = true"
+          >
+            <v-icon x-small>mdi-pencil</v-icon>
+          </v-btn>
+        </div>
+        <div v-else class="tw-flex tw-w-full tw-items-center tw-gap-2">
+          <v-text-field
+            v-model="newName"
+            dense
+            hide-details
+            autofocus
+            @keyup.enter="saveName"
+          ></v-text-field>
+          <v-btn icon x-small @click="cancelEditName">
+            <v-icon x-small>mdi-close</v-icon>
+          </v-btn>
+          <v-btn icon x-small color="primary" @click="saveName">
+            <v-icon x-small>mdi-check</v-icon>
+          </v-btn>
+        </div>
+      </div>
       <div class="tw-text-xs tw-italic tw-text-dark-gray">
         {{ timeRangeString }}
       </div>
@@ -76,6 +103,8 @@ export default {
 
   data: () => ({
     capacityOptions: [...Array(100).keys()].map((i) => i + 1),
+    isEditingName: false,
+    newName: '',
   }),
 
   computed: {
@@ -93,6 +122,25 @@ export default {
     },
   },
 
-  methods: {},
+  methods: {
+    saveName() {
+      console.log(this.newName)
+      this.$emit('update:signUpBlock', { ...this.signUpBlock, name: this.newName })
+      this.isEditingName = false
+    },
+    cancelEditName() {
+      this.newName = this.signUpBlock.name
+      this.isEditingName = false
+    },
+  },
+
+  watch: {
+    signUpBlock: {
+      immediate: true,
+      handler(newVal) {
+        this.newName = newVal.name
+      },
+    },
+  },
 }
 </script>
