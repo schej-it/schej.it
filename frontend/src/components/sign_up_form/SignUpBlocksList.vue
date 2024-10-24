@@ -1,0 +1,108 @@
+<template>
+  <div
+    ref="scrollableSection"
+    class="tw-flex tw-flex-col"
+    :style="!isPhone ? `max-height: ${desktopMaxHeight}px !important;` : ''"
+  >
+    <div
+      ref="respondentsScrollView"
+      :class="
+        isPhone
+          ? 'tw-overflow-hidden'
+          : 'tw-overflow-y-auto tw-overflow-x-hidden'
+      "
+    >
+      <div
+        v-if="signUpBlocks.length === 0"
+        class="tw-text-sm tw-italic tw-text-dark-gray"
+      >
+        Click and drag on the grid to create a slot
+      </div>
+      <transition-group name="list">
+        <SignUpBlock
+          v-for="signUpBlock in signUpBlocksToAdd"
+          :key="signUpBlock._id"
+          :signUpBlock="signUpBlock"
+          @update:signUpBlock="(block) => $emit('update:signUpBlock', block)"
+          @signUpForBlock="$emit('signUpForBlock', $event)"
+          :isEditing="isEditing"
+          :isOwner="isOwner"
+          unsaved
+        ></SignUpBlock>
+        <SignUpBlock
+          v-for="signUpBlock in signUpBlocks"
+          :key="signUpBlock._id"
+          :signUpBlock="signUpBlock"
+          @update:signUpBlock="(block) => $emit('update:signUpBlock', block)"
+          @signUpForBlock="$emit('signUpForBlock', $event)"
+          :isEditing="isEditing"
+          :isOwner="isOwner"
+        ></SignUpBlock>
+      </transition-group>
+    </div>
+
+    <div class="tw-relative">
+        <OverflowGradient
+          v-if="hasMounted && !isPhone"
+          class="tw-h-16"
+          :scrollContainer="$refs.respondentsScrollView"
+          :showArrow="false"
+        />
+      </div>
+  </div>
+</template>
+
+<script>
+import { isPhone } from "@/utils"
+import SignUpBlock from "./SignUpBlock.vue"
+import OverflowGradient from "@/components/OverflowGradient.vue"
+
+export default {
+  name: "SignUpBlocksList",
+
+  props: {
+    signUpBlocks: { type: Array, required: true },
+    signUpBlocksToAdd: { type: Array, required: true },
+    isEditing: { type: Boolean, required: true },
+    isOwner: { type: Boolean, required: true },
+  },
+
+  data: () => ({
+    desktopMaxHeight: 0,
+    hasMounted: false,
+  }),
+
+  mounted() {
+    this.setDesktopMaxHeight()
+
+    addEventListener("resize", this.setDesktopMaxHeight)
+
+    this.$nextTick(() => {
+      this.hasMounted = true
+    })
+  },
+
+  computed: {
+    isPhone() {
+      return isPhone(this.$vuetify)
+    },
+  },
+
+  methods: {
+    setDesktopMaxHeight() {
+      const el = this.$refs.scrollableSection
+      if (el) {
+        const { top } = el.getBoundingClientRect()
+        this.desktopMaxHeight = window.innerHeight - top - 32
+      } else {
+        this.desktopMaxHeight = 0
+      }
+    },
+  },
+
+  components: {
+    SignUpBlock,
+    OverflowGradient,
+  },
+}
+</script>

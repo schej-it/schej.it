@@ -296,7 +296,10 @@
                             :style="signUpBlockBeingDraggedStyle"
                             style="pointer-events: none"
                           >
-                            <SignUpCalendarBlock :title="newSignUpBlockName" unsaved />
+                            <SignUpCalendarBlock
+                              :title="newSignUpBlockName"
+                              unsaved
+                            />
                           </div>
                         </div>
 
@@ -335,7 +338,10 @@
                               }"
                               style="pointer-events: none"
                             >
-                              <SignUpCalendarBlock :title="block.name" unsaved />
+                              <SignUpCalendarBlock
+                                :title="block.name"
+                                unsaved
+                              />
                             </div>
                           </div>
                         </div>
@@ -684,33 +690,12 @@
             </template>
           </template>
           <template v-else>
-            <transition-group name="list">
-              <SignUpBlock
-                v-for="signUpBlock in signUpBlocksToAddByDay.flat()"
-                :key="signUpBlock._id"
-                :signUpBlock="signUpBlock"
-                @update:signUpBlock="editSignUpBlock"
-                @signUpForBlock="$emit('signUpForBlock', $event)"
-                :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
-                :isOwner="isOwner"
-                unsaved
-              ></SignUpBlock>
-              <SignUpBlock
-                v-for="signUpBlock in signUpBlocksByDay.flat()"
-                :key="signUpBlock._id"
-                :signUpBlock="signUpBlock"
-                @update:signUpBlock="editSignUpBlock"
-                @signUpForBlock="$emit('signUpForBlock', $event)"
-                :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
-                :isOwner="isOwner"
-              ></SignUpBlock>
-            </transition-group>
-            <div
-              v-if="signUpBlocksByDay.flat().length === 0"
-              class="tw-text-sm tw-italic tw-text-dark-gray"
-            >
-              Click and drag on the grid to create a slot
-            </div>
+            <SignUpBlocksList
+              :signUpBlocks="signUpBlocksByDay.flat()"
+              :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
+              :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
+              :isOwner="isOwner"
+            />
           </template>
         </div>
       </div>
@@ -893,6 +878,7 @@ import CalendarAccounts from "@/components/settings/CalendarAccounts.vue"
 import Advertisement from "@/components/event/Advertisement.vue"
 import SignUpBlock from "@/components/sign_up_form/SignUpBlock.vue"
 import SignUpCalendarBlock from "@/components/sign_up_form/SignUpCalendarBlock.vue"
+import SignUpBlocksList from "@/components/sign_up_form/SignUpBlocksList.vue"
 import ZigZag from "./ZigZag.vue"
 import ConfirmDetailsDialog from "./ConfirmDetailsDialog.vue"
 import ToolRow from "./ToolRow.vue"
@@ -2317,7 +2303,9 @@ export default {
     },
     async submitNewSignUpBlocks() {
       for (let i = 0; i < this.signUpBlocksToAddByDay.length; ++i) {
-        this.signUpBlocksByDay[i] = this.signUpBlocksByDay[i].concat(this.signUpBlocksToAddByDay[i])
+        this.signUpBlocksByDay[i] = this.signUpBlocksByDay[i].concat(
+          this.signUpBlocksToAddByDay[i]
+        )
         this.signUpBlocksToAddByDay[i] = []
       }
 
@@ -3636,6 +3624,7 @@ export default {
     WorkingHoursToggle,
     SignUpBlock,
     SignUpCalendarBlock,
+    SignUpBlocksList,
   },
 }
 </script>
