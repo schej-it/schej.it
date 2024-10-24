@@ -168,13 +168,21 @@
         >
           <template v-slot:label>
             <span class="tw-text-sm tw-text-very-dark-gray"
-              >Email me each time someone joins my event</span
+              >Email me each time someone signs up</span
             >
           </template>
         </v-checkbox>
 
+        <v-checkbox v-model="collectEmails">
+          <template v-slot:label>
+            <span class="tw-text-sm tw-text-very-dark-gray">
+              Collect email address on sign up
+            </span>
+          </template>
+        </v-checkbox>
+
         <div class="tw-flex tw-flex-col tw-gap-2">
-          <ExpandableSection
+          <!-- <ExpandableSection
             v-if="authUser"
             label="Email reminders"
             v-model="showEmailReminders"
@@ -215,7 +223,7 @@
                 </template>
               </EmailInput>
             </div>
-          </ExpandableSection>
+          </ExpandableSection> -->
 
           <ExpandableSection
             v-model="showAdvancedOptions"
@@ -223,23 +231,6 @@
             :auto-scroll="dialog"
           >
             <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2">
-              <v-checkbox
-                v-model="collectEmails"
-                messages="Adds emails to Google Calendar invite"
-              >
-                <template v-slot:label>
-                  <span class="tw-text-sm tw-text-black">
-                    Require respondents' email addresses
-                  </span>
-                </template>
-                <template v-slot:message="{ key, message }">
-                  <div
-                    class="-tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
-                  >
-                    {{ message }}
-                  </div>
-                </template>
-              </v-checkbox>
               <v-checkbox
                 v-if="authUser"
                 v-model="blindAvailabilityEnabled"
@@ -281,7 +272,7 @@
                   </div>
                 </template>
               </v-checkbox>
-              <v-checkbox
+              <!-- <v-checkbox
                 v-if="authUser"
                 v-model="sendEmailAfterXResponsesEnabled"
                 hide-details
@@ -311,7 +302,7 @@
                     <div>responses</div>
                   </div>
                 </template>
-              </v-checkbox>
+              </v-checkbox> -->
               <TimezoneSelector v-model="timezone" label="Timezone" />
             </div>
           </ExpandableSection>
@@ -652,9 +643,9 @@ export default {
           })
       } else {
         // Edit event on backend
-          console.log("EDITING THE EVENT");
-          console.log(this.event._id)
-          console.log(payload)
+        console.log("EDITING THE EVENT")
+        console.log(this.event._id)
+        console.log(payload)
         if (this.event) {
           put(`/events/${this.event._id}`, payload)
             .then(() => {
@@ -782,7 +773,7 @@ export default {
     },
     resetToEventData() {
       this.updateFieldsFromEvent()
-      this.$refs.emailInput.reset()
+      // this.$refs.emailInput.reset()
     },
     setInitialEventData() {
       this.initialEventData = {

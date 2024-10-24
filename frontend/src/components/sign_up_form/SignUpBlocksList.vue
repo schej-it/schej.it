@@ -23,7 +23,7 @@
           v-for="signUpBlock in signUpBlocksToAdd"
           :key="signUpBlock._id"
           :signUpBlock="signUpBlock"
-          @update:signUpBlock="(block) => $emit('update:signUpBlock', block)"
+          @update:signUpBlock="$emit('update:signUpBlock', $event)"
           @signUpForBlock="$emit('signUpForBlock', $event)"
           :isEditing="isEditing"
           :isOwner="isOwner"
@@ -33,7 +33,7 @@
           v-for="signUpBlock in signUpBlocks"
           :key="signUpBlock._id"
           :signUpBlock="signUpBlock"
-          @update:signUpBlock="(block) => $emit('update:signUpBlock', block)"
+          @update:signUpBlock="$emit('update:signUpBlock', $event)"
           @signUpForBlock="$emit('signUpForBlock', $event)"
           :isEditing="isEditing"
           :isOwner="isOwner"
@@ -98,6 +98,15 @@ export default {
         this.desktopMaxHeight = 0
       }
     },
+    scrollToSignUpBlock(id) {
+      const scrollView = this.$refs.respondentsScrollView
+      if (scrollView) {
+        const targetBlock = scrollView.querySelector(`[data-id='${id}']`)
+        if (targetBlock) {
+          targetBlock.scrollIntoView({ behavior: "smooth" })
+        }
+      }
+    }
   },
 
   components: {
@@ -106,3 +115,4 @@ export default {
   },
 }
 </script>
+

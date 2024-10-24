@@ -306,7 +306,7 @@
                         <div v-if="isSignUp">
                           <!-- Sign up blocks -->
                           <div
-                            v-for="(block, i) in signUpBlocksByDay[
+                            v-for="(block) in signUpBlocksByDay[
                               d + page * maxDaysPerPage
                             ]"
                             :key="block._id"
@@ -325,7 +325,7 @@
 
                           <!-- Sign up blocks to be added after hitting 'save' -->
                           <div
-                            v-for="(block, i) in signUpBlocksToAddByDay[
+                            v-for="(block) in signUpBlocksToAddByDay[
                               d + page * maxDaysPerPage
                             ]"
                             :key="block._id"
@@ -695,6 +695,7 @@
               :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
               :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
               :isOwner="isOwner"
+              @signUpForBlock="$emit('signUpForBlock', $event)"
             />
           </template>
         </div>
@@ -1153,7 +1154,7 @@ export default {
     },
     /** [SPECIFIC TO SIGN UPS] Returns the name of the new sign up block being dragged */
     newSignUpBlockName() {
-      return `Slot #${this.signUpBlocksByDay.flat().length + 1}`
+      return `Slot #${this.signUpBlocksByDay.flat().length + this.signUpBlocksToAddByDay.flat().length + 1}`
     },
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
