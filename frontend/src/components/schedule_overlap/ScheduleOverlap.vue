@@ -918,10 +918,10 @@ export default {
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
       showCalendarEvents: false,
-      startCalendarOnMonday:
-        localStorage["startCalendarOnMonday"] == undefined
-          ? false
-          : localStorage["startCalendarOnMonday"] == "true",
+      startCalendarOnMonday: false,
+      // localStorage["startCalendarOnMonday"] == undefined
+      //   ? false
+      //   : localStorage["startCalendarOnMonday"] == "true",
 
       /* Dialogs */
       deleteAvailabilityDialog: false,
