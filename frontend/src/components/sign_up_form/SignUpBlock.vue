@@ -4,19 +4,17 @@
       class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-p-4"
       :class="unsaved ? 'tw-border-light-green' : 'tw-border-light-gray-stroke'"
     >
-      <div class="tw-flex tw-items-center tw-justify-between">
-        <div v-if="!isEditingName" class="tw-font-medium tw-flex tw-items-center tw-gap-2">
+      <div class="tw-flex tw-items-start tw-justify-between tw-h-7">
+        <div
+          v-if="!isEditingName"
+          class="tw-flex tw-items-center tw-gap-2 tw-font-medium"
+        >
           {{ isEditing ? newName : signUpBlock.name }}
-          <v-btn
-            v-if="isEditing"
-            icon
-            x-small
-            @click="isEditingName = true"
-          >
+          <v-btn v-if="isEditing" icon x-small @click="isEditingName = true">
             <v-icon x-small>mdi-pencil</v-icon>
           </v-btn>
         </div>
-        <div v-else class="tw-flex tw-w-full tw-items-center tw-gap-2">
+        <div v-else class="tw-flex tw-w-full tw-items-center tw-gap-2 -tw-mt-[6px]">
           <v-text-field
             v-model="newName"
             dense
@@ -37,20 +35,25 @@
       </div>
       <div class="tw-mt-4 tw-flex tw-items-center tw-gap-4">
         <div class="tw-text-xs">People per slot</div>
-        <div v-if="isEditing" class="-tw-mt-2 tw-w-20">
-          <v-select
-            :value="signUpBlock.capacity"
-            @input="
-              $emit('update:signUpBlock', { ...signUpBlock, capacity: $event })
-            "
-            class="tw-text-sm"
-            menu-props="auto"
-            :items="capacityOptions"
-            hide-details
-            dense
-          ></v-select>
+        <div class="tw-flex tw-h-4 tw-items-center">
+          <div v-if="isEditing" class="-tw-mt-2 tw-w-20">
+            <v-select
+              :value="signUpBlock.capacity"
+              @input="
+                $emit('update:signUpBlock', {
+                  ...signUpBlock,
+                  capacity: $event,
+                })
+              "
+              class="tw-text-xs"
+              menu-props="auto"
+              :items="capacityOptions"
+              hide-details
+              dense
+            ></v-select>
+          </div>
+          <div v-else class="tw-text-xs">{{ signUpBlock.capacity }}</div>
         </div>
-        <div v-else class="tw-text-xs">{{ signUpBlock.capacity }}</div>
       </div>
 
       <div v-if="signUpBlock.responses" class="tw-mt-2">
@@ -104,7 +107,7 @@ export default {
   data: () => ({
     capacityOptions: [...Array(100).keys()].map((i) => i + 1),
     isEditingName: false,
-    newName: '',
+    newName: "",
   }),
 
   computed: {
@@ -125,7 +128,10 @@ export default {
   methods: {
     saveName() {
       console.log(this.newName)
-      this.$emit('update:signUpBlock', { ...this.signUpBlock, name: this.newName })
+      this.$emit("update:signUpBlock", {
+        ...this.signUpBlock,
+        name: this.newName,
+      })
       this.isEditingName = false
     },
     cancelEditName() {

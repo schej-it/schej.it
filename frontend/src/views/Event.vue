@@ -379,6 +379,7 @@ export default {
   props: {
     eventId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
+    editingMode: { type: Boolean, default: false },
     linkApple: { type: Boolean, default: false },
     initialTimezone: { type: Object, default: () => ({}) },
     contactsPayload: { type: Object, default: () => ({}) },
@@ -979,7 +980,7 @@ export default {
         this.scheduleOverlapComponentLoaded = true
 
         // Put into editing mode if just signed in
-        if (this.fromSignIn && !this.isGroup) {
+        if ((this.fromSignIn || this.editingMode) && !this.isGroup) {
           this.scheduleOverlapComponent.startEditing()
         }
 

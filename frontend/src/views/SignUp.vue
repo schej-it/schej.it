@@ -3,6 +3,7 @@
     <Event
       :eventId="signUpId"
       :fromSignIn="fromSignIn"
+      :editingMode="editingMode"
       :initialTimezone="initialTimezone"
       :contactsPayload="contactsPayload"
     ></Event>
@@ -23,6 +24,7 @@ export default {
   props: {
     signUpId: { type: String, required: true },
     fromSignIn: { type: Boolean, default: false },
+    editingMode: { type: Boolean, default: false },
     initialTimezone: { type: Object, default: () => ({}) },
     contactsPayload: { type: Object, default: () => ({}) },
   },

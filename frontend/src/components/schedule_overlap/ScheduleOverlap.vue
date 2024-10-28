@@ -1154,10 +1154,28 @@ export default {
     curRespondentsSet() {
       return new Set(this.curRespondents)
     },
-    /** [SPECIFIC TO SIGN UPS] Returns the name of the new sign up block being dragged */
+
+    // -----------------------------------
+    //#region Sign up form
+    // -----------------------------------
+
+    /** Returns the name of the new sign up block being dragged */
     newSignUpBlockName() {
       return `Slot #${this.signUpBlocksByDay.flat().length + this.signUpBlocksToAddByDay.flat().length + 1}`
     },
+
+    /** Returns the max allowable drag */
+    maxSignUpBlockRowSize() {
+      if (!dragStart) return null
+      
+      const selectedDay = this.signUpBlocksByDay[dragStart.col]
+      
+      
+      
+    },
+
+    //#endregion
+
     /** Returns the max number of people in the curRespondents array available at any given time */
     curRespondentsMax() {
       let max = 0
@@ -2164,6 +2182,7 @@ export default {
     },
     /** Constructs the availability array using calendarEvents array */
     setAvailabilityAutomatically() {
+      console.log("SETTTING AVAILABILITY AUTOMATICALLY")
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set()
       const tmpAvailability = this.getAvailabilityFromCalendarEvents({
@@ -3426,6 +3445,8 @@ export default {
 
     /** Recalculate availability the calendar based on calendar events */
     reanimateAvailability() {
+      if (this.isSignUp) return
+
       if (
         this.state === this.states.EDIT_AVAILABILITY &&
         this.authUser &&

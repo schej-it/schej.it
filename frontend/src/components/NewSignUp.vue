@@ -624,6 +624,7 @@ export default {
               params: {
                 signUpId: shortId ?? eventId,
                 initialTimezone: this.timezone,
+                editingMode: true,
               },
             })
 
@@ -652,9 +653,9 @@ export default {
               posthogPayload.eventId = this.event._id
               this.$posthog?.capture("Sign up form edited", posthogPayload)
 
-              // this.$emit("input", false)
-              // this.reset()
-              // window.location.reload()
+              this.$emit("input", false)
+              this.reset()
+              window.location.reload()
             })
             .catch((err) => {
               this.showError(
