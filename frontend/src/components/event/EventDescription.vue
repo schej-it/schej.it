@@ -1,9 +1,9 @@
 <template>
-  <div class="tw-mt-1 tw-max-w-full sm:tw-mt-2 sm:tw-max-w-[calc(100%-236px)]" :style="{height: `${descriptionHeight}px`}">
+  <div class="tw-mt-1 tw-max-w-full sm:tw-mt-2 sm:tw-max-w-[calc(100%-236px)]">
     <div
-      v-if="event.description && !isEditing"
+      v-if="showDescription"
       class="tw-flex tw-w-full tw-cursor-pointer tw-items-center tw-gap-2 tw-rounded-md tw-border tw-border-light-gray-stroke tw-bg-light-gray tw-p-2 tw-text-xs tw-font-normal tw-text-very-dark-gray hover:tw-bg-[#eeeeee] sm:tw-text-sm"
-      >
+    >
       <div class="tw-grow tw-space-y-1">
         <div
           class="tw-min-h-6 tw-leading-6"
@@ -24,16 +24,25 @@
         <v-icon small>mdi-pencil</v-icon>
       </v-btn>
     </div>
-    <template v-else-if="canEdit">
-      <v-btn
-        v-if="!isEditing"
-        text
-        class="-tw-ml-2 tw-mt-0 tw-w-min tw-px-2 tw-text-dark-gray"
-        @click="isEditing = true"
+
+    <v-btn
+      v-else-if="canEdit && !isEditing"
+      text
+      class="-tw-ml-2 tw-mt-0 tw-w-min tw-px-2 tw-text-dark-gray"
+      @click="isEditing = true"
+    >
+      + Add description
+    </v-btn>
+    <div
+      :class="
+        canEdit && !showDescription && isEditing
+          ? ''
+          : 'tw-absolute tw-opacity-0'
+      "
+    >
+      <div
+        class="-tw-mt-[6px] tw-flex tw-w-full tw-flex-grow tw-items-center tw-gap-2"
       >
-        + Add description
-      </v-btn>
-      <div v-else class="tw-relative -tw-top-[0.25rem] tw-flex tw-w-full tw-items-center tw-gap-2">
         <v-textarea
           v-model="newDescription"
           placeholder="Enter a description..."
@@ -57,7 +66,7 @@
           ><v-icon>mdi-check</v-icon></v-btn
         >
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -91,10 +100,9 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
-    descriptionHeight() {
-      let baseHeight = 14
-      return this.newDescription.split("\n").length * this.lineHeight + baseHeight
-    }
+    showDescription() {
+      return this.event.description && !this.isEditing
+    },
   },
 
   methods: {
@@ -118,4 +126,3 @@ export default {
   },
 }
 </script>
-
