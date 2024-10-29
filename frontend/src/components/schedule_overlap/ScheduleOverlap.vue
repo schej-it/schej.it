@@ -1166,11 +1166,21 @@ export default {
 
     /** Returns the max allowable drag */
     maxSignUpBlockRowSize() {
-      if (!dragStart) return null
+      if (!this.dragStart) return null;
       
-      const selectedDay = this.signUpBlocksByDay[dragStart.col]
+      const selectedDay = this.signUpBlocksByDay[this.dragStart.col];
+      const selectedDayToAdd = this.signUpBlocksToAddByDay[this.dragStart.col];
       
-      
+      if (selectedDay.length === 0 && selectedDayToAdd.length === 0) return null;
+
+      let maxSize = Infinity;
+      for (const block of [...selectedDay, ...selectedDayToAdd]) {
+        if (block.hoursOffset * 4 > this.dragStart.row) {
+          maxSize = Math.min(maxSize, block.hoursOffset * 4 - this.dragStart.row);
+        }
+      }
+
+      return maxSize;
       
     },
 
@@ -3091,7 +3101,18 @@ export default {
       const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
-      this.dragCur = { row, col }
+
+      console.log(this.maxSignUpBlockRowSize)
+      if (this.maxSignUpBlockRowSize && row > this.dragStart.row + this.maxSignUpBlockRowSize) {
+        console.log("GOT HEREE")
+        this.dragCur = { row: this.dragStart.row + this.maxSignUpBlockRowSize, col }
+      }
+      else {
+        console.log("BANG")
+        console.log()
+        this.dragCur = { row, col }
+      }
+
     },
     startDrag(e) {
       if (!this.allowDrag) return
