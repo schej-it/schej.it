@@ -109,13 +109,23 @@ export default {
     ...mapActions(["showError"]),
     saveDescription() {
       const oldEvent = { ...this.event }
+
       const newEvent = {
         ...this.event,
         description: this.newDescription,
       }
+
+      const eventPayload = {
+        name: this.event.name,
+        duration: this.event.duration,
+        dates: this.event.dates,
+        type: this.event.type,
+        description: this.newDescription,
+      }
+      
       this.$emit("update:event", newEvent)
       this.isEditing = false
-      put(`/events/${this.event._id}`, newEvent).catch((err) => {
+      put(`/events/${this.event._id}`, eventPayload).catch((err) => {
         console.error(err)
         this.showError("Failed to save description! Please try again later.")
         this.$emit("update:event", {
