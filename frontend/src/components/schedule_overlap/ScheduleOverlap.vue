@@ -466,7 +466,7 @@
         <div
           v-if="!calendarOnly"
           class="tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
-          :class="`sm:tw-w-[${isSignUp ? 18 : 13}rem]`"
+          :style="{ width: rightSideWidth }"
         >
           <!-- Show respondents if not sign up form, otherwise, show sign up blocks -->
           <template v-if="!isSignUp">
@@ -697,6 +697,7 @@
               :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
               :isOwner="isOwner"
               @update:signUpBlock="editSignUpBlock"
+              @delete:signUpBlock="deleteSignUpBlock"
               @signUpForBlock="$emit('signUpForBlock', $event)"
             />
           </template>
@@ -1054,6 +1055,11 @@ export default {
   },
   computed: {
     ...mapState(["authUser", "overlayAvailabilitiesEnabled"]),
+    /** Returns the width of the right side of the calendar */
+    rightSideWidth() {
+      if (this.isPhone) return "100%"
+      return this.isSignUp ? "18rem" : "13rem"
+    },
     /** Returns the days of the week in the correct order */
     daysOfWeek() {
       return !this.startCalendarOnMonday
@@ -2334,6 +2340,11 @@ export default {
       this.unsavedChanges = false
     },
     async submitNewSignUpBlocks() {
+      if (this.signUpBlocksToAddByDay.flat().length === 0) {
+        this.showError("Please add at least one sign-up block!")
+        return false
+      }
+
       for (let i = 0; i < this.signUpBlocksToAddByDay.length; ++i) {
         this.signUpBlocksByDay[i] = this.signUpBlocksByDay[i].concat(
           this.signUpBlocksToAddByDay[i]
@@ -2369,6 +2380,8 @@ export default {
             "There was a problem editing this event! Please try again later."
           )
         })
+
+      return true
     },
 
     async deleteAvailability(name = "") {
@@ -2772,6 +2785,7 @@ export default {
       // Reset options
       this.availabilityType = availabilityTypes.AVAILABLE
       this.overlayAvailability = false
+      this.resetSignUpForm()
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
@@ -3102,14 +3116,10 @@ export default {
         ...Object.values(this.normalizeXY(e))
       )
 
-      console.log(this.maxSignUpBlockRowSize)
-      if (this.maxSignUpBlockRowSize && row > this.dragStart.row + this.maxSignUpBlockRowSize) {
-        console.log("GOT HEREE")
-        this.dragCur = { row: this.dragStart.row + this.maxSignUpBlockRowSize, col }
+      if (this.maxSignUpBlockRowSize && row >= this.dragStart.row + this.maxSignUpBlockRowSize) {
+        this.dragCur = { row: this.dragStart.row + this.maxSignUpBlockRowSize - 1, col }
       }
       else {
-        console.log("BANG")
-        console.log()
         this.dragCur = { row, col }
       }
 
@@ -3406,6 +3416,7 @@ export default {
     //#region Sign up form
     // -----------------------------------
 
+    /** Creates a sign up block for the current day and hour offset */
     createSignUpBlock(dayIndex, hoursOffset, hoursLength) {
       const timeBlock = getTimeBlock(
         this.days[dayIndex].dateObject,
@@ -3423,6 +3434,7 @@ export default {
       }
     },
 
+    /** Updates the sign up block with the same id */
     editSignUpBlock(signUpBlock) {
       console.log(signUpBlock)
       this.signUpBlocksByDay.forEach((blocksInDay, dayIndex) => {
@@ -3435,18 +3447,36 @@ export default {
       })
     },
 
-    reloadSignUpForm() {
+    /** Deletes the sign up block with the id */
+    deleteSignUpBlock(signUpBlockId) {
+      this.signUpBlocksByDay.forEach((blocksInDay, dayIndex) => {
+        blocksInDay.forEach((block, blockIndex) => {
+          if (signUpBlockId === block._id) {
+            this.signUpBlocksByDay[dayIndex].splice(blockIndex, 1)
+            return
+          }
+        })
+      })
+
+      this.signUpBlocksToAddByDay.forEach((blocksInDay, dayIndex) => {
+        blocksInDay.forEach((block, blockIndex) => {
+          if (signUpBlockId === block._id) {
+            this.signUpBlocksToAddByDay[dayIndex].splice(blockIndex, 1)
+            return
+          }
+        })
+      })
+    },
+
+    /** Reloads all the data for the sign up form */
+    resetSignUpForm() {
       /** Split sign up blocks by day */
       this.signUpBlocksByDay = splitTimeBlocksByDay(
         this.event,
         this.event.signUpBlocks ?? []
       )
 
-      /** Initialize sign up blocks to be added array */
-      this.signUpBlocksToAddByDay = []
-      for (const day of this.signUpBlocksByDay) {
-        this.signUpBlocksToAddByDay.push([])
-      }
+      this.resetSignUpBlocksToAddByDay()
 
       /** Populate sign up block responses */
       for (const userId in this.event.signUpResponses) {
@@ -3459,6 +3489,14 @@ export default {
           if (!signUpBlock.responses) signUpBlock.responses = []
           signUpBlock.responses.push(signUpResponse)
         }
+      }
+    },
+
+    /** Initialize sign up blocks to be added array */
+    resetSignUpBlocksToAddByDay() {
+      this.signUpBlocksToAddByDay = []
+      for (const day of this.signUpBlocksByDay) {
+        this.signUpBlocksToAddByDay.push([])
       }
     },
 
@@ -3645,7 +3683,7 @@ export default {
     console.log(this.event)
 
     // Parse sign up blocks and responses
-    this.reloadSignUpForm()
+    this.resetSignUpForm()
 
     console.log(this.signUpBlocksByDay.flat())
   },

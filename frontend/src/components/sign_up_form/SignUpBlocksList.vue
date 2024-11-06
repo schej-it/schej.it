@@ -2,7 +2,7 @@
   <div
     ref="scrollableSection"
     class="tw-flex tw-flex-col"
-    :style="!isPhone ? `max-height: ${desktopMaxHeight}px !important;` : ''"
+    :style="!isPhone ? `max-height: ${signUpBlocksListMaxHeight}px !important;` : ''"
   >
     <div
       ref="respondentsScrollView"
@@ -24,6 +24,7 @@
           :key="signUpBlock._id"
           :signUpBlock="signUpBlock"
           @update:signUpBlock="$emit('update:signUpBlock', $event)"
+          @delete:signUpBlock="$emit('delete:signUpBlock', $event)"
           @signUpForBlock="$emit('signUpForBlock', $event)"
           :isEditing="isEditing"
           :isOwner="isOwner"
@@ -34,6 +35,7 @@
           :key="signUpBlock._id"
           :signUpBlock="signUpBlock"
           @update:signUpBlock="$emit('update:signUpBlock', $event)"
+          @delete:signUpBlock="$emit('delete:signUpBlock', $event)"
           @signUpForBlock="$emit('signUpForBlock', $event)"
           :isEditing="isEditing"
           :isOwner="isOwner"
@@ -69,6 +71,7 @@ export default {
 
   data: () => ({
     desktopMaxHeight: 0,
+    signUpBlocksListMinHeight: 400,
     hasMounted: false,
   }),
 
@@ -86,6 +89,9 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
+    signUpBlocksListMaxHeight() {
+      return Math.max(this.desktopMaxHeight, this.signUpBlocksListMinHeight)
+    }
   },
 
   methods: {

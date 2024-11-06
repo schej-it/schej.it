@@ -79,6 +79,16 @@
           </div>
         </div>
       </div>
+
+      <div v-if="isEditing" class="tw-mt-2">
+        <a
+          class="tw-text-xs tw-text-red"
+          text
+          @click="$emit('delete:signUpBlock', signUpBlock._id)"
+          >Delete slot</a
+        >
+      </div>
+
       <div v-if="!isOwner && hasCapacity" class="tw-mt-2">
         <a
           class="tw-text-xs tw-text-green"

@@ -538,7 +538,8 @@ export default {
       /* Cancels editing and resets availability to previous */
       if (!this.scheduleOverlapComponent) return
 
-      this.scheduleOverlapComponent.resetCurUserAvailability()
+      if (!this.isSignUp)
+        this.scheduleOverlapComponent.resetCurUserAvailability()
       this.scheduleOverlapComponent.stopEditing()
       this.curGuestId = ""
       this.addingAvailabilityAsGuest = false
@@ -671,12 +672,20 @@ export default {
         return
       }
       console.log("GOT HERE!!!")
-      if (this.isSignUp)
-        await this.scheduleOverlapComponent.submitNewSignUpBlocks()
-      else await this.scheduleOverlapComponent.submitAvailability()
 
-      this.showInfo("Changes saved!")
-      this.scheduleOverlapComponent.stopEditing()
+      let changesPersisted = true
+
+      if (this.isSignUp) {
+        changesPersisted =
+          await this.scheduleOverlapComponent.submitNewSignUpBlocks()
+      } else {
+        await this.scheduleOverlapComponent.submitAvailability()
+      }
+
+      if (changesPersisted) {
+        this.showInfo("Changes saved!")
+        this.scheduleOverlapComponent.stopEditing()
+      }
     },
     async saveChangesAsGuest(payload) {
       /* After guest dialog is submitted, submit availability with the given name */
@@ -886,8 +895,8 @@ export default {
           signUpBlockIds: [signUpBlockId],
         }
         await post(`/events/${this.event._id}/response`, payload)
-          await this.refreshEvent()
-          this.scheduleOverlapComponent.reloadSignUpForm()
+        await this.refreshEvent()
+        this.scheduleOverlapComponent.resetSignUpForm()
       } else {
         if (!guestPayload) {
           /** The user is not signed in, retrieve guest information */
@@ -902,7 +911,8 @@ export default {
           await post(`/events/${this.event._id}/response`, payload)
 
           await this.refreshEvent()
-          this.scheduleOverlapComponent.reloadSignUpForm()
+          this.scheduleOverlapComponent.resetSignUpForm()
+          this.guestDialog = false
         }
       }
     },
