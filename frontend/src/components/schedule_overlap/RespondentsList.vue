@@ -97,7 +97,7 @@
         maxHeight
           ? `max-height: ${maxHeight}px !important;`
           : !isPhone
-          ? `max-height: ${desktopMaxHeight}px !important;`
+          ? `max-height: ${respondentsListMaxHeight}px !important;`
           : ''
       "
     >
@@ -430,6 +430,7 @@ export default {
       },
       userToDelete: null,
       desktopMaxHeight: 0,
+      respondentsListMinHeight: 400,
 
       oldCurRespondents: [],
       curRespondentsAddedTime: {}, // Map of respondent id to time they were added
@@ -532,6 +533,9 @@ export default {
       })
       return orderedRespondents
     },
+    respondentsListMaxHeight() {
+      return Math.max(this.desktopMaxHeight, this.respondentsListMinHeight)
+    }
   },
 
   methods: {
