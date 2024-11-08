@@ -120,7 +120,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["groupsEnabled"]),
+    ...mapState(["groupsEnabled", "signUpFormEnabled"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -159,6 +159,18 @@ export default {
         if (this.groupsEnabled) {
           this.tabs.push({ title: "Availability group", type: "group" })
         }
+      },
+    },
+    signUpFormEnabled: {
+      immediate: true,
+      handler() {
+        this.tabs = [
+          { title: "Event", type: "event" },
+        ]
+        if (this.signUpFormEnabled) {
+          this.tabs.push({ title: "Sign up form", type: "signup" })
+        }
+        this.tabs.push({ title: "Availability group", type: "group" })
       },
     },
     value: {
