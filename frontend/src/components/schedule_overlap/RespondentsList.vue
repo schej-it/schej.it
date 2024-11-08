@@ -375,7 +375,7 @@
 </style>
 
 <script>
-import { _delete, getDateHoursOffset, getLocale, isPhone } from "@/utils"
+import { _delete, getLocale, isPhone } from "@/utils"
 import UserAvatarContent from "../UserAvatarContent.vue"
 import { mapState, mapActions } from "vuex"
 import EventOptions from "./EventOptions.vue"
