@@ -25,7 +25,6 @@ export default {
 
   methods: {
     clicked() {
-      console.log("YOOOOo")
     },
   },
 }

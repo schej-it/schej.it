@@ -613,8 +613,6 @@ export default {
         eventStartOnMonday: this.startOnMonday,
       }
 
-      console.log("EDITING THE EVENT")
-
       if (!this.edit) {
         // Create new event on backend
         post("/events", payload)
@@ -644,9 +642,6 @@ export default {
           })
       } else {
         // Edit event on backend
-        console.log("EDITING THE EVENT")
-        console.log(this.event._id)
-        console.log(payload)
         if (this.event) {
           put(`/events/${this.event._id}`, payload)
             .then(() => {

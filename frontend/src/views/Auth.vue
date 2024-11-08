@@ -41,7 +41,7 @@ export default {
           calendarType: state.calendarType,
           timezoneOffset: new Date().getTimezoneOffset(),
         })
-        console.log("user", user)
+        
         this.setAuthUser(user)
 
         this.$posthog?.identify(user._id, {

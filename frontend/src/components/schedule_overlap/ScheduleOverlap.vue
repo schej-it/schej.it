@@ -306,7 +306,7 @@
                         <div v-if="isSignUp">
                           <!-- Sign up blocks -->
                           <div
-                            v-for="(block) in signUpBlocksByDay[
+                            v-for="block in signUpBlocksByDay[
                               d + page * maxDaysPerPage
                             ]"
                             :key="block._id"
@@ -325,7 +325,7 @@
 
                           <!-- Sign up blocks to be added after hitting 'save' -->
                           <div
-                            v-for="(block) in signUpBlocksToAddByDay[
+                            v-for="block in signUpBlocksToAddByDay[
                               d + page * maxDaysPerPage
                             ]"
                             :key="block._id"
@@ -690,6 +690,16 @@
             </template>
           </template>
           <template v-else>
+            <div v-if="!isOwner" class="tw-flex tw-flex-col tw-gap-2 tw-mb-3">
+              <div class="tw-text-lg tw-text-black">Slots</div>
+              <div class="tw-text-xs tw-italic tw-text-dark-gray">
+                <div>
+                  <a class="tw-underline" :href="`mailto:${event.ownerId}`">Contact sign up creator</a> to edit
+                  your slot
+                </div>
+                <div>Responses are only visible to creator</div>
+              </div>
+            </div>
             <SignUpBlocksList
               ref="signUpBlocksList"
               :signUpBlocks="signUpBlocksByDay.flat()"
@@ -1167,27 +1177,33 @@ export default {
 
     /** Returns the name of the new sign up block being dragged */
     newSignUpBlockName() {
-      return `Slot #${this.signUpBlocksByDay.flat().length + this.signUpBlocksToAddByDay.flat().length + 1}`
+      return `Slot #${
+        this.signUpBlocksByDay.flat().length +
+        this.signUpBlocksToAddByDay.flat().length +
+        1
+      }`
     },
 
     /** Returns the max allowable drag */
     maxSignUpBlockRowSize() {
-      if (!this.dragStart) return null;
-      
-      const selectedDay = this.signUpBlocksByDay[this.dragStart.col];
-      const selectedDayToAdd = this.signUpBlocksToAddByDay[this.dragStart.col];
-      
-      if (selectedDay.length === 0 && selectedDayToAdd.length === 0) return null;
+      if (!this.dragStart) return null
 
-      let maxSize = Infinity;
+      const selectedDay = this.signUpBlocksByDay[this.dragStart.col]
+      const selectedDayToAdd = this.signUpBlocksToAddByDay[this.dragStart.col]
+
+      if (selectedDay.length === 0 && selectedDayToAdd.length === 0) return null
+
+      let maxSize = Infinity
       for (const block of [...selectedDay, ...selectedDayToAdd]) {
         if (block.hoursOffset * 4 > this.dragStart.row) {
-          maxSize = Math.min(maxSize, block.hoursOffset * 4 - this.dragStart.row);
+          maxSize = Math.min(
+            maxSize,
+            block.hoursOffset * 4 - this.dragStart.row
+          )
         }
       }
 
-      return maxSize;
-      
+      return maxSize
     },
 
     //#endregion
@@ -2198,7 +2214,6 @@ export default {
     },
     /** Constructs the availability array using calendarEvents array */
     setAvailabilityAutomatically() {
-      console.log("SETTTING AVAILABILITY AUTOMATICALLY")
       // This is not a computed property because we should be able to change it manually from what it automatically fills in
       this.availability = new Set()
       const tmpAvailability = this.getAvailabilityFromCalendarEvents({
@@ -2340,7 +2355,11 @@ export default {
       this.unsavedChanges = false
     },
     async submitNewSignUpBlocks() {
-      if (this.signUpBlocksToAddByDay.flat().length === 0) {
+      if (
+        this.signUpBlocksToAddByDay.flat().length +
+          this.signUpBlocksByDay.flat().length ===
+        0
+      ) {
         this.showError("Please add at least one sign-up block!")
         return false
       }
@@ -2367,8 +2386,6 @@ export default {
           }
         }),
       }
-
-      console.log(payload)
 
       put(`/events/${this.event._id}`, payload)
         .then(() => {
@@ -2785,7 +2802,6 @@ export default {
       // Reset options
       this.availabilityType = availabilityTypes.AVAILABLE
       this.overlayAvailability = false
-      this.resetSignUpForm()
     },
     highlightAvailabilityBtn() {
       this.$emit("highlightAvailabilityBtn")
@@ -3116,31 +3132,28 @@ export default {
         ...Object.values(this.normalizeXY(e))
       )
 
-      if (this.maxSignUpBlockRowSize && row >= this.dragStart.row + this.maxSignUpBlockRowSize) {
-        this.dragCur = { row: this.dragStart.row + this.maxSignUpBlockRowSize - 1, col }
-      }
-      else {
+      if (
+        this.maxSignUpBlockRowSize &&
+        row >= this.dragStart.row + this.maxSignUpBlockRowSize
+      ) {
+        this.dragCur = {
+          row: this.dragStart.row + this.maxSignUpBlockRowSize - 1,
+          col,
+        }
+      } else {
         this.dragCur = { row, col }
       }
-
     },
     startDrag(e) {
-      if (!this.allowDrag) return
-      if (e.touches?.length > 1) return // If dragging with more than one finger
-
       const { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
-      const date = this.getDateFromRowCol(row, col)
-
-      // Dont start dragging if day not included in daysonly event
-      if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
-        return
-      }
 
       // If sign up form, check if trying to drag in a block
       if (this.isSignUp) {
-        for (const block of this.signUpBlocksByDay[col]) {
+        for (const block of this.signUpBlocksByDay[col].concat(
+          this.signUpBlocksToAddByDay[col]
+        )) {
           if (
             isBetween(
               row,
@@ -3148,9 +3161,20 @@ export default {
               (block.hoursOffset + block.hoursLength) * 4 - 1
             )
           ) {
+            this.$refs.signUpBlocksList.scrollToSignUpBlock(block._id)
             return
           }
         }
+      }
+
+      if (!this.allowDrag) return
+      if (e.touches?.length > 1) return // If dragging with more than one finger
+
+      const date = this.getDateFromRowCol(row, col)
+
+      // Dont start dragging if day not included in daysonly event
+      if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
+        return
       }
 
       this.dragging = true
@@ -3436,11 +3460,19 @@ export default {
 
     /** Updates the sign up block with the same id */
     editSignUpBlock(signUpBlock) {
-      console.log(signUpBlock)
       this.signUpBlocksByDay.forEach((blocksInDay, dayIndex) => {
         blocksInDay.forEach((block, blockIndex) => {
           if (signUpBlock._id === block._id) {
             this.signUpBlocksByDay[dayIndex][blockIndex] = signUpBlock
+            return
+          }
+        })
+      })
+
+      this.signUpBlocksToAddByDay.forEach((blocksInDay, dayIndex) => {
+        blocksInDay.forEach((block, blockIndex) => {
+          if (signUpBlock._id === block._id) {
+            this.signUpBlocksToAddByDay[dayIndex][blockIndex] = signUpBlock
             return
           }
         })
@@ -3679,13 +3711,8 @@ export default {
       timesEl.addEventListener("mouseup", this.endDrag)
     }
 
-    console.log(this.event.signUpBlocks)
-    console.log(this.event)
-
     // Parse sign up blocks and responses
     this.resetSignUpForm()
-
-    console.log(this.signUpBlocksByDay.flat())
   },
   beforeDestroy() {
     removeEventListener("click", this.deselectRespondents)

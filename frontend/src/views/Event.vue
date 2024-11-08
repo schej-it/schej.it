@@ -540,6 +540,7 @@ export default {
 
       if (!this.isSignUp)
         this.scheduleOverlapComponent.resetCurUserAvailability()
+      else this.scheduleOverlapComponent.resetSignUpForm()
       this.scheduleOverlapComponent.stopEditing()
       this.curGuestId = ""
       this.addingAvailabilityAsGuest = false
@@ -671,7 +672,6 @@ export default {
         }
         return
       }
-      console.log("GOT HERE!!!")
 
       let changesPersisted = true
 
@@ -888,7 +888,6 @@ export default {
     // -----------------------------------
 
     async signUpForBlock(signUpBlockId, guestPayload = null) {
-      console.log("CALLING SIGN UP BLOCK", signUpBlockId)
       if (this.authUser) {
         const payload = {
           guest: false,

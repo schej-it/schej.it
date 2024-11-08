@@ -2,10 +2,12 @@
   <div
     ref="scrollableSection"
     class="tw-flex tw-flex-col"
-    :style="!isPhone ? `max-height: ${signUpBlocksListMaxHeight}px !important;` : ''"
+    :style="
+      !isPhone ? `max-height: ${signUpBlocksListMaxHeight}px !important;` : ''
+    "
   >
     <div
-      ref="respondentsScrollView"
+      ref="signUpBlocksScrollView"
       :class="
         isPhone
           ? 'tw-overflow-hidden'
@@ -13,12 +15,12 @@
       "
     >
       <div
-        v-if="signUpBlocks.length === 0 && signUpBlocksToAdd.length === 0"
+        v-if="isOwner && signUpBlocks.length === 0 && signUpBlocksToAdd.length === 0"
         class="tw-text-sm tw-italic tw-text-dark-gray"
       >
         Click and drag on the grid to create a slot
       </div>
-      <transition-group name="list">
+      <div class="tw-flex tw-flex-col tw-gap-3">
         <SignUpBlock
           v-for="signUpBlock in signUpBlocksToAdd"
           :key="signUpBlock._id"
@@ -40,17 +42,17 @@
           :isEditing="isEditing"
           :isOwner="isOwner"
         ></SignUpBlock>
-      </transition-group>
+      </div>
     </div>
 
     <div class="tw-relative">
-        <OverflowGradient
-          v-if="hasMounted && !isPhone"
-          class="tw-h-16"
-          :scrollContainer="$refs.respondentsScrollView"
-          :showArrow="false"
-        />
-      </div>
+      <OverflowGradient
+        v-if="hasMounted && !isPhone"
+        class="tw-h-16"
+        :scrollContainer="$refs.signUpBlocksScrollView"
+        :showArrow="false"
+      />
+    </div>
   </div>
 </template>
 
@@ -91,7 +93,7 @@ export default {
     },
     signUpBlocksListMaxHeight() {
       return Math.max(this.desktopMaxHeight, this.signUpBlocksListMinHeight)
-    }
+    },
   },
 
   methods: {
@@ -105,14 +107,21 @@ export default {
       }
     },
     scrollToSignUpBlock(id) {
-      const scrollView = this.$refs.respondentsScrollView
+      const scrollView = this.$refs.signUpBlocksScrollView
       if (scrollView) {
         const targetBlock = scrollView.querySelector(`[data-id='${id}']`)
         if (targetBlock) {
-          targetBlock.scrollIntoView({ behavior: "smooth" })
+          // Calculate the scroll position
+          const scrollTop = targetBlock.offsetTop - scrollView.offsetTop
+
+          // Scroll the container
+          scrollView.scrollTo({
+            top: scrollTop,
+            behavior: "smooth",
+          })
         }
       }
-    }
+    },
   },
 
   components: {
@@ -121,4 +130,3 @@ export default {
   },
 }
 </script>
-
