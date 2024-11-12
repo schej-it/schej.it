@@ -18,12 +18,21 @@
     <!-- Google sign in not supported dialog -->
     <SignInNotSupportedDialog v-model="webviewDialog" />
 
-    <!-- Guest Dialog -->
+    <!-- Guest dialog -->
     <GuestDialog
       v-model="guestDialog"
       @submit="handleGuestDialogSubmit"
       :event="event"
       :respondents="Object.keys(event.responses)"
+    />
+
+    <!-- Join sign up slot dialog-->
+     <SignUpForSlotDialog
+      v-if="currSignUpBlock"
+      v-model="signUpForSlotDialog"
+      :signUpBlock="currSignUpBlock"
+      @submit="signUpForBlock"
+      :event="event"
     />
 
     <!-- Edit event dialog -->
@@ -250,7 +259,7 @@
         @highlightAvailabilityBtn="highlightAvailabilityBtn"
         @deleteAvailability="deleteAvailability"
         @setCurGuestId="(id) => (curGuestId = id)"
-        @signUpForBlock="signUpForBlock"
+        @signUpForBlock="initiateSignUpFlow"
       />
     </div>
 
@@ -365,6 +374,7 @@ import { mapActions, mapState } from "vuex"
 import NewDialog from "@/components/NewDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
 import GuestDialog from "@/components/GuestDialog.vue"
+import SignUpForSlotDialog from "@/components/sign_up_form/SignUpForSlotDialog.vue"
 import { errors, authTypes, eventTypes, calendarTypes } from "@/constants"
 import isWebview from "is-ua-webview"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
@@ -387,6 +397,7 @@ export default {
 
   components: {
     GuestDialog,
+    SignUpForSlotDialog,
     ScheduleOverlap,
     NewDialog,
     SignInNotSupportedDialog,
@@ -400,6 +411,7 @@ export default {
     choiceDialog: false,
     webviewDialog: false,
     guestDialog: false,
+    signUpForSlotDialog: false,
     editEventDialog: false,
     invitationDialog: false,
     pagesNotVisitedDialog: false,
@@ -424,7 +436,7 @@ export default {
     calendarAvailabilities: {}, // maps userId to their calendar events
 
     // Sign Up Forms
-    currSignUpBlockId: null,
+    currSignUpBlock: null,
   }),
 
   mounted() {
@@ -876,44 +888,39 @@ export default {
     },
 
     handleGuestDialogSubmit(guestPayload) {
-      if (!this.isSignUp) {
-        this.saveChangesAsGuest(guestPayload)
-      } else {
-        this.signUpForBlock(this.currSignUpBlockId, guestPayload)
-      }
+      this.saveChangesAsGuest(guestPayload)
     },
 
     // -----------------------------------
     //#region Sign Up Form
     // -----------------------------------
 
-    async signUpForBlock(signUpBlockId, guestPayload = null) {
-      if (this.authUser) {
-        const payload = {
-          guest: false,
-          signUpBlockIds: [signUpBlockId],
-        }
-        await post(`/events/${this.event._id}/response`, payload)
-        await this.refreshEvent()
-        this.scheduleOverlapComponent.resetSignUpForm()
-      } else {
-        if (!guestPayload) {
-          /** The user is not signed in, retrieve guest information */
-          this.currSignUpBlockId = signUpBlockId
-          this.guestDialog = true
-        } else {
-          const payload = {
-            guest: true,
-            signUpBlockIds: [signUpBlockId],
-            ...guestPayload,
-          }
-          await post(`/events/${this.event._id}/response`, payload)
+    initiateSignUpFlow(signUpBlock) {
+      this.currSignUpBlock = signUpBlock
+      this.signUpForSlotDialog = true
+    },
 
-          await this.refreshEvent()
-          this.scheduleOverlapComponent.resetSignUpForm()
-          this.guestDialog = false
+    async signUpForBlock(guestPayload) {
+      let payload
+
+      if (this.authUser) {
+        payload = {
+          guest: false,
+          signUpBlockIds: [this.currSignUpBlock._id],
+        }
+      } else {
+        payload = {
+          guest: true,
+          signUpBlockIds: [this.currSignUpBlock._id],
+          ...guestPayload,
         }
       }
+
+      await post(`/events/${this.event._id}/response`, payload)
+      await this.refreshEvent()
+      
+      this.scheduleOverlapComponent.resetSignUpForm()
+      this.signUpForSlotDialog = false
     },
 
     //#endregion

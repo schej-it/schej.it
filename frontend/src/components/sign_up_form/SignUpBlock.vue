@@ -31,7 +31,7 @@
           @keyup.enter="saveName"
         ></v-text-field>
         <v-btn icon x-small @click="cancelEditName">
-          <v-icon x-small>mdi-close</v-icon>
+          <v-icon x-small>mdi-undo</v-icon>
         </v-btn>
         <v-btn icon x-small color="primary" @click="saveName">
           <v-icon x-small>mdi-check</v-icon>
@@ -70,7 +70,7 @@
         :key="i"
         class="tw-relative tw-flex tw-items-center"
       >
-        <div class="tw-ml-1 tw-mr-3">
+        <div class="tw-ml-1 tw-mr-2">
           <v-avatar v-if="response.user.picture != ''" :size="16">
             <img
               v-if="response.user.picture"
@@ -82,7 +82,7 @@
             <v-icon small>mdi-account</v-icon>
           </v-avatar>
         </div>
-        <div class="tw-mr-1 tw-transition-all">
+        <div class="tw-transition-all tw-text-sm">
           {{ response.user.firstName + " " + response.user.lastName }}
         </div>
       </div>
@@ -97,11 +97,11 @@
       >
     </div>
 
-    <div v-if="!isOwner && hasCapacity" class="tw-mt-2">
+    <div v-if="!isOwner && hasCapacity && !infoOnly" class="tw-mt-2">
       <a
         class="tw-text-xs tw-text-green"
         text
-        @click="$emit('signUpForBlock', signUpBlock._id)"
+        @click="$emit('signUpForBlock', signUpBlock)"
         >+ Join this slot</a
       >
     </div>
@@ -119,6 +119,7 @@ export default {
     isEditing: { type: Boolean, default: false },
     isOwner: { type: Boolean, default: false },
     unsaved: { type: Boolean, default: false },
+    infoOnly: { type: Boolean, default: false },
   },
 
   data: () => ({

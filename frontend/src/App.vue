@@ -306,7 +306,7 @@ export default {
       this.newDialogOptions.eventOnly = false
     },
     signIn() {
-      if (this.$route.name === "event" || this.$route.name === "group") {
+      if (this.$route.name === "event" || this.$route.name === "group" || this.$route.name === "signUp") {
         if (isWebview(navigator.userAgent)) {
           this.webviewDialog = true
           return

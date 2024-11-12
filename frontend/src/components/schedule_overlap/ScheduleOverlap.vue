@@ -697,7 +697,7 @@
                   <a class="tw-underline" :href="`mailto:${event.ownerId}`">Contact sign up creator</a> to edit
                   your slot
                 </div>
-                <div>Responses are only visible to creator</div>
+                <div v-if="event.blindAvailabilityEnabled" class="tw-mt-1">Responses are only visible to creator</div>
               </div>
             </div>
             <SignUpBlocksList

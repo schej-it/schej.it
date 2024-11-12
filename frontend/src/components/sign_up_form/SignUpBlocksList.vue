@@ -41,6 +41,7 @@
           @signUpForBlock="$emit('signUpForBlock', $event)"
           :isEditing="isEditing"
           :isOwner="isOwner"
+          :infoOnly="alreadyResponded"
         ></SignUpBlock>
       </div>
     </div>
@@ -58,6 +59,8 @@
 
 <script>
 import { isPhone } from "@/utils"
+import { mapState } from "vuex"
+
 import SignUpBlock from "./SignUpBlock.vue"
 import OverflowGradient from "@/components/OverflowGradient.vue"
 
@@ -88,12 +91,20 @@ export default {
   },
 
   computed: {
+    ...mapState(["authUser"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
     signUpBlocksListMaxHeight() {
       return Math.max(this.desktopMaxHeight, this.signUpBlocksListMinHeight)
     },
+    alreadyResponded() {
+      if (!this.authUser || !this.signUpBlocks) return false
+
+      return this.signUpBlocks.some((block) =>
+        block.responses?.some((response) => response.userId === this.authUser._id)
+      )
+    }
   },
 
   methods: {
