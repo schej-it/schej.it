@@ -4,12 +4,17 @@
     class="tw-flex tw-flex-col tw-rounded-md tw-border-[1px] tw-p-4"
     :class="unsaved ? 'tw-border-light-green' : 'tw-border-light-gray-stroke'"
   >
-    <div class="tw-flex tw-h-7 tw-items-start tw-justify-between">
+    <div class="tw-flex tw-items-start tw-justify-between mb-1">
       <div
         v-if="!isEditingName"
         class="tw-flex tw-items-center tw-gap-2 tw-font-medium"
       >
-        {{ isEditing ? newName : signUpBlock.name }}
+        <div>
+          {{ isEditing ? newName : signUpBlock.name }}
+        </div>
+        <div>
+          (<span :class="!hasCapacity && 'tw-text-green'">{{ numberResponses }}/{{ signUpBlock.capacity }}</span>)
+        </div>
         <v-btn v-if="isEditing" icon x-small @click="isEditingName = true">
           <v-icon x-small>mdi-pencil</v-icon>
         </v-btn>
@@ -36,7 +41,7 @@
     <div class="tw-text-xs tw-italic tw-text-dark-gray">
       {{ timeRangeString }}
     </div>
-    <div class="tw-mt-4 tw-flex tw-items-center tw-gap-4">
+    <div v-if="isOwner" class="tw-mt-4 tw-flex tw-items-center tw-gap-4">
       <div class="tw-text-xs">People per slot</div>
       <div class="tw-flex tw-h-4 tw-items-center">
         <div v-if="isEditing" class="-tw-mt-2 tw-w-20">
@@ -135,6 +140,9 @@ export default {
         this.signUpBlock.capacity > this.signUpBlock.responses.length
       )
     },
+    numberResponses() {
+      return this.signUpBlock.responses ? this.signUpBlock.responses.length : 0
+    }
   },
 
   methods: {
