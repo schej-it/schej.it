@@ -2,10 +2,9 @@
   <div
     class="tw-cursor-pointer tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-border-2 tw-border-solid tw-bg-white tw-p-1 tw-text-xs"
     :class="unsaved ? 'tw-border-light-green' : 'tw-border-gray'"
-    @click="clicked"
   >
     <div class="ph-no-capture tw-font-medium tw-text-dark-gray">
-      {{ title }}
+      {{ signUpBlock.name }}
     </div>
   </div>
 </template>
@@ -15,7 +14,7 @@ export default {
   name: "SignUpCalendarBlock",
 
   props: {
-    title: { type: String, required: true },
+    signUpBlock: { type: Object, required: true },
     unsaved: { type: Boolean, default: false },
   },
 
@@ -24,8 +23,6 @@ export default {
   computed: {},
 
   methods: {
-    clicked() {
-    },
   },
 }
 </script>

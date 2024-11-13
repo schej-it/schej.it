@@ -317,9 +317,9 @@
                                 top: `calc(${block.hoursOffset} * 4 * 1rem)`,
                                 height: `calc(${block.hoursLength} * 4 * 1rem)`,
                               }"
-                              style="pointer-events: none"
+                              @click="handleSignUpBlockClick(block)"
                             >
-                              <SignUpCalendarBlock :title="block.name" />
+                              <SignUpCalendarBlock :signUpBlock="block"  />
                             </div>
                           </div>
 
@@ -336,7 +336,6 @@
                                 top: `calc(${block.hoursOffset} * 4 * 1rem)`,
                                 height: `calc(${block.hoursLength} * 4 * 1rem)`,
                               }"
-                              style="pointer-events: none"
                             >
                               <SignUpCalendarBlock
                                 :title="block.name"
@@ -706,6 +705,7 @@
               :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
               :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
               :isOwner="isOwner"
+              :alreadyResponded="alreadyRespondedToSignUpForm"
               @update:signUpBlock="editSignUpBlock"
               @delete:signUpBlock="deleteSignUpBlock"
               @signUpForBlock="$emit('signUpForBlock', $event)"
@@ -1204,6 +1204,15 @@ export default {
       }
 
       return maxSize
+    },
+
+    /** Whether the current user has already responded to the sign up form */ 
+    alreadyRespondedToSignUpForm() {
+      if (!this.authUser || !this.signUpBlocksByDay) return false
+
+      return this.signUpBlocksByDay.some((dayBlocks) =>
+        dayBlocks.some((block) => block.responses?.some((response) => response.userId === this.authUser._id))
+      )
     },
 
     //#endregion
@@ -3530,6 +3539,11 @@ export default {
       for (const day of this.signUpBlocksByDay) {
         this.signUpBlocksToAddByDay.push([])
       }
+    },
+
+    /** Emits sign up for block to parent element */
+    handleSignUpBlockClick(block) {
+      if (!this.alreadyRespondedToSignUpForm) this.$emit("signUpForBlock", block)
     },
 
     //#endregion

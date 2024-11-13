@@ -72,6 +72,7 @@ export default {
     signUpBlocksToAdd: { type: Array, required: true },
     isEditing: { type: Boolean, required: true },
     isOwner: { type: Boolean, required: true },
+    alreadyResponded: { type: Boolean, required: true },
   },
 
   data: () => ({
@@ -98,13 +99,6 @@ export default {
     signUpBlocksListMaxHeight() {
       return Math.max(this.desktopMaxHeight, this.signUpBlocksListMinHeight)
     },
-    alreadyResponded() {
-      if (!this.authUser || !this.signUpBlocks) return false
-
-      return this.signUpBlocks.some((block) =>
-        block.responses?.some((response) => response.userId === this.authUser._id)
-      )
-    }
   },
 
   methods: {
