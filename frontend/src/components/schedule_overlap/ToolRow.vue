@@ -123,10 +123,22 @@
       </div>
     </div>
 
-    <Advertisement
+    <!-- <Advertisement
       class="tw-mt-5 sm:tw-mt-10"
       :ownerId="event.ownerId"
-    ></Advertisement>
+    ></Advertisement> -->
+
+    <div>
+      <ins
+        class="adsbygoogle"
+        style="display: block"
+        data-ad-client="ca-pub-4082178684015354"
+        data-ad-slot="7343574524"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+        data-adtest="on"
+      ></ins>
+    </div>
   </div>
 </template>
 
@@ -178,6 +190,22 @@ export default {
       { label: "24h", value: timeTypes.HOUR24 },
     ],
   }),
+
+  mounted() {
+    // Load Google Ads script
+    const adScript = document.createElement("script")
+    adScript.async = true
+    adScript.src =
+      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4082178684015354"
+    adScript.crossOrigin = "anonymous"
+    document.head.appendChild(adScript)
+
+    // Initialize Google Ads
+    adScript.onload = () => {
+      (window.adsbygoogle = window.adsbygoogle || []).push({})
+      console.log(window.adsbygoogle)
+    }
+  },
 
   computed: {
     isPhone() {
