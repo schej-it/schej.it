@@ -1,2 +1,4 @@
 User-agent: *
-Disallow:
+Disallow: /e/
+Disallow: /s/
+Disallow: /g/
