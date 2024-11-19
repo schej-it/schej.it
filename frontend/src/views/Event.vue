@@ -507,7 +507,7 @@ export default {
       return this.scheduleOverlapComponent?.respondents.length
     },
     actionButtonText() {
-      if (this.isSignUp) return "Edit"
+      if (this.isSignUp) return "Edit slots"
       else if (this.userHasResponded || this.isGroup) return "Edit availability"
       return "Add availability"
     },
@@ -918,7 +918,7 @@ export default {
 
       await post(`/events/${this.event._id}/response`, payload)
       await this.refreshEvent()
-      
+
       this.scheduleOverlapComponent.resetSignUpForm()
       this.signUpForSlotDialog = false
     },
