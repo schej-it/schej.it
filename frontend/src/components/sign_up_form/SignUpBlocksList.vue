@@ -40,6 +40,7 @@
           @delete:signUpBlock="$emit('delete:signUpBlock', $event)"
           @signUpForBlock="$emit('signUpForBlock', $event)"
           :isEditing="isEditing"
+          :anonymous="anonymous"
           :isOwner="isOwner"
           :infoOnly="alreadyResponded"
         ></SignUpBlock>
@@ -73,6 +74,7 @@ export default {
     isEditing: { type: Boolean, required: true },
     isOwner: { type: Boolean, required: true },
     alreadyResponded: { type: Boolean, required: true },
+    anonymous: { type: Boolean, default: false },
   },
 
   data: () => ({

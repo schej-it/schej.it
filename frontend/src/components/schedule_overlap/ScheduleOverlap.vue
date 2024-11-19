@@ -298,6 +298,7 @@
                           >
                             <SignUpCalendarBlock
                               :title="newSignUpBlockName"
+                              titleOnly
                               unsaved
                             />
                           </div>
@@ -339,6 +340,7 @@
                             >
                               <SignUpCalendarBlock
                                 :title="block.name"
+                                titleOnly
                                 unsaved
                               />
                             </div>
@@ -706,6 +708,7 @@
               :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
               :isOwner="isOwner"
               :alreadyResponded="alreadyRespondedToSignUpForm"
+              :anonymous="event.blindAvailabilityEnabled"
               @update:signUpBlock="editSignUpBlock"
               @delete:signUpBlock="deleteSignUpBlock"
               @signUpForBlock="$emit('signUpForBlock', $event)"

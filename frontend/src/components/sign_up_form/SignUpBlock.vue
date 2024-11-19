@@ -71,7 +71,7 @@
         class="tw-relative tw-flex tw-items-center"
       >
         <div class="tw-ml-1 tw-mr-2">
-          <v-avatar v-if="response.user.picture != ''" :size="16">
+          <v-avatar v-if="response.user.picture != '' && !anonymous" :size="16">
             <img
               v-if="response.user.picture"
               :src="response.user.picture"
@@ -82,9 +82,10 @@
             <v-icon small>mdi-account</v-icon>
           </v-avatar>
         </div>
-        <div class="tw-transition-all tw-text-sm">
+        <div v-if="!anonymous" class="tw-transition-all tw-text-sm">
           {{ response.user.firstName + " " + response.user.lastName }}
         </div>
+        <div v-else class="tw-transition-all tw-text-sm tw-italic">Attendee</div>
       </div>
     </div>
 
@@ -120,6 +121,7 @@ export default {
     isOwner: { type: Boolean, default: false },
     unsaved: { type: Boolean, default: false },
     infoOnly: { type: Boolean, default: false },
+    anonymous: { type: Boolean, default: false },
   },
 
   data: () => ({
