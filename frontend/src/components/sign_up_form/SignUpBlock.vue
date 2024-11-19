@@ -71,7 +71,7 @@
         class="tw-relative tw-flex tw-items-center"
       >
         <div class="tw-ml-1 tw-mr-2">
-          <v-avatar v-if="response.user.picture != '' && !anonymous" :size="16">
+          <v-avatar v-if="response.user.picture != '' && !anonymize" :size="16">
             <img
               v-if="response.user.picture"
               :src="response.user.picture"
@@ -82,7 +82,7 @@
             <v-icon small>mdi-account</v-icon>
           </v-avatar>
         </div>
-        <div v-if="!anonymous" class="tw-transition-all tw-text-sm">
+        <div v-if="!anonymize" class="tw-transition-all tw-text-sm">
           {{ response.user.firstName + " " + response.user.lastName }}
         </div>
         <div v-else class="tw-transition-all tw-text-sm tw-italic">Attendee</div>
@@ -102,7 +102,7 @@
       <a
         class="tw-text-xs tw-text-green"
         text
-        @click="$emit('signUpForBlock', signUpBlock)"
+        @click="joinSlot"
         >+ Join this slot</a
       >
     </div>
@@ -145,6 +145,9 @@ export default {
     },
     numberResponses() {
       return this.signUpBlock.responses ? this.signUpBlock.responses.length : 0
+    },
+    anonymize() {
+      return this.anonymous && !this.isOwner
     }
   },
 
@@ -160,6 +163,9 @@ export default {
       this.newName = this.signUpBlock.name
       this.isEditingName = false
     },
+    joinSlot() {
+      if (!this.isOwner) this.$emit('signUpForBlock', signUpBlock)
+    }
   },
 
   watch: {

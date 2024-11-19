@@ -3476,6 +3476,7 @@ export default {
         blocksInDay.forEach((block, blockIndex) => {
           if (signUpBlock._id === block._id) {
             this.signUpBlocksByDay[dayIndex][blockIndex] = signUpBlock
+            this.signUpBlocksByDay = [...this.signUpBlocksByDay]
             return
           }
         })
@@ -3485,6 +3486,7 @@ export default {
         blocksInDay.forEach((block, blockIndex) => {
           if (signUpBlock._id === block._id) {
             this.signUpBlocksToAddByDay[dayIndex][blockIndex] = signUpBlock
+            this.signUpBlocksToAddByDay = [...this.signUpBlocksToAddByDay]
             return
           }
         })
@@ -3546,7 +3548,7 @@ export default {
 
     /** Emits sign up for block to parent element */
     handleSignUpBlockClick(block) {
-      if (!this.alreadyRespondedToSignUpForm) this.$emit("signUpForBlock", block)
+      if (!this.alreadyRespondedToSignUpForm && !this.isOwner) this.$emit("signUpForBlock", block)
     },
 
     //#endregion
