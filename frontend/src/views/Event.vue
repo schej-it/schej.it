@@ -294,7 +294,7 @@
 
     <!-- Bottom bar for phones -->
     <div
-      v-if="isPhone"
+      v-if="isPhone && (!isSignUp || canEdit)"
       class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-px-4"
       :class="`${isIOS ? 'tw-pb-2' : ''} ${
         isScheduling ? 'tw-bg-blue' : 'tw-bg-green'
@@ -316,9 +316,7 @@
           @click="editGuestAvailability"
         >
           {{
-            event.blindAvailabilityEnabled
-              ? "Edit availability"
-              : `Edit ${selectedGuestRespondent}'s availability`
+            mobileGuestActionButtonText
           }}
         </v-btn>
         <v-btn
@@ -328,7 +326,7 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="() => addAvailability()"
         >
-          {{ userHasResponded ? "Edit availability" : "Add availability" }}
+          {{ mobileActionButtonText }}
         </v-btn>
       </template>
       <template v-else-if="isEditing">
@@ -510,6 +508,15 @@ export default {
       if (this.isSignUp) return "Edit slots"
       else if (this.userHasResponded || this.isGroup) return "Edit availability"
       return "Add availability"
+    },
+    mobileGuestActionButtonText() {
+      return this.event.blindAvailabilityEnabled
+              ? "Edit availability"
+              : `Edit ${this.selectedGuestRespondent}'s availability`
+    },
+    mobileActionButtonText() {
+      if (this.isSignUp) return "Edit slots"
+      return this.userHasResponded ? "Edit availability" : "Add availability"
     },
     isIOS() {
       return isIOS()

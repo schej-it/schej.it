@@ -38,10 +38,11 @@ export default {
 
   computed: {
     numberResponses() {
-      return this.signUpBlock.responses ? this.signUpBlock.responses.length : 0;
+      return this.signUpBlock && this.signUpBlock.responses ? this.signUpBlock.responses.length : 0;
     },
     backgroundColor() {
-      const frac = this.numberResponses / this.signUpBlock.capacity
+      const capacity = this.signUpBlock ? this.signUpBlock.capacity : 1
+      const frac = this.numberResponses / capacity
       const green = "#00994C"
       let alpha = Math.floor(frac * (255 - 30))
           .toString(16)
@@ -56,7 +57,7 @@ export default {
       return `${green}${alpha}`
     },
     fontColor() {
-      return this.numberResponses == this.signUpBlock.capacity && !this.unsaved ? "tw-text-white" : "tw-text-dark-gray"
+      return this.numberResponses == this.signUpBlock?.capacity && !this.unsaved ? "tw-text-white" : "tw-text-dark-gray"
     }
   },
 

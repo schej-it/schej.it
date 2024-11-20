@@ -768,7 +768,7 @@
 
         <!-- Fixed pos availability toggle (mobile) -->
         <v-expand-transition>
-          <div v-if="!isGroup && editing">
+          <div v-if="!isGroup && editing && !isSignUp">
             <div class="tw-bg-white tw-p-4">
               <AvailabilityTypeToggle
                 class="tw-w-full"
