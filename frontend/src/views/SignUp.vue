@@ -19,7 +19,7 @@ import AccessDenied from "@/components/groups/AccessDenied.vue"
 import NotSignedIn from "@/components/groups/NotSignedIn.vue"
 
 export default {
-  name: "Group",
+  name: "SignUp",
 
   props: {
     signUpId: { type: String, required: true },

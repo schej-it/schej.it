@@ -2,7 +2,7 @@
   <router-link
     :to="{
       name: linkTo,
-      params: { [isGroup ? 'groupId' : 'eventId']: event.shortId ?? event._id },
+      params: { [identifier]: event.shortId ?? event._id },
     }"
   >
     <v-container
@@ -175,8 +175,25 @@ export default {
     isGroup() {
       return this.event.type === eventTypes.GROUP
     },
+    isSignUp() {
+      return this.event.isSignUpForm
+    },
     linkTo() {
-      return this.isGroup ? "group" : "event"
+      if (this.isGroup) {
+        return "group"
+      } else if (this.isSignUp) {
+        return "signUp"
+      }
+
+      return "event"
+    },
+    identifier() {
+      if (this.isGroup) {
+        return "groupId"
+      } else if (this.isSignUp) {
+        return "signUpId"
+      }
+      return "eventId"
     },
     typeText() {
       return this.isGroup ? "group" : "event"
