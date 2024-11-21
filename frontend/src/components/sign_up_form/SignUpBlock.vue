@@ -164,7 +164,7 @@ export default {
       this.isEditingName = false
     },
     joinSlot() {
-      if (!this.isOwner) this.$emit('signUpForBlock', signUpBlock)
+      if (!this.isOwner) this.$emit('signUpForBlock', this.signUpBlock)
     }
   },
 
