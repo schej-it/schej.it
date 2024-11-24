@@ -30,11 +30,11 @@
           autofocus
           @keyup.enter="saveName"
         ></v-text-field>
-        <v-btn icon x-small @click="cancelEditName">
-          <v-icon x-small>mdi-undo</v-icon>
+        <v-btn icon small @click="cancelEditName">
+          <v-icon small>mdi-undo</v-icon>
         </v-btn>
-        <v-btn icon x-small color="primary" @click="saveName">
-          <v-icon x-small>mdi-check</v-icon>
+        <v-btn icon small color="primary" @click="saveName">
+          <v-icon small>mdi-check</v-icon>
         </v-btn>
       </div>
     </div>
