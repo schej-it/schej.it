@@ -164,7 +164,7 @@
         </div>
 
         <v-checkbox
-          v-if="allowNotifications"
+          v-if="allowNotifications && !guestEvent"
           v-model="notificationsEnabled"
           hide-details
           class="tw-mt-2"
@@ -178,7 +178,7 @@
 
         <div class="tw-flex tw-flex-col tw-gap-2">
           <ExpandableSection
-            v-if="authUser"
+            v-if="authUser && !guestEvent"
             label="Email reminders"
             v-model="showEmailReminders"
             :auto-scroll="dialog"
@@ -244,7 +244,7 @@
                 </template>
               </v-checkbox>
               <v-checkbox
-                v-if="authUser"
+                v-if="authUser && !guestEvent"
                 v-model="blindAvailabilityEnabled"
                 messages="Only show responses to event creator"
               >
@@ -262,7 +262,7 @@
                 </template>
               </v-checkbox>
               <v-checkbox
-                v-else
+                v-else-if="!guestEvent"
                 disabled
                 messages="Only show responses to event creator. "
                 off-icon="mdi-checkbox-blank-off-outline"
@@ -285,7 +285,7 @@
                 </template>
               </v-checkbox>
               <v-checkbox
-                v-if="authUser"
+                v-if="authUser && !guestEvent"
                 v-model="sendEmailAfterXResponsesEnabled"
                 hide-details
               >
@@ -365,7 +365,6 @@ import {
   dateToTimeNum,
   getISODateString,
   isPhone,
-  validateEmail,
   signInGoogle,
   getDateWithTimezone,
   getTimeOptions,
@@ -378,6 +377,7 @@ import DatePicker from "@/components/DatePicker.vue"
 import SlideToggle from "./SlideToggle.vue"
 import AlertText from "@/components/AlertText.vue"
 import OverflowGradient from "@/components/OverflowGradient.vue"
+import { guestUserId } from "@/constants"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -514,6 +514,9 @@ export default {
     isPhone() {
       return isPhone(this.$vuetify)
     },
+    guestEvent() {
+      return this.event && this.event.ownerId == guestUserId
+    }
   },
 
   methods: {
