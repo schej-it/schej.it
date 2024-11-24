@@ -71,7 +71,7 @@
         class="tw-relative tw-flex tw-items-center"
       >
         <div class="tw-ml-1 tw-mr-2">
-          <v-avatar v-if="response.user.picture != '' && !anonymize" :size="16">
+          <v-avatar v-if="response.user.picture != '' && (!anonymize || response.user._id == authUser._id)" :size="16">
             <img
               v-if="response.user.picture"
               :src="response.user.picture"
@@ -82,7 +82,7 @@
             <v-icon small>mdi-account</v-icon>
           </v-avatar>
         </div>
-        <div v-if="!anonymize" class="tw-transition-all tw-text-sm">
+        <div v-if="!anonymize || response.user._id == authUser._id" class="tw-transition-all tw-text-sm">
           {{ response.user.firstName + " " + response.user.lastName }}
         </div>
         <div v-else class="tw-transition-all tw-text-sm tw-italic">Attendee</div>
@@ -111,6 +111,7 @@
 
 <script>
 import { getStartEndDateString } from "@/utils"
+import { mapState } from "vuex"
 
 export default {
   name: "SignUpBlock",
@@ -131,6 +132,7 @@ export default {
   }),
 
   computed: {
+    ...mapState(["authUser"]),
     timeRangeString() {
       return getStartEndDateString(
         this.signUpBlock.startDate,

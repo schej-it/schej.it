@@ -691,14 +691,14 @@
             </template>
           </template>
           <template v-else>
-            <div v-if="!isOwner" class="tw-flex tw-flex-col tw-gap-2 tw-mb-3">
-              <div class="tw-text-lg tw-text-black">Slots</div>
-              <div class="tw-text-xs tw-italic tw-text-dark-gray">
-                <div>
+            <div class="tw-text-lg tw-text-black tw-mb-2">Slots</div>
+            <div v-if="!isOwner" class="tw-flex tw-flex-col tw-mb-3">
+              <div class="tw-text-xs tw-italic tw-text-dark-gray tw-bg-light-gray tw-p-3 tw-rounded-md tw-gap-1 tw-flex tw-flex-col">
+                <div v-if="!authUser || alreadyRespondedToSignUpForm">
                   <a class="tw-underline" :href="`mailto:${event.ownerId}`">Contact sign up creator</a> to edit
                   your slot
                 </div>
-                <div v-if="event.blindAvailabilityEnabled" class="tw-mt-1">Responses are only visible to creator</div>
+                <div v-if="event.blindAvailabilityEnabled">Responses are only visible to creator</div>
               </div>
             </div>
             <SignUpBlocksList
