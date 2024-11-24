@@ -2465,8 +2465,7 @@ export default {
 
       // Border style
       if (
-        (this.respondents.length > 0 ||
-          this.state === this.states.EDIT_AVAILABILITY) &&
+        (this.respondents.length > 0 || this.editing) &&
         this.curTimeslot.row === row &&
         this.curTimeslot.col === col
       ) {
