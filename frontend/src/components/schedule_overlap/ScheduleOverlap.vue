@@ -3555,8 +3555,6 @@ export default {
 
     /** Recalculate availability the calendar based on calendar events */
     reanimateAvailability() {
-      if (this.isSignUp) return
-
       if (
         this.state === this.states.EDIT_AVAILABILITY &&
         this.authUser &&

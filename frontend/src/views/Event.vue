@@ -541,7 +541,7 @@ export default {
         this.userHasResponded
       ) {
         this.scheduleOverlapComponent.startEditing()
-        if (!this.userHasResponded) {
+        if (!this.userHasResponded && !this.isSignUp) {
           this.scheduleOverlapComponent.setAvailabilityAutomatically()
         }
       } else {
