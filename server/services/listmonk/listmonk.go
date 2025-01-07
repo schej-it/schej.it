@@ -41,6 +41,7 @@ func AddUserToListmonk(email string, firstName string, lastName string, picture 
 			"lastName":  lastName,
 			"picture":   picture,
 		},
+		"preconfirm_subscriptions": true,
 	})
 	bodyBuffer := bytes.NewBuffer(body)
 
