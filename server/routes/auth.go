@@ -45,7 +45,7 @@ func signIn(c *gin.Context) {
 		Code           string              `json:"code" binding:"required"`
 		Scope          string              `json:"scope" binding:"required"`
 		CalendarType   models.CalendarType `json:"calendarType" binding:"required"`
-		TimezoneOffset int                 `json:"timezoneOffset" binding:"required"`
+		TimezoneOffset *int                `json:"timezoneOffset" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
@@ -53,7 +53,7 @@ func signIn(c *gin.Context) {
 
 	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
 
-	user := signInHelper(c, tokens, models.WEB, payload.CalendarType, payload.TimezoneOffset)
+	user := signInHelper(c, tokens, models.WEB, payload.CalendarType, *payload.TimezoneOffset)
 
 	c.JSON(http.StatusOK, user)
 }
