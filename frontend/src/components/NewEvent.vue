@@ -378,6 +378,7 @@ import SlideToggle from "./SlideToggle.vue"
 import AlertText from "@/components/AlertText.vue"
 import OverflowGradient from "@/components/OverflowGradient.vue"
 import { guestUserId } from "@/constants"
+import moment from "moment"
 
 import dayjs from "dayjs"
 import utcPlugin from "dayjs/plugin/utc"
@@ -516,7 +517,7 @@ export default {
     },
     guestEvent() {
       return this.event && this.event.ownerId == guestUserId
-    }
+    },
   },
 
   methods: {
@@ -585,10 +586,18 @@ export default {
           )
           for (const dayIndex of this.selectedDaysOfWeek) {
             const day = dayIndexToDayString[dayIndex]
-            const date = dayjs.tz(
+            let date = dayjs.tz(
               `${day} ${startTimeString}`,
               this.timezone.value
             )
+
+            // Check if cur date is NOT in daylight savings time
+            // because the dow days ARE in daylight savings time
+            if (!moment().isDST()) {
+              // Add one hour if not in DST
+              date = date.add(1, "hour")
+            }
+
             dates.push(date.toDate())
           }
         }

@@ -16,6 +16,7 @@
     "dayjs": "^1.11.10",
     "html2canvas": "^1.4.1",
     "is-ua-webview": "^1.1.2",
+    "moment": "^2.30.1",
     "posthog-js": "^1.138.1",
     "register-service-worker": "^1.7.2",
     "spacetime": "^7.5.0",
