@@ -19,8 +19,15 @@ export const getStartEndDateString = (startDate, endDate) => {
   const startDay = startDate.toLocaleString("en-US", { weekday: "short" })
   const startMonth = startDate.toLocaleString("en-US", { month: "short" })
   const startDayOfMonth = startDate.toLocaleString("en-US", { day: "numeric" })
-  const startTime = startDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric" })
-  const endTime = endDate.toLocaleString("en-US", { hour: "numeric", minute: "numeric", timeZoneName: "short" })
+  const startTime = startDate.toLocaleString("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+  })
+  const endTime = endDate.toLocaleString("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+    timeZoneName: "short",
+  })
 
   return `${startDay}, ${startMonth} ${startDayOfMonth}, ${startTime} - ${endTime}`
 }
@@ -184,8 +191,8 @@ export const dateToDowDate = (
   // (as such is the case when an event is created in Tokyo and you're answering in Mountain View)
   // This fixes the dayOffset calculation so that events are displayed in the correct week
   dows = [...dows].sort((date1, date2) => {
-    let day1 = new Date(date1).getDay()
-    let day2 = new Date(date2).getDay()
+    let day1 = new Date(date1).getUTCDay()
+    let day2 = new Date(date2).getUTCDay()
     if (startOnMonday) {
       if (day1 === 0) day1 = 7
       if (day2 === 0) day2 = 7
@@ -195,16 +202,16 @@ export const dateToDowDate = (
 
   // Get Sunday of the week containing the dows
   const dowSunday = new Date(dows[0])
-  dowSunday.setDate(dowSunday.getDate() - dowSunday.getDay())
+  dowSunday.setDate(dowSunday.getUTCDate() - dowSunday.getUTCDay())
 
   // Get Sunday of the current week offset by weekOffset
   const curSunday = new Date()
-  curSunday.setDate(curSunday.getDate() - curSunday.getDay())
-  curSunday.setDate(curSunday.getDate() + 7 * weekOffset)
-  curSunday.setHours(dowSunday.getHours())
-  curSunday.setMinutes(dowSunday.getMinutes())
-  curSunday.setSeconds(dowSunday.getSeconds())
-  curSunday.setMilliseconds(dowSunday.getMilliseconds())
+  curSunday.setDate(curSunday.getUTCDate() - curSunday.getUTCDay())
+  curSunday.setDate(curSunday.getUTCDate() + 7 * weekOffset)
+  curSunday.setHours(dowSunday.getUTCHours())
+  curSunday.setMinutes(dowSunday.getUTCMinutes())
+  curSunday.setSeconds(dowSunday.getUTCSeconds())
+  curSunday.setMilliseconds(dowSunday.getUTCMilliseconds())
 
   // Get the amount of days between both of the sundays
   let dayOffset = Math.round((curSunday - dowSunday) / (1000 * 60 * 60 * 24))
@@ -216,7 +223,7 @@ export const dateToDowDate = (
 
   // Offset date by the amount of days between the two sundays
   date = new Date(date)
-  date.setDate(date.getDate() - dayOffset)
+  date.setUTCDate(date.getUTCDate() - dayOffset)
 
   return date
 }
@@ -449,11 +456,7 @@ export const getTimeBlock = (date, hoursOffset, hoursLength) => {
 /**
   Returns an array of a user's calendar events split by date for a given event
 */
-export const splitTimeBlocksByDay = (
-  event,
-  timeBlocks,
-  weekOffset = 0
-) => {
+export const splitTimeBlocksByDay = (event, timeBlocks, weekOffset = 0) => {
   return processTimeBlocks(
     event.dates,
     event.duration,

@@ -320,7 +320,7 @@
                               }"
                               @click="handleSignUpBlockClick(block)"
                             >
-                              <SignUpCalendarBlock :signUpBlock="block"  />
+                              <SignUpCalendarBlock :signUpBlock="block" />
                             </div>
                           </div>
 
@@ -691,14 +691,20 @@
             </template>
           </template>
           <template v-else>
-            <div class="tw-text-lg tw-text-black tw-mb-2">Slots</div>
-            <div v-if="!isOwner" class="tw-flex tw-flex-col tw-mb-3">
-              <div class="tw-text-xs tw-italic tw-text-dark-gray tw-bg-light-gray tw-p-3 tw-rounded-md tw-gap-1 tw-flex tw-flex-col">
+            <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
+            <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
+              <div
+                class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-3 tw-text-xs tw-italic tw-text-dark-gray"
+              >
                 <div v-if="!authUser || alreadyRespondedToSignUpForm">
-                  <a class="tw-underline" :href="`mailto:${event.ownerId}`">Contact sign up creator</a> to edit
-                  your slot
+                  <a class="tw-underline" :href="`mailto:${event.ownerId}`"
+                    >Contact sign up creator</a
+                  >
+                  to edit your slot
                 </div>
-                <div v-if="event.blindAvailabilityEnabled">Responses are only visible to creator</div>
+                <div v-if="event.blindAvailabilityEnabled">
+                  Responses are only visible to creator
+                </div>
               </div>
             </div>
             <SignUpBlocksList
@@ -1209,12 +1215,16 @@ export default {
       return maxSize
     },
 
-    /** Whether the current user has already responded to the sign up form */ 
+    /** Whether the current user has already responded to the sign up form */
     alreadyRespondedToSignUpForm() {
       if (!this.authUser || !this.signUpBlocksByDay) return false
 
       return this.signUpBlocksByDay.some((dayBlocks) =>
-        dayBlocks.some((block) => block.responses?.some((response) => response.userId === this.authUser._id))
+        dayBlocks.some((block) =>
+          block.responses?.some(
+            (response) => response.userId === this.authUser._id
+          )
+        )
       )
     },
 
@@ -3547,7 +3557,8 @@ export default {
 
     /** Emits sign up for block to parent element */
     handleSignUpBlockClick(block) {
-      if (!this.alreadyRespondedToSignUpForm && !this.isOwner) this.$emit("signUpForBlock", block)
+      if (!this.alreadyRespondedToSignUpForm && !this.isOwner)
+        this.$emit("signUpForBlock", block)
     },
 
     //#endregion
