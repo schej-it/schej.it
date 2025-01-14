@@ -202,16 +202,16 @@ export const dateToDowDate = (
 
   // Get Sunday of the week containing the dows
   const dowSunday = new Date(dows[0])
-  dowSunday.setDate(dowSunday.getUTCDate() - dowSunday.getUTCDay())
+  dowSunday.setUTCDate(dowSunday.getUTCDate() - dowSunday.getUTCDay())
 
   // Get Sunday of the current week offset by weekOffset
   const curSunday = new Date()
-  curSunday.setDate(curSunday.getUTCDate() - curSunday.getUTCDay())
-  curSunday.setDate(curSunday.getUTCDate() + 7 * weekOffset)
-  curSunday.setHours(dowSunday.getUTCHours())
-  curSunday.setMinutes(dowSunday.getUTCMinutes())
-  curSunday.setSeconds(dowSunday.getUTCSeconds())
-  curSunday.setMilliseconds(dowSunday.getUTCMilliseconds())
+  curSunday.setUTCDate(curSunday.getUTCDate() - curSunday.getUTCDay())
+  curSunday.setUTCDate(curSunday.getUTCDate() + 7 * weekOffset)
+  curSunday.setUTCHours(dowSunday.getUTCHours())
+  curSunday.setUTCMinutes(dowSunday.getUTCMinutes())
+  curSunday.setUTCSeconds(dowSunday.getUTCSeconds())
+  curSunday.setUTCMilliseconds(dowSunday.getUTCMilliseconds())
 
   // Get the amount of days between both of the sundays
   let dayOffset = Math.round((curSunday - dowSunday) / (1000 * 60 * 60 * 24))
