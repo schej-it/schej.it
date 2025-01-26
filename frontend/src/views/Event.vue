@@ -597,6 +597,7 @@ export default {
     async refreshEvent() {
       let sanitizedId = this.eventId.replaceAll(".", "")
       this.event = await get(`/events/${sanitizedId}`)
+      console.log(this.event)
       processEvent(this.event)
     },
 
@@ -697,6 +698,7 @@ export default {
       if (this.isSignUp) {
         changesPersisted =
           await this.scheduleOverlapComponent.submitNewSignUpBlocks()
+        if (changesPersisted) setTimeout(() => this.refreshEvent(), 300)
       } else {
         await this.scheduleOverlapComponent.submitAvailability()
       }

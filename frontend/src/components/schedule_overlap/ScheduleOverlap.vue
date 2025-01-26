@@ -3521,6 +3521,11 @@ export default {
         this.event.signUpBlocks ?? []
       )
 
+      console.log("RESETINGG")
+      console.log(this.event.signUpBlocks)
+      console.log(this.signUpBlocksByDay)
+      console.log(this.event.signUpBlocks ?? [])
+
       this.resetSignUpBlocksToAddByDay()
 
       /** Populate sign up block responses */

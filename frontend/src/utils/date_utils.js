@@ -473,6 +473,7 @@ export const processTimeBlocks = (
   weekOffset = 0,
   startOnMonday = false
 ) => {
+  console.log(eventType)
   // Put timeBlocks into the correct format
   timeBlocks = JSON.parse(JSON.stringify(timeBlocks)) // Make a copy so we don't mutate original array
   timeBlocks = timeBlocks.map((e) => {
@@ -574,6 +575,8 @@ export const processTimeBlocks = (
     }
   }
 
+  console.log("TIME BLOCKS")
+  console.log(timeBlocksByDay)
   return timeBlocksByDay
 }
 
