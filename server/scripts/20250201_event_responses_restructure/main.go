@@ -15,6 +15,20 @@ import (
 	"schej.it/server/models"
 )
 
+// OldEvent represents the event structure before the migration
+type OldEvent struct {
+	Id        primitive.ObjectID          `bson:"_id,omitempty"`
+	Responses map[string]*models.Response `bson:"responses"`
+	OwnerId   primitive.ObjectID          `bson:"ownerId,omitempty"`
+}
+
+// NewEvent represents the event structure after the migration
+type NewEvent struct {
+	Id            primitive.ObjectID     `bson:"_id,omitempty"`
+	ResponsesList []models.EventResponse `bson:"responses"`
+	OwnerId       primitive.ObjectID     `bson:"ownerId,omitempty"`
+}
+
 func main() {
 	// Initialize database connection
 	disconnect := db.Init()
@@ -26,53 +40,52 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var events []models.Event
-	if err = cursor.All(context.Background(), &events); err != nil {
+	var oldEvents []OldEvent
+	if err = cursor.All(context.Background(), &oldEvents); err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Found %d events to migrate\n", len(events))
+	fmt.Printf("Found %d events to migrate\n", len(oldEvents))
 
 	// Process events in batches
 	batchSize := 100
 	totalUpdated := 0
 
-	for i := 0; i < len(events); i += batchSize {
+	for i := 0; i < len(oldEvents); i += batchSize {
 		end := i + batchSize
-		if end > len(events) {
-			end = len(events)
+		if end > len(oldEvents) {
+			end = len(oldEvents)
 		}
 
 		var operations []mongo.WriteModel
-		for _, event := range events[i:end] {
+		for _, oldEvent := range oldEvents[i:end] {
 			// Skip if event has no responses
-			if event.ResponsesMap == nil && len(event.ResponsesList) == 0 {
+			if oldEvent.Responses == nil {
 				continue
 			}
 
-			// Convert map to array format if needed
+			// Convert map to array format
 			var responsesList []models.EventResponse
-			if len(event.ResponsesList) == 0 && event.ResponsesMap != nil {
-				for userIdHex, response := range event.ResponsesMap {
-					userId, err := primitive.ObjectIDFromHex(userIdHex)
-					if err != nil {
-						fmt.Printf("Warning: Invalid userId hex %s, skipping\n", userIdHex)
-						continue
-					}
-					responsesList = append(responsesList, models.EventResponse{
-						UserId:   userId,
-						Response: response,
-					})
+			for userIdHex, response := range oldEvent.Responses {
+				if err != nil {
+					fmt.Printf("Warning: Invalid userId hex %s, skipping\n", userIdHex)
+					continue
 				}
+				responsesList = append(responsesList, models.EventResponse{
+					UserId:   userIdHex,
+					Response: response,
+				})
 			}
 
 			// Create update operation
 			update := mongo.NewUpdateOneModel()
-			update.SetFilter(bson.M{"_id": event.Id})
+			update.SetFilter(bson.M{"_id": oldEvent.Id})
 			update.SetUpdate(bson.M{
 				"$set": bson.M{
-					"responses":    responsesList,
-					"responsesMap": event.ResponsesMap,
+					"responses": responsesList,
+				},
+				"$unset": bson.M{
+					"responsesMap": "",
 				},
 			})
 			operations = append(operations, update)
