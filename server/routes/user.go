@@ -151,9 +151,12 @@ func getEvents(c *gin.Context) {
 	events := make([]models.Event, 0)
 	opts := options.Find().SetSort(bson.M{"_id": -1})
 
-	// Query 1: Events owned by user (uses natural _id index)
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
-		"ownerId": userId,
+		"$or": bson.A{
+			bson.M{"ownerId": userId},
+			bson.M{"responses.userId": userId.Hex()},
+			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
+		},
 	}, opts)
 	if err != nil {
 		logger.StdErr.Panicln(err)
@@ -161,33 +164,6 @@ func getEvents(c *gin.Context) {
 	if err := cursor.All(context.Background(), &events); err != nil {
 		logger.StdErr.Panicln(err)
 	}
-
-	// Query 2: Events user has responded to (uses responses.userId index)
-	var respondedEvents []models.Event
-	cursor, err = db.EventsCollection.Find(context.Background(), bson.M{
-		"responses.userId": userId.Hex(),
-	}, opts)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	if err := cursor.All(context.Background(), &respondedEvents); err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	events = append(events, respondedEvents...)
-
-	// Query 3: Events where user is an attendee (uses attendees.email index)
-	var attendeeEvents []models.Event
-	cursor, err = db.EventsCollection.Find(context.Background(), bson.M{
-		"attendees.email":    user.Email,
-		"attendees.declined": false,
-	}, opts)
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	if err := cursor.All(context.Background(), &attendeeEvents); err != nil {
-		logger.StdErr.Panicln(err)
-	}
-	events = append(events, attendeeEvents...)
 
 	response := make(map[string][]models.Event)
 	response["events"] = make([]models.Event, 0)       // The events the user created
@@ -198,17 +174,7 @@ func getEvents(c *gin.Context) {
 		utils.ConvertEventToOldFormat(&events[i])
 	}
 
-	// Deduplicate events based on ID
-	seen := make(map[primitive.ObjectID]bool)
-	deduped := make([]models.Event, 0)
 	for _, event := range events {
-		if !seen[event.Id] {
-			seen[event.Id] = true
-			deduped = append(deduped, event)
-		}
-	}
-
-	for _, event := range deduped {
 		// Get rid of responses so we don't send too much data when fetching all events
 		for id := range event.ResponsesMap {
 			event.ResponsesMap[id] = nil
