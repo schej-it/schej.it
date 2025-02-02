@@ -174,7 +174,6 @@ func getEvents(c *gin.Context) {
 		utils.ConvertEventToOldFormat(&events[i])
 	}
 
-	utils.PrintJson(events)
 	for _, event := range events {
 		// Get rid of responses so we don't send too much data when fetching all events
 		for id := range event.ResponsesMap {
