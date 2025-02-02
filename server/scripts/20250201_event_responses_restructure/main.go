@@ -34,31 +34,41 @@ func main() {
 	disconnect := db.Init()
 	defer disconnect()
 
-	// Get all events
-	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var oldEvents []OldEvent
-	if err = cursor.All(context.Background(), &oldEvents); err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("Found %d events to migrate\n", len(oldEvents))
-
-	// Process events in batches
-	batchSize := 100
+	batchSize := int32(1000)
 	totalUpdated := 0
+	lastId := primitive.NilObjectID
 
-	for i := 0; i < len(oldEvents); i += batchSize {
-		end := i + batchSize
-		if end > len(oldEvents) {
-			end = len(oldEvents)
+	for {
+		// Get events in batches
+		filter := bson.M{}
+		if lastId != primitive.NilObjectID {
+			filter["_id"] = bson.M{"$gt": lastId}
+		}
+
+		cursor, err := db.EventsCollection.Find(
+			context.Background(),
+			filter,
+			options.Find().
+				SetBatchSize(batchSize).
+				SetLimit(int64(batchSize)).
+				SetSort(bson.D{{Key: "_id", Value: 1}}),
+		)
+		count := cursor.RemainingBatchLength()
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		var operations []mongo.WriteModel
-		for _, oldEvent := range oldEvents[i:end] {
+		for cursor.Next(context.Background()) {
+			var oldEvent OldEvent
+			if err := cursor.Decode(&oldEvent); err != nil {
+				fmt.Printf("Warning: Failed to decode event, skipping: %v\n", err)
+				lastId = oldEvent.Id
+				continue
+			}
+
+			lastId = oldEvent.Id
+
 			// Skip if event has no responses
 			if oldEvent.Responses == nil {
 				continue
@@ -67,10 +77,6 @@ func main() {
 			// Convert map to array format
 			var responsesList []models.EventResponse
 			for userIdHex, response := range oldEvent.Responses {
-				if err != nil {
-					fmt.Printf("Warning: Invalid userId hex %s, skipping\n", userIdHex)
-					continue
-				}
 				responsesList = append(responsesList, models.EventResponse{
 					UserId:   userIdHex,
 					Response: response,
@@ -91,6 +97,10 @@ func main() {
 			operations = append(operations, update)
 		}
 
+		if err := cursor.Err(); err != nil {
+			fmt.Printf("Warning: Cursor error: %v\n", err)
+		}
+
 		// Execute batch update
 		if len(operations) > 0 {
 			result, err := db.EventsCollection.BulkWrite(context.Background(), operations)
@@ -98,14 +108,19 @@ func main() {
 				log.Fatal(err)
 			}
 			totalUpdated += int(result.ModifiedCount)
-			fmt.Printf("Updated %d events in batch\n", result.ModifiedCount)
+			fmt.Printf("Updated %d events in batch, total updated: %d\n", result.ModifiedCount, totalUpdated)
+		}
+
+		// Check if we've processed all documents
+		if count < int(batchSize) {
+			break
 		}
 	}
 
 	fmt.Printf("Migration complete. Updated %d events total\n", totalUpdated)
 
 	// Create index on responses.userId
-	_, err = db.EventsCollection.Indexes().CreateOne(
+	_, err := db.EventsCollection.Indexes().CreateOne(
 		context.Background(),
 		mongo.IndexModel{
 			Keys: bson.D{{Key: "responses.userId", Value: 1}},
