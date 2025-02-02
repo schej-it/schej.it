@@ -6,8 +6,6 @@
 
 - Events
 - Users
-- DailyUserLogs
-- FriendRequests
 
 2. Create Prisma schema in `prisma/schema.prisma`:
 
@@ -27,8 +25,6 @@ model User {
   name          String?
   createdEvents Event[]   @relation("CreatedEvents")
   invitedEvents Event[]   @relation("InvitedEvents")
-  friendRequests FriendRequest[]
-  dailyLogs     DailyUserLog[]
 }
 
 model Event {
@@ -40,22 +36,6 @@ model Event {
   creator     User      @relation("CreatedEvents", fields: [creatorId], references: [id])
   creatorId   String    @db.ObjectId
   invitees    User[]    @relation("InvitedEvents")
-}
-
-model DailyUserLog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.ObjectId
-  date      DateTime
-  actions   Json
-}
-
-model FriendRequest {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  from       User     @relation(fields: [fromId], references: [id])
-  fromId     String   @db.ObjectId
-  status     String
-  createdAt  DateTime @default(now())
 }
 ```
 
@@ -88,13 +68,22 @@ async function migrateData() {
   }
 
   // Migrate events
-  // ... similar process for events
-
-  // Migrate friend requests
-  // ... similar process for friend requests
-
-  // Migrate daily logs
-  // ... similar process for daily logs
+  const events = await database.collection("events").find({}).toArray();
+  for (const event of events) {
+    await prisma.event.create({
+      data: {
+        id: event._id.toString(),
+        title: event.title,
+        description: event.description,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        creatorId: event.creatorId.toString(),
+        invitees: {
+          connect: event.inviteeIds.map((id: any) => ({ id: id.toString() })),
+        },
+      },
+    });
+  }
 }
 
 migrateData()

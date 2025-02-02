@@ -1,5 +1,91 @@
 # 3. Frontend Migration
 
+## tRPC Client Setup
+
+1. Create tRPC client utilities (`src/utils/trpc.ts`):
+
+```typescript
+import { createTRPCNext } from "@trpc/next";
+import { httpBatchLink } from "@trpc/client";
+import type { AppRouter } from "@/server/routers/_app";
+
+export const trpc = createTRPCNext<AppRouter>({
+  config() {
+    return {
+      links: [
+        httpBatchLink({
+          url: "/api/trpc",
+        }),
+      ],
+    };
+  },
+});
+```
+
+2. Set up tRPC provider in `src/app/providers.tsx`:
+
+```typescript
+"use client";
+
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { trpc } from "@/utils/trpc";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
+  const [trpcClient] = useState(() => trpc.createClient());
+
+  return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </trpc.Provider>
+  );
+}
+```
+
+3. Create tRPC route handlers (`src/server/routers/event.ts`):
+
+```typescript
+import { z } from "zod";
+import { router, protectedProcedure, publicProcedure } from "../trpc";
+
+export const eventRouter = router({
+  list: publicProcedure.query(async ({ ctx }) => {
+    return ctx.prisma.event.findMany({
+      include: {
+        creator: true,
+        invitees: true,
+      },
+    });
+  }),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        startTime: z.date(),
+        endTime: z.date(),
+        inviteeIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.event.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          creatorId: ctx.user.id,
+          invitees: {
+            connect: input.inviteeIds.map((id) => ({ id })),
+          },
+        },
+      });
+    }),
+});
+```
+
 ## Component Migration
 
 1. Analyze Vue components structure:
@@ -10,37 +96,52 @@
 
 ## Component Migration Guidelines
 
-1. Convert Vue Single File Components (.vue) to React TypeScript (.tsx):
+1. Convert Vue Single File Components (.vue) to React TypeScript (.tsx) with tRPC:
 
 ```typescript
-// Example: Converting a Vue component to React
+// Example: Converting a Vue component to React with tRPC
 // Old (Vue):
 <template>
-  <div class="event-card">
-    <h2>{{ event.title }}</h2>
-    <p>{{ event.description }}</p>
+  <div class="events-list">
+    <div v-for="event in events" :key="event.id" class="event-card">
+      <h2>{{ event.title }}</h2>
+      <p>{{ event.description }}</p>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  props: ['event']
+  data() {
+    return {
+      events: []
+    }
+  },
+  async mounted() {
+    const response = await axios.get('/api/events');
+    this.events = response.data;
+  }
 }
 </script>
 
 // New (React):
-interface EventProps {
-  event: {
-    title: string;
-    description?: string;
-  }
-}
+'use client';
 
-export function EventCard({ event }: EventProps) {
+import { trpc } from '@/utils/trpc';
+
+export function EventsList() {
+  const { data: events, isLoading } = trpc.event.list.useQuery();
+
+  if (isLoading) return <div>Loading...</div>;
+
   return (
-    <div className="event-card">
-      <h2>{event.title}</h2>
-      <p>{event.description}</p>
+    <div className="events-list">
+      {events?.map((event) => (
+        <div key={event.id} className="event-card">
+          <h2>{event.title}</h2>
+          <p>{event.description}</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -50,7 +151,8 @@ export function EventCard({ event }: EventProps) {
 
 - Replace Vuex with React Context or Redux Toolkit
 - Create equivalent stores in `src/store/`
-- Implement React hooks for state management
+- Use tRPC for server state management
+- Implement React hooks for local state management
 
 ## Routing Migration
 
@@ -71,51 +173,18 @@ src/app/
 │       └── page.tsx        # Single event page
 ├── profile/
 │   └── page.tsx            # User profile
-└── auth/
-    └── [...nextauth]/
-        └── route.ts        # Auth API routes
+└── api/
+    └── trpc/
+        └── [trpc]/
+            └── route.ts    # tRPC handler
 ```
-
-## API Integration
-
-1. Create API routes in `src/app/api/`:
-
-```typescript
-// src/app/api/events/route.ts
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-export async function GET() {
-  const events = await prisma.event.findMany({
-    include: {
-      creator: true,
-      invitees: true,
-    },
-  });
-  return NextResponse.json(events);
-}
-```
-
-2. Update frontend API calls:
-
-- Replace Axios calls with Next.js API routes
-- Implement proper error handling
-- Add loading states
-
-## Styling Migration
-
-1. Convert Vue styles to Tailwind CSS:
-
-- Migrate scoped styles to Tailwind classes
-- Create custom Tailwind components for reusable styles
-- Implement responsive design patterns
 
 ## Authentication
 
-1. Implement NextAuth.js:
+1. Implement NextAuth.js with tRPC:
 
 - Set up authentication providers
-- Create protected routes
+- Create protected routes using `protectedProcedure`
 - Migrate existing auth logic to NextAuth.js
 
 ## Progressive Migration Strategy
