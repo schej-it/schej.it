@@ -118,5 +118,19 @@ func main() {
 	}
 	fmt.Println("Created index on responses.userId")
 
+	// Create index on attendees.email
+	_, err = db.EventsCollection.Indexes().CreateOne(
+		context.Background(),
+		mongo.IndexModel{
+			Keys: bson.D{{Key: "attendees.email", Value: 1}},
+			Options: options.Index().
+				SetName("attendees_email_1"),
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Created index on attendees.email")
+
 	os.Exit(0)
 }
