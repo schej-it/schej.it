@@ -583,3 +583,13 @@ export const processTimeBlocks = (
 export const getCalendarAccountKey = (email, calendarType) => {
   return `${email}_${calendarType}`
 }
+
+export const stdTimezoneOffset = (date) => {
+  const jan = new Date(date.getFullYear(), 0, 1)
+  const jul = new Date(date.getFullYear(), 6, 1)
+  return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset())
+}
+
+export const isDstObserved = (date) => {
+  return date.getTimezoneOffset() < stdTimezoneOffset(date)
+}
