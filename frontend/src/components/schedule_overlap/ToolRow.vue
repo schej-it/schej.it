@@ -192,19 +192,19 @@ export default {
   }),
 
   mounted() {
-    // Load Google Ads script
-    const adScript = document.createElement("script")
-    adScript.async = true
-    adScript.src =
-      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4082178684015354"
-    adScript.crossOrigin = "anonymous"
-    document.head.appendChild(adScript)
+    // // Load Google Ads script
+    // const adScript = document.createElement("script")
+    // adScript.async = true
+    // adScript.src =
+    //   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4082178684015354"
+    // adScript.crossOrigin = "anonymous"
+    // document.head.appendChild(adScript)
 
-    // Initialize Google Ads
-    adScript.onload = () => {
-      (window.adsbygoogle = window.adsbygoogle || []).push({})
-      console.log(window.adsbygoogle)
-    }
+    // // Initialize Google Ads
+    // adScript.onload = () => {
+    //   (window.adsbygoogle = window.adsbygoogle || []).push({})
+    //   console.log(window.adsbygoogle)
+    // }
   },
 
   computed: {
