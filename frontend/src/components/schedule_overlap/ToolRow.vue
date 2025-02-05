@@ -128,7 +128,7 @@
       :ownerId="event.ownerId"
     ></Advertisement> -->
 
-    <div>
+    <!-- <div>
       <ins
         class="adsbygoogle"
         style="display: block"
@@ -138,7 +138,7 @@
         data-full-width-responsive="true"
         data-adtest="on"
       ></ins>
-    </div>
+    </div> -->
   </div>
 </template>
 
