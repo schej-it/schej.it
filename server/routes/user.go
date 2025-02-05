@@ -150,10 +150,11 @@ func getEvents(c *gin.Context) {
 	// Get the events associated with the current user
 	events := make([]models.Event, 0)
 	opts := options.Find().SetSort(bson.M{"_id": -1})
+
 	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{"ownerId": userId},
-			bson.M{"responses." + userId.Hex(): bson.M{"$exists": true}},
+			bson.M{"responses.userId": userId.Hex()},
 			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
 		},
 	}, opts)
@@ -168,10 +169,15 @@ func getEvents(c *gin.Context) {
 	response["events"] = make([]models.Event, 0)       // The events the user created
 	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
 
+	// Convert events to old format for backward compatibility
+	for i := range events {
+		utils.ConvertEventToOldFormat(&events[i])
+	}
+
 	for _, event := range events {
 		// Get rid of responses so we don't send too much data when fetching all events
-		for userId := range event.Responses {
-			event.Responses[userId] = nil
+		for id := range event.ResponsesMap {
+			event.ResponsesMap[id] = nil
 		}
 
 		// Filter into events user created and responded to

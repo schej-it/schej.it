@@ -1,5 +1,16 @@
 <template>
   <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
+    <div
+      v-if="loading && !eventsNotEmpty"
+      class="tw-flex tw-h-[calc(100vh-10rem)] tw-w-full tw-items-center tw-justify-center"
+    >
+      <v-progress-circular
+        indeterminate
+        color="primary"
+        :size="20"
+        :width="2"
+      ></v-progress-circular>
+    </div>
     <template v-if="groupsEnabled">
       <v-fade-transition>
         <div

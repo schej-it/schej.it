@@ -27,7 +27,7 @@
     />
 
     <!-- Join sign up slot dialog-->
-     <SignUpForSlotDialog
+    <SignUpForSlotDialog
       v-if="currSignUpBlock"
       v-model="signUpForSlotDialog"
       :signUpBlock="currSignUpBlock"
@@ -315,9 +315,7 @@
           :style="{ opacity: availabilityBtnOpacity }"
           @click="editGuestAvailability"
         >
-          {{
-            mobileGuestActionButtonText
-          }}
+          {{ mobileGuestActionButtonText }}
         </v-btn>
         <v-btn
           v-else
@@ -366,6 +364,7 @@ import {
   getCalendarEventsMap,
   getDateRangeStringForEvent,
   isIOS,
+  isDstObserved,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 
@@ -380,7 +379,6 @@ import MarkAvailabilityDialog from "@/components/calendar_permission_dialogs/Mar
 import InvitationDialog from "@/components/groups/InvitationDialog.vue"
 import HelpDialog from "@/components/HelpDialog.vue"
 import EventDescription from "@/components/event/EventDescription.vue"
-
 export default {
   name: "Event",
 
@@ -511,8 +509,8 @@ export default {
     },
     mobileGuestActionButtonText() {
       return this.event.blindAvailabilityEnabled
-              ? "Edit availability"
-              : `Edit ${this.selectedGuestRespondent}'s availability`
+        ? "Edit availability"
+        : `Edit ${this.selectedGuestRespondent}'s availability`
     },
     mobileActionButtonText() {
       if (this.isSignUp) return "Edit slots"
@@ -787,6 +785,23 @@ export default {
           if (curWeekOffset !== this.weekOffset) return
 
           this.calendarAvailabilities = calendarAvailabilities
+
+          // Fix DST bug
+          for (const userId in this.calendarAvailabilities) {
+            for (const index in this.calendarAvailabilities[userId]) {
+              const event = this.calendarAvailabilities[userId][index]
+              const startDate = new Date(event.startDate)
+              const endDate = new Date(event.endDate)
+              if (!isDstObserved(startDate)) {
+                startDate.setHours(startDate.getHours() - 1)
+                endDate.setHours(endDate.getHours() - 1)
+              }
+              this.calendarAvailabilities[userId][index].startDate =
+                startDate.toISOString()
+              this.calendarAvailabilities[userId][index].endDate =
+                endDate.toISOString()
+            }
+          }
         })
         .catch((err) => {
           console.error(err)
@@ -823,6 +838,29 @@ export default {
           if (curWeekOffset !== this.weekOffset) return
 
           this.calendarEventsMap = eventsMap
+
+          // Fix DST bug
+          if (this.event.type === eventTypes.GROUP) {
+            for (const calendarId in this.calendarEventsMap) {
+              for (const index in this.calendarEventsMap[calendarId]
+                .calendarEvents) {
+                const event =
+                  this.calendarEventsMap[calendarId].calendarEvents[index]
+                const startDate = new Date(event.startDate)
+                const endDate = new Date(event.endDate)
+                if (!isDstObserved(startDate)) {
+                  startDate.setHours(startDate.getHours() - 1)
+                  endDate.setHours(endDate.getHours() - 1)
+                }
+                this.calendarEventsMap[calendarId].calendarEvents[
+                  index
+                ].startDate = startDate.toISOString()
+                this.calendarEventsMap[calendarId].calendarEvents[
+                  index
+                ].endDate = endDate.toISOString()
+              }
+            }
+          }
 
           // Set user availability automatically if we're in editing mode and they haven't responded
           if (
