@@ -529,7 +529,7 @@ export default {
         }
 
         // Otherwise, sort by first name
-        return a.firstName.localeCompare(b.firstName)
+        return (a.firstName || "").localeCompare(b.firstName || "")
       })
       return orderedRespondents
     },
