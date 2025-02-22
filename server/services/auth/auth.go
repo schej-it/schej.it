@@ -108,11 +108,11 @@ func RefreshUserTokenIfNecessary(u *models.User, accounts models.Set[string]) {
 	updateAllAccounts := len(accounts) == 0
 
 	// Refresh calendar account access tokens if necessary
-	for _, account := range u.CalendarAccounts {
+	for accountKey, account := range u.CalendarAccounts {
 		if account.OAuth2CalendarAuth != nil { // Only refresh access tokens for OAuth2 calendar accounts
 			accountAuth := account.OAuth2CalendarAuth
 
-			if _, ok := accounts[account.Email]; ok || updateAllAccounts {
+			if _, ok := accounts[accountKey]; ok || updateAllAccounts {
 				if time.Now().After(accountAuth.AccessTokenExpireDate.Time()) && len(accountAuth.RefreshToken) > 0 {
 					go RefreshAccessTokenAsync(account.Email, accountAuth, account.CalendarType, refreshTokenChan)
 					numAccountsToUpdate++
