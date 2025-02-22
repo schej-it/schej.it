@@ -1419,7 +1419,9 @@ export default {
       return this.event.isSignUpForm
     },
     respondents() {
-      return Object.values(this.parsedResponses).map((r) => r.user)
+      return Object.values(this.parsedResponses)
+        .map((r) => r.user)
+        .filter(Boolean)
     },
     selectedGuestRespondent() {
       if (this.guestAddedAvailability) return this.guestName

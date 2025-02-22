@@ -148,7 +148,7 @@
                   @click="(e) => $emit('clickRespondent', e, user._id)"
                   color="primary"
                   :value="respondentSelected(user._id)"
-                  class="tw-absolute tw-left-0 -tw-top-[2px] tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+                  class="tw-absolute -tw-top-[2px] tw-left-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
                   :class="
                     respondentSelected(user._id)
                       ? 'tw-opacity-100'
@@ -479,7 +479,9 @@ export default {
     pendingUsers() {
       if (!this.isGroup) return []
 
-      const respondentEmailsSet = new Set(this.respondents.map((r) => r.email.toLowerCase()))
+      const respondentEmailsSet = new Set(
+        this.respondents.map((r) => r.email.toLowerCase())
+      )
 
       return this.attendees.filter((a) => {
         if (!a.declined && !respondentEmailsSet.has(a.email.toLowerCase())) {
@@ -535,7 +537,7 @@ export default {
     },
     respondentsListMaxHeight() {
       return Math.max(this.desktopMaxHeight, this.respondentsListMinHeight)
-    }
+    },
   },
 
   methods: {
