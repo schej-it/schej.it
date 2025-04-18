@@ -39,17 +39,33 @@ func main() {
 		}
 
 		eventId := event["_id"].(primitive.ObjectID)
-		responses := event["responses"].([]bson.M)
+		if responsesData, ok := event["responses"]; !ok || responsesData == nil {
+			continue
+		}
+		responses := event["responses"].(bson.A)
 
 		// Iterate through responses
 		for _, response := range responses {
-			userIdString := response["userId"].(string)
-			response := response["response"].(models.Response)
+			responseMap := response.(bson.M)
+			userIdString := responseMap["userId"].(string)
+
+			// Convert bson.M to models.Response
+			var responseData models.Response
+			var responseBytes []byte
+			responseBytes, err = bson.Marshal(responseMap["response"])
+			if err != nil {
+				log.Printf("Error marshaling response for event %s, user %s: %v", eventId, userIdString, err)
+				continue
+			}
+			if err = bson.Unmarshal(responseBytes, &responseData); err != nil {
+				log.Printf("Error unmarshaling response for event %s, user %s: %v", eventId, userIdString, err)
+				continue
+			}
 
 			// Create event response
 			eventResponse := models.EventResponse{
 				UserId:   userIdString,
-				Response: &response,
+				Response: &responseData,
 				EventId:  eventId,
 			}
 
