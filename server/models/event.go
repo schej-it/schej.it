@@ -71,9 +71,7 @@ type Event struct {
 	// Whether to only poll for days, not times
 	DaysOnly *bool `json:"daysOnly" bson:"daysOnly,omitempty"`
 
-	// Availability responses - new format for indexed queries
-	// ResponsesList []EventResponse `json:"-" bson:"responses"`
-	// Availability responses - old format for backward compatibility
+	// Availability responses - old format for backward compatibility (fetched from eventResponses collection)
 	ResponsesMap map[string]*Response `json:"responses" bson:"-"`
 
 	// Scheduled event
