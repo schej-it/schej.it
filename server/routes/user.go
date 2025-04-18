@@ -166,11 +166,24 @@ func getEvents(c *gin.Context) {
 		eventIds = append(eventIds, eventResponse.EventId)
 	}
 
+	// Get all the event ids that the user is an attendee of
+	cursor, err = db.AttendeesCollection.Find(context.Background(), bson.M{"email": user.Email, "declined": false})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer cursor.Close(context.Background())
+	for cursor.Next(context.Background()) {
+		var attendee models.Attendee
+		if err := cursor.Decode(&attendee); err != nil {
+			logger.StdErr.Panicln(err)
+		}
+		eventIds = append(eventIds, attendee.EventId)
+	}
+
 	cursor, err = db.EventsCollection.Find(context.Background(), bson.M{
 		"$or": bson.A{
 			bson.M{"_id": bson.M{"$in": eventIds}},
 			bson.M{"ownerId": userId},
-			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
 		},
 	}, opts)
 	if err != nil {
