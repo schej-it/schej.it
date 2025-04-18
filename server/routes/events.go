@@ -1257,8 +1257,12 @@ func duplicateEvent(c *gin.Context) {
 	if *payload.CopyAvailability {
 		eventResponses := db.GetEventResponses(eventId)
 		for _, eventResponse := range eventResponses {
+			eventResponse.Id = primitive.NewObjectID()
 			eventResponse.EventId = event.Id
-			db.EventResponsesCollection.InsertOne(context.Background(), eventResponse)
+			_, err := db.EventResponsesCollection.InsertOne(context.Background(), eventResponse)
+			if err != nil {
+				logger.StdErr.Panicln(err)
+			}
 		}
 	}
 
