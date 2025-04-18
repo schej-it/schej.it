@@ -171,7 +171,8 @@ func getEvents(c *gin.Context) {
 
 	// Convert events to old format for backward compatibility
 	for i := range events {
-		utils.ConvertEventToOldFormat(&events[i])
+		eventResponses := db.GetEventResponses(events[i].Id.Hex())
+		utils.ConvertEventToOldFormat(&events[i], eventResponses)
 	}
 
 	for _, event := range events {

@@ -108,6 +108,29 @@ func GetEventByEitherId(id string) *models.Event {
 	return GetEventById(id)
 }
 
+func GetEventResponses(eventId string) []models.EventResponse {
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		return []models.EventResponse{}
+	}
+
+	result, err := EventResponsesCollection.Find(context.Background(), bson.M{
+		"eventId": objectId,
+	})
+	if result.Err() == mongo.ErrNoDocuments {
+		// Event responses do not exist!
+		return []models.EventResponse{}
+	}
+
+	var eventResponses []models.EventResponse
+	if err := result.All(context.Background(), &eventResponses); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	return eventResponses
+}
+
 func GetFriendRequestById(friendRequestId string) *models.FriendRequest {
 	objectId, err := primitive.ObjectIDFromHex(friendRequestId)
 	if err != nil {

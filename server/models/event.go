@@ -77,7 +77,7 @@ type Event struct {
 	DaysOnly *bool `json:"daysOnly" bson:"daysOnly,omitempty"`
 
 	// Availability responses - new format for indexed queries
-	ResponsesList []EventResponse `json:"-" bson:"responses"`
+	// ResponsesList []EventResponse `json:"-" bson:"responses"`
 	// Availability responses - old format for backward compatibility
 	ResponsesMap map[string]*Response `json:"responses" bson:"responsesMap"`
 

@@ -108,7 +108,6 @@ func createEvent(c *gin.Context) {
 		When2meetHref:            payload.When2meetHref,
 		CollectEmails:            payload.CollectEmails,
 		Type:                     payload.Type,
-		ResponsesList:            make([]models.EventResponse, 0),
 		SignUpResponses:          make(map[string]*models.SignUpResponse),
 	}
 
@@ -348,17 +347,23 @@ func editEvent(c *gin.Context) {
 			ownerName = "Somebody"
 		}
 
-		// Remove user from responses map
-		for _, removedEmail := range removed {
-			// Only delete response if it isn't the owner of the group
-			if removedEmail.Value != utils.Coalesce(owner).Email {
-				removedUser := db.GetUserByEmail(removedEmail.Value)
-				if removedUser != nil {
-					// Remove response from array
-					for i := range event.ResponsesList {
-						if event.ResponsesList[i].UserId == removedUser.Id.Hex() {
-							event.ResponsesList = append(event.ResponsesList[:i], event.ResponsesList[i+1:]...)
-							break
+		if len(removed) > 0 {
+			eventResponses := db.GetEventResponses(event.Id.Hex())
+
+			// Remove user from responses map
+			for _, removedEmail := range removed {
+				// Only delete response if it isn't the owner of the group
+				if removedEmail.Value != utils.Coalesce(owner).Email {
+					removedUser := db.GetUserByEmail(removedEmail.Value)
+					if removedUser != nil {
+						// Remove response from array
+						for i := range eventResponses {
+							if eventResponses[i].UserId == removedUser.Id.Hex() {
+								db.EventResponsesCollection.DeleteOne(context.Background(), bson.M{
+									"_id": eventResponses[i].Id,
+								})
+								break
+							}
 						}
 					}
 				}
@@ -433,12 +438,13 @@ func getEvent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
+	eventResponses := db.GetEventResponses(event.Id.Hex())
 
 	// Convert to old format for backward compatibility
-	utils.ConvertEventToOldFormat(event)
+	utils.ConvertEventToOldFormat(event, eventResponses)
 
 	// Convert responses to map format for JSON response
-	responsesMap := getResponsesMap(event.ResponsesList)
+	responsesMap := getResponsesMap(eventResponses)
 
 	// Populate user fields
 	for userId, response := range responsesMap {
@@ -490,6 +496,7 @@ func getEvent(c *gin.Context) {
 	}
 
 	// Create a copy of the event with responses in map format
+	fmt.Println(event)
 	c.JSON(http.StatusOK, event)
 }
 
@@ -520,7 +527,8 @@ func getResponses(c *gin.Context) {
 	}
 
 	// Convert to map format and filter availability
-	responsesMap := getResponsesMap(event.ResponsesList)
+	eventResponses := db.GetEventResponses(event.Id.Hex())
+	responsesMap := getResponsesMap(eventResponses)
 
 	// Filter availability slice based on timeMin and timeMax
 	for userId, response := range responsesMap {
@@ -590,6 +598,7 @@ func updateEventResponse(c *gin.Context) {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
+	eventResponses := db.GetEventResponses(event.Id.Hex())
 
 	var userIdString string
 	var userHasResponded bool
@@ -638,7 +647,7 @@ func updateEventResponse(c *gin.Context) {
 				}
 
 				// Update manual availability
-				_, existingResponse := findResponse(event.ResponsesList, userIdString)
+				_, existingResponse := findResponse(eventResponses, userIdString)
 				if existingResponse != nil {
 					response.ManualAvailability = existingResponse.ManualAvailability
 				}
@@ -675,16 +684,23 @@ func updateEventResponse(c *gin.Context) {
 		}
 
 		// Check if user has responded to event before (edit response) or not (new response)
-		idx, _ := findResponse(event.ResponsesList, userIdString)
+		idx, _ := findResponse(eventResponses, userIdString)
 		userHasResponded = idx != -1
 
 		// Update event responses
 		if userHasResponded {
-			event.ResponsesList[idx].Response = &response
+			db.EventResponsesCollection.UpdateOne(context.Background(), bson.M{
+				"_id": eventResponses[idx].Id,
+			}, bson.M{
+				"$set": bson.M{
+					"response": &response,
+				},
+			})
 		} else {
-			event.ResponsesList = append(event.ResponsesList, models.EventResponse{
+			db.EventResponsesCollection.InsertOne(context.Background(), models.EventResponse{
 				UserId:   userIdString,
 				Response: &response,
+				EventId:  event.Id,
 			})
 		}
 	} else {
@@ -770,7 +786,7 @@ func updateEventResponse(c *gin.Context) {
 
 	// Send email after X responses
 	sendEmailAfterXResponses := utils.Coalesce(event.SendEmailAfterXResponses)
-	if sendEmailAfterXResponses > 0 && !userHasResponded && sendEmailAfterXResponses == len(event.ResponsesList) {
+	if sendEmailAfterXResponses > 0 && !userHasResponded && sendEmailAfterXResponses == len(eventResponses) {
 		// Set SendEmailAfterXResponses variable to -1 to prevent additional emails from being sent
 		*event.SendEmailAfterXResponses = -1
 
@@ -793,7 +809,7 @@ func updateEventResponse(c *gin.Context) {
 				"eventName":    event.Name,
 				"ownerName":    creator.FirstName,
 				"eventUrl":     fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
-				"numResponses": len(event.ResponsesList),
+				"numResponses": len(eventResponses),
 			})
 		}()
 	}
@@ -835,15 +851,18 @@ func deleteEventResponse(c *gin.Context) {
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
 		return
 	}
+	eventResponses := db.GetEventResponses(event.Id.Hex())
 
 	if *payload.Guest {
 		if utils.Coalesce(event.IsSignUpForm) {
 			delete(event.SignUpResponses, payload.Name)
 		} else {
 			// Remove response from array
-			for i := range event.ResponsesList {
-				if event.ResponsesList[i].Response.Name == payload.Name {
-					event.ResponsesList = append(event.ResponsesList[:i], event.ResponsesList[i+1:]...)
+			for i := range eventResponses {
+				if eventResponses[i].Response.Name == payload.Name {
+					db.EventResponsesCollection.DeleteOne(context.Background(), bson.M{
+						"_id": eventResponses[i].Id,
+					})
 					break
 				}
 			}
@@ -868,9 +887,11 @@ func deleteEventResponse(c *gin.Context) {
 			delete(event.SignUpResponses, payload.UserId)
 		} else {
 			// Remove response from array
-			for i := range event.ResponsesList {
-				if event.ResponsesList[i].UserId == payload.UserId {
-					event.ResponsesList = append(event.ResponsesList[:i], event.ResponsesList[i+1:]...)
+			for i := range eventResponses {
+				if eventResponses[i].UserId == payload.UserId {
+					db.EventResponsesCollection.DeleteOne(context.Background(), bson.M{
+						"_id": eventResponses[i].Id,
+					})
 					break
 				}
 			}
@@ -1080,7 +1101,8 @@ func getCalendarAvailabilities(c *gin.Context) {
 		Events map[string]calendar.CalendarEventsWithError
 	})
 
-	for _, eventResponse := range event.ResponsesList {
+	eventResponses := db.GetEventResponses(event.Id.Hex())
+	for _, eventResponse := range eventResponses {
 		if utils.Coalesce(eventResponse.Response.UseCalendarAvailability) {
 			user := db.GetUserById(eventResponse.UserId)
 			if user != nil {
@@ -1128,7 +1150,7 @@ func getCalendarAvailabilities(c *gin.Context) {
 	authUser := utils.GetAuthUser(c)
 	for userId, calendarEvents := range userIdToCalendarEvents {
 		// Find the corresponding response
-		_, eventResponse := findResponse(event.ResponsesList, userId)
+		_, eventResponse := findResponse(eventResponses, userId)
 		if eventResponse == nil {
 			continue
 		}
@@ -1227,8 +1249,12 @@ func duplicateEvent(c *gin.Context) {
 	// Update event
 	event.Id = primitive.NewObjectID()
 	event.Name = payload.EventName
-	if !*payload.CopyAvailability {
-		event.ResponsesList = make([]models.EventResponse, 0)
+	if *payload.CopyAvailability {
+		eventResponses := db.GetEventResponses(eventId)
+		for _, eventResponse := range eventResponses {
+			eventResponse.EventId = event.Id
+			db.EventResponsesCollection.InsertOne(context.Background(), eventResponse)
+		}
 	}
 
 	// Generate short id
