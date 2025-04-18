@@ -492,6 +492,11 @@ func getEvent(c *gin.Context) {
 		event.SignUpResponses[userId] = response
 	}
 
+	if event.Type == models.GROUP {
+		attendees := db.GetAttendees(event.Id.Hex())
+		event.Attendees = &attendees
+	}
+
 	// Create a copy of the event with responses in map format
 	c.JSON(http.StatusOK, event)
 }

@@ -83,8 +83,8 @@ type Event struct {
 	// Remindees
 	Remindees *[]Remindee `json:"remindees" bson:"remindees,omitempty"`
 
-	// Attendees for an availability group
-	// Attendees *[]Attendee `json:"attendees" bson:"attendees,omitempty"`
+	// Attendees for an availability group (fetched from Attendees collection)
+	Attendees *[]Attendee `json:"attendees" bson:"-"`
 }
 
 func (e *Event) GetId() string {
