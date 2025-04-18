@@ -48,6 +48,7 @@ func main() {
 				attendeeDeclined := attendeeMap["declined"].(bool)
 
 				attendee := models.Attendee{
+					EventId:  eventId,
 					Email:    attendeeEmail,
 					Declined: &attendeeDeclined,
 				}
