@@ -151,10 +151,25 @@ func getEvents(c *gin.Context) {
 	events := make([]models.Event, 0)
 	opts := options.Find().SetSort(bson.M{"_id": -1})
 
-	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
+	// Get all the event ids that the user has responded to
+	cursor, err := db.EventResponsesCollection.Find(context.Background(), bson.M{"userId": userId.Hex()})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer cursor.Close(context.Background())
+	eventIds := make([]primitive.ObjectID, 0)
+	for cursor.Next(context.Background()) {
+		var eventResponse models.EventResponse
+		if err := cursor.Decode(&eventResponse); err != nil {
+			logger.StdErr.Panicln(err)
+		}
+		eventIds = append(eventIds, eventResponse.EventId)
+	}
+
+	cursor, err = db.EventsCollection.Find(context.Background(), bson.M{
 		"$or": bson.A{
+			bson.M{"_id": bson.M{"$in": eventIds}},
 			bson.M{"ownerId": userId},
-			bson.M{"responses.userId": userId.Hex()},
 			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
 		},
 	}, opts)
