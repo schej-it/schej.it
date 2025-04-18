@@ -180,12 +180,16 @@ func getEvents(c *gin.Context) {
 		eventIds = append(eventIds, attendee.EventId)
 	}
 
-	cursor, err = db.EventsCollection.Find(context.Background(), bson.M{
-		"$or": bson.A{
-			bson.M{"_id": bson.M{"$in": eventIds}},
-			bson.M{"ownerId": userId},
+	cursor, err = db.EventsCollection.Find(
+		context.Background(),
+		bson.M{
+			"$or": bson.A{
+				bson.M{"_id": bson.M{"$in": eventIds}},
+				bson.M{"ownerId": userId},
+			},
 		},
-	}, opts)
+		opts,
+	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
@@ -199,8 +203,7 @@ func getEvents(c *gin.Context) {
 
 	// Convert events to old format for backward compatibility
 	for i := range events {
-		eventResponses := db.GetEventResponses(events[i].Id.Hex())
-		utils.ConvertEventToOldFormat(&events[i], eventResponses)
+		utils.ConvertEventToOldFormat(&events[i], nil)
 	}
 
 	for _, event := range events {
