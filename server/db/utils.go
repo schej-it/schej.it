@@ -118,6 +118,9 @@ func GetEventResponses(eventId string) []models.EventResponse {
 	result, err := EventResponsesCollection.Find(context.Background(), bson.M{
 		"eventId": objectId,
 	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event responses do not exist!
 		return []models.EventResponse{}
@@ -129,6 +132,32 @@ func GetEventResponses(eventId string) []models.EventResponse {
 	}
 
 	return eventResponses
+}
+
+func GetAttendees(eventId string) []models.Attendee {
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		return []models.Attendee{}
+	}
+
+	result, err := AttendeesCollection.Find(context.Background(), bson.M{
+		"eventId": objectId,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	if result.Err() == mongo.ErrNoDocuments {
+		// Attendees do not exist!
+		return []models.Attendee{}
+	}
+
+	var attendees []models.Attendee
+	if err := result.All(context.Background(), &attendees); err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	return attendees
 }
 
 func GetFriendRequestById(friendRequestId string) *models.FriendRequest {

@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -139,8 +138,8 @@ func createEvent(c *gin.Context) {
 		event.Remindees = &remindees
 	}
 
+	attendees := make([]models.Attendee, 0)
 	if payload.Type == models.GROUP {
-		attendees := make([]models.Attendee, 0)
 
 		if signedIn {
 			// 	// Add event owner to group by default
@@ -162,7 +161,7 @@ func createEvent(c *gin.Context) {
 			// 	}
 
 			// Add owner as attendee
-			attendees = append(attendees, models.Attendee{Email: user.Email, Declined: utils.FalsePtr()})
+			attendees = append(attendees, models.Attendee{Email: user.Email, Declined: utils.FalsePtr(), EventId: event.Id})
 		}
 
 		// Add attendees and send email
@@ -183,12 +182,14 @@ func createEvent(c *gin.Context) {
 					"groupName": event.Name,
 					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 				})
-				attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr()})
+				attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr(), EventId: event.Id})
 			}
 
 		}
 
-		event.Attendees = &attendees
+		for _, attendee := range attendees {
+			db.AttendeesCollection.InsertOne(context.Background(), attendee)
+		}
 	}
 
 	// Insert event
@@ -205,7 +206,7 @@ func createEvent(c *gin.Context) {
 	} else {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
-	slackbot.SendEventCreatedMessage(insertedId, creator, event)
+	slackbot.SendEventCreatedMessage(insertedId, creator, event, len(attendees))
 
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId, "shortId": event.ShortId})
 }
@@ -328,8 +329,7 @@ func editEvent(c *gin.Context) {
 
 	// Update attendees
 	if event.Type == models.GROUP {
-		origAttendees := utils.Coalesce(event.Attendees)
-		updatedAttendees := make([]models.Attendee, 0)
+		origAttendees := db.GetAttendees(event.Id.Hex())
 		added, removed, kept := utils.FindAddedRemovedKept(payload.Attendees, utils.Map(origAttendees, func(a models.Attendee) string { return a.Email }))
 
 		// Determine owner name
@@ -338,11 +338,6 @@ func editEvent(c *gin.Context) {
 		if event.OwnerId != primitive.NilObjectID {
 			owner = db.GetUserById(event.OwnerId.Hex())
 			ownerName = owner.FirstName
-
-			// Keep owner in attendees array
-			if ownerIndex := utils.Find(origAttendees, func(a models.Attendee) bool { return strings.EqualFold(a.Email, owner.Email) }); ownerIndex != -1 {
-				updatedAttendees = append(updatedAttendees, origAttendees[ownerIndex])
-			}
 		} else {
 			ownerName = "Somebody"
 		}
@@ -366,12 +361,14 @@ func editEvent(c *gin.Context) {
 							}
 						}
 					}
+
+					// Remove attendee from attendees collection
+					db.AttendeesCollection.DeleteOne(context.Background(), bson.M{
+						"email":   removedEmail.Value,
+						"eventId": event.Id,
+					})
 				}
 			}
-		}
-
-		for _, keptEmail := range kept {
-			updatedAttendees = append(updatedAttendees, origAttendees[keptEmail.Index])
 		}
 
 		for _, addedEmail := range added {
@@ -382,9 +379,10 @@ func editEvent(c *gin.Context) {
 				"groupName": event.Name,
 				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 			})
-			updatedAttendees = append(updatedAttendees, models.Attendee{
+			db.AttendeesCollection.InsertOne(context.Background(), models.Attendee{
 				Email:    addedEmail.Value,
 				Declined: utils.FalsePtr(),
+				EventId:  event.Id,
 			})
 		}
 
@@ -402,8 +400,6 @@ func editEvent(c *gin.Context) {
 				})
 			}
 		}
-
-		event.Attendees = &updatedAttendees
 	}
 
 	// Update event object
@@ -638,12 +634,14 @@ func updateEventResponse(c *gin.Context) {
 
 				// Set declined to false (in case user declined group in the past)
 				if user != nil {
-					for i, attendee := range utils.Coalesce(event.Attendees) {
-						if strings.EqualFold(attendee.Email, user.Email) {
-							(*event.Attendees)[i].Declined = utils.FalsePtr()
-							break
-						}
-					}
+					db.AttendeesCollection.UpdateOne(context.Background(), bson.M{
+						"email":   user.Email,
+						"eventId": event.Id,
+					}, bson.M{
+						"$set": bson.M{
+							"declined": false,
+						},
+					})
 				}
 
 				// Update manual availability
@@ -901,12 +899,14 @@ func deleteEventResponse(c *gin.Context) {
 		if event.Type == models.GROUP {
 			user := db.GetUserById(userIdString)
 			if user != nil {
-				for i, attendee := range utils.Coalesce(event.Attendees) {
-					if strings.EqualFold(attendee.Email, user.Email) {
-						(*event.Attendees)[i].Declined = utils.TruePtr()
-						break
-					}
-				}
+				db.AttendeesCollection.UpdateOne(context.Background(), bson.M{
+					"email":   user.Email,
+					"eventId": event.Id,
+				}, bson.M{
+					"$set": bson.M{
+						"declined": true,
+					},
+				})
 			}
 		}
 	}
@@ -1038,25 +1038,25 @@ func declineInvite(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Check if user is in attendees array
-	index := utils.Find(utils.Coalesce(event.Attendees), func(a models.Attendee) bool {
-		return strings.EqualFold(a.Email, user.Email)
+	attendee := db.AttendeesCollection.FindOne(context.Background(), bson.M{
+		"email":   user.Email,
+		"eventId": event.Id,
 	})
-	if index == -1 {
+	if attendee == nil {
 		// User not in attendees array
 		c.JSON(http.StatusNotFound, responses.Error{Error: errs.AttendeeEmailNotFound})
 		return
 	}
 
 	// Decline invite
-	(*event.Attendees)[index].Declined = utils.TruePtr()
-
-	// Update event in database
-	_, err := db.EventsCollection.UpdateByID(context.Background(), event.Id, bson.M{
-		"$set": event,
+	db.AttendeesCollection.UpdateOne(context.Background(), bson.M{
+		"email":   user.Email,
+		"eventId": event.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"declined": true,
+		},
 	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
 
 	c.JSON(http.StatusOK, gin.H{})
 }
