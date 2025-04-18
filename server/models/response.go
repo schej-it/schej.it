@@ -3,10 +3,11 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type EventResponse struct {
-	Id       primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	UserId   string             `json:"userId" bson:"userId"`
-	Response *Response          `json:"response" bson:"response"`
-	EventId  primitive.ObjectID `json:"eventId" bson:"eventId"`
+	Id      primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	EventId primitive.ObjectID `json:"eventId" bson:"eventId"`
+
+	UserId   string    `json:"userId" bson:"userId"`
+	Response *Response `json:"response" bson:"response"`
 }
 
 // A response object containing an array of times that the given user is available

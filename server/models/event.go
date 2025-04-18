@@ -19,11 +19,6 @@ type Remindee struct {
 	Responded *bool    `json:"responded" bson:"responded,omitempty"`
 }
 
-type Attendee struct {
-	Email    string `json:"email" bson:"email,omitempty"`
-	Declined *bool  `json:"declined" bson:"declined,omitempty"`
-}
-
 type SignUpBlock struct {
 	Id        primitive.ObjectID  `json:"_id" bson:"_id,omitempty"`
 	Name      string              `json:"name" bson:"name,omitempty"`

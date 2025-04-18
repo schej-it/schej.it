@@ -16,6 +16,7 @@ var UsersCollection *mongo.Collection
 var DailyUserLogCollection *mongo.Collection
 var FriendRequestsCollection *mongo.Collection
 var EventResponsesCollection *mongo.Collection
+var AttendeesCollection *mongo.Collection
 
 func Init() func() {
 	// Establish mongodb connection
@@ -33,6 +34,7 @@ func Init() func() {
 	DailyUserLogCollection = Db.Collection("dailyuserlogs")
 	FriendRequestsCollection = Db.Collection("friendrequests")
 	EventResponsesCollection = Db.Collection("eventResponses")
+	AttendeesCollection = Db.Collection("attendees")
 
 	// Return a function to close the connection
 	return func() {

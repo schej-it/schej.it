@@ -23,6 +23,7 @@ func main() {
 	// Get collections
 	eventsCollection := client.Database("schej-it").Collection("events")
 	eventResponsesCollection := client.Database("schej-it").Collection("eventResponses")
+	attendeesCollection := client.Database("schej-it").Collection("attendees")
 
 	// Get all events
 	cursor, err := eventsCollection.Find(context.Background(), bson.M{})
@@ -39,6 +40,26 @@ func main() {
 		}
 
 		eventId := event["_id"].(primitive.ObjectID)
+		if attendeesData, ok := event["attendees"]; ok && attendeesData != nil {
+			attendees := attendeesData.(bson.A)
+			for _, attendee := range attendees {
+				attendeeMap := attendee.(bson.M)
+				attendeeEmail := attendeeMap["email"].(string)
+				attendeeDeclined := attendeeMap["declined"].(bool)
+
+				attendee := models.Attendee{
+					Email:    attendeeEmail,
+					Declined: &attendeeDeclined,
+				}
+
+				_, err := attendeesCollection.InsertOne(context.Background(), attendee)
+				if err != nil {
+					log.Printf("Error inserting attendee for event %s, user %s: %v", eventId, attendeeEmail, err)
+					continue
+				}
+			}
+		}
+
 		if responsesData, ok := event["responses"]; !ok || responsesData == nil {
 			continue
 		}
