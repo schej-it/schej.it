@@ -1215,6 +1215,22 @@ func deleteEvent(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 
+	// Delete event responses
+	_, err = db.EventResponsesCollection.DeleteMany(context.Background(), bson.M{
+		"eventId": objectId,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	// Delete attendees
+	_, err = db.AttendeesCollection.DeleteMany(context.Background(), bson.M{
+		"eventId": objectId,
+	})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
 	c.Status(http.StatusOK)
 }
 
