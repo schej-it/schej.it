@@ -39,3 +39,11 @@ func Init() func() {
 		Client.Disconnect(ctx)
 	}
 }
+
+// MongoDB backup / restore commands
+
+// Backup
+// mongodump --uri="mongodb://localhost:27017" --db=schej-it
+
+// Restore
+// mongorestore --uri="mongodb://localhost:27017" --drop --db=schej-it ./dump
