@@ -15,6 +15,8 @@ var EventsCollection *mongo.Collection
 var UsersCollection *mongo.Collection
 var DailyUserLogCollection *mongo.Collection
 var FriendRequestsCollection *mongo.Collection
+var EventResponsesCollection *mongo.Collection
+var AttendeesCollection *mongo.Collection
 
 func Init() func() {
 	// Establish mongodb connection
@@ -31,9 +33,19 @@ func Init() func() {
 	UsersCollection = Db.Collection("users")
 	DailyUserLogCollection = Db.Collection("dailyuserlogs")
 	FriendRequestsCollection = Db.Collection("friendrequests")
+	EventResponsesCollection = Db.Collection("eventResponses")
+	AttendeesCollection = Db.Collection("attendees")
 
 	// Return a function to close the connection
 	return func() {
 		Client.Disconnect(ctx)
 	}
 }
+
+// MongoDB backup / restore commands
+
+// Backup
+// mongodump --uri="mongodb://localhost:27017" --db=schej-it
+
+// Restore
+// mongorestore --uri="mongodb://localhost:27017" --drop --db=schej-it ./dump
