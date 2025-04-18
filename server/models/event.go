@@ -74,7 +74,7 @@ type Event struct {
 	// Availability responses - new format for indexed queries
 	// ResponsesList []EventResponse `json:"-" bson:"responses"`
 	// Availability responses - old format for backward compatibility
-	ResponsesMap map[string]*Response `json:"responses" bson:"responsesMap"`
+	ResponsesMap map[string]*Response `json:"responses" bson:"-"`
 
 	// Scheduled event
 	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
