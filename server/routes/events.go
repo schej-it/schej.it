@@ -789,7 +789,7 @@ func updateEventResponse(c *gin.Context) {
 
 	// Send email after X responses
 	sendEmailAfterXResponses := utils.Coalesce(event.SendEmailAfterXResponses)
-	if sendEmailAfterXResponses > 0 && !userHasResponded && sendEmailAfterXResponses == len(eventResponses) {
+	if sendEmailAfterXResponses > 0 && !userHasResponded && sendEmailAfterXResponses == len(eventResponses)+1 { // We add 1 because eventResponses is the old event responses before the current user is added
 		// Set SendEmailAfterXResponses variable to -1 to prevent additional emails from being sent
 		*event.SendEmailAfterXResponses = -1
 
@@ -812,7 +812,7 @@ func updateEventResponse(c *gin.Context) {
 				"eventName":    event.Name,
 				"ownerName":    creator.FirstName,
 				"eventUrl":     fmt.Sprintf("%s/e/%s", utils.GetBaseUrl(), event.GetId()),
-				"numResponses": len(eventResponses),
+				"numResponses": len(eventResponses) + 1, // We add 1 because eventResponses is the old event responses before the current user is added
 			})
 		}()
 	}
