@@ -214,7 +214,7 @@ func Decrypt(text string) (string, error) {
 func ConvertEventToOldFormat(event *models.Event) {
 	responsesMap := make(map[string]*models.Response)
 	for _, resp := range event.ResponsesList {
-		responsesMap[resp.UserId.Hex()] = resp.Response
+		responsesMap[resp.UserId] = resp.Response
 	}
 	event.ResponsesMap = responsesMap
 }

@@ -3,7 +3,8 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type EventResponse struct {
-	UserId   primitive.ObjectID `json:"userId" bson:"userId"`
+	Id       primitive.ObjectID `json:"id" bson:"_id"`
+	UserId   string             `json:"userId" bson:"userId"`
 	Response *Response          `json:"response" bson:"response"`
 	EventId  primitive.ObjectID `json:"eventId" bson:"eventId"`
 }

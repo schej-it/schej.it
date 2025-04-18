@@ -356,7 +356,7 @@ func editEvent(c *gin.Context) {
 				if removedUser != nil {
 					// Remove response from array
 					for i := range event.ResponsesList {
-						if event.ResponsesList[i].UserId == removedUser.Id {
+						if event.ResponsesList[i].UserId == removedUser.Id.Hex() {
 							event.ResponsesList = append(event.ResponsesList[:i], event.ResponsesList[i+1:]...)
 							break
 						}
@@ -683,7 +683,7 @@ func updateEventResponse(c *gin.Context) {
 			event.ResponsesList[idx].Response = &response
 		} else {
 			event.ResponsesList = append(event.ResponsesList, models.EventResponse{
-				UserId:   utils.StringToObjectID(userIdString),
+				UserId:   userIdString,
 				Response: &response,
 			})
 		}
@@ -869,7 +869,7 @@ func deleteEventResponse(c *gin.Context) {
 		} else {
 			// Remove response from array
 			for i := range event.ResponsesList {
-				if event.ResponsesList[i].UserId.Hex() == payload.UserId {
+				if event.ResponsesList[i].UserId == payload.UserId {
 					event.ResponsesList = append(event.ResponsesList[:i], event.ResponsesList[i+1:]...)
 					break
 				}
@@ -1082,7 +1082,7 @@ func getCalendarAvailabilities(c *gin.Context) {
 
 	for _, eventResponse := range event.ResponsesList {
 		if utils.Coalesce(eventResponse.Response.UseCalendarAvailability) {
-			user := db.GetUserById(eventResponse.UserId.Hex())
+			user := db.GetUserById(eventResponse.UserId)
 			if user != nil {
 				numCalendarEventsRequests++
 
@@ -1109,7 +1109,7 @@ func getCalendarAvailabilities(c *gin.Context) {
 						UserId: userId,
 						Events: calendarEvents,
 					}
-				}(eventResponse.UserId.Hex())
+				}(eventResponse.UserId)
 			}
 		}
 	}
@@ -1248,7 +1248,7 @@ func duplicateEvent(c *gin.Context) {
 // Helper function to find a response by userId
 func findResponse(responses []models.EventResponse, userId string) (int, *models.Response) {
 	for i, resp := range responses {
-		if resp.UserId.Hex() == userId {
+		if resp.UserId == userId {
 			return i, resp.Response
 		}
 	}
@@ -1259,7 +1259,7 @@ func findResponse(responses []models.EventResponse, userId string) (int, *models
 func getResponsesMap(responses []models.EventResponse) map[string]*models.Response {
 	result := make(map[string]*models.Response)
 	for _, resp := range responses {
-		result[resp.UserId.Hex()] = resp.Response
+		result[resp.UserId] = resp.Response
 	}
 	return result
 }
