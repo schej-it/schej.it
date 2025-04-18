@@ -9,7 +9,7 @@ import (
 	"schej.it/server/utils"
 )
 
-func SendEventCreatedMessage(insertedId string, creator string, event models.Event, numAttendees int) {
+func SendEventCreatedMessage(insertedId string, creator string, event models.Event) {
 	eventInfoText := fmt.Sprintf(
 		"*Name*: %s\n"+
 			"*Event url*: https://schej.it/e/%s\n"+
@@ -26,7 +26,7 @@ func SendEventCreatedMessage(insertedId string, creator string, event models.Eve
 	)
 
 	if event.Type == models.GROUP {
-		eventInfoText += fmt.Sprintf("\n*Num attendees*: %v", numAttendees)
+		eventInfoText += fmt.Sprintf("\n*Num attendees*: %v", len(utils.Coalesce(event.Attendees)))
 	} else {
 		daysOnly := utils.Coalesce(event.DaysOnly)
 		notificationsEnabled := utils.Coalesce(event.NotificationsEnabled)
