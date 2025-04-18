@@ -464,6 +464,7 @@ func getEvent(c *gin.Context) {
 			}
 		} else {
 			response.User = user
+			response.User.CalendarAccounts = nil
 		}
 		responsesMap[userId] = response
 
@@ -496,7 +497,6 @@ func getEvent(c *gin.Context) {
 	}
 
 	// Create a copy of the event with responses in map format
-	fmt.Println(event)
 	c.JSON(http.StatusOK, event)
 }
 
