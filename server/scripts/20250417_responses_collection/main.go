@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Connect to MongoDB
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27018"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,13 +26,21 @@ func main() {
 	attendeesCollection := client.Database("schej-it").Collection("attendees")
 
 	// Get all events
-	cursor, err := eventsCollection.Find(context.Background(), bson.M{})
+	lastProcessedID, err := primitive.ObjectIDFromHex("676f772e48f2022f2544011a")
+	if err != nil {
+		log.Fatal(err)
+	}
+	cursor, err := eventsCollection.Find(context.Background(), bson.M{
+		"_id": bson.M{"$gt": lastProcessedID},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer cursor.Close(context.Background())
 
 	// Iterate through events
+	eventResponses := make([]interface{}, 0)
+	eventIds := make([]primitive.ObjectID, 0)
 	for cursor.Next(context.Background()) {
 		var event bson.M
 		if err := cursor.Decode(&event); err != nil {
@@ -90,16 +98,37 @@ func main() {
 				Response: &responseData,
 				EventId:  eventId,
 			}
+			eventResponses = append(eventResponses, eventResponse)
 
 			// Insert into eventResponses collection
-			_, err := eventResponsesCollection.InsertOne(context.Background(), eventResponse)
-			if err != nil {
-				log.Printf("Error inserting response for event %s, user %s: %v", eventId, userIdString, err)
-				continue
-			}
+			// _, err := eventResponsesCollection.InsertOne(context.Background(), eventResponse)
+			// if err != nil {
+			// 	log.Printf("Error inserting response for event %s, user %s: %v", eventId, userIdString, err)
+			// 	continue
+			// }
 
-			fmt.Printf("Migrated response for event %s, user %s\n", eventId, userIdString)
+			// fmt.Printf("Migrated response for event %s, user %s\n", eventId, userIdString)
 		}
+
+		// Insert into eventResponses collection
+		eventIds = append(eventIds, eventId)
+		if len(eventResponses) > 200 {
+			_, err := eventResponsesCollection.InsertMany(context.Background(), eventResponses)
+			if err != nil {
+				log.Printf("Error inserting responses for event %s: %v", eventId, err)
+			}
+			fmt.Printf("Inserted %d responses for eventIds %v\n", len(eventResponses), eventIds)
+			eventResponses = make([]interface{}, 0)
+			eventIds = make([]primitive.ObjectID, 0)
+		}
+	}
+
+	if len(eventResponses) > 0 {
+		_, err := eventResponsesCollection.InsertMany(context.Background(), eventResponses)
+		if err != nil {
+			log.Printf("Error inserting responses for eventIds %v: %v", eventIds, err)
+		}
+		fmt.Printf("Inserted %d responses for eventIds %v\n", len(eventResponses), eventIds)
 	}
 
 	if err := cursor.Err(); err != nil {
