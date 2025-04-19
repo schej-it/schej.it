@@ -173,6 +173,7 @@
                       id="drag-section"
                       data-long-press-delay="500"
                       class="tw-relative tw-flex"
+                      style="background-color: #ffdede;"
                       @mouseleave="resetCurTimeslot"
                     >
                       <!-- Loader -->
