@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Connect to MongoDB
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27018"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,13 +24,17 @@ func main() {
 	eventResponsesCollection := client.Database("schej-it").Collection("eventResponses")
 
 	// Get all events
-	// lastProcessedID, err := primitive.ObjectIDFromHex("676f772e48f2022f2544011a")
+	// lastProcessedID, err := primitive.ObjectIDFromHex("6804a0d136c40b06cf27aca9")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	cursor, err := eventsCollection.Find(context.Background(), bson.M{
-		// "_id": bson.M{"$gt": lastProcessedID},
-	})
+	cursor, err := eventsCollection.Find(
+		context.Background(),
+		bson.M{
+			// "_id": bson.M{"$gt": lastProcessedID},
+		},
+		options.Find().SetSort(bson.M{"_id": -1}),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}

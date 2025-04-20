@@ -26,13 +26,17 @@ func main() {
 	attendeesCollection := client.Database("schej-it").Collection("attendees")
 
 	// Get all events
-	lastProcessedID, err := primitive.ObjectIDFromHex("676f772e48f2022f2544011a")
+	lastProcessedID, err := primitive.ObjectIDFromHex("6802b5b9fd9ef1e2646575f9")
 	if err != nil {
 		log.Fatal(err)
 	}
-	cursor, err := eventsCollection.Find(context.Background(), bson.M{
-		"_id": bson.M{"$gt": lastProcessedID},
-	})
+	cursor, err := eventsCollection.Find(
+		context.Background(),
+		bson.M{
+			"_id": bson.M{"$gt": lastProcessedID},
+		},
+		options.Find().SetSort(bson.M{"_id": 1}),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
