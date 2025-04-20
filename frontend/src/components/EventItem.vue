@@ -30,7 +30,7 @@
           class="tw-m-0.5 tw-bg-off-white tw-text-very-dark-gray"
         >
           <v-icon left small> mdi-account-multiple </v-icon>
-          {{ Object.keys(this.event.responses).length }}
+          {{ this.event.numResponses }}
         </v-chip>
         <v-menu
           v-if="showOptions"
@@ -199,7 +199,7 @@ export default {
       return this.isGroup ? "group" : "event"
     },
     userHasResponded() {
-      return this.authUser?._id in this.event.responses
+      return this.event.hasResponded ?? false
     },
   },
 

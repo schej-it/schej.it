@@ -128,7 +128,7 @@ export default {
   methods: {
     ...mapActions(["getEvents"]),
     userRespondedToEvent(event) {
-      return this.authUser._id in event.responses
+      return event.hasResponded ?? false
     },
     createNew() {
       this.$emit("setNewDialogOptions", {

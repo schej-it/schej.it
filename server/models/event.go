@@ -74,6 +74,9 @@ type Event struct {
 	// Availability responses - old format for backward compatibility (fetched from eventResponses collection)
 	ResponsesMap map[string]*Response `json:"responses" bson:"-"`
 
+	// Used to store the number of responses for the event
+	NumResponses int `json:"numResponses" bson:"numResponses,omitempty"`
+
 	// Scheduled event
 	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
 	CalendarEventId string         `json:"calendarEventId" bson:"calendarEventId,omitempty"`
@@ -83,6 +86,9 @@ type Event struct {
 
 	// Attendees for an availability group (fetched from Attendees collection)
 	Attendees *[]Attendee `json:"attendees" bson:"-"`
+
+	// Whether the user has responded to the availability group (fetched based on whether user is in Attendees)
+	HasResponded *bool `json:"hasResponded" bson:"-"`
 }
 
 func (e *Event) GetId() string {

@@ -108,6 +108,7 @@ func createEvent(c *gin.Context) {
 		CollectEmails:            payload.CollectEmails,
 		Type:                     payload.Type,
 		SignUpResponses:          make(map[string]*models.SignUpResponse),
+		NumResponses:             0,
 	}
 
 	// Generate short id
@@ -357,6 +358,7 @@ func editEvent(c *gin.Context) {
 								db.EventResponsesCollection.DeleteOne(context.Background(), bson.M{
 									"_id": eventResponses[i].Id,
 								})
+								event.NumResponses--
 								break
 							}
 						}
@@ -705,6 +707,7 @@ func updateEventResponse(c *gin.Context) {
 				Response: &response,
 				EventId:  event.Id,
 			})
+			event.NumResponses++
 		}
 	} else {
 		var response models.SignUpResponse
@@ -866,6 +869,7 @@ func deleteEventResponse(c *gin.Context) {
 					db.EventResponsesCollection.DeleteOne(context.Background(), bson.M{
 						"_id": eventResponses[i].Id,
 					})
+					event.NumResponses--
 					break
 				}
 			}
@@ -895,6 +899,7 @@ func deleteEventResponse(c *gin.Context) {
 					db.EventResponsesCollection.DeleteOne(context.Background(), bson.M{
 						"_id": eventResponses[i].Id,
 					})
+					event.NumResponses--
 					break
 				}
 			}
@@ -1270,6 +1275,7 @@ func duplicateEvent(c *gin.Context) {
 	// Update event
 	event.Id = primitive.NewObjectID()
 	event.Name = payload.EventName
+	event.NumResponses = 0
 	if *payload.CopyAvailability {
 		eventResponses := db.GetEventResponses(eventId)
 		for _, eventResponse := range eventResponses {
@@ -1279,6 +1285,7 @@ func duplicateEvent(c *gin.Context) {
 			if err != nil {
 				logger.StdErr.Panicln(err)
 			}
+			event.NumResponses++
 		}
 	}
 

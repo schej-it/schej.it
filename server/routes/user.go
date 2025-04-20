@@ -172,12 +172,17 @@ func getEvents(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 	defer cursor.Close(context.Background())
+	hasRespondedEventIds := make(models.Set[primitive.ObjectID])
 	for cursor.Next(context.Background()) {
 		var attendee models.Attendee
 		if err := cursor.Decode(&attendee); err != nil {
 			logger.StdErr.Panicln(err)
 		}
-		eventIds = append(eventIds, attendee.EventId)
+		if utils.Contains(eventIds, attendee.EventId) {
+			hasRespondedEventIds[attendee.EventId] = struct{}{}
+		} else {
+			eventIds = append(eventIds, attendee.EventId)
+		}
 	}
 
 	cursor, err = db.EventsCollection.Find(
@@ -201,15 +206,14 @@ func getEvents(c *gin.Context) {
 	response["events"] = make([]models.Event, 0)       // The events the user created
 	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
 
-	// Convert events to old format for backward compatibility
-	for i := range events {
-		utils.ConvertEventToOldFormat(&events[i], nil)
-	}
-
 	for _, event := range events {
-		// Get rid of responses so we don't send too much data when fetching all events
-		for id := range event.ResponsesMap {
-			event.ResponsesMap[id] = nil
+		// Set the hasResponded field for availability groups
+		if event.Type == models.GROUP {
+			if _, ok := hasRespondedEventIds[event.Id]; ok {
+				event.HasResponded = utils.TruePtr()
+			} else {
+				event.HasResponded = utils.FalsePtr()
+			}
 		}
 
 		// Filter into events user created and responded to
