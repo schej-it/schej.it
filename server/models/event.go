@@ -12,11 +12,39 @@ const (
 	GROUP          EventType = "group"
 )
 
+// A response object containing an array of times that the given user is available
+type Response struct {
+	// Guest information
+	Name  string `json:"name" bson:"name,omitempty"`
+	Email string `json:"email" bson:"email,omitempty"`
+
+	// User information
+	UserId primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
+	User   *User              `json:"user" bson:",omitempty"`
+
+	// Availability
+	Availability []primitive.DateTime `json:"availability" bson:"availability"`
+	IfNeeded     []primitive.DateTime `json:"ifNeeded" bson:"ifNeeded"`
+
+	// Mapping from the start date of a day to the available times for that day
+	ManualAvailability *map[primitive.DateTime][]primitive.DateTime `json:"manualAvailability" bson:"manualAvailability,omitempty"`
+
+	// Calendar availability variables for Availability Groups feature
+	UseCalendarAvailability *bool                `json:"useCalendarAvailability" bson:"useCalendarAvailability,omitempty"`
+	EnabledCalendars        *map[string][]string `json:"enabledCalendars" bson:"enabledCalendars,omitempty"` // Maps email to an array of sub calendar ids
+	CalendarOptions         *CalendarOptions     `json:"calendarOptions" bson:"calendarOptions,omitempty"`
+}
+
 // Object containing information associated with the remindee
 type Remindee struct {
 	Email     string   `json:"email" bson:"email,omitempty"`
 	TaskIds   []string `json:"-" bson:"taskIds,omitempty"` // Task IDs of the scheduled emails
 	Responded *bool    `json:"responded" bson:"responded,omitempty"`
+}
+
+type Attendee struct {
+	Email    string `json:"email" bson:"email,omitempty"`
+	Declined *bool  `json:"declined" bson:"declined,omitempty"`
 }
 
 type SignUpBlock struct {
@@ -38,6 +66,11 @@ type SignUpResponse struct {
 	// User information
 	UserId primitive.ObjectID `json:"userId" bson:"userId,omitempty"`
 	User   *User              `json:"user" bson:",omitempty"`
+}
+
+type EventResponse struct {
+	UserId   string    `json:"userId" bson:"userId"`
+	Response *Response `json:"response" bson:"response"`
 }
 
 // Representation of an Event in the mongoDB database
@@ -71,8 +104,10 @@ type Event struct {
 	// Whether to only poll for days, not times
 	DaysOnly *bool `json:"daysOnly" bson:"daysOnly,omitempty"`
 
-	// Availability responses - old format for backward compatibility (fetched from eventResponses collection)
-	ResponsesMap map[string]*Response `json:"responses" bson:"-"`
+	// Availability responses - new format for indexed queries
+	ResponsesList []EventResponse `json:"-" bson:"responses"`
+	// Availability responses - old format for backward compatibility
+	ResponsesMap map[string]*Response `json:"responses" bson:"responsesMap"`
 
 	// Used to store the number of responses for the event
 	NumResponses *int `json:"numResponses" bson:"numResponses,omitempty"`

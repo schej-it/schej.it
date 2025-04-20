@@ -211,9 +211,9 @@ func Decrypt(text string) (string, error) {
 
 // ConvertEventToOldFormat converts an event's responses from ResponsesList to ResponsesMap format
 // for backward compatibility with older code
-func ConvertEventToOldFormat(event *models.Event, eventResponses []models.EventResponse) {
+func ConvertEventToOldFormat(event *models.Event) {
 	responsesMap := make(map[string]*models.Response)
-	for _, resp := range eventResponses {
+	for _, resp := range event.ResponsesList {
 		responsesMap[resp.UserId] = resp.Response
 	}
 	event.ResponsesMap = responsesMap
