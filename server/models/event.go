@@ -75,7 +75,7 @@ type Event struct {
 	ResponsesMap map[string]*Response `json:"responses" bson:"-"`
 
 	// Used to store the number of responses for the event
-	NumResponses int `json:"numResponses" bson:"numResponses,omitempty"`
+	NumResponses *int `json:"numResponses" bson:"numResponses,omitempty"`
 
 	// Scheduled event
 	ScheduledEvent  *CalendarEvent `json:"scheduledEvent" bson:"scheduledEvent,omitempty"`
