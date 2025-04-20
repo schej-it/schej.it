@@ -26,7 +26,7 @@ func main() {
 	attendeesCollection := client.Database("schej-it").Collection("attendees")
 
 	// Get all events
-	lastProcessedID, err := primitive.ObjectIDFromHex("6802b5b9fd9ef1e2646575f9")
+	lastProcessedID, err := primitive.ObjectIDFromHex("6804a03836c40b06cf27aca4")
 	if err != nil {
 		log.Fatal(err)
 	}

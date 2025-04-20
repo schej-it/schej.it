@@ -24,21 +24,22 @@ func main() {
 	// eventResponsesCollection := client.Database("schej-it").Collection("eventResponses")
 
 	// Get all events
-	// latestID, err := primitive.ObjectIDFromHex("6804a0d136c40b06cf27aca9")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	earliestID, err := primitive.ObjectIDFromHex("67f7e7e39ddc87da36eec9e3")
+	latestID, err := primitive.ObjectIDFromHex("6804a0d136c40b06cf27aca9")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// earliestID, err := primitive.ObjectIDFromHex("67f7e7e39ddc87da36eec9e3")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Create a pipeline to get event IDs and their response counts
 	pipeline := []bson.M{
 		{
 			"$match": bson.M{
-				"_id": bson.M{"$lt": earliestID},
+				// "_id": bson.M{"$lt": earliestID},
+				"_id": bson.M{"$gt": latestID},
 			},
 		},
 		{
