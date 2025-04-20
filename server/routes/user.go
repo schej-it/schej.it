@@ -151,13 +151,50 @@ func getEvents(c *gin.Context) {
 	events := make([]models.Event, 0)
 	opts := options.Find().SetSort(bson.M{"_id": -1})
 
-	cursor, err := db.EventsCollection.Find(context.Background(), bson.M{
-		"$or": bson.A{
-			bson.M{"ownerId": userId},
-			bson.M{"responses.userId": userId.Hex()},
-			bson.M{"attendees": bson.M{"email": user.Email, "declined": false}},
+	// Get all the event ids that the user has responded to
+	cursor, err := db.EventResponsesCollection.Find(context.Background(), bson.M{"userId": userId.Hex()})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer cursor.Close(context.Background())
+	eventIds := make([]primitive.ObjectID, 0)
+	for cursor.Next(context.Background()) {
+		var eventResponse models.EventResponse
+		if err := cursor.Decode(&eventResponse); err != nil {
+			logger.StdErr.Panicln(err)
+		}
+		eventIds = append(eventIds, eventResponse.EventId)
+	}
+
+	// Get all the event ids that the user is an attendee of
+	cursor, err = db.AttendeesCollection.Find(context.Background(), bson.M{"email": user.Email, "declined": false})
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+	defer cursor.Close(context.Background())
+	hasRespondedEventIds := make(models.Set[primitive.ObjectID])
+	for cursor.Next(context.Background()) {
+		var attendee models.Attendee
+		if err := cursor.Decode(&attendee); err != nil {
+			logger.StdErr.Panicln(err)
+		}
+		if utils.Contains(eventIds, attendee.EventId) {
+			hasRespondedEventIds[attendee.EventId] = struct{}{}
+		} else {
+			eventIds = append(eventIds, attendee.EventId)
+		}
+	}
+
+	cursor, err = db.EventsCollection.Find(
+		context.Background(),
+		bson.M{
+			"$or": bson.A{
+				bson.M{"_id": bson.M{"$in": eventIds}},
+				bson.M{"ownerId": userId},
+			},
 		},
-	}, opts)
+		opts,
+	)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
@@ -169,15 +206,14 @@ func getEvents(c *gin.Context) {
 	response["events"] = make([]models.Event, 0)       // The events the user created
 	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
 
-	// Convert events to old format for backward compatibility
-	for i := range events {
-		utils.ConvertEventToOldFormat(&events[i])
-	}
-
 	for _, event := range events {
-		// Get rid of responses so we don't send too much data when fetching all events
-		for id := range event.ResponsesMap {
-			event.ResponsesMap[id] = nil
+		// Set the hasResponded field for availability groups
+		if event.Type == models.GROUP {
+			if _, ok := hasRespondedEventIds[event.Id]; ok {
+				event.HasResponded = utils.TruePtr()
+			} else {
+				event.HasResponded = utils.FalsePtr()
+			}
 		}
 
 		// Filter into events user created and responded to
