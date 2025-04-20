@@ -21,52 +21,90 @@ func main() {
 
 	// Get collections
 	eventsCollection := client.Database("schej-it").Collection("events")
-	eventResponsesCollection := client.Database("schej-it").Collection("eventResponses")
+	// eventResponsesCollection := client.Database("schej-it").Collection("eventResponses")
 
 	// Get all events
-	// lastProcessedID, err := primitive.ObjectIDFromHex("6804a0d136c40b06cf27aca9")
+	// latestID, err := primitive.ObjectIDFromHex("6804a0d136c40b06cf27aca9")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	cursor, err := eventsCollection.Find(
-		context.Background(),
-		bson.M{
-			// "_id": bson.M{"$gt": lastProcessedID},
+
+	earliestID, err := primitive.ObjectIDFromHex("67f7e7e39ddc87da36eec9e3")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create a pipeline to get event IDs and their response counts
+	pipeline := []bson.M{
+		{
+			"$match": bson.M{
+				"_id": bson.M{"$lt": earliestID},
+			},
 		},
-		options.Find().SetSort(bson.M{"_id": -1}),
-	)
+		{
+			"$lookup": bson.M{
+				"from":         "eventResponses",
+				"localField":   "_id",
+				"foreignField": "eventId",
+				"as":           "responses",
+			},
+		},
+		{
+			"$project": bson.M{
+				"_id":          1,
+				"numResponses": bson.M{"$size": "$responses"},
+			},
+		},
+	}
+
+	cursor, err := eventsCollection.Aggregate(context.Background(), pipeline)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer cursor.Close(context.Background())
 
-	// Iterate through events
+	// Process in batches of 1000
+	batchSize := 1000
+	var updates []mongo.WriteModel
+	var processedCount int
+
 	for cursor.Next(context.Background()) {
-		var event bson.M
-		if err := cursor.Decode(&event); err != nil {
-			log.Fatal(err)
+		var result struct {
+			ID           primitive.ObjectID `bson:"_id"`
+			NumResponses int                `bson:"numResponses"`
 		}
-
-		eventId := event["_id"].(primitive.ObjectID)
-
-		// Update numResponses for the event
-		count, err := eventResponsesCollection.CountDocuments(context.Background(), bson.M{"eventId": eventId})
-		if err != nil {
-			log.Printf("Error counting responses for event %s: %v", eventId, err)
+		if err := cursor.Decode(&result); err != nil {
+			log.Printf("Error decoding document: %v", err)
 			continue
 		}
 
-		_, err = eventsCollection.UpdateOne(
-			context.Background(),
-			bson.M{"_id": eventId},
-			bson.M{"$set": bson.M{"numResponses": count}},
-		)
-		if err != nil {
-			log.Printf("Error updating numResponses for event %s: %v", eventId, err)
-			continue
+		update := mongo.NewUpdateOneModel().
+			SetFilter(bson.M{"_id": result.ID}).
+			SetUpdate(bson.M{"$set": bson.M{"numResponses": result.NumResponses}})
+		updates = append(updates, update)
+
+		if len(updates) >= batchSize {
+			_, err := eventsCollection.BulkWrite(context.Background(), updates)
+			if err != nil {
+				log.Printf("Error executing bulk update: %v", err)
+			} else {
+				processedCount += len(updates)
+				fmt.Printf("Processed %d events\n", processedCount)
+			}
+			updates = updates[:0] // Clear the updates slice
 		}
-		fmt.Printf("Updated numResponses to %d for event %s\n", count, eventId)
 	}
 
-	fmt.Println("Migration completed successfully!")
+	// Process any remaining updates
+	if len(updates) > 0 {
+		_, err := eventsCollection.BulkWrite(context.Background(), updates)
+		if err != nil {
+			log.Printf("Error executing final bulk update: %v", err)
+		} else {
+			processedCount += len(updates)
+			fmt.Printf("Processed final batch of %d events\n", len(updates))
+		}
+	}
+
+	fmt.Printf("Migration completed! Total events processed: %d\n", processedCount)
 }
