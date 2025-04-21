@@ -1,5 +1,18 @@
 <template>
-  <div class="tw-mx-auto tw-mb-12 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mt-7">
+  <div
+    class="tw-mx-auto tw-mb-24 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mb-12 sm:tw-mt-7"
+  >
+    <!-- Preload images -->
+    <div class="tw-hidden">
+      <img src="@/assets/doodles/boba/0.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/1.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/2.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/3.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/4.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/5.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/6.jpg" alt="preload" />
+      <img src="@/assets/doodles/boba/7.jpg" alt="preload" />
+    </div>
     <div
       v-if="loading && !eventsNotEmpty"
       class="tw-flex tw-h-[calc(100vh-10rem)] tw-w-full tw-items-center tw-justify-center"
@@ -38,6 +51,12 @@
         </div>
       </div>
     </v-fade-transition>
+
+    <div v-if="!loading || eventsNotEmpty" class="tw-flex tw-justify-center">
+      <div
+        class="animate-boba tw-size-48 tw-bg-contain tw-bg-no-repeat sm:tw-size-48"
+      ></div>
+    </div>
 
     <!-- FAB -->
     <BottomFab v-if="isPhone" id="create-event-btn" @click="createNew">
@@ -146,3 +165,46 @@ export default {
   },
 }
 </script>
+
+<style>
+@keyframes boba {
+  0% {
+    background-image: url("@/assets/doodles/boba/0.jpg");
+  }
+  12.5% {
+    background-image: url("@/assets/doodles/boba/1.jpg");
+  }
+  25% {
+    background-image: url("@/assets/doodles/boba/2.jpg");
+  }
+  37.5% {
+    background-image: url("@/assets/doodles/boba/3.jpg");
+  }
+  50% {
+    background-image: url("@/assets/doodles/boba/4.jpg");
+  }
+  62.5% {
+    background-image: url("@/assets/doodles/boba/5.jpg");
+  }
+  75% {
+    background-image: url("@/assets/doodles/boba/6.jpg");
+  }
+  87.5% {
+    background-image: url("@/assets/doodles/boba/7.jpg");
+  }
+  100% {
+    background-image: url("@/assets/doodles/boba/0.jpg");
+  }
+}
+
+.animate-boba {
+  animation: boba 1.04s steps(1) infinite;
+  animation-play-state: paused;
+  transition: animation-play-state 0s 1.04s;
+}
+
+.animate-boba:hover {
+  animation-play-state: running;
+  transition: animation-play-state 0s;
+}
+</style>
