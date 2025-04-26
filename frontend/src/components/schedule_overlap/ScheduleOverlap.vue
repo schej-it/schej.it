@@ -1565,8 +1565,67 @@ export default {
 
       return max
     },
+    /**
+     * Returns a two dimensional array of times
+     * IF endTime < startTime:
+     * the first element is an array of times between 12am and end time and the second element is an array of times between start time and 12am
+     * ELSE:
+     * the first element is an array of times between start time and end time. the second element is an empty array
+     * */
+    splitTimes() {
+      const splitTimes = [[], []]
+
+      const utcStartTime = this.event.startTime
+      const utcEndTime = this.event.startTime + this.event.duration
+      const localStartTime = utcTimeToLocalTime(
+        utcStartTime,
+        this.timezoneOffset
+      )
+      const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
+
+      if (localEndTime < localStartTime) {
+        for (let i = 0; i < localEndTime; ++i) {
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i),
+            text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i) + 0.25,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i) + 0.5,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i) + 0.75,
+          })
+        }
+        for (let i = 0; i < 24 - localStartTime; ++i) {
+          splitTimes[1].push({
+            hoursOffset: i,
+            text: timeNumToTimeText(
+              localStartTime + i,
+              this.timeType === timeTypes.HOUR12
+            ),
+          })
+          splitTimes[1].push({
+            hoursOffset: i + 0.25,
+          })
+          splitTimes[1].push({
+            hoursOffset: i + 0.5,
+          })
+          splitTimes[1].push({
+            hoursOffset: i + 0.75,
+          })
+        }
+      } else {
+        splitTimes[0] = this.times
+        splitTimes[1] = []
+      }
+
+      return splitTimes
+    },
+    /** Returns the times that are encompassed by startTime and endTime */
     times() {
-      /* Returns the times that are encompassed by startTime and endTime */
       const times = []
 
       for (let i = 0; i < this.event.duration; ++i) {
