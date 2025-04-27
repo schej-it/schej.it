@@ -2579,6 +2579,7 @@ export default {
       const classStyle = this.getTimeslotClassStyle(date, row, col)
 
       // Add time timeslot specific stuff
+      const isFirstSplit = t < this.splitTimes[0].length
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
@@ -2608,8 +2609,16 @@ export default {
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
         if (col === this.days.length - 1)
           classStyle.class += "tw-border-r-gray "
-        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-        if (row === this.times.length - 1)
+        if (isFirstSplit && row === 0)
+          classStyle.class += "tw-border-t tw-border-t-gray "
+        if (!isFirstSplit && row === this.splitTimes[0].length)
+          classStyle.class += "tw-border-t tw-border-t-gray "
+        if (isFirstSplit && row === this.splitTimes[0].length - 1)
+          classStyle.class += "tw-border-b tw-border-b-gray "
+        if (
+          !isFirstSplit &&
+          row === this.splitTimes[0].length + this.splitTimes[1].length - 1
+        )
           classStyle.class += "tw-border-b tw-border-b-gray "
 
         if (
