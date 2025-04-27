@@ -131,7 +131,11 @@
               </div>
 
               <template v-if="splitTimes[1].length > 0">
-                <div class="tw-h-10"></div>
+                <div
+                  :style="{
+                    height: `${SPLIT_GAP_HEIGHT}px`,
+                  }"
+                ></div>
                 <div
                   v-if="splitTimes[1].length > 0"
                   :class="calendarOnly ? '' : '-tw-ml-3'"
@@ -232,7 +236,11 @@
                         </div>
 
                         <template v-if="splitTimes[1].length > 0">
-                          <div class="tw-h-10"></div>
+                          <div
+                            :style="{
+                              height: `${SPLIT_GAP_HEIGHT}px`,
+                            }"
+                          ></div>
                           <div
                             v-for="(_, t) in splitTimes[1]"
                             :key="t"
@@ -1056,6 +1064,7 @@ export default {
         ADD: "add",
         REMOVE: "remove",
       },
+      SPLIT_GAP_HEIGHT: 40,
       timeslot: {
         width: 0,
         height: 0,
@@ -3072,6 +3081,12 @@ export default {
       const { width, height } = this.timeslot
       let col = Math.floor(x / width)
       let row = Math.floor(y / height)
+
+      // Account for split gap
+      if (row > this.splitTimes[0].length) {
+        row = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
+      }
+
       row = this.clampRow(row)
       col = this.clampCol(col)
       return {
