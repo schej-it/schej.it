@@ -2612,7 +2612,10 @@ export default {
         if (row === this.times.length - 1)
           classStyle.class += "tw-border-b tw-border-b-gray "
 
-        if (this.state === this.states.EDIT_AVAILABILITY) {
+        if (
+          this.state === this.states.EDIT_AVAILABILITY ||
+          this.state === this.states.SINGLE_AVAILABILITY
+        ) {
           classStyle.class += "tw-border-[#999999] "
         } else {
           classStyle.class += "tw-border-[#DDDDDD99] "
@@ -2680,6 +2683,8 @@ export default {
           } else {
             s.backgroundColor = "#00994C88"
           }
+        } else {
+          s.backgroundColor = "#E523230D"
         }
       }
 
