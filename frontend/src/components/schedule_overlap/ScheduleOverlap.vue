@@ -122,13 +122,30 @@
                 class="-tw-mt-[8px] sm:tw-ml-0"
               >
                 <div
-                  v-for="(time, i) in times"
+                  v-for="(time, i) in splitTimes[0]"
                   :key="i"
                   class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
                 >
                   {{ time.text }}
                 </div>
               </div>
+
+              <template v-if="splitTimes[1].length > 0">
+                <div class="tw-h-10"></div>
+                <div
+                  v-if="splitTimes[1].length > 0"
+                  :class="calendarOnly ? '' : '-tw-ml-3'"
+                  class="sm:tw-ml-0"
+                >
+                  <div
+                    v-for="(time, i) in splitTimes[1]"
+                    :key="i"
+                    class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                  >
+                    {{ time.text }}
+                  </div>
+                </div>
+              </template>
             </div>
 
             <!-- Middle section -->
@@ -197,7 +214,11 @@
                         "
                       >
                         <!-- Timeslots -->
-                        <div v-for="(_, t) in times" :key="t" class="tw-w-full">
+                        <div
+                          v-for="(_, t) in splitTimes[0]"
+                          :key="t"
+                          class="tw-w-full"
+                        >
                           <div
                             class="timeslot tw-h-4"
                             :class="
@@ -209,6 +230,34 @@
                             v-on="timeslotVon[d * times.length + t]"
                           ></div>
                         </div>
+
+                        <template v-if="splitTimes[1].length > 0">
+                          <div class="tw-h-10"></div>
+                          <div
+                            v-for="(_, t) in splitTimes[1]"
+                            :key="t"
+                            class="tw-w-full"
+                          >
+                            <div
+                              class="timeslot tw-h-4"
+                              :class="
+                                timeslotClassStyle[
+                                  d * times.length + t + splitTimes[0].length
+                                ]?.class
+                              "
+                              :style="
+                                timeslotClassStyle[
+                                  d * times.length + t + splitTimes[0].length
+                                ]?.style
+                              "
+                              v-on="
+                                timeslotVon[
+                                  d * times.length + t + splitTimes[0].length
+                                ]
+                              "
+                            ></div>
+                          </div>
+                        </template>
 
                         <!-- Calendar events -->
                         <div
@@ -1152,7 +1201,8 @@ export default {
       const calendarEventsByDay = splitTimeBlocksByDay(
         this.event,
         eventsCopy,
-        this.weekOffset
+        this.weekOffset,
+        this.timezoneOffset
       )
 
       return calendarEventsByDay
@@ -1169,7 +1219,8 @@ export default {
           userIdToEventsByDay[userId] = splitTimeBlocksByDay(
             this.event,
             this.calendarAvailabilities[userId],
-            this.weekOffset
+            this.weekOffset,
+            this.timezoneOffset
           )
         }
       }

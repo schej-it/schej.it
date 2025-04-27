@@ -456,14 +456,20 @@ export const getTimeBlock = (date, hoursOffset, hoursLength) => {
 /**
   Returns an array of a user's calendar events split by date for a given event
 */
-export const splitTimeBlocksByDay = (event, timeBlocks, weekOffset = 0) => {
+export const splitTimeBlocksByDay = (
+  event,
+  timeBlocks,
+  weekOffset = 0,
+  timezoneOffset = null
+) => {
   return processTimeBlocks(
     event.dates,
     event.duration,
     timeBlocks,
     event.type,
     weekOffset,
-    event.startOnMonday
+    event.startOnMonday,
+    timezoneOffset
   )
 }
 
@@ -474,7 +480,8 @@ export const processTimeBlocks = (
   timeBlocks,
   eventType = eventTypes.SPECIFIC_DATES,
   weekOffset = 0,
-  startOnMonday = false
+  startOnMonday = false,
+  timezoneOffset = null
 ) => {
   // Put timeBlocks into the correct format
   timeBlocks = JSON.parse(JSON.stringify(timeBlocks)) // Make a copy so we don't mutate original array
@@ -515,6 +522,16 @@ export const processTimeBlocks = (
     const start = new Date(dates[i])
     const end = new Date(start)
     end.setHours(start.getHours() + duration)
+
+    let eventGoesIntoNextDay = false
+    if (timezoneOffset) {
+      const localStart = new Date(start.getTime() + timezoneOffset * 60 * 1000)
+      const localEnd = new Date(end.getTime() + timezoneOffset * 60 * 1000)
+      if (localStart.getDay() !== localEnd.getDay()) {
+        eventGoesIntoNextDay = true
+      }
+    }
+    // TODO: Handle event going into next day
 
     // Keep iterating through calendar events until it's empty or there are no more events for the current date
     while (timeBlocks.length > 0 && end > timeBlocks[0].startDate) {
