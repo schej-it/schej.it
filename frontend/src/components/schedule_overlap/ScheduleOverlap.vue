@@ -1823,9 +1823,20 @@ export default {
       const classStyles = []
       for (let d = 0; d < this.days.length; ++d) {
         const day = this.days[d]
-        for (let t = 0; t < this.times.length; ++t) {
-          const time = this.times[t]
+        for (let t = 0; t < this.splitTimes[0].length; ++t) {
+          const time = this.splitTimes[0][t]
           classStyles.push(this.getTimeTimeslotClassStyle(day, time, d, t))
+        }
+        for (let t = 0; t < this.splitTimes[1].length; ++t) {
+          const time = this.splitTimes[1][t]
+          classStyles.push(
+            this.getTimeTimeslotClassStyle(
+              day,
+              time,
+              d,
+              t + this.splitTimes[0].length
+            )
+          )
         }
       }
       return classStyles
@@ -2589,7 +2600,7 @@ export default {
 
       // Add time timeslot specific stuff
       const isFirstSplit = t < this.splitTimes[0].length
-      const isDisabled = this.getIsTimeslotDisabled(t, d)
+      const isDisabled = this.getIsTimeslotDisabled(row, col)
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
@@ -3114,11 +3125,12 @@ export default {
       if (this.event.daysOnly) {
         return this.monthDays[row * 7 + col]?.dateObject
       } else {
-        if (!this.days[col] || !this.times[row]) return null
-        return getDateHoursOffset(
-          this.days[col].dateObject,
-          this.times[row].hoursOffset
-        )
+        const time =
+          row < this.splitTimes[0].length
+            ? this.splitTimes[0][row]
+            : this.splitTimes[1][row - this.splitTimes[0].length]
+        if (!this.days[col] || !time) return null
+        return getDateHoursOffset(this.days[col].dateObject, time.hoursOffset)
       }
     },
     endDrag() {
