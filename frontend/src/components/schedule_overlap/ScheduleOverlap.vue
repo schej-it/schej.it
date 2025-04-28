@@ -2589,6 +2589,11 @@ export default {
 
       // Add time timeslot specific stuff
       const isFirstSplit = t < this.splitTimes[0].length
+      const hasSplit = this.splitTimes[1].length > 0
+      const isDisabled =
+        hasSplit &&
+        ((d === 0 && isFirstSplit) ||
+          (d === this.allDays.length - 1 && !isFirstSplit))
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
@@ -2599,7 +2604,8 @@ export default {
       if (
         (this.respondents.length > 0 || this.editing) &&
         this.curTimeslot.row === row &&
-        this.curTimeslot.col === col
+        this.curTimeslot.col === col &&
+        !isDisabled
       ) {
         // Dashed border for currently selected timeslot
         classStyle.class +=
@@ -2638,6 +2644,11 @@ export default {
         } else {
           classStyle.class += "tw-border-[#DDDDDD99] "
         }
+      }
+
+      // Edit fill color and border color if day is not interactable
+      if (isDisabled) {
+        classStyle.class += "tw-bg-off-white tw-border-off-white "
       }
 
       // Change default red:
