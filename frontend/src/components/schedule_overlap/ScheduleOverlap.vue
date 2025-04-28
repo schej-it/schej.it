@@ -2589,11 +2589,7 @@ export default {
 
       // Add time timeslot specific stuff
       const isFirstSplit = t < this.splitTimes[0].length
-      const hasSplit = this.splitTimes[1].length > 0
-      const isDisabled =
-        hasSplit &&
-        ((d === 0 && isFirstSplit) ||
-          (d === this.allDays.length - 1 && !isFirstSplit))
+      const isDisabled = this.getIsTimeslotDisabled(t, d)
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
@@ -2943,6 +2939,15 @@ export default {
       // End drag if mouse left time grid
       this.endDrag()
     },
+    getIsTimeslotDisabled(row, col) {
+      const isFirstSplit = row < this.splitTimes[0].length
+      const hasSplit = this.splitTimes[1].length > 0
+      const isTimeslotDisabled =
+        hasSplit &&
+        ((col === 0 && isFirstSplit) ||
+          (col === this.allDays.length - 1 && !isFirstSplit))
+      return isTimeslotDisabled
+    },
     //#endregion
 
     // -----------------------------------
@@ -3159,12 +3164,7 @@ export default {
               if (!isMonthDayIncluded) continue
             } else {
               // Don't add to availability set if timeslot is disabled
-              const isFirstSplit = r < this.splitTimes[0].length
-              const hasSplit = this.splitTimes[1].length > 0
-              const isTimeslotDisabled =
-                hasSplit &&
-                ((c === 0 && isFirstSplit) ||
-                  (c === this.allDays.length - 1 && !isFirstSplit))
+              const isTimeslotDisabled = this.getIsTimeslotDisabled(r, c)
               if (isTimeslotDisabled) continue
             }
 
