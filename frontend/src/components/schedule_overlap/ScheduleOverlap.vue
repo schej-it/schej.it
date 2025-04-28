@@ -3151,13 +3151,21 @@ export default {
           for (let c = colStart; c != colMax; c += colInc) {
             const date = this.getDateFromRowCol(r, c)
 
-            // Don't add to availability set if month day is not included
-            if (
-              this.event.daysOnly &&
-              (!this.monthDayIncluded.get(date.getTime()) ||
-                !this.inDragRange(r, c))
-            ) {
-              continue
+            if (this.event.daysOnly) {
+              // Don't add to availability set if month day is not included
+              const isMonthDayIncluded =
+                this.monthDayIncluded.get(date.getTime()) &&
+                this.inDragRange(r, c)
+              if (!isMonthDayIncluded) continue
+            } else {
+              // Don't add to availability set if timeslot is disabled
+              const isFirstSplit = r < this.splitTimes[0].length
+              const hasSplit = this.splitTimes[1].length > 0
+              const isTimeslotDisabled =
+                hasSplit &&
+                ((c === 0 && isFirstSplit) ||
+                  (c === this.allDays.length - 1 && !isFirstSplit))
+              if (isTimeslotDisabled) continue
             }
 
             if (this.dragType === this.DRAG_TYPES.ADD) {
