@@ -511,12 +511,12 @@ export const processTimeBlocks = (
 
   // Format array of calendar events by day
   const timeBlocksByDay = []
-  for (const i in dates) {
+  for (let i = 0; i < dates.length; ++i) {
     timeBlocksByDay[i] = []
   }
 
   // Iterate through all dates and add calendar events to array
-  for (const i in dates) {
+  for (let i = 0; i < dates.length; ++i) {
     if (timeBlocks.length == 0) break
 
     const start = new Date(dates[i])
@@ -614,11 +614,13 @@ export const processTimeBlocks = (
               hoursOffset: hoursOffset,
               hoursLength: firstHoursLength,
             })
-            timeBlocksByDay[i].push({
-              ...secondTimeBlock,
-              hoursOffset: hoursOffset + firstHoursLength,
-              hoursLength: secondHoursLength,
-            })
+            if (i + 1 < dates.length) {
+              timeBlocksByDay[i + 1].push({
+                ...secondTimeBlock,
+                hoursOffset: hoursOffset + firstHoursLength,
+                hoursLength: secondHoursLength,
+              })
+            }
             continue
           }
         }
