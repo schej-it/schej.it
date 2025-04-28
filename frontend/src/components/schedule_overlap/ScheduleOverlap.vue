@@ -268,59 +268,58 @@
                         </template>
 
                         <!-- Calendar events -->
-                        <div
+                        <template
                           v-if="
                             !loadingCalendarEvents &&
                             (editing ||
                               alwaysShowCalendarEvents ||
                               showCalendarEvents)
                           "
+                          v-for="calendarEvent in calendarEventsByDay[
+                            d + page * maxDaysPerPage
+                          ]"
                         >
-                          <transition
-                            :name="isGroup ? '' : 'fade-transition'"
-                            v-for="event in calendarEventsByDay[
-                              d + page * maxDaysPerPage
-                            ]"
-                            :key="event.id"
-                            appear
-                          >
-                            <div
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="{
-                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
-                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
-                              }"
-                              style="pointer-events: none"
-                            >
-                              <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
-                                :class="
-                                  event.free
-                                    ? isGroup && !editing
-                                      ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
-                                      : 'tw-border-dashed tw-border-blue'
-                                    : isGroup && !editing
-                                    ? 'tw-border-white tw-bg-light-blue'
-                                    : 'tw-border-blue'
-                                "
-                              >
-                                <div
-                                  :class="`tw-text-${
-                                    isGroup &&
-                                    state !== states.EDIT_AVAILABILITY
-                                      ? 'white'
-                                      : noEventNames
-                                      ? 'dark-gray'
-                                      : 'blue'
-                                  }`"
-                                  class="ph-no-capture tw-font-medium"
-                                >
-                                  {{ noEventNames ? "BUSY" : event.summary }}
-                                </div>
-                              </div>
-                            </div>
-                          </transition>
-                        </div>
+                          <CalendarEventBlock
+                            v-if="getIsCalendarEventInFirstSplit(calendarEvent)"
+                            :blockStyle="{
+                              top: `calc(${
+                                calendarEvent.hoursOffset -
+                                splitTimes[0][0].hoursOffset
+                              } * 4 * 1rem)`,
+                              height: `calc(${calendarEvent.hoursLength} * 4 * 1rem)`,
+                            }"
+                            :key="calendarEvent.id"
+                            :calendarEvent="calendarEvent"
+                            :isGroup="isGroup"
+                            :isEditingAvailability="
+                              state === states.EDIT_AVAILABILITY
+                            "
+                            :noEventNames="noEventNames"
+                            :transitionName="isGroup ? '' : 'fade-transition'"
+                          />
+                          <CalendarEventBlock
+                            v-else-if="splitTimes[1].length > 0"
+                            :blockStyle="{
+                              top: `calc(${
+                                splitTimes[0].length
+                              } * 1rem + ${SPLIT_GAP_HEIGHT}px +
+                                ${
+                                  calendarEvent.hoursOffset -
+                                  splitTimes[1][0].hoursOffset
+                                }
+                              * 4 * 1rem)`,
+                              height: `calc(${calendarEvent.hoursLength} * 4 * 1rem)`,
+                            }"
+                            :key="calendarEvent.id"
+                            :calendarEvent="calendarEvent"
+                            :isGroup="isGroup"
+                            :isEditingAvailability="
+                              state === states.EDIT_AVAILABILITY
+                            "
+                            :noEventNames="noEventNames"
+                            :transitionName="isGroup ? '' : 'fade-transition'"
+                          />
+                        </template>
 
                         <!-- Scheduled event -->
                         <div v-if="state === states.SCHEDULE_EVENT">
@@ -974,6 +973,7 @@ import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
 import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
 import BufferTimeSwitch from "./BufferTimeSwitch.vue"
+import CalendarEventBlock from "./CalendarEventBlock.vue" // Added import
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -2263,6 +2263,14 @@ export default {
         new Set(this.parsedResponses[id]?.availability) ?? new Set()
       this.ifNeeded = new Set(this.parsedResponses[id]?.ifNeeded) ?? new Set()
       this.$nextTick(() => (this.unsavedChanges = false))
+    },
+    /** Returns true if the calendar event is in the first split */
+    getIsCalendarEventInFirstSplit(calendarEvent) {
+      return (
+        calendarEvent.hoursOffset >= this.splitTimes[0][0].hoursOffset &&
+        calendarEvent.hoursOffset <=
+          this.splitTimes[0][this.splitTimes[0].length - 1].hoursOffset
+      )
     },
     /** Returns a set containing the available times based on the given calendar events object */
     getAvailabilityFromCalendarEvents({
@@ -3935,6 +3943,7 @@ export default {
     SignUpBlock,
     SignUpCalendarBlock,
     SignUpBlocksList,
+    CalendarEventBlock, // Added component registration
   },
 }
 </script>
