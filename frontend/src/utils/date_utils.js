@@ -523,16 +523,6 @@ export const processTimeBlocks = (
     const end = new Date(start)
     end.setHours(start.getHours() + duration)
 
-    let eventGoesIntoNextDay = false
-    if (timezoneOffset) {
-      const localStart = new Date(start.getTime() + timezoneOffset * 60 * 1000)
-      const localEnd = new Date(end.getTime() + timezoneOffset * 60 * 1000)
-      if (localStart.getDay() !== localEnd.getDay()) {
-        eventGoesIntoNextDay = true
-      }
-    }
-    // TODO: Handle event going into next day
-
     // Keep iterating through calendar events until it's empty or there are no more events for the current date
     while (timeBlocks.length > 0 && end > timeBlocks[0].startDate) {
       let [calendarEvent] = timeBlocks.splice(0, 1)
@@ -581,6 +571,57 @@ export const processTimeBlocks = (
           (calendarEvent.endDate.getTime() -
             calendarEvent.startDate.getTime()) /
           (1000 * 60 * 60)
+
+        // Check if the event goes into the next day
+        if (timezoneOffset) {
+          // Format the UTC date to be in the selected timezone
+          const localStart = new Date(
+            calendarEvent.startDate.getTime() - timezoneOffset * 60 * 1000
+          )
+          const localEnd = new Date(
+            calendarEvent.endDate.getTime() - timezoneOffset * 60 * 1000
+          )
+          if (localStart.getUTCDay() !== localEnd.getUTCDay()) {
+            // The event goes into the next day. Split the event into two time blocks
+            let splitDate = new Date(localStart)
+            splitDate.setUTCDate(splitDate.getUTCDate() + 1)
+            splitDate.setUTCHours(0, 0, 0, 0)
+            splitDate.setTime(splitDate.getTime() + timezoneOffset * 60 * 1000)
+            const firstTimeBlock = {
+              ...calendarEvent,
+              id: calendarEvent.id + "-1",
+              endDate: splitDate,
+              hoursOffset: hoursOffset,
+              hoursLength: hoursLength,
+            }
+            const firstHoursLength =
+              (firstTimeBlock.endDate.getTime() -
+                firstTimeBlock.startDate.getTime()) /
+              (1000 * 60 * 60)
+            const secondTimeBlock = {
+              ...calendarEvent,
+              id: calendarEvent.id + "-2",
+              startDate: splitDate,
+              hoursOffset: hoursOffset + firstHoursLength,
+              hoursLength: hoursLength - firstHoursLength,
+            }
+            const secondHoursLength =
+              (secondTimeBlock.endDate.getTime() -
+                secondTimeBlock.startDate.getTime()) /
+              (1000 * 60 * 60)
+            timeBlocksByDay[i].push({
+              ...firstTimeBlock,
+              hoursOffset: hoursOffset,
+              hoursLength: firstHoursLength,
+            })
+            timeBlocksByDay[i].push({
+              ...secondTimeBlock,
+              hoursOffset: hoursOffset + firstHoursLength,
+              hoursLength: secondHoursLength,
+            })
+            continue
+          }
+        }
 
         // Don't display event if the event is 0 hours long
         if (hoursLength == 0) continue

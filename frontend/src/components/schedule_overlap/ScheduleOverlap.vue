@@ -220,7 +220,7 @@
                         <!-- Timeslots -->
                         <div
                           v-for="(_, t) in splitTimes[0]"
-                          :key="t"
+                          :key="`${d}-${t}-0`"
                           class="tw-w-full"
                         >
                           <div
@@ -243,7 +243,7 @@
                           ></div>
                           <div
                             v-for="(_, t) in splitTimes[1]"
-                            :key="t"
+                            :key="`${d}-${t}-1`"
                             class="tw-w-full"
                           >
                             <div
