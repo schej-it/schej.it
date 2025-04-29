@@ -2220,11 +2220,11 @@ export default {
         return
       }
 
+      const date = this.getDateFromRowCol(row, col)
+      if (!date) return
+
       // Update current timeslot availability to show who is available for the given timeslot
-      const available =
-        this.responsesFormatted.get(
-          this.getDateFromRowCol(row, col).getTime()
-        ) ?? new Set()
+      const available = this.responsesFormatted.get(date.getTime()) ?? new Set()
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
           this.curTimeslotAvailability[respondent._id] = true
@@ -2341,7 +2341,7 @@ export default {
 
         for (let j = 0; j < this.times.length; ++j) {
           const startDate = this.getDateFromRowCol(j, i)
-          if (startDate === null) continue
+          if (!startDate) continue
           const endDate = getDateHoursOffset(startDate, 0.25)
 
           // Working hours
@@ -2941,7 +2941,6 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              // console.log(row, col, this.getDateFromRowCol(row, col))
             }
           },
         }
@@ -3142,14 +3141,16 @@ export default {
           ? this.splitTimes[0][row]
           : this.splitTimes[1][row - this.splitTimes[0].length]
         let adjustedCol = col
-        if (hasSecondSplit && isFirstSplit) {
-          adjustedCol = col - 1
+        if (hasSecondSplit) {
+          if (isFirstSplit) {
+            adjustedCol = col - 1
+          } else if (col === this.event.dates.length - 1) {
+            return null
+          }
         }
-        if (!this.days[adjustedCol] || !time) return null
-        return getDateHoursOffset(
-          this.days[adjustedCol].dateObject,
-          time.hoursOffset
-        )
+        const date = this.days[adjustedCol]?.dateObject
+        if (!date || !time) return null
+        return getDateHoursOffset(date, time.hoursOffset)
       }
     },
     endDrag() {
@@ -3186,6 +3187,7 @@ export default {
         for (let r = rowStart; r != rowMax; r += rowInc) {
           for (let c = colStart; c != colMax; c += colInc) {
             const date = this.getDateFromRowCol(r, c)
+            if (!date) continue
 
             if (this.event.daysOnly) {
               // Don't add to availability set if month day is not included
@@ -3383,6 +3385,7 @@ export default {
       if (e.touches?.length > 1) return // If dragging with more than one finger
 
       const date = this.getDateFromRowCol(row, col)
+      if (!date) return
 
       // Dont start dragging if day not included in daysonly event
       if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
