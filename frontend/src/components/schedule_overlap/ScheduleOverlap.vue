@@ -2282,6 +2282,9 @@ export default {
     }) {
       const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
+        const prevDate = this.event.dates[i - 1]
+          ? new Date(this.event.dates[i - 1])
+          : null
         const date = new Date(this.event.dates[i])
 
         if (includeTouchedAvailability) {
@@ -2939,6 +2942,7 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
+              // console.log(row, col, this.getDateFromRowCol(row, col))
             }
           },
         }
@@ -3133,12 +3137,20 @@ export default {
       if (this.event.daysOnly) {
         return this.monthDays[row * 7 + col]?.dateObject
       } else {
-        const time =
-          row < this.splitTimes[0].length
-            ? this.splitTimes[0][row]
-            : this.splitTimes[1][row - this.splitTimes[0].length]
-        if (!this.days[col] || !time) return null
-        return getDateHoursOffset(this.days[col].dateObject, time.hoursOffset)
+        const hasSecondSplit = this.splitTimes[1].length > 0
+        const isFirstSplit = row < this.splitTimes[0].length
+        const time = isFirstSplit
+          ? this.splitTimes[0][row]
+          : this.splitTimes[1][row - this.splitTimes[0].length]
+        let adjustedCol = col
+        if (hasSecondSplit && isFirstSplit) {
+          adjustedCol = col - 1
+        }
+        if (!this.days[adjustedCol] || !time) return null
+        return getDateHoursOffset(
+          this.days[adjustedCol].dateObject,
+          time.hoursOffset
+        )
       }
     },
     endDrag() {

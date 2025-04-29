@@ -572,16 +572,22 @@ export const processTimeBlocks = (
             calendarEvent.startDate.getTime()) /
           (1000 * 60 * 60)
 
+        // Don't display event if the event is 0 hours long
+        if (hoursLength == 0) continue
+
         // Check if the event goes into the next day
         if (timezoneOffset) {
           // Format the UTC date to be in the selected timezone
+          const localDayStart = new Date(
+            start.getTime() - timezoneOffset * 60 * 1000
+          )
           const localStart = new Date(
             calendarEvent.startDate.getTime() - timezoneOffset * 60 * 1000
           )
           const localEnd = new Date(
             calendarEvent.endDate.getTime() - timezoneOffset * 60 * 1000
           )
-          if (localStart.getUTCDay() !== localEnd.getUTCDay()) {
+          if (localStart.getUTCDate() !== localEnd.getUTCDate()) {
             // The event goes into the next day. Split the event into two time blocks
             let splitDate = new Date(localStart)
             splitDate.setUTCDate(splitDate.getUTCDate() + 1)
@@ -622,11 +628,18 @@ export const processTimeBlocks = (
               })
             }
             continue
+          } else if (localDayStart.getUTCDate() !== localStart.getUTCDate()) {
+            // The event starts on the next day. move the event to the next day
+            if (i + 1 < dates.length) {
+              timeBlocksByDay[i + 1].push({
+                ...calendarEvent,
+                hoursOffset,
+                hoursLength,
+              })
+            }
+            continue
           }
         }
-
-        // Don't display event if the event is 0 hours long
-        if (hoursLength == 0) continue
 
         timeBlocksByDay[i].push({
           ...calendarEvent,
