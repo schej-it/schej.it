@@ -2282,9 +2282,6 @@ export default {
     }) {
       const availability = new Set()
       for (let i = 0; i < this.event.dates.length; ++i) {
-        const prevDate = this.event.dates[i - 1]
-          ? new Date(this.event.dates[i - 1])
-          : null
         const date = new Date(this.event.dates[i])
 
         if (includeTouchedAvailability) {
@@ -2342,10 +2339,10 @@ export default {
           duration
         )
 
-        for (const time of this.times) {
-          // Check if there exists a calendar event that overlaps [time, time+0.25]
-          let startDate = getDateHoursOffset(date, time.hoursOffset)
-          const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
+        for (let j = 0; j < this.times.length; ++j) {
+          const startDate = this.getDateFromRowCol(j, i)
+          if (startDate === null) continue
+          const endDate = getDateHoursOffset(startDate, 0.25)
 
           // Working hours
           if (calendarOptions.workingHours.enabled) {
@@ -2357,6 +2354,7 @@ export default {
             }
           }
 
+          // Check if there exists a calendar event that overlaps [startDate, endDate]
           const index = calendarEventsByDay[i].findIndex((e) => {
             const startDateBuffered = new Date(
               e.startDate.getTime() - bufferTimeInMS
@@ -2604,9 +2602,9 @@ export default {
     },
     /** Returns a class string and style object for the given time timeslot div */
     getTimeTimeslotClassStyle(day, time, d, t) {
-      const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
       const row = t
       const col = d
+      const date = this.getDateFromRowCol(row, col)
       const classStyle = this.getTimeslotClassStyle(date, row, col)
 
       // Add time timeslot specific stuff
@@ -2680,6 +2678,7 @@ export default {
     getTimeslotClassStyle(date, row, col) {
       let c = ""
       const s = {}
+      if (!date) return { class: c, style: s }
 
       const timeslotRespondents =
         this.responsesFormatted.get(date.getTime()) ?? new Set()
