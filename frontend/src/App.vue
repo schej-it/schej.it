@@ -289,6 +289,8 @@ export default {
       "setSignUpFormEnabled",
       "setDaysOnlyEnabled",
       "setOverlayAvailabilitiesEnabled",
+      "setPricingPageConversion",
+      "setFeatureFlagsLoaded",
     ]),
     handleScroll(e) {
       this.scrollY = window.scrollY
@@ -306,7 +308,11 @@ export default {
       this.newDialogOptions.eventOnly = false
     },
     signIn() {
-      if (this.$route.name === "event" || this.$route.name === "group" || this.$route.name === "signUp") {
+      if (
+        this.$route.name === "event" ||
+        this.$route.name === "group" ||
+        this.$route.name === "signUp"
+      ) {
         if (isWebview(navigator.userAgent)) {
           this.webviewDialog = true
           return
@@ -339,6 +345,11 @@ export default {
       this.setOverlayAvailabilitiesEnabled(
         this.$posthog.isFeatureEnabled("overlay-availabilities")
       )
+      this.setPricingPageConversion(
+        this.$posthog.getFeatureFlag("pricing-page-conversion")
+      )
+      this.setFeatureFlagsLoaded(true)
+      console.log("LOADED FEATURE FLAGS")
     },
   },
 
@@ -406,7 +417,6 @@ export default {
           this.$posthog?.setPersonPropertiesForFlags({
             email: this.authUser?.email,
           })
-          this.setFeatureFlags()
           this.$posthog?.onFeatureFlags(() => {
             this.setFeatureFlags()
           })
