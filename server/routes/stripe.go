@@ -44,30 +44,34 @@ func createCheckoutSession(c *gin.Context) {
 	}
 
 	originURL := payload.OriginURL
+	finalRedirectURL := originURL // This is where the user should end up AFTER the /stripe-redirect page
 
-	// Parse the origin URL to easily add query parameters
-	parsedOriginURL, err := url.Parse(originURL)
+	// Get the base URL for constructing the intermediate redirect path
+	baseURL := utils.GetBaseUrl()
+	intermediateRedirectBase, err := url.Parse(baseURL)
 	if err != nil {
-		// Fallback to base domain if Referer is invalid
-		logger.StdErr.Printf("Error parsing Referer URL '%s': %v. Falling back to base URL.", originURL, err)
-		parsedOriginURL, _ = url.Parse(utils.GetBaseUrl())
+		logger.StdErr.Printf("Error parsing Base URL '%s': %v. Cannot construct redirect URLs.", baseURL, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error configuring redirect"})
+		return
 	}
 
-	// Create success URL
-	successURL := *parsedOriginURL // Make a copy
-	successQuery := successURL.Query()
+	// Create success URL (points to /stripe-redirect)
+	successURL := *intermediateRedirectBase // Start with base URL
+	successURL.Path = "/stripe-redirect"    // Set path
+	successQuery := url.Values{}
 	successQuery.Set("upgrade", "success")
+	successQuery.Set("redirect_url", finalRedirectURL) // Add the final destination
 	successURL.RawQuery = successQuery.Encode()
 	successURLStr := successURL.String()
 
-	// Create cancel URL
-	cancelURL := *parsedOriginURL // Make a copy
-	cancelQuery := cancelURL.Query()
+	// Create cancel URL (points to /stripe-redirect)
+	cancelURL := *intermediateRedirectBase // Start with base URL
+	cancelURL.Path = "/stripe-redirect"    // Set path
+	cancelQuery := url.Values{}
 	cancelQuery.Set("upgrade", "cancel")
+	cancelQuery.Set("redirect_url", finalRedirectURL) // Add the final destination
 	cancelURL.RawQuery = cancelQuery.Encode()
 	cancelURLStr := cancelURL.String()
-
-	logger.StdOut.Println("Creating checkout session", successURLStr, cancelURLStr)
 
 	params := &stripe.CheckoutSessionParams{
 		ClientReferenceID: stripe.String(payload.UserID),
@@ -161,6 +165,7 @@ func _fulfillCheckout(sessionId string) {
 			return
 		}
 		if cs.Customer != nil {
+			logger.StdOut.Println("Setting stripe customer ID", cs.Customer.ID)
 			db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": bson.M{"stripeCustomerId": cs.Customer.ID}})
 		}
 	}
