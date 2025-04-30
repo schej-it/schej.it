@@ -1904,7 +1904,9 @@ export default {
         overlaidAvailability.push([])
         let curBlockIndex = 0
         this.times.forEach((time, t) => {
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+          const date = this.getDateFromRowCol(t, d)
+          if (!date) return
+
           const dragAdd =
             this.dragging &&
             this.inDragRange(t, d) &&
@@ -1981,17 +1983,39 @@ export default {
     //#region Date
     // -----------------------------------
 
-    /** Returns a date object from the dayindex and timeindex given */
-    getDateFromDayTimeIndex(dayIndex, timeIndex) {
-      return getDateHoursOffset(
-        this.days[dayIndex].dateObject,
-        this.times[timeIndex].hoursOffset
-      )
-    },
-
     /** Returns a date object from the dayindex and hoursoffset given */
     getDateFromDayHoursOffset(dayIndex, hoursOffset) {
       return getDateHoursOffset(this.days[dayIndex].dateObject, hoursOffset)
+    },
+    /** Returns a date object from the row and column given on the current page */
+    getDateFromRowCol(row, col) {
+      if (this.event.daysOnly) {
+        return this.monthDays[row * 7 + col]?.dateObject
+      } else {
+        return this.getDateFromDayTimeIndex(
+          this.maxDaysPerPage * this.page + col,
+          row
+        )
+      }
+    },
+    /** Returns a date object from the day index and time index given */
+    getDateFromDayTimeIndex(dayIndex, timeIndex) {
+      const hasSecondSplit = this.splitTimes[1].length > 0
+      const isFirstSplit = timeIndex < this.splitTimes[0].length
+      const time = isFirstSplit
+        ? this.splitTimes[0][timeIndex]
+        : this.splitTimes[1][timeIndex - this.splitTimes[0].length]
+      let adjustedDayIndex = dayIndex
+      if (hasSecondSplit) {
+        if (isFirstSplit) {
+          adjustedDayIndex = dayIndex - 1
+        } else if (dayIndex === this.event.dates.length - 1) {
+          return null
+        }
+      }
+      const date = this.allDays[adjustedDayIndex]?.dateObject
+      if (!date || !time) return null
+      return getDateHoursOffset(date, time.hoursOffset)
     },
     //#endregion
 
@@ -2609,7 +2633,7 @@ export default {
 
       // Add time timeslot specific stuff
       const isFirstSplit = t < this.splitTimes[0].length
-      const isDisabled = this.getIsTimeslotDisabled(row, col)
+      const isDisabled = !date
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
@@ -2960,15 +2984,6 @@ export default {
       // End drag if mouse left time grid
       this.endDrag()
     },
-    getIsTimeslotDisabled(row, col) {
-      const isFirstSplit = row < this.splitTimes[0].length
-      const hasSplit = this.splitTimes[1].length > 0
-      const isTimeslotDisabled =
-        hasSplit &&
-        ((col === 0 && isFirstSplit) ||
-          (col === this.allDays.length - 1 && !isFirstSplit))
-      return isTimeslotDisabled
-    },
     //#endregion
 
     // -----------------------------------
@@ -3131,28 +3146,6 @@ export default {
         col,
       }
     },
-    getDateFromRowCol(row, col) {
-      if (this.event.daysOnly) {
-        return this.monthDays[row * 7 + col]?.dateObject
-      } else {
-        const hasSecondSplit = this.splitTimes[1].length > 0
-        const isFirstSplit = row < this.splitTimes[0].length
-        const time = isFirstSplit
-          ? this.splitTimes[0][row]
-          : this.splitTimes[1][row - this.splitTimes[0].length]
-        let adjustedCol = col
-        if (hasSecondSplit) {
-          if (isFirstSplit) {
-            adjustedCol = col - 1
-          } else if (col === this.event.dates.length - 1) {
-            return null
-          }
-        }
-        const date = this.days[adjustedCol]?.dateObject
-        if (!date || !time) return null
-        return getDateHoursOffset(date, time.hoursOffset)
-      }
-    },
     endDrag() {
       if (!this.allowDrag) return
 
@@ -3195,10 +3188,6 @@ export default {
                 this.monthDayIncluded.get(date.getTime()) &&
                 this.inDragRange(r, c)
               if (!isMonthDayIncluded) continue
-            } else {
-              // Don't add to availability set if timeslot is disabled
-              const isTimeslotDisabled = this.getIsTimeslotDisabled(r, c)
-              if (isTimeslotDisabled) continue
             }
 
             if (this.dragType === this.DRAG_TYPES.ADD) {
