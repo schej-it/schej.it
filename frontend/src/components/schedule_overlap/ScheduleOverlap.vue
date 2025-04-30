@@ -280,36 +280,9 @@
                           ]"
                         >
                           <CalendarEventBlock
-                            v-if="getIsCalendarEventInFirstSplit(calendarEvent)"
-                            :blockStyle="{
-                              top: `calc(${
-                                calendarEvent.hoursOffset -
-                                splitTimes[0][0].hoursOffset
-                              } * 4 * 1rem)`,
-                              height: `calc(${calendarEvent.hoursLength} * 4 * 1rem)`,
-                            }"
-                            :key="calendarEvent.id"
-                            :calendarEvent="calendarEvent"
-                            :isGroup="isGroup"
-                            :isEditingAvailability="
-                              state === states.EDIT_AVAILABILITY
+                            :blockStyle="
+                              getCalendarEventBlockStyle(calendarEvent)
                             "
-                            :noEventNames="noEventNames"
-                            :transitionName="isGroup ? '' : 'fade-transition'"
-                          />
-                          <CalendarEventBlock
-                            v-else-if="splitTimes[1].length > 0"
-                            :blockStyle="{
-                              top: `calc(${
-                                splitTimes[0].length
-                              } * 1rem + ${SPLIT_GAP_HEIGHT}px +
-                                ${
-                                  calendarEvent.hoursOffset -
-                                  splitTimes[1][0].hoursOffset
-                                }
-                              * 4 * 1rem)`,
-                              height: `calc(${calendarEvent.hoursLength} * 4 * 1rem)`,
-                            }"
                             :key="calendarEvent.id"
                             :calendarEvent="calendarEvent"
                             :isGroup="isGroup"
@@ -2303,6 +2276,24 @@ export default {
         calendarEvent.hoursOffset <=
           this.splitTimes[0][this.splitTimes[0].length - 1].hoursOffset
       )
+    },
+    /** Returns the style for the calendar event block */
+    getCalendarEventBlockStyle(calendarEvent) {
+      const style = {}
+      if (this.getIsCalendarEventInFirstSplit(calendarEvent)) {
+        style.top = `calc(${
+          calendarEvent.hoursOffset - this.splitTimes[0][0].hoursOffset
+        } * 4 * 1rem)`
+        style.height = `calc(${calendarEvent.hoursLength} * 4 * 1rem)`
+      } else {
+        style.top = `calc(${this.splitTimes[0].length} * 1rem + ${
+          this.SPLIT_GAP_HEIGHT
+        }px + ${
+          calendarEvent.hoursOffset - this.splitTimes[1][0].hoursOffset
+        } * 4 * 1rem)`
+        style.height = `calc(${calendarEvent.hoursLength} * 4 * 1rem)`
+      }
+      return style
     },
     /** Returns a set containing the available times based on the given calendar events object */
     getAvailabilityFromCalendarEvents({
