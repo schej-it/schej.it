@@ -1,15 +1,23 @@
 package routes
 
 import (
-	"fmt"
+	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
+
+	"context"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/checkout/session"
 	"github.com/stripe/stripe-go/v82/price"
+	"github.com/stripe/stripe-go/v82/webhook"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"schej.it/server/db"
+	"schej.it/server/logger"
 	"schej.it/server/utils"
 )
 
@@ -18,15 +26,15 @@ func InitStripe(router *gin.RouterGroup) {
 
 	stripeRouter.POST("/create-checkout-session", createCheckoutSession)
 	stripeRouter.GET("/price", getPrice)
+	stripeRouter.POST("/webhook", stripeWebhook)
 }
 
 type CheckoutSessionPayload struct {
 	PriceID string `json:"priceId" binding:"required"`
+	UserID  string `json:"userId" binding:"required"`
 }
 
 func createCheckoutSession(c *gin.Context) {
-	fmt.Println("Creating checkout session")
-
 	var payload CheckoutSessionPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
@@ -35,6 +43,7 @@ func createCheckoutSession(c *gin.Context) {
 
 	domain := utils.GetBaseUrl()
 	params := &stripe.CheckoutSessionParams{
+		ClientReferenceID: stripe.String(payload.UserID),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				// Provide the exact Price ID (for example, price_1234) of the product you want to sell
@@ -63,8 +72,6 @@ func createCheckoutSession(c *gin.Context) {
 }
 
 func getPrice(c *gin.Context) {
-	fmt.Println("Fetching products and prices")
-
 	// Get the experiment query parameter
 	exp := c.Query("exp")
 	priceId := ""
@@ -87,4 +94,76 @@ func getPrice(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"price": result})
+}
+
+func fulfillCheckout(sessionId string) {
+	// TODO: Make this function safe to run multiple times,
+	// even concurrently, with the same session ID
+
+	// TODO: Make sure fulfillment hasn't already been
+	// performed for this Checkout Session
+
+	// Retrieve the Checkout Session from the API with line_items expanded
+	params := &stripe.CheckoutSessionParams{}
+	params.AddExpand("line_items")
+
+	cs, _ := session.Get(sessionId, params)
+
+	// Check the Checkout Session's payment_status property
+	// to determine if fulfillment should be performed
+	if cs.PaymentStatus != stripe.CheckoutSessionPaymentStatusUnpaid {
+		logger.StdOut.Println("Fulfilling Checkout Session " + sessionId)
+		userId := cs.ClientReferenceID
+		userIdObj, err := primitive.ObjectIDFromHex(userId)
+		if err != nil {
+			logger.StdErr.Printf("Error parsing user ID: %v", err)
+			return
+		}
+		if cs.Customer != nil {
+			db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": bson.M{"stripeCustomerId": cs.Customer.ID}})
+		}
+	}
+}
+
+func stripeWebhook(c *gin.Context) {
+	const MaxBodyBytes = int64(65536)
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, MaxBodyBytes)
+
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		logger.StdErr.Printf("Error reading request body: %v", err)
+		c.AbortWithStatus(http.StatusServiceUnavailable)
+		return
+	}
+
+	// Pass the request body and Stripe-Signature header to ConstructEvent, along with the webhook signing key.
+	// Use the secret provided by your webhook endpoint settings or Stripe CLI.
+	endpointSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
+	if endpointSecret == "" {
+		logger.StdErr.Println("STRIPE_WEBHOOK_SECRET not set")
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	event, err := webhook.ConstructEvent(body, c.GetHeader("Stripe-Signature"), endpointSecret)
+
+	if err != nil {
+		logger.StdErr.Printf("Error verifying webhook signature: %v", err)
+		c.AbortWithStatus(http.StatusBadRequest) // Return a 400 error on a bad signature
+		return
+	}
+
+	// Handle the event
+	if event.Type == stripe.EventTypeCheckoutSessionCompleted || event.Type == stripe.EventTypeCheckoutSessionAsyncPaymentSucceeded {
+		var cs stripe.CheckoutSession
+		err := json.Unmarshal(event.Data.Raw, &cs)
+		if err != nil {
+			logger.StdErr.Printf("Error parsing webhook JSON: %v\n", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		logger.StdOut.Printf("Checkout Session %s completed!\n", cs.ID)
+		fulfillCheckout(cs.ID) // Call fulfillCheckout when session is completed
+	}
+
+	c.Status(http.StatusOK) // Return 200 OK to acknowledge receipt of the event
 }

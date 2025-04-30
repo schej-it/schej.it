@@ -90,7 +90,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["featureFlagsLoaded", "pricingPageConversion"]),
+    ...mapState(["featureFlagsLoaded", "pricingPageConversion", "authUser"]),
     formattedPrice() {
       if (!this.price) return ""
       return "$" + (this.price.unit_amount / 100).toFixed(2)
@@ -112,7 +112,8 @@ export default {
     },
     async createCheckoutSession() {
       const res = await post("/stripe/create-checkout-session", {
-        priceID: this.price.id,
+        priceId: this.price.id,
+        userId: this.authUser._id,
       })
       this.checkoutUrl = res.url
     },
