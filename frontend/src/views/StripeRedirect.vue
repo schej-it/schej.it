@@ -18,7 +18,10 @@
           />
           <div class="tw-text-xl tw-font-medium">
             You've upgraded to <br class="tw-block sm:tw-hidden" />
-            Schej Premium!
+            <span
+              class="tw-bg-gradient-to-r tw-from-darkest-green tw-to-light-green tw-bg-clip-text tw-text-transparent"
+              >Schej Premium</span
+            >!
           </div>
           <div>
             <v-btn color="primary" @click="navigateToRedirectUrl">

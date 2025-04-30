@@ -8,7 +8,11 @@
     <v-card class="tw-rounded-lg tw-p-6 sm:tw-p-8">
       <div class="tw-mb-8 tw-flex tw-flex-col tw-items-start tw-gap-4">
         <h2 class="tw-text-xl tw-font-medium">
-          Upgrade to <span class="tw-text-green-600">Schej Premium</span>
+          Upgrade to
+          <span
+            class="tw-bg-gradient-to-r tw-from-darkest-green tw-to-light-green tw-bg-clip-text tw-text-transparent"
+            >Schej Premium</span
+          >
         </h2>
         <div class="tw-mb-4 tw-text-sm tw-font-medium tw-text-dark-gray">
           You've run out of
