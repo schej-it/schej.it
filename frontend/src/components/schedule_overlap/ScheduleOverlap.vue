@@ -280,9 +280,7 @@
                           ]"
                         >
                           <CalendarEventBlock
-                            :blockStyle="
-                              getCalendarEventBlockStyle(calendarEvent)
-                            "
+                            :blockStyle="getTimeBlockStyle(calendarEvent)"
                             :key="calendarEvent.id"
                             :calendarEvent="calendarEvent"
                             :isGroup="isGroup"
@@ -382,10 +380,7 @@
                             v-for="(timeBlock, tb) in overlaidAvailability[d]"
                             :key="tb"
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="{
-                              top: `calc(${timeBlock.hoursOffset} * 4 * 1rem)`,
-                              height: `calc(${timeBlock.hoursLength} * 4 * 1rem)`,
-                            }"
+                            :style="getTimeBlockStyle(timeBlock)"
                             style="pointer-events: none"
                           >
                             <div
@@ -1884,7 +1879,7 @@ export default {
       this.days.forEach((day, d) => {
         overlaidAvailability.push([])
         let curBlockIndex = 0
-        this.times.forEach((time, t) => {
+        const addOverlaidAvailabilityBlocks = (time, t) => {
           const date = this.getDateFromRowCol(t, d)
           if (!date) return
 
@@ -1939,7 +1934,17 @@ export default {
             // Only increment cur block index if block already exists at the current index
             curBlockIndex++
           }
-        })
+        }
+        for (let t = 0; t < this.splitTimes[0].length; ++t) {
+          addOverlaidAvailabilityBlocks(this.splitTimes[0][t], t)
+        }
+        curBlockIndex++
+        for (let t = 0; t < this.splitTimes[1].length; ++t) {
+          addOverlaidAvailabilityBlocks(
+            this.splitTimes[1][t],
+            t + this.splitTimes[0].length
+          )
+        }
       })
       return overlaidAvailability
     },
@@ -2270,28 +2275,28 @@ export default {
       this.$nextTick(() => (this.unsavedChanges = false))
     },
     /** Returns true if the calendar event is in the first split */
-    getIsCalendarEventInFirstSplit(calendarEvent) {
+    getIsTimeBlockInFirstSplit(timeBlock) {
       return (
-        calendarEvent.hoursOffset >= this.splitTimes[0][0].hoursOffset &&
-        calendarEvent.hoursOffset <=
+        timeBlock.hoursOffset >= this.splitTimes[0][0].hoursOffset &&
+        timeBlock.hoursOffset <=
           this.splitTimes[0][this.splitTimes[0].length - 1].hoursOffset
       )
     },
     /** Returns the style for the calendar event block */
-    getCalendarEventBlockStyle(calendarEvent) {
+    getTimeBlockStyle(timeBlock) {
       const style = {}
-      if (this.getIsCalendarEventInFirstSplit(calendarEvent)) {
+      if (this.getIsTimeBlockInFirstSplit(timeBlock)) {
         style.top = `calc(${
-          calendarEvent.hoursOffset - this.splitTimes[0][0].hoursOffset
+          timeBlock.hoursOffset - this.splitTimes[0][0].hoursOffset
         } * 4 * 1rem)`
-        style.height = `calc(${calendarEvent.hoursLength} * 4 * 1rem)`
+        style.height = `calc(${timeBlock.hoursLength} * 4 * 1rem)`
       } else {
         style.top = `calc(${this.splitTimes[0].length} * 1rem + ${
           this.SPLIT_GAP_HEIGHT
         }px + ${
-          calendarEvent.hoursOffset - this.splitTimes[1][0].hoursOffset
+          timeBlock.hoursOffset - this.splitTimes[1][0].hoursOffset
         } * 4 * 1rem)`
-        style.height = `calc(${calendarEvent.hoursLength} * 4 * 1rem)`
+        style.height = `calc(${timeBlock.hoursLength} * 4 * 1rem)`
       }
       return style
     },
@@ -2964,6 +2969,7 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
+              // console.log("mouseover", this.getDateFromRowCol(row, col))
             }
           },
         }
@@ -3136,7 +3142,7 @@ export default {
       // Account for split gap
       if (row > this.splitTimes[0].length) {
         const adjustedRow = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
-        if (adjustedRow > this.splitTimes[0].length) {
+        if (adjustedRow >= this.splitTimes[0].length) {
           // Make sure we don't go to a lesser index
           row = adjustedRow
         }
