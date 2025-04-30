@@ -1938,7 +1938,9 @@ export default {
         for (let t = 0; t < this.splitTimes[0].length; ++t) {
           addOverlaidAvailabilityBlocks(this.splitTimes[0][t], t)
         }
-        curBlockIndex++
+        if (curBlockIndex in overlaidAvailability[d]) {
+          curBlockIndex++
+        }
         for (let t = 0; t < this.splitTimes[1].length; ++t) {
           addOverlaidAvailabilityBlocks(
             this.splitTimes[1][t],
