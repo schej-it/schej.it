@@ -1,13 +1,13 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-
-	"context"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v82"
@@ -26,12 +26,14 @@ func InitStripe(router *gin.RouterGroup) {
 
 	stripeRouter.POST("/create-checkout-session", createCheckoutSession)
 	stripeRouter.GET("/price", getPrice)
+	stripeRouter.POST("/fulfill-checkout", fulfillCheckout)
 	stripeRouter.POST("/webhook", stripeWebhook)
 }
 
 type CheckoutSessionPayload struct {
-	PriceID string `json:"priceId" binding:"required"`
-	UserID  string `json:"userId" binding:"required"`
+	PriceID   string `json:"priceId" binding:"required"`
+	UserID    string `json:"userId" binding:"required"`
+	OriginURL string `json:"originUrl" binding:"required"`
 }
 
 func createCheckoutSession(c *gin.Context) {
@@ -41,7 +43,32 @@ func createCheckoutSession(c *gin.Context) {
 		return
 	}
 
-	domain := utils.GetBaseUrl()
+	originURL := payload.OriginURL
+
+	// Parse the origin URL to easily add query parameters
+	parsedOriginURL, err := url.Parse(originURL)
+	if err != nil {
+		// Fallback to base domain if Referer is invalid
+		logger.StdErr.Printf("Error parsing Referer URL '%s': %v. Falling back to base URL.", originURL, err)
+		parsedOriginURL, _ = url.Parse(utils.GetBaseUrl())
+	}
+
+	// Create success URL
+	successURL := *parsedOriginURL // Make a copy
+	successQuery := successURL.Query()
+	successQuery.Set("upgrade", "success")
+	successURL.RawQuery = successQuery.Encode()
+	successURLStr := successURL.String()
+
+	// Create cancel URL
+	cancelURL := *parsedOriginURL // Make a copy
+	cancelQuery := cancelURL.Query()
+	cancelQuery.Set("upgrade", "cancel")
+	cancelURL.RawQuery = cancelQuery.Encode()
+	cancelURLStr := cancelURL.String()
+
+	logger.StdOut.Println("Creating checkout session", successURLStr, cancelURLStr)
+
 	params := &stripe.CheckoutSessionParams{
 		ClientReferenceID: stripe.String(payload.UserID),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -52,8 +79,8 @@ func createCheckoutSession(c *gin.Context) {
 			},
 		},
 		Mode:             stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL:       stripe.String(domain + "/upgrade/success?session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:        stripe.String(domain + "/upgrade?canceled=true"),
+		SuccessURL:       stripe.String(successURLStr + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:        stripe.String(cancelURLStr),
 		AutomaticTax:     &stripe.CheckoutSessionAutomaticTaxParams{Enabled: stripe.Bool(true)},
 		CustomerCreation: stripe.String(string(stripe.CheckoutSessionCustomerCreationAlways)),
 		// Provide the Customer ID (for example, cus_1234) for an existing customer to associate it with this session
@@ -96,7 +123,21 @@ func getPrice(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"price": result})
 }
 
-func fulfillCheckout(sessionId string) {
+type FulfillCheckoutPayload struct {
+	SessionID string `json:"sessionId" binding:"required"`
+}
+
+func fulfillCheckout(c *gin.Context) {
+	var payload FulfillCheckoutPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		return
+	}
+
+	_fulfillCheckout(payload.SessionID)
+}
+
+func _fulfillCheckout(sessionId string) {
 	// TODO: Make this function safe to run multiple times,
 	// even concurrently, with the same session ID
 
@@ -162,7 +203,7 @@ func stripeWebhook(c *gin.Context) {
 			return
 		}
 		logger.StdOut.Printf("Checkout Session %s completed!\n", cs.ID)
-		fulfillCheckout(cs.ID) // Call fulfillCheckout when session is completed
+		_fulfillCheckout(cs.ID) // Call fulfillCheckout when session is completed
 	}
 
 	c.Status(http.StatusOK) // Return 200 OK to acknowledge receipt of the event
