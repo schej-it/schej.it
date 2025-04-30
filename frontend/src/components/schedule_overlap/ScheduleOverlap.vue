@@ -1619,7 +1619,7 @@ export default {
       )
       const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
 
-      if (localEndTime < localStartTime) {
+      if (localEndTime < localStartTime && localEndTime !== 0) {
         for (let i = 0; i < localEndTime; ++i) {
           splitTimes[0].push({
             hoursOffset: this.event.duration - (localEndTime - i),
@@ -2287,7 +2287,8 @@ export default {
     /** Returns the style for the calendar event block */
     getTimeBlockStyle(timeBlock) {
       const style = {}
-      if (this.getIsTimeBlockInFirstSplit(timeBlock)) {
+      const hasSecondSplit = this.splitTimes[1].length > 0
+      if (!hasSecondSplit || this.getIsTimeBlockInFirstSplit(timeBlock)) {
         style.top = `calc(${
           timeBlock.hoursOffset - this.splitTimes[0][0].hoursOffset
         } * 4 * 1rem)`
