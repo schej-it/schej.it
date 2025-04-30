@@ -1493,15 +1493,23 @@ export default {
     },
     scheduledEventStyle() {
       const style = {}
-      let top, height
+      let top, height, isSecondSplit
       if (this.dragging) {
         top = this.dragStart.row
         height = this.dragCur.row - this.dragStart.row + 1
+        isSecondSplit = this.dragStart.row >= this.splitTimes[0].length
       } else {
         top = this.curScheduledEvent.hoursOffset * 4
         height = this.curScheduledEvent.hoursLength * 4
+        isSecondSplit =
+          this.curScheduledEvent.hoursOffset * 4 >= this.splitTimes[0].length
       }
-      style.top = `calc(${top} * 1rem)`
+
+      if (isSecondSplit) {
+        style.top = `calc(${top} * 1rem + ${this.SPLIT_GAP_HEIGHT}px)`
+      } else {
+        style.top = `calc(${top} * 1rem)`
+      }
       style.height = `calc(${height} * 1rem)`
       return style
     },
