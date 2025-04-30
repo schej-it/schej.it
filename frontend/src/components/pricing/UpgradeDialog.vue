@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { get } from "@/utils"
+import { get, post } from "@/utils"
 import { mapState } from "vuex"
 import { numFreeEvents } from "@/constants"
 
@@ -85,6 +85,7 @@ export default {
     return {
       loaded: false,
       price: null,
+      checkoutUrl: null,
     }
   },
 
@@ -103,13 +104,17 @@ export default {
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
       this.price = res.price
+      await this.createCheckoutSession()
       this.loaded = true
     },
     handleUpgrade() {
-      // TODO: Implement upgrade logic
-      console.log("Upgrade clicked")
-      // Example: Redirect to Stripe checkout
-      // window.location.href = '/stripe/checkout-session?priceId=' + this.price.id;
+      window.location.href = this.checkoutUrl
+    },
+    async createCheckoutSession() {
+      const res = await post("/stripe/create-checkout-session", {
+        priceID: this.price.id,
+      })
+      this.checkoutUrl = res.url
     },
   },
 

@@ -349,7 +349,6 @@ export default {
         this.$posthog.getFeatureFlag("pricing-page-conversion")
       )
       this.setFeatureFlagsLoaded(true)
-      console.log("LOADED FEATURE FLAGS")
     },
   },
 
