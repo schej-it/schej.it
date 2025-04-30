@@ -456,14 +456,20 @@ export const getTimeBlock = (date, hoursOffset, hoursLength) => {
 /**
   Returns an array of a user's calendar events split by date for a given event
 */
-export const splitTimeBlocksByDay = (event, timeBlocks, weekOffset = 0) => {
+export const splitTimeBlocksByDay = (
+  event,
+  timeBlocks,
+  weekOffset = 0,
+  timezoneOffset = null
+) => {
   return processTimeBlocks(
     event.dates,
     event.duration,
     timeBlocks,
     event.type,
     weekOffset,
-    event.startOnMonday
+    event.startOnMonday,
+    timezoneOffset
   )
 }
 
@@ -474,7 +480,8 @@ export const processTimeBlocks = (
   timeBlocks,
   eventType = eventTypes.SPECIFIC_DATES,
   weekOffset = 0,
-  startOnMonday = false
+  startOnMonday = false,
+  timezoneOffset = null
 ) => {
   // Put timeBlocks into the correct format
   timeBlocks = JSON.parse(JSON.stringify(timeBlocks)) // Make a copy so we don't mutate original array
@@ -504,12 +511,12 @@ export const processTimeBlocks = (
 
   // Format array of calendar events by day
   const timeBlocksByDay = []
-  for (const i in dates) {
+  for (let i = 0; i < dates.length; ++i) {
     timeBlocksByDay[i] = []
   }
 
   // Iterate through all dates and add calendar events to array
-  for (const i in dates) {
+  for (let i = 0; i < dates.length; ++i) {
     if (timeBlocks.length == 0) break
 
     const start = new Date(dates[i])
@@ -567,6 +574,72 @@ export const processTimeBlocks = (
 
         // Don't display event if the event is 0 hours long
         if (hoursLength == 0) continue
+
+        // Check if the event goes into the next day
+        if (timezoneOffset) {
+          // Format the UTC date to be in the selected timezone
+          const localDayStart = new Date(
+            start.getTime() - timezoneOffset * 60 * 1000
+          )
+          const localStart = new Date(
+            calendarEvent.startDate.getTime() - timezoneOffset * 60 * 1000
+          )
+          const localEnd = new Date(
+            calendarEvent.endDate.getTime() - timezoneOffset * 60 * 1000
+          )
+          if (localStart.getUTCDate() !== localEnd.getUTCDate()) {
+            // The event goes into the next day. Split the event into two time blocks
+            let splitDate = new Date(localStart)
+            splitDate.setUTCDate(splitDate.getUTCDate() + 1)
+            splitDate.setUTCHours(0, 0, 0, 0)
+            splitDate.setTime(splitDate.getTime() + timezoneOffset * 60 * 1000)
+            const firstTimeBlock = {
+              ...calendarEvent,
+              id: calendarEvent.id + "-1",
+              endDate: splitDate,
+              hoursOffset: hoursOffset,
+              hoursLength: hoursLength,
+            }
+            const firstHoursLength =
+              (firstTimeBlock.endDate.getTime() -
+                firstTimeBlock.startDate.getTime()) /
+              (1000 * 60 * 60)
+            const secondTimeBlock = {
+              ...calendarEvent,
+              id: calendarEvent.id + "-2",
+              startDate: splitDate,
+              hoursOffset: hoursOffset + firstHoursLength,
+              hoursLength: hoursLength - firstHoursLength,
+            }
+            const secondHoursLength =
+              (secondTimeBlock.endDate.getTime() -
+                secondTimeBlock.startDate.getTime()) /
+              (1000 * 60 * 60)
+            timeBlocksByDay[i].push({
+              ...firstTimeBlock,
+              hoursOffset: hoursOffset,
+              hoursLength: firstHoursLength,
+            })
+            if (i + 1 < dates.length) {
+              timeBlocksByDay[i + 1].push({
+                ...secondTimeBlock,
+                hoursOffset: hoursOffset + firstHoursLength,
+                hoursLength: secondHoursLength,
+              })
+            }
+            continue
+          } else if (localDayStart.getUTCDate() !== localStart.getUTCDate()) {
+            // The event starts on the next day. move the event to the next day
+            if (i + 1 < dates.length) {
+              timeBlocksByDay[i + 1].push({
+                ...calendarEvent,
+                hoursOffset,
+                hoursLength,
+              })
+            }
+            continue
+          }
+        }
 
         timeBlocksByDay[i].push({
           ...calendarEvent,

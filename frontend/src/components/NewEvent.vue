@@ -421,7 +421,7 @@ export default {
     selectedDays: [],
     selectedDaysOfWeek: [],
     startOnMonday: false,
-    notificationsEnabled: false,
+    notificationsEnabled: true,
 
     daysOnly: false,
     daysOnlyOptions: Object.freeze([
@@ -531,7 +531,7 @@ export default {
       this.endTime = 17
       this.selectedDays = []
       this.selectedDaysOfWeek = []
-      this.notificationsEnabled = false
+      this.notificationsEnabled = true
       this.daysOnly = false
       this.selectedDateOption = "Specific dates"
       this.emails = []
@@ -609,7 +609,9 @@ export default {
         name: this.name,
         duration: duration,
         dates: dates,
-        notificationsEnabled: this.notificationsEnabled,
+        notificationsEnabled: !this.authUser
+          ? false
+          : this.notificationsEnabled,
         blindAvailabilityEnabled: this.blindAvailabilityEnabled,
         daysOnly: this.daysOnly,
         remindees: this.emails,
@@ -624,7 +626,9 @@ export default {
         eventName: this.name,
         eventDuration: duration,
         eventDates: JSON.stringify(dates),
-        eventNotificationsEnabled: this.notificationsEnabled,
+        eventNotificationsEnabled: !this.authUser
+          ? false
+          : this.notificationsEnabled,
         eventBlindAvailabilityEnabled: this.blindAvailabilityEnabled,
         eventDaysOnly: this.daysOnly,
         eventRemindees: this.emails,

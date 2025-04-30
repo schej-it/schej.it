@@ -122,13 +122,34 @@
                 class="-tw-mt-[8px] sm:tw-ml-0"
               >
                 <div
-                  v-for="(time, i) in times"
+                  v-for="(time, i) in splitTimes[0]"
                   :key="i"
                   class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
                 >
                   {{ time.text }}
                 </div>
               </div>
+
+              <template v-if="splitTimes[1].length > 0">
+                <div
+                  :style="{
+                    height: `${SPLIT_GAP_HEIGHT}px`,
+                  }"
+                ></div>
+                <div
+                  v-if="splitTimes[1].length > 0"
+                  :class="calendarOnly ? '' : '-tw-ml-3'"
+                  class="sm:tw-ml-0"
+                >
+                  <div
+                    v-for="(time, i) in splitTimes[1]"
+                    :key="i"
+                    class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                  >
+                    {{ time.text }}
+                  </div>
+                </div>
+              </template>
             </div>
 
             <!-- Middle section -->
@@ -197,7 +218,11 @@
                         "
                       >
                         <!-- Timeslots -->
-                        <div v-for="(_, t) in times" :key="t" class="tw-w-full">
+                        <div
+                          v-for="(_, t) in splitTimes[0]"
+                          :key="`${d}-${t}-0`"
+                          class="tw-w-full"
+                        >
                           <div
                             class="timeslot tw-h-4"
                             :class="
@@ -210,60 +235,62 @@
                           ></div>
                         </div>
 
+                        <template v-if="splitTimes[1].length > 0">
+                          <div
+                            :style="{
+                              height: `${SPLIT_GAP_HEIGHT}px`,
+                            }"
+                          ></div>
+                          <div
+                            v-for="(_, t) in splitTimes[1]"
+                            :key="`${d}-${t}-1`"
+                            class="tw-w-full"
+                          >
+                            <div
+                              class="timeslot tw-h-4"
+                              :class="
+                                timeslotClassStyle[
+                                  d * times.length + t + splitTimes[0].length
+                                ]?.class
+                              "
+                              :style="
+                                timeslotClassStyle[
+                                  d * times.length + t + splitTimes[0].length
+                                ]?.style
+                              "
+                              v-on="
+                                timeslotVon[
+                                  d * times.length + t + splitTimes[0].length
+                                ]
+                              "
+                            ></div>
+                          </div>
+                        </template>
+
                         <!-- Calendar events -->
-                        <div
+                        <template
                           v-if="
                             !loadingCalendarEvents &&
                             (editing ||
                               alwaysShowCalendarEvents ||
                               showCalendarEvents)
                           "
+                          v-for="calendarEvent in calendarEventsByDay[
+                            d + page * maxDaysPerPage
+                          ]"
                         >
-                          <transition
-                            :name="isGroup ? '' : 'fade-transition'"
-                            v-for="event in calendarEventsByDay[
-                              d + page * maxDaysPerPage
-                            ]"
-                            :key="event.id"
-                            appear
-                          >
-                            <div
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="{
-                                top: `calc(${event.hoursOffset} * 4 * 1rem)`,
-                                height: `calc(${event.hoursLength} * 4 * 1rem)`,
-                              }"
-                              style="pointer-events: none"
-                            >
-                              <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-p-1 tw-text-xs"
-                                :class="
-                                  event.free
-                                    ? isGroup && !editing
-                                      ? 'tw-border-white tw-bg-light-blue tw-opacity-50'
-                                      : 'tw-border-dashed tw-border-blue'
-                                    : isGroup && !editing
-                                    ? 'tw-border-white tw-bg-light-blue'
-                                    : 'tw-border-blue'
-                                "
-                              >
-                                <div
-                                  :class="`tw-text-${
-                                    isGroup &&
-                                    state !== states.EDIT_AVAILABILITY
-                                      ? 'white'
-                                      : noEventNames
-                                      ? 'dark-gray'
-                                      : 'blue'
-                                  }`"
-                                  class="ph-no-capture tw-font-medium"
-                                >
-                                  {{ noEventNames ? "BUSY" : event.summary }}
-                                </div>
-                              </div>
-                            </div>
-                          </transition>
-                        </div>
+                          <CalendarEventBlock
+                            :blockStyle="getTimeBlockStyle(calendarEvent)"
+                            :key="calendarEvent.id"
+                            :calendarEvent="calendarEvent"
+                            :isGroup="isGroup"
+                            :isEditingAvailability="
+                              state === states.EDIT_AVAILABILITY
+                            "
+                            :noEventNames="noEventNames"
+                            :transitionName="isGroup ? '' : 'fade-transition'"
+                          />
+                        </template>
 
                         <!-- Scheduled event -->
                         <div v-if="state === states.SCHEDULE_EVENT">
@@ -353,10 +380,7 @@
                             v-for="(timeBlock, tb) in overlaidAvailability[d]"
                             :key="tb"
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="{
-                              top: `calc(${timeBlock.hoursOffset} * 4 * 1rem)`,
-                              height: `calc(${timeBlock.hoursLength} * 4 * 1rem)`,
-                            }"
+                            :style="getTimeBlockStyle(timeBlock)"
                             style="pointer-events: none"
                           >
                             <div
@@ -917,6 +941,7 @@ import utcPlugin from "dayjs/plugin/utc"
 import timezonePlugin from "dayjs/plugin/timezone"
 import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
 import BufferTimeSwitch from "./BufferTimeSwitch.vue"
+import CalendarEventBlock from "./CalendarEventBlock.vue" // Added import
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -1007,6 +1032,7 @@ export default {
         ADD: "add",
         REMOVE: "remove",
       },
+      SPLIT_GAP_HEIGHT: 40,
       timeslot: {
         width: 0,
         height: 0,
@@ -1152,7 +1178,8 @@ export default {
       const calendarEventsByDay = splitTimeBlocksByDay(
         this.event,
         eventsCopy,
-        this.weekOffset
+        this.weekOffset,
+        this.timezoneOffset
       )
 
       return calendarEventsByDay
@@ -1169,7 +1196,8 @@ export default {
           userIdToEventsByDay[userId] = splitTimeBlocksByDay(
             this.event,
             this.calendarAvailabilities[userId],
-            this.weekOffset
+            this.weekOffset,
+            this.timezoneOffset
           )
         }
       }
@@ -1433,15 +1461,23 @@ export default {
     },
     scheduledEventStyle() {
       const style = {}
-      let top, height
+      let top, height, isSecondSplit
       if (this.dragging) {
         top = this.dragStart.row
         height = this.dragCur.row - this.dragStart.row + 1
+        isSecondSplit = this.dragStart.row >= this.splitTimes[0].length
       } else {
         top = this.curScheduledEvent.hoursOffset * 4
         height = this.curScheduledEvent.hoursLength * 4
+        isSecondSplit =
+          this.curScheduledEvent.hoursOffset * 4 >= this.splitTimes[0].length
       }
-      style.top = `calc(${top} * 1rem)`
+
+      if (isSecondSplit) {
+        style.top = `calc(${top} * 1rem + ${this.SPLIT_GAP_HEIGHT}px)`
+      } else {
+        style.top = `calc(${top} * 1rem)`
+      }
       style.height = `calc(${height} * 1rem)`
       return style
     },
@@ -1565,8 +1601,67 @@ export default {
 
       return max
     },
+    /**
+     * Returns a two dimensional array of times
+     * IF endTime < startTime:
+     * the first element is an array of times between 12am and end time and the second element is an array of times between start time and 12am
+     * ELSE:
+     * the first element is an array of times between start time and end time. the second element is an empty array
+     * */
+    splitTimes() {
+      const splitTimes = [[], []]
+
+      const utcStartTime = this.event.startTime
+      const utcEndTime = this.event.startTime + this.event.duration
+      const localStartTime = utcTimeToLocalTime(
+        utcStartTime,
+        this.timezoneOffset
+      )
+      const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
+
+      if (localEndTime < localStartTime) {
+        for (let i = 0; i < localEndTime; ++i) {
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i),
+            text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i) + 0.25,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i) + 0.5,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - (localEndTime - i) + 0.75,
+          })
+        }
+        for (let i = 0; i < 24 - localStartTime; ++i) {
+          splitTimes[1].push({
+            hoursOffset: i,
+            text: timeNumToTimeText(
+              localStartTime + i,
+              this.timeType === timeTypes.HOUR12
+            ),
+          })
+          splitTimes[1].push({
+            hoursOffset: i + 0.25,
+          })
+          splitTimes[1].push({
+            hoursOffset: i + 0.5,
+          })
+          splitTimes[1].push({
+            hoursOffset: i + 0.75,
+          })
+        }
+      } else {
+        splitTimes[0] = this.times
+        splitTimes[1] = []
+      }
+
+      return splitTimes
+    },
+    /** Returns the times that are encompassed by startTime and endTime */
     times() {
-      /* Returns the times that are encompassed by startTime and endTime */
       const times = []
 
       for (let i = 0; i < this.event.duration; ++i) {
@@ -1704,9 +1799,20 @@ export default {
       const classStyles = []
       for (let d = 0; d < this.days.length; ++d) {
         const day = this.days[d]
-        for (let t = 0; t < this.times.length; ++t) {
-          const time = this.times[t]
+        for (let t = 0; t < this.splitTimes[0].length; ++t) {
+          const time = this.splitTimes[0][t]
           classStyles.push(this.getTimeTimeslotClassStyle(day, time, d, t))
+        }
+        for (let t = 0; t < this.splitTimes[1].length; ++t) {
+          const time = this.splitTimes[1][t]
+          classStyles.push(
+            this.getTimeTimeslotClassStyle(
+              day,
+              time,
+              d,
+              t + this.splitTimes[0].length
+            )
+          )
         }
       }
       return classStyles
@@ -1773,8 +1879,10 @@ export default {
       this.days.forEach((day, d) => {
         overlaidAvailability.push([])
         let curBlockIndex = 0
-        this.times.forEach((time, t) => {
-          const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
+        const addOverlaidAvailabilityBlocks = (time, t) => {
+          const date = this.getDateFromRowCol(t, d)
+          if (!date) return
+
           const dragAdd =
             this.dragging &&
             this.inDragRange(t, d) &&
@@ -1826,7 +1934,19 @@ export default {
             // Only increment cur block index if block already exists at the current index
             curBlockIndex++
           }
-        })
+        }
+        for (let t = 0; t < this.splitTimes[0].length; ++t) {
+          addOverlaidAvailabilityBlocks(this.splitTimes[0][t], t)
+        }
+        if (curBlockIndex in overlaidAvailability[d]) {
+          curBlockIndex++
+        }
+        for (let t = 0; t < this.splitTimes[1].length; ++t) {
+          addOverlaidAvailabilityBlocks(
+            this.splitTimes[1][t],
+            t + this.splitTimes[0].length
+          )
+        }
       })
       return overlaidAvailability
     },
@@ -1851,17 +1971,39 @@ export default {
     //#region Date
     // -----------------------------------
 
-    /** Returns a date object from the dayindex and timeindex given */
-    getDateFromDayTimeIndex(dayIndex, timeIndex) {
-      return getDateHoursOffset(
-        this.days[dayIndex].dateObject,
-        this.times[timeIndex].hoursOffset
-      )
-    },
-
     /** Returns a date object from the dayindex and hoursoffset given */
     getDateFromDayHoursOffset(dayIndex, hoursOffset) {
       return getDateHoursOffset(this.days[dayIndex].dateObject, hoursOffset)
+    },
+    /** Returns a date object from the row and column given on the current page */
+    getDateFromRowCol(row, col) {
+      if (this.event.daysOnly) {
+        return this.monthDays[row * 7 + col]?.dateObject
+      } else {
+        return this.getDateFromDayTimeIndex(
+          this.maxDaysPerPage * this.page + col,
+          row
+        )
+      }
+    },
+    /** Returns a date object from the day index and time index given */
+    getDateFromDayTimeIndex(dayIndex, timeIndex) {
+      const hasSecondSplit = this.splitTimes[1].length > 0
+      const isFirstSplit = timeIndex < this.splitTimes[0].length
+      const time = isFirstSplit
+        ? this.splitTimes[0][timeIndex]
+        : this.splitTimes[1][timeIndex - this.splitTimes[0].length]
+      let adjustedDayIndex = dayIndex
+      if (hasSecondSplit) {
+        if (isFirstSplit) {
+          adjustedDayIndex = dayIndex - 1
+        } else if (dayIndex === this.event.dates.length - 1) {
+          return null
+        }
+      }
+      const date = this.allDays[adjustedDayIndex]?.dateObject
+      if (!date || !time) return null
+      return getDateHoursOffset(date, time.hoursOffset)
     },
     //#endregion
 
@@ -2090,11 +2232,11 @@ export default {
         return
       }
 
+      const date = this.getDateFromRowCol(row, col)
+      if (!date) return
+
       // Update current timeslot availability to show who is available for the given timeslot
-      const available =
-        this.responsesFormatted.get(
-          this.getDateFromRowCol(row, col).getTime()
-        ) ?? new Set()
+      const available = this.responsesFormatted.get(date.getTime()) ?? new Set()
       for (const respondent of this.respondents) {
         if (available.has(respondent._id)) {
           this.curTimeslotAvailability[respondent._id] = true
@@ -2133,6 +2275,32 @@ export default {
         new Set(this.parsedResponses[id]?.availability) ?? new Set()
       this.ifNeeded = new Set(this.parsedResponses[id]?.ifNeeded) ?? new Set()
       this.$nextTick(() => (this.unsavedChanges = false))
+    },
+    /** Returns true if the calendar event is in the first split */
+    getIsTimeBlockInFirstSplit(timeBlock) {
+      return (
+        timeBlock.hoursOffset >= this.splitTimes[0][0].hoursOffset &&
+        timeBlock.hoursOffset <=
+          this.splitTimes[0][this.splitTimes[0].length - 1].hoursOffset
+      )
+    },
+    /** Returns the style for the calendar event block */
+    getTimeBlockStyle(timeBlock) {
+      const style = {}
+      if (this.getIsTimeBlockInFirstSplit(timeBlock)) {
+        style.top = `calc(${
+          timeBlock.hoursOffset - this.splitTimes[0][0].hoursOffset
+        } * 4 * 1rem)`
+        style.height = `calc(${timeBlock.hoursLength} * 4 * 1rem)`
+      } else {
+        style.top = `calc(${this.splitTimes[0].length} * 1rem + ${
+          this.SPLIT_GAP_HEIGHT
+        }px + ${
+          timeBlock.hoursOffset - this.splitTimes[1][0].hoursOffset
+        } * 4 * 1rem)`
+        style.height = `calc(${timeBlock.hoursLength} * 4 * 1rem)`
+      }
+      return style
     },
     /** Returns a set containing the available times based on the given calendar events object */
     getAvailabilityFromCalendarEvents({
@@ -2201,10 +2369,10 @@ export default {
           duration
         )
 
-        for (const time of this.times) {
-          // Check if there exists a calendar event that overlaps [time, time+0.25]
-          let startDate = getDateHoursOffset(date, time.hoursOffset)
-          const endDate = getDateHoursOffset(date, time.hoursOffset + 0.25)
+        for (let j = 0; j < this.times.length; ++j) {
+          const startDate = this.getDateFromRowCol(j, i)
+          if (!startDate) continue
+          const endDate = getDateHoursOffset(startDate, 0.25)
 
           // Working hours
           if (calendarOptions.workingHours.enabled) {
@@ -2216,6 +2384,7 @@ export default {
             }
           }
 
+          // Check if there exists a calendar event that overlaps [startDate, endDate]
           const index = calendarEventsByDay[i].findIndex((e) => {
             const startDateBuffered = new Date(
               e.startDate.getTime() - bufferTimeInMS
@@ -2463,12 +2632,14 @@ export default {
     },
     /** Returns a class string and style object for the given time timeslot div */
     getTimeTimeslotClassStyle(day, time, d, t) {
-      const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
       const row = t
       const col = d
+      const date = this.getDateFromRowCol(row, col)
       const classStyle = this.getTimeslotClassStyle(date, row, col)
 
       // Add time timeslot specific stuff
+      const isFirstSplit = t < this.splitTimes[0].length
+      const isDisabled = !date
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
@@ -2479,7 +2650,8 @@ export default {
       if (
         (this.respondents.length > 0 || this.editing) &&
         this.curTimeslot.row === row &&
-        this.curTimeslot.col === col
+        this.curTimeslot.col === col &&
+        !isDisabled
       ) {
         // Dashed border for currently selected timeslot
         classStyle.class +=
@@ -2498,15 +2670,31 @@ export default {
         if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
         if (col === this.days.length - 1)
           classStyle.class += "tw-border-r-gray "
-        if (row === 0) classStyle.class += "tw-border-t tw-border-t-gray "
-        if (row === this.times.length - 1)
+        if (isFirstSplit && row === 0)
+          classStyle.class += "tw-border-t tw-border-t-gray "
+        if (!isFirstSplit && row === this.splitTimes[0].length)
+          classStyle.class += "tw-border-t tw-border-t-gray "
+        if (isFirstSplit && row === this.splitTimes[0].length - 1)
+          classStyle.class += "tw-border-b tw-border-b-gray "
+        if (
+          !isFirstSplit &&
+          row === this.splitTimes[0].length + this.splitTimes[1].length - 1
+        )
           classStyle.class += "tw-border-b tw-border-b-gray "
 
-        if (this.state === this.states.EDIT_AVAILABILITY) {
+        if (
+          this.state === this.states.EDIT_AVAILABILITY ||
+          this.state === this.states.SINGLE_AVAILABILITY
+        ) {
           classStyle.class += "tw-border-[#999999] "
         } else {
           classStyle.class += "tw-border-[#DDDDDD99] "
         }
+      }
+
+      // Edit fill color and border color if day is not interactable
+      if (isDisabled) {
+        classStyle.class += "tw-bg-off-white tw-border-off-white "
       }
 
       // Change default red:
@@ -2520,6 +2708,7 @@ export default {
     getTimeslotClassStyle(date, row, col) {
       let c = ""
       const s = {}
+      if (!date) return { class: c, style: s }
 
       const timeslotRespondents =
         this.responsesFormatted.get(date.getTime()) ?? new Set()
@@ -2570,6 +2759,8 @@ export default {
           } else {
             s.backgroundColor = "#00994C88"
           }
+        } else {
+          s.backgroundColor = "#E523230D"
         }
       }
 
@@ -2780,6 +2971,7 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
+              // console.log("mouseover", this.getDateFromRowCol(row, col))
             }
           },
         }
@@ -2948,22 +3140,21 @@ export default {
       const { width, height } = this.timeslot
       let col = Math.floor(x / width)
       let row = Math.floor(y / height)
+
+      // Account for split gap
+      if (row > this.splitTimes[0].length) {
+        const adjustedRow = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
+        if (adjustedRow >= this.splitTimes[0].length) {
+          // Make sure we don't go to a lesser index
+          row = adjustedRow
+        }
+      }
+
       row = this.clampRow(row)
       col = this.clampCol(col)
       return {
         row,
         col,
-      }
-    },
-    getDateFromRowCol(row, col) {
-      if (this.event.daysOnly) {
-        return this.monthDays[row * 7 + col]?.dateObject
-      } else {
-        if (!this.days[col] || !this.times[row]) return null
-        return getDateHoursOffset(
-          this.days[col].dateObject,
-          this.times[row].hoursOffset
-        )
       }
     },
     endDrag() {
@@ -3000,14 +3191,14 @@ export default {
         for (let r = rowStart; r != rowMax; r += rowInc) {
           for (let c = colStart; c != colMax; c += colInc) {
             const date = this.getDateFromRowCol(r, c)
+            if (!date) continue
 
-            // Don't add to availability set if month day is not included
-            if (
-              this.event.daysOnly &&
-              (!this.monthDayIncluded.get(date.getTime()) ||
-                !this.inDragRange(r, c))
-            ) {
-              continue
+            if (this.event.daysOnly) {
+              // Don't add to availability set if month day is not included
+              const isMonthDayIncluded =
+                this.monthDayIncluded.get(date.getTime()) &&
+                this.inDragRange(r, c)
+              if (!isMonthDayIncluded) continue
             }
 
             if (this.dragType === this.DRAG_TYPES.ADD) {
@@ -3047,9 +3238,7 @@ export default {
                 this.manualAvailability[startDateOfDay.getTime()] = new Set()
 
                 // Add the existing calendar availabilities
-                const existingAvailability = this.getAvailabilityForDate(
-                  this.days[c].dateObject
-                )
+                const existingAvailability = this.getAvailabilityForColumn(c)
                 for (const a of existingAvailability) {
                   const convertedDate = dateToDowDate(
                     this.event.dates,
@@ -3151,7 +3340,7 @@ export default {
       if (!this.dragStart) return
 
       e.preventDefault()
-      const { row, col } = this.getRowColFromXY(
+      let { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
 
@@ -3159,13 +3348,15 @@ export default {
         this.maxSignUpBlockRowSize &&
         row >= this.dragStart.row + this.maxSignUpBlockRowSize
       ) {
-        this.dragCur = {
-          row: this.dragStart.row + this.maxSignUpBlockRowSize - 1,
-          col,
+        row = this.dragStart.row + this.maxSignUpBlockRowSize - 1
+      } else if (this.state === this.states.SCHEDULE_EVENT) {
+        const isFirstSplit = this.dragStart.row < this.splitTimes[0].length
+        if (isFirstSplit) {
+          row = Math.min(row, this.splitTimes[0].length - 1)
         }
-      } else {
-        this.dragCur = { row, col }
       }
+
+      this.dragCur = { row, col }
     },
     startDrag(e) {
       const { row, col } = this.getRowColFromXY(
@@ -3194,6 +3385,7 @@ export default {
       if (e.touches?.length > 1) return // If dragging with more than one finger
 
       const date = this.getDateFromRowCol(row, col)
+      if (!date) return
 
       // Dont start dragging if day not included in daysonly event
       if (this.event.daysOnly && !this.monthDayIncluded.get(date.getTime())) {
@@ -3421,19 +3613,19 @@ export default {
     },
 
     /** Returns a subset of availability for the current date */
-    getAvailabilityForDate(date, availability = [...this.availability]) {
-      const start = new Date(date)
-      const end = new Date(date)
-      end.setHours(end.getHours() + this.event.duration)
-
+    getAvailabilityForColumn(column, availability = [...this.availability]) {
       const subset = new Set()
-      for (const a of availability) {
-        const availableTime = new Date(a).getTime()
-        if (
-          start.getTime() <= availableTime &&
-          availableTime <= end.getTime()
-        ) {
-          subset.add(availableTime)
+      const availabilitySet = new Set(availability)
+      for (
+        let r = 0;
+        r < this.splitTimes[0].length + this.splitTimes[1].length;
+        ++r
+      ) {
+        const date = this.getDateFromRowCol(r, column)
+        if (!date) continue
+
+        if (availabilitySet.has(date.getTime())) {
+          subset.add(date.getTime())
         }
       }
 
@@ -3765,6 +3957,7 @@ export default {
     SignUpBlock,
     SignUpCalendarBlock,
     SignUpBlocksList,
+    CalendarEventBlock, // Added component registration
   },
 }
 </script>
