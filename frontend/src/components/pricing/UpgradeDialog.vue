@@ -34,9 +34,17 @@
         >
           One-time payment
         </div>
-        <div class="tw-font-medium">
-          <span class="tw-mr-1 tw-text-4xl">{{ formattedPrice }}</span>
-          <span class="tw-text-base">for lifetime access</span>
+        <div class="tw-relative">
+          <div class="tw-font-medium">
+            <span class="tw-mr-1 tw-text-4xl">{{ formattedPrice }}</span>
+            <span class="tw-text-base">for lifetime access</span>
+          </div>
+          <v-fade-transition>
+            <div
+              v-if="!loaded"
+              class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
+            ></div>
+          </v-fade-transition>
         </div>
         <ul
           class="tw-inline-block tw-space-y-0.5 tw-p-0 tw-text-sm tw-font-medium tw-text-very-dark-gray"

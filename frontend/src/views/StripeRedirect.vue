@@ -2,13 +2,23 @@
   <div class="tw-flex tw-h-screen tw-items-center tw-justify-center tw-p-4">
     <div class="tw-text-center">
       <v-progress-circular
+        v-if="!fulfillmentComplete"
         indeterminate
         color="primary"
         size="32"
       ></v-progress-circular>
-      <!-- <p v-if="message" class="tw-mt-4 tw-text-lg">{{ message }}</p>
-      <p v-if="error" class="tw-text-red-600 tw-mt-4 tw-text-lg">{{ error }}</p>
-      <p class="tw-text-gray-600 tw-mt-2 tw-text-sm">Redirecting shortly...</p> -->
+      <template v-else>
+        <div class="tw-flex tw-flex-col tw-items-center tw-gap-4">
+          <div class="tw-text-xl tw-font-medium">
+            You've upgraded to Schej Premium!
+          </div>
+          <div>
+            <v-btn color="primary" @click="navigateToRedirectUrl">
+              Continue
+            </v-btn>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -16,13 +26,14 @@
 <script>
 import { get, post } from "@/utils"
 import { mapMutations } from "vuex"
+import confetti from "canvas-confetti"
 
 export default {
   name: "StripeRedirect",
   data() {
     return {
-      message: "Processing your payment information...",
-      error: null,
+      fulfillmentComplete: false,
+      redirectUrl: "",
     }
   },
   methods: {
@@ -31,40 +42,63 @@ export default {
       const urlParams = new URLSearchParams(window.location.search)
       const upgradeStatus = urlParams.get("upgrade")
       const sessionId = urlParams.get("session_id")
-      const redirectUrl = urlParams.get("redirect_url")
+      this.redirectUrl = urlParams.get("redirect_url")
 
-      if (!redirectUrl) {
-        this.error = "Missing redirect information. Cannot proceed."
-        // Consider redirecting to a default safe page like home after a delay
-        setTimeout(() => {
-          this.$router.replace({ name: "home" })
-        }, 3000)
+      if (!this.redirectUrl) {
+        this.$router.replace({ name: "home" })
         return
       }
 
       try {
         if (upgradeStatus === "success" && sessionId) {
-          this.message = "Payment successful! Finalizing your upgrade..."
+          // Fulfill checkout
           await post("/stripe/fulfill-checkout", { sessionId })
-          this.message = "Upgrade complete! Redirecting..."
-          // Optionally, refresh user data if fulfillment changes it
           const user = await get("/user/profile")
           this.setAuthUser(user)
-        } else if (upgradeStatus === "cancel") {
-          this.message = "Upgrade cancelled. Redirecting..."
+          this.fulfillmentComplete = true
+          this.fireConfetti()
         } else {
-          // If neither success nor cancel, maybe it's an unexpected state
-          this.error = "Invalid status received. Redirecting..."
+          // Upgrade cancelled, navigate to redirect url
+          this.navigateToRedirectUrl()
         }
       } catch (err) {
+        // Error during checkout fulfillment, navigate to redirect url
         console.error("Error during Stripe redirect handling:", err)
-        // this.error =
-        //   "An error occurred while processing your upgrade. Please contact support if the problem persists."
-        // Continue to redirect even on error
-      } finally {
-        // Redirect after a short delay to allow user to see message
-        window.location.replace(redirectUrl)
+        this.navigateToRedirectUrl()
       }
+    },
+    navigateToRedirectUrl() {
+      window.location.replace(this.redirectUrl)
+    },
+    fireConfetti() {
+      var duration = 15 * 1000
+      var animationEnd = Date.now() + duration
+      var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
+
+      function randomInRange(min, max) {
+        return Math.random() * (max - min) + min
+      }
+
+      var interval = setInterval(function () {
+        var timeLeft = animationEnd - Date.now()
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval)
+        }
+
+        var particleCount = 50 * (timeLeft / duration)
+        // since particles fall down, start a bit higher than random
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        })
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        })
+      }, 250)
     },
   },
   mounted() {
