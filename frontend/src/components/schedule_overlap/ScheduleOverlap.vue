@@ -3144,7 +3144,11 @@ export default {
 
       // Account for split gap
       if (row > this.splitTimes[0].length) {
-        row = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
+        const adjustedRow = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
+        if (adjustedRow > this.splitTimes[0].length) {
+          // Make sure we don't go to a lesser index
+          row = adjustedRow
+        }
       }
 
       row = this.clampRow(row)
@@ -3339,7 +3343,7 @@ export default {
       if (!this.dragStart) return
 
       e.preventDefault()
-      const { row, col } = this.getRowColFromXY(
+      let { row, col } = this.getRowColFromXY(
         ...Object.values(this.normalizeXY(e))
       )
 
@@ -3347,13 +3351,15 @@ export default {
         this.maxSignUpBlockRowSize &&
         row >= this.dragStart.row + this.maxSignUpBlockRowSize
       ) {
-        this.dragCur = {
-          row: this.dragStart.row + this.maxSignUpBlockRowSize - 1,
-          col,
+        row = this.dragStart.row + this.maxSignUpBlockRowSize - 1
+      } else if (this.state === this.states.SCHEDULE_EVENT) {
+        const isFirstSplit = this.dragStart.row < this.splitTimes[0].length
+        if (isFirstSplit) {
+          row = Math.min(row, this.splitTimes[0].length - 1)
         }
-      } else {
-        this.dragCur = { row, col }
       }
+
+      this.dragCur = { row, col }
     },
     startDrag(e) {
       const { row, col } = this.getRowColFromXY(
