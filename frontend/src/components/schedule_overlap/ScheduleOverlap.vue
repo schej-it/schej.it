@@ -3238,9 +3238,7 @@ export default {
                 this.manualAvailability[startDateOfDay.getTime()] = new Set()
 
                 // Add the existing calendar availabilities
-                const existingAvailability = this.getAvailabilityForDate(
-                  this.days[c].dateObject
-                )
+                const existingAvailability = this.getAvailabilityForColumn(c)
                 for (const a of existingAvailability) {
                   const convertedDate = dateToDowDate(
                     this.event.dates,
@@ -3615,19 +3613,19 @@ export default {
     },
 
     /** Returns a subset of availability for the current date */
-    getAvailabilityForDate(date, availability = [...this.availability]) {
-      const start = new Date(date)
-      const end = new Date(date)
-      end.setHours(end.getHours() + this.event.duration)
-
+    getAvailabilityForColumn(column, availability = [...this.availability]) {
       const subset = new Set()
-      for (const a of availability) {
-        const availableTime = new Date(a).getTime()
-        if (
-          start.getTime() <= availableTime &&
-          availableTime <= end.getTime()
-        ) {
-          subset.add(availableTime)
+      const availabilitySet = new Set(availability)
+      for (
+        let r = 0;
+        r < this.splitTimes[0].length + this.splitTimes[1].length;
+        ++r
+      ) {
+        const date = this.getDateFromRowCol(r, column)
+        if (!date) continue
+
+        if (availabilitySet.has(date.getTime())) {
+          subset.add(date.getTime())
         }
       }
 
