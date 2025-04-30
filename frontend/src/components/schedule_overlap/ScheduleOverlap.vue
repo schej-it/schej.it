@@ -3142,7 +3142,7 @@ export default {
       let row = Math.floor(y / height)
 
       // Account for split gap
-      if (row > this.splitTimes[0].length) {
+      if (!this.event.daysOnly && row > this.splitTimes[0].length) {
         const adjustedRow = Math.floor((y - this.SPLIT_GAP_HEIGHT) / height)
         if (adjustedRow >= this.splitTimes[0].length) {
           // Make sure we don't go to a lesser index
