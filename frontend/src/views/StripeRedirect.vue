@@ -4,17 +4,17 @@
       <v-progress-circular
         indeterminate
         color="primary"
-        size="64"
+        size="32"
       ></v-progress-circular>
-      <p v-if="message" class="tw-mt-4 tw-text-lg">{{ message }}</p>
+      <!-- <p v-if="message" class="tw-mt-4 tw-text-lg">{{ message }}</p>
       <p v-if="error" class="tw-text-red-600 tw-mt-4 tw-text-lg">{{ error }}</p>
-      <p class="tw-text-gray-600 tw-mt-2 tw-text-sm">Redirecting shortly...</p>
+      <p class="tw-text-gray-600 tw-mt-2 tw-text-sm">Redirecting shortly...</p> -->
     </div>
   </div>
 </template>
 
 <script>
-import { post } from "@/utils"
+import { get, post } from "@/utils"
 import { mapMutations } from "vuex"
 
 export default {
@@ -26,7 +26,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["setInfo", "setError", "setAuthUser"]), // Assuming setAuthUser might be needed if fulfillment updates user state
+    ...mapMutations(["setAuthUser"]), // Assuming setAuthUser might be needed if fulfillment updates user state
     async handleRedirect() {
       const urlParams = new URLSearchParams(window.location.search)
       const upgradeStatus = urlParams.get("upgrade")
@@ -50,25 +50,20 @@ export default {
           // Optionally, refresh user data if fulfillment changes it
           const user = await get("/user/profile")
           this.setAuthUser(user)
-          this.setInfo("Upgrade successful!") // Show snackbar on the destination page
         } else if (upgradeStatus === "cancel") {
           this.message = "Upgrade cancelled. Redirecting..."
-          this.setInfo("Upgrade process was cancelled.") // Show snackbar on the destination page
         } else {
           // If neither success nor cancel, maybe it's an unexpected state
           this.error = "Invalid status received. Redirecting..."
         }
       } catch (err) {
         console.error("Error during Stripe redirect handling:", err)
-        this.error =
-          "An error occurred while processing your upgrade. Please contact support if the problem persists."
-        this.setError(this.error) // Show snackbar on the destination page
+        // this.error =
+        //   "An error occurred while processing your upgrade. Please contact support if the problem persists."
         // Continue to redirect even on error
       } finally {
         // Redirect after a short delay to allow user to see message
-        // setTimeout(() => {
-        //   window.location.replace(redirectUrl)
-        // }, 1500) // Adjust delay as needed
+        window.location.replace(redirectUrl)
       }
     },
   },

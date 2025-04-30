@@ -114,7 +114,7 @@ export default {
       const res = await post("/stripe/create-checkout-session", {
         priceId: this.price.id,
         userId: this.authUser._id,
-        originUrl: window.location.origin + window.location.pathname,
+        originUrl: window.location.href,
       })
       this.checkoutUrl = res.url
     },
