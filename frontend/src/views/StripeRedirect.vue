@@ -9,8 +9,16 @@
       ></v-progress-circular>
       <template v-else>
         <div class="tw-flex tw-flex-col tw-items-center tw-gap-4">
+          <v-img
+            alt="schejie heart"
+            src="@/assets/schejie/heart.png"
+            transition="fade-transition"
+            contain
+            class="tw-mb-0 tw-h-[150px] tw-flex-none sm:tw-h-[200px]"
+          />
           <div class="tw-text-xl tw-font-medium">
-            You've upgraded to Schej Premium!
+            You've upgraded to <br class="tw-block sm:tw-hidden" />
+            Schej Premium!
           </div>
           <div>
             <v-btn color="primary" @click="navigateToRedirectUrl">
