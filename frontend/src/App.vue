@@ -3,6 +3,7 @@
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <SignInNotSupportedDialog v-model="webviewDialog" />
+    <SignInDialog v-model="signInDialog" @signIn="_signIn" />
     <NewDialog
       v-model="newDialogOptions.show"
       :type="newDialogOptions.openNewGroup ? 'group' : 'event'"
@@ -224,7 +225,12 @@ html {
 <script>
 import { mapMutations, mapState, mapActions } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "@/utils"
-import { authTypes, eventTypes, numFreeEvents } from "@/constants"
+import {
+  authTypes,
+  calendarTypes,
+  eventTypes,
+  numFreeEvents,
+} from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
@@ -233,6 +239,7 @@ import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
 import UpgradeDialog from "@/components/pricing/UpgradeDialog.vue"
+import SignInDialog from "@/components/SignInDialog.vue"
 
 export default {
   name: "App",
@@ -251,6 +258,7 @@ export default {
     UpvoteRedditSnackbar,
     Logo,
     UpgradeDialog,
+    SignInDialog,
   },
 
   data: () => ({
@@ -264,6 +272,7 @@ export default {
       openNewGroup: false,
     },
     showUpgradeDialog: false,
+    signInDialog: false,
   }),
 
   computed: {
@@ -350,7 +359,15 @@ export default {
           this.webviewDialog = true
           return
         }
-
+        this.signInDialog = true
+      }
+    },
+    _signIn(calendarType) {
+      if (
+        this.$route.name === "event" ||
+        this.$route.name === "group" ||
+        this.$route.name === "signUp"
+      ) {
         let state
         if (this.$route.name === "event") {
           state = {
@@ -363,10 +380,17 @@ export default {
             type: authTypes.GROUP_SIGN_IN,
           }
         }
-        signInGoogle({
-          state,
-          selectAccount: true,
-        })
+        if (calendarType === calendarTypes.GOOGLE) {
+          signInGoogle({
+            state,
+            selectAccount: true,
+          })
+        } else if (calendarType === calendarTypes.OUTLOOK) {
+          signInOutlook({
+            state,
+            selectAccount: true,
+          })
+        }
       }
     },
     setFeatureFlags() {
