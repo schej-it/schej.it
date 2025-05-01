@@ -19,8 +19,8 @@ export default new Vuex.Store({
     // Feature flags
     groupsEnabled: true,
     signUpFormEnabled: false,
-    daysOnlyEnabled: false,
-    overlayAvailabilitiesEnabled: false,
+    daysOnlyEnabled: true,
+    overlayAvailabilitiesEnabled: true,
 
     // Experiments
     pricingPageConversion: "control",

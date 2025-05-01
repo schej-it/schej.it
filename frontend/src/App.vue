@@ -295,10 +295,7 @@ export default {
   methods: {
     ...mapMutations([
       "setAuthUser",
-      "setGroupsEnabled",
       "setSignUpFormEnabled",
-      "setDaysOnlyEnabled",
-      "setOverlayAvailabilitiesEnabled",
       "setPricingPageConversion",
       "setFeatureFlagsLoaded",
     ]),
@@ -367,12 +364,7 @@ export default {
     setFeatureFlags() {
       if (!this.$posthog) return
 
-      this.setGroupsEnabled(this.$posthog.isFeatureEnabled("avail-groups"))
       this.setSignUpFormEnabled(this.$posthog.isFeatureEnabled("sign-up-form"))
-      this.setDaysOnlyEnabled(this.$posthog.isFeatureEnabled("days-only"))
-      this.setOverlayAvailabilitiesEnabled(
-        this.$posthog.isFeatureEnabled("overlay-availabilities")
-      )
       this.setPricingPageConversion(
         this.$posthog.getFeatureFlag("pricing-page-conversion")
       )
