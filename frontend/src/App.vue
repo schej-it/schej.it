@@ -9,6 +9,7 @@
       :contactsPayload="newDialogOptions.contactsPayload"
       :no-tabs="newDialogOptions.eventOnly"
     />
+    <UpgradeDialog v-model="showUpgradeDialog" />
     <UpvoteRedditSnackbar />
     <div
       v-if="showHeader"
@@ -215,7 +216,7 @@ html {
 <script>
 import { mapMutations, mapState } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "@/utils"
-import { authTypes } from "@/constants"
+import { authTypes, eventTypes, numFreeEvents } from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
@@ -223,6 +224,7 @@ import UpvoteRedditSnackbar from "@/components/UpvoteRedditSnackbar.vue"
 import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
+import UpgradeDialog from "@/components/pricing/UpgradeDialog.vue"
 
 export default {
   name: "App",
@@ -240,6 +242,7 @@ export default {
     NewDialog,
     UpvoteRedditSnackbar,
     Logo,
+    UpgradeDialog,
   },
 
   data: () => ({
@@ -252,10 +255,14 @@ export default {
       contactsPayload: {},
       openNewGroup: false,
     },
+    showUpgradeDialog: false,
   }),
 
   computed: {
-    ...mapState(["authUser", "error", "info"]),
+    ...mapState(["authUser", "error", "info", "createdEvents"]),
+    createdEventsNonGroup() {
+      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
+    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -280,6 +287,9 @@ export default {
       }
       return c
     },
+    isPremiumUser() {
+      return Boolean(this.authUser?.stripeCustomerId)
+    },
   },
 
   methods: {
@@ -296,6 +306,14 @@ export default {
       this.scrollY = window.scrollY
     },
     createNew(eventOnly = false) {
+      if (
+        !this.isPremiumUser &&
+        this.createdEventsNonGroup.length >= numFreeEvents
+      ) {
+        this.showUpgradeDialog = true
+        return
+      }
+
       this.newDialogOptions = {
         show: true,
         contactsPayload: {},
@@ -304,6 +322,15 @@ export default {
       }
     },
     setNewDialogOptions(newDialogOptions) {
+      if (
+        newDialogOptions.show &&
+        !this.isPremiumUser &&
+        this.createdEventsNonGroup.length >= numFreeEvents
+      ) {
+        this.showUpgradeDialog = true
+        return
+      }
+
       this.newDialogOptions = newDialogOptions
       this.newDialogOptions.eventOnly = false
     },
