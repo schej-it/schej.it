@@ -12,15 +12,36 @@ import (
 	"schej.it/server/utils"
 )
 
+type SlackbotMessageType string
+
+const (
+	GENERAL      SlackbotMessageType = "general"
+	MONETIZATION SlackbotMessageType = "monetization"
+)
+
 func SendTextMessage(message string) {
-	SendMessage(&commands.Response{Text: message})
+	SendTextMessageWithType(message, GENERAL)
+}
+
+func SendTextMessageWithType(message string, messageType SlackbotMessageType) {
+	SendMessageWithType(&commands.Response{Text: message}, messageType)
 }
 
 func SendMessage(message *commands.Response) {
+	SendMessageWithType(message, GENERAL)
+}
+
+func SendMessageWithType(message *commands.Response, messageType SlackbotMessageType) {
 	var webhookUrl string
 	if utils.IsRelease() {
-		// schej-bot
-		webhookUrl = os.Getenv("SLACK_PROD_WEBHOOK_URL")
+		switch messageType {
+		case GENERAL:
+			// schej-bot
+			webhookUrl = os.Getenv("SLACK_PROD_WEBHOOK_URL")
+		case MONETIZATION:
+			// monetization-bot
+			webhookUrl = os.Getenv("SLACK_MONETIZATION_WEBHOOK_URL")
+		}
 	} else {
 		// schej-bot-dev
 		webhookUrl = os.Getenv("SLACK_DEV_WEBHOOK_URL")

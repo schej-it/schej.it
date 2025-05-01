@@ -30,6 +30,9 @@ type User struct {
 
 	// Calendar options
 	CalendarOptions *CalendarOptions `json:"calendarOptions" bson:"calendarOptions,omitempty"`
+
+	// Stripe customer ID
+	StripeCustomerId *string `json:"stripeCustomerId" bson:"stripeCustomerId,omitempty"`
 }
 
 // Declare the possible types of TokenOrigin

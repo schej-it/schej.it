@@ -17,6 +17,7 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/stripe/stripe-go/v82"
 	"schej.it/server/db"
 	"schej.it/server/logger"
 	"schej.it/server/routes"
@@ -114,6 +115,7 @@ func main() {
 	routes.InitEvents(apiRouter)
 	routes.InitUsers(apiRouter)
 	routes.InitAnalytics(apiRouter)
+	routes.InitStripe(apiRouter)
 	slackbot.InitSlackbot(apiRouter)
 
 	err = filepath.WalkDir("../frontend/dist", func(path string, d fs.DirEntry, err error) error {
@@ -141,6 +143,9 @@ func main() {
 // Load .env variables
 func loadDotEnv() {
 	err := godotenv.Load(".env")
+
+	// Load stripe key
+	stripe.Key = os.Getenv("STRIPE_API_KEY")
 
 	if err != nil {
 		logger.StdErr.Panicln("Error loading .env file")

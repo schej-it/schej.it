@@ -536,7 +536,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError", "showInfo"]),
+    ...mapActions(["showError", "showInfo", "getEvents"]),
     /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
     addAvailability() {
       if (!this.scheduleOverlapComponent) return
@@ -1035,6 +1035,8 @@ export default {
     Promise.allSettled(promises).then(() => {
       this.loading = false
     })
+
+    this.getEvents()
   },
 
   beforeDestroy() {

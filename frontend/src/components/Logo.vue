@@ -4,7 +4,7 @@
     class="shrink tw-cursor-pointer"
     contain
     :src="src"
-    transition="scale-transition"
+    transition="fade-transition"
     :width="width"
   />
 </template>

@@ -14,11 +14,16 @@ export default new Vuex.Store({
     createdEvents: [],
     joinedEvents: [],
 
+    featureFlagsLoaded: false,
+
     // Feature flags
     groupsEnabled: true,
     signUpFormEnabled: false,
-    daysOnlyEnabled: false,
-    overlayAvailabilitiesEnabled: false,
+    daysOnlyEnabled: true,
+    overlayAvailabilitiesEnabled: true,
+
+    // Experiments
+    pricingPageConversion: "control",
   },
   getters: {},
   mutations: {
@@ -40,6 +45,9 @@ export default new Vuex.Store({
       state.joinedEvents = joinedEvents
     },
 
+    setFeatureFlagsLoaded(state, loaded) {
+      state.featureFlagsLoaded = loaded
+    },
     setGroupsEnabled(state, enabled) {
       state.groupsEnabled = enabled
     },
@@ -51,6 +59,9 @@ export default new Vuex.Store({
     },
     setOverlayAvailabilitiesEnabled(state, enabled) {
       state.overlayAvailabilitiesEnabled = enabled
+    },
+    setPricingPageConversion(state, conversion) {
+      state.pricingPageConversion = conversion
     },
   },
   actions: {

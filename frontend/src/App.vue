@@ -9,6 +9,7 @@
       :contactsPayload="newDialogOptions.contactsPayload"
       :no-tabs="newDialogOptions.eventOnly"
     />
+    <UpgradeDialog v-model="showUpgradeDialog" />
     <UpvoteRedditSnackbar />
     <div
       v-if="showHeader"
@@ -21,6 +22,14 @@
         <router-link :to="{ name: 'home' }">
           <Logo type="schej" />
         </router-link>
+        <v-expand-x-transition>
+          <span
+            v-if="isPremiumUser"
+            class="tw-ml-2 tw-cursor-default tw-rounded-md tw-bg-[linear-gradient(-25deg,#0a483d,#00994c,#126045,#0a483d)] tw-px-2 tw-py-1 tw-text-sm tw-font-semibold tw-text-white tw-opacity-80"
+          >
+            Premium
+          </span>
+        </v-expand-x-transition>
 
         <v-spacer />
 
@@ -213,9 +222,9 @@ html {
 </style>
 
 <script>
-import { mapMutations, mapState } from "vuex"
+import { mapMutations, mapState, mapActions } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "@/utils"
-import { authTypes } from "@/constants"
+import { authTypes, eventTypes, numFreeEvents } from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
 import SignInNotSupportedDialog from "@/components/SignInNotSupportedDialog.vue"
@@ -223,6 +232,7 @@ import UpvoteRedditSnackbar from "@/components/UpvoteRedditSnackbar.vue"
 import Logo from "@/components/Logo.vue"
 import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
+import UpgradeDialog from "@/components/pricing/UpgradeDialog.vue"
 
 export default {
   name: "App",
@@ -240,6 +250,7 @@ export default {
     NewDialog,
     UpvoteRedditSnackbar,
     Logo,
+    UpgradeDialog,
   },
 
   data: () => ({
@@ -252,10 +263,14 @@ export default {
       contactsPayload: {},
       openNewGroup: false,
     },
+    showUpgradeDialog: false,
   }),
 
   computed: {
-    ...mapState(["authUser", "error", "info"]),
+    ...mapState(["authUser", "error", "info", "createdEvents"]),
+    createdEventsNonGroup() {
+      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
+    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -280,20 +295,31 @@ export default {
       }
       return c
     },
+    isPremiumUser() {
+      return Boolean(this.authUser?.stripeCustomerId)
+    },
   },
 
   methods: {
     ...mapMutations([
       "setAuthUser",
-      "setGroupsEnabled",
       "setSignUpFormEnabled",
-      "setDaysOnlyEnabled",
-      "setOverlayAvailabilitiesEnabled",
+      "setPricingPageConversion",
+      "setFeatureFlagsLoaded",
     ]),
+    ...mapActions(["getEvents"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
     createNew(eventOnly = false) {
+      if (
+        !this.isPremiumUser &&
+        this.createdEventsNonGroup.length >= numFreeEvents
+      ) {
+        this.showUpgradeDialog = true
+        return
+      }
+
       this.newDialogOptions = {
         show: true,
         contactsPayload: {},
@@ -302,11 +328,24 @@ export default {
       }
     },
     setNewDialogOptions(newDialogOptions) {
+      if (
+        newDialogOptions.show &&
+        !this.isPremiumUser &&
+        this.createdEventsNonGroup.length >= numFreeEvents
+      ) {
+        this.showUpgradeDialog = true
+        return
+      }
+
       this.newDialogOptions = newDialogOptions
       this.newDialogOptions.eventOnly = false
     },
     signIn() {
-      if (this.$route.name === "event" || this.$route.name === "group" || this.$route.name === "signUp") {
+      if (
+        this.$route.name === "event" ||
+        this.$route.name === "group" ||
+        this.$route.name === "signUp"
+      ) {
         if (isWebview(navigator.userAgent)) {
           this.webviewDialog = true
           return
@@ -333,12 +372,11 @@ export default {
     setFeatureFlags() {
       if (!this.$posthog) return
 
-      this.setGroupsEnabled(this.$posthog.isFeatureEnabled("avail-groups"))
       this.setSignUpFormEnabled(this.$posthog.isFeatureEnabled("sign-up-form"))
-      this.setDaysOnlyEnabled(this.$posthog.isFeatureEnabled("days-only"))
-      this.setOverlayAvailabilitiesEnabled(
-        this.$posthog.isFeatureEnabled("overlay-availabilities")
+      this.setPricingPageConversion(
+        this.$posthog.getFeatureFlag("pricing-page-conversion")
       )
+      this.setFeatureFlagsLoaded(true)
     },
   },
 
@@ -362,6 +400,8 @@ export default {
 
     // Event listeners
     window.addEventListener("scroll", this.handleScroll)
+
+    this.getEvents()
   },
 
   mounted() {
@@ -403,11 +443,10 @@ export default {
       handler() {
         if (this.$posthog) {
           // Check feature flags (only if posthog is enabled)
-          this.$posthog?.setPersonPropertiesForFlags({
+          this.$posthog.setPersonPropertiesForFlags({
             email: this.authUser?.email,
           })
-          this.setFeatureFlags()
-          this.$posthog?.onFeatureFlags(() => {
+          this.$posthog.onFeatureFlags(() => {
             this.setFeatureFlags()
           })
         }
