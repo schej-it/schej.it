@@ -443,10 +443,10 @@ export default {
       handler() {
         if (this.$posthog) {
           // Check feature flags (only if posthog is enabled)
-          this.$posthog?.setPersonPropertiesForFlags({
+          this.$posthog.setPersonPropertiesForFlags({
             email: this.authUser?.email,
           })
-          this.$posthog?.onFeatureFlags(() => {
+          this.$posthog.onFeatureFlags(() => {
             this.setFeatureFlags()
           })
         }
