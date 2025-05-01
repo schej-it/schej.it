@@ -224,7 +224,14 @@ html {
 
 <script>
 import { mapMutations, mapState, mapActions } from "vuex"
-import { get, getLocation, isPhone, post, signInGoogle } from "@/utils"
+import {
+  get,
+  getLocation,
+  isPhone,
+  post,
+  signInGoogle,
+  signInOutlook,
+} from "@/utils"
 import {
   authTypes,
   calendarTypes,

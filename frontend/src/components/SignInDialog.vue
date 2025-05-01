@@ -56,14 +56,10 @@
 </template>
 
 <script>
-import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
 import { calendarTypes } from "@/constants"
 
 export default {
   name: "SignInDialog",
-  components: {
-    SignInGoogleBtn,
-  },
   props: {
     value: { type: Boolean, required: true },
   },
