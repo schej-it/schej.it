@@ -172,6 +172,16 @@ export default {
         this.init()
       },
     },
+    value: {
+      handler() {
+        if (this.value) {
+          post("/analytics/upgrade-dialog-viewed", {
+            userId: this.authUser._id,
+            price: this.formattedPrice,
+          })
+        }
+      },
+    },
   },
 }
 </script>
