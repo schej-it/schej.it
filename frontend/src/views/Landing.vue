@@ -260,8 +260,7 @@
 
 <script>
 import LandingPageCalendar from "@/components/landing/LandingPageCalendar.vue"
-import { isPhone, signInGoogle } from "@/utils"
-import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
+import { isPhone, signInGoogle, signInOutlook } from "@/utils"
 import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
@@ -283,7 +282,6 @@ export default {
 
   components: {
     LandingPageCalendar,
-    SignInGoogleBtn,
     FAQ,
     Header,
     NumberBullet,
