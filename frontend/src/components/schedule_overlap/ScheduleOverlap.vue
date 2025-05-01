@@ -1619,7 +1619,7 @@ export default {
       )
       const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
 
-      if (localEndTime < localStartTime && localEndTime !== 0) {
+      if (localEndTime <= localStartTime && localEndTime !== 0) {
         for (let i = 0; i < localEndTime; ++i) {
           splitTimes[0].push({
             hoursOffset: this.event.duration - (localEndTime - i),
