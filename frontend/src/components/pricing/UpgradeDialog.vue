@@ -135,11 +135,18 @@ export default {
   watch: {
     featureFlagsLoaded: {
       handler(newVal) {
-        if (newVal && this.authUser) {
+        if (newVal && this.authUser && !this.loaded) {
           this.fetchPrice()
         }
       },
       immediate: true,
+    },
+    authUser: {
+      handler(newVal) {
+        if (newVal && this.featureFlagsLoaded && !this.loaded) {
+          this.fetchPrice()
+        }
+      },
     },
   },
 }
