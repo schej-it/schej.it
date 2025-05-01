@@ -22,6 +22,14 @@
         <router-link :to="{ name: 'home' }">
           <Logo type="schej" />
         </router-link>
+        <v-expand-x-transition>
+          <span
+            v-if="isPremiumUser"
+            class="tw-ml-2 tw-cursor-default tw-rounded-md tw-bg-[linear-gradient(-25deg,#0a483d,#00994c,#126045,#0a483d)] tw-px-2 tw-py-1 tw-text-sm tw-font-semibold tw-text-white tw-opacity-80"
+          >
+            Premium
+          </span>
+        </v-expand-x-transition>
 
         <v-spacer />
 
