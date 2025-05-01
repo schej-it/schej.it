@@ -214,7 +214,7 @@ html {
 </style>
 
 <script>
-import { mapMutations, mapState } from "vuex"
+import { mapMutations, mapState, mapActions } from "vuex"
 import { get, getLocation, isPhone, post, signInGoogle } from "@/utils"
 import { authTypes, eventTypes, numFreeEvents } from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
@@ -302,6 +302,7 @@ export default {
       "setPricingPageConversion",
       "setFeatureFlagsLoaded",
     ]),
+    ...mapActions(["getEvents"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
@@ -399,6 +400,8 @@ export default {
 
     // Event listeners
     window.addEventListener("scroll", this.handleScroll)
+
+    this.getEvents()
   },
 
   mounted() {
