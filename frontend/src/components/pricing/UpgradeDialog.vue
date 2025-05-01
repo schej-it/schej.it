@@ -141,6 +141,9 @@ export default {
       this.price = res.price
     },
     async handleUpgrade() {
+      this.$posthog.capture("upgrade_clicked", {
+        price: this.formattedPrice,
+      })
       this.loadingCheckoutUrl = true
       try {
         const res = await post("/stripe/create-checkout-session", {
@@ -177,6 +180,9 @@ export default {
         if (this.value) {
           post("/analytics/upgrade-dialog-viewed", {
             userId: this.authUser._id,
+            price: this.formattedPrice,
+          })
+          this.$posthog.capture("upgrade_dialog_viewed", {
             price: this.formattedPrice,
           })
         }
