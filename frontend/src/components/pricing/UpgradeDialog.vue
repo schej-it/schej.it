@@ -5,8 +5,8 @@
     width="400"
     content-class="tw-m-0"
   >
-    <v-card class="tw-rounded-lg tw-p-6 sm:tw-p-8">
-      <div class="tw-mb-8 tw-flex tw-flex-col tw-items-start tw-gap-4">
+    <v-card class="tw-rounded-lg tw-p-6 tw-pb-4 sm:tw-p-8 sm:tw-pb-4">
+      <div class="tw-mb-10 tw-flex tw-flex-col tw-items-start tw-gap-4">
         <h2 class="tw-text-xl tw-font-medium">
           Upgrade to
           <span
@@ -67,6 +67,14 @@
           </li>
         </ul>
       </div>
+      <div class="tw-mb-2 tw-text-center">
+        <div
+          class="tw-cursor-pointer tw-text-xs tw-font-medium tw-text-dark-gray hover:tw-underline"
+          @click="showDonatedDialog = true"
+        >
+          I already donated :)
+        </div>
+      </div>
       <v-btn
         class="tw-mb-0.5"
         color="primary"
@@ -80,6 +88,8 @@
       </v-btn>
       <v-btn text block @click="$emit('input', false)"> Cancel </v-btn>
     </v-card>
+
+    <AlreadyDonatedDialog v-model="showDonatedDialog" />
   </v-dialog>
 </template>
 
@@ -87,10 +97,13 @@
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
 import { numFreeEvents } from "@/constants"
+import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
 
 export default {
   name: "UpgradeDialog",
-
+  components: {
+    AlreadyDonatedDialog,
+  },
   props: {
     value: { type: Boolean, required: true },
   },
@@ -99,6 +112,7 @@ export default {
     return {
       price: null,
       loadingCheckoutUrl: false,
+      showDonatedDialog: false,
     }
   },
 
