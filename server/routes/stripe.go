@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"schej.it/server/db"
 	"schej.it/server/logger"
+	"schej.it/server/slackbot"
 	"schej.it/server/utils"
 )
 
@@ -158,15 +160,31 @@ func _fulfillCheckout(sessionId string) {
 	// to determine if fulfillment should be performed
 	if cs.PaymentStatus != stripe.CheckoutSessionPaymentStatusUnpaid {
 		logger.StdOut.Println("Fulfilling Checkout Session " + sessionId)
-		userId := cs.ClientReferenceID
-		userIdObj, err := primitive.ObjectIDFromHex(userId)
-		if err != nil {
-			logger.StdErr.Printf("Error parsing user ID: %v", err)
-			return
-		}
 		if cs.Customer != nil {
 			logger.StdOut.Println("Setting stripe customer ID", cs.Customer.ID)
-			db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": bson.M{"stripeCustomerId": cs.Customer.ID}})
+
+			// Fetch user from database
+			userId := cs.ClientReferenceID
+			userIdObj, err := primitive.ObjectIDFromHex(userId)
+			if err != nil {
+				logger.StdErr.Printf("Error parsing user ID: %v", err)
+				return
+			}
+			user := db.GetUserById(userId)
+			if user == nil {
+				logger.StdErr.Printf("Error getting user: %v", err)
+				return
+			}
+
+			// Only upgrade the user if they don't already have a Stripe customer ID
+			if user.StripeCustomerId == nil {
+				if cs.LineItems != nil && len(cs.LineItems.Data) > 0 {
+					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
+					message := fmt.Sprintf(":moneybag: %s %s (%s) paid for Schej ($%.2f) :moneybag:", user.FirstName, user.LastName, user.Email, amountTotal)
+					slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
+				}
+				db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": bson.M{"stripeCustomerId": cs.Customer.ID}})
+			}
 		}
 	}
 }

@@ -45,7 +45,7 @@
           </div>
           <v-fade-transition>
             <div
-              v-if="!loaded"
+              v-if="price === null"
               class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
             ></div>
           </v-fade-transition>
@@ -70,8 +70,10 @@
       <v-btn
         class="tw-mb-0.5"
         color="primary"
-        dark
         block
+        :dark="!loadingCheckoutUrl"
+        :disabled="loadingCheckoutUrl"
+        :loading="loadingCheckoutUrl"
         @click="handleUpgrade"
       >
         Upgrade
@@ -83,7 +85,7 @@
 
 <script>
 import { get, post } from "@/utils"
-import { mapState } from "vuex"
+import { mapState, mapActions } from "vuex"
 import { numFreeEvents } from "@/constants"
 
 export default {
@@ -95,9 +97,8 @@ export default {
 
   data() {
     return {
-      loaded: false,
       price: null,
-      checkoutUrl: null,
+      loadingCheckoutUrl: false,
     }
   },
 
@@ -113,39 +114,48 @@ export default {
   },
 
   methods: {
+    ...mapActions(["showError"]),
+    async init() {
+      if (this.featureFlagsLoaded && this.authUser) {
+        if (!this.priceLoaded) {
+          await this.fetchPrice()
+        }
+      }
+    },
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
       this.price = res.price
-      await this.createCheckoutSession()
-      this.loaded = true
     },
-    handleUpgrade() {
-      window.location.href = this.checkoutUrl
-    },
-    async createCheckoutSession() {
-      const res = await post("/stripe/create-checkout-session", {
-        priceId: this.price.id,
-        userId: this.authUser._id,
-        originUrl: window.location.href,
-      })
-      this.checkoutUrl = res.url
+    async handleUpgrade() {
+      this.loadingCheckoutUrl = true
+      try {
+        const res = await post("/stripe/create-checkout-session", {
+          priceId: this.price.id,
+          userId: this.authUser._id,
+          originUrl: window.location.href,
+        })
+        window.location.href = res.url
+      } catch (e) {
+        console.error(e)
+        this.showError(
+          "There was an error generating a checkout url. Please try again later."
+        )
+      } finally {
+        this.loadingCheckoutUrl = false
+      }
     },
   },
 
   watch: {
     featureFlagsLoaded: {
-      handler(newVal) {
-        if (newVal && this.authUser && !this.loaded) {
-          this.fetchPrice()
-        }
+      handler() {
+        this.init()
       },
       immediate: true,
     },
     authUser: {
-      handler(newVal) {
-        if (newVal && this.featureFlagsLoaded && !this.loaded) {
-          this.fetchPrice()
-        }
+      handler() {
+        this.init()
       },
     },
   },
