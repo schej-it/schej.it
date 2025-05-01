@@ -47,7 +47,7 @@
             <div
               class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-left sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
             >
-              <b>Automatically</b> fill in your availability—it’s like When2Meet
+              <b>Automatically</b> fill in your availability—it's like When2Meet
               with Google Calendar integration!
             </div>
           </div>
@@ -209,20 +209,7 @@
     </div>
 
     <!-- Sign in dialog -->
-    <v-dialog v-model="signInDialog" :width="400">
-      <v-card>
-        <v-card-title>Sign in</v-card-title>
-        <v-card-text class="tw-flex tw-flex-col tw-items-center">
-          <SignInGoogleBtn class="tw-mb-4" @click="signInGoogle" />
-          <div class="tw-text-center tw-text-xs">
-            By continuing, you agree to our
-            <router-link class="tw-text-blue" :to="{ name: 'privacy-policy' }"
-              >privacy policy</router-link
-            >
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <SignInDialog v-model="signInDialog" @signIn="_signIn" />
 
     <!-- New event dialog -->
     <NewDialog
@@ -273,8 +260,7 @@
 
 <script>
 import LandingPageCalendar from "@/components/landing/LandingPageCalendar.vue"
-import { isPhone, signInGoogle } from "@/utils"
-import SignInGoogleBtn from "@/components/SignInGoogleBtn.vue"
+import { isPhone, signInGoogle, signInOutlook } from "@/utils"
 import FAQ from "@/components/FAQ.vue"
 import Header from "@/components/Header.vue"
 import NumberBullet from "@/components/NumberBullet.vue"
@@ -284,6 +270,8 @@ import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
 import Logo from "@/components/Logo.vue"
 import { Rive } from "@rive-app/canvas"
 import GithubButton from "vue-github-button"
+import SignInDialog from "@/components/SignInDialog.vue"
+import { calendarTypes } from "@/constants"
 
 export default {
   name: "Landing",
@@ -294,7 +282,6 @@ export default {
 
   components: {
     LandingPageCalendar,
-    SignInGoogleBtn,
     FAQ,
     Header,
     NumberBullet,
@@ -303,6 +290,7 @@ export default {
     LandingPageHeader,
     GithubButton,
     Logo,
+    SignInDialog,
   },
 
   data: () => ({
@@ -386,8 +374,13 @@ export default {
         this.rive.play("wave")
       }
     },
-    signInGoogle() {
-      signInGoogle({ state: null, selectAccount: true })
+    _signIn(calendarType) {
+      if (calendarType === calendarTypes.GOOGLE) {
+        signInGoogle({ state: null, selectAccount: true })
+      } else if (calendarType === calendarTypes.OUTLOOK) {
+        // NOTE: selectAccount is not supported implemented yet for Outlook, maybe add it later
+        signInOutlook({ state: null, selectAccount: true })
+      }
     },
     signIn() {
       this.signInDialog = true
