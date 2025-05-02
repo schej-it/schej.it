@@ -380,7 +380,7 @@ import {
   isIOS,
   isDstObserved,
 } from "@/utils"
-import { mapActions, mapState } from "vuex"
+import { mapActions, mapState, mapMutations } from "vuex"
 
 import NewDialog from "@/components/NewDialog.vue"
 import ScheduleOverlap from "@/components/schedule_overlap/ScheduleOverlap.vue"
@@ -537,6 +537,7 @@ export default {
 
   methods: {
     ...mapActions(["showError", "showInfo", "getEvents"]),
+    ...mapMutations(["setAuthUser"]),
     /** Show choice dialog if not signed in, otherwise, immediately start editing availability */
     addAvailability() {
       if (!this.scheduleOverlapComponent) return
@@ -1036,7 +1037,13 @@ export default {
       this.loading = false
     })
 
-    this.getEvents()
+    get("/user/profile")
+      .then((authUser) => {
+        this.setAuthUser(authUser)
+      })
+      .catch(() => {
+        this.setAuthUser(null)
+      })
   },
 
   beforeDestroy() {

@@ -331,7 +331,7 @@ export default {
     createNew(eventOnly = false) {
       if (
         !this.isPremiumUser &&
-        this.createdEventsNonGroup.length >= numFreeEvents
+        this.authUser?.numEventsCreated >= numFreeEvents
       ) {
         this.showUpgradeDialog = true
         return
@@ -348,7 +348,7 @@ export default {
       if (
         newDialogOptions.show &&
         !this.isPremiumUser &&
-        this.createdEventsNonGroup.length >= numFreeEvents
+        this.authUser?.numEventsCreated >= numFreeEvents
       ) {
         this.showUpgradeDialog = true
         return

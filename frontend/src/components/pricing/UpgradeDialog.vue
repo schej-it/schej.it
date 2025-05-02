@@ -133,7 +133,6 @@
 <script>
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
-import { numFreeEvents } from "@/constants"
 import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
 
 export default {
@@ -156,9 +155,6 @@ export default {
 
   computed: {
     ...mapState(["featureFlagsLoaded", "pricingPageConversion", "authUser"]),
-    numFreeEvents() {
-      return numFreeEvents
-    },
   },
 
   methods: {
