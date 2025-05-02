@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v82"
@@ -106,27 +107,35 @@ func createCheckoutSession(c *gin.Context) {
 
 func getPrice(c *gin.Context) {
 	// Get the experiment query parameter
-	exp := c.Query("exp")
-	priceId := ""
+	// exp := c.Query("exp")
+	oneMonthPriceId := os.Getenv("STRIPE_ONE_MONTH_PRICE_ID")
+	lifetimePriceId := os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 
-	switch exp {
-	case "test2":
-		priceId = os.Getenv("STRIPE_PRICE_ID_2")
-	case "test3":
-		priceId = os.Getenv("STRIPE_PRICE_ID_3")
-	default:
-		priceId = os.Getenv("STRIPE_PRICE_ID_1")
-	}
+	// switch exp {
+	// case "test2":
+	// 	priceId = os.Getenv("STRIPE_PRICE_ID_2")
+	// case "test3":
+	// 	priceId = os.Getenv("STRIPE_PRICE_ID_3")
+	// default:
+	// 	priceId = os.Getenv("STRIPE_PRICE_ID_1")
+	// }
 
 	params := &stripe.PriceParams{}
-	result, err := price.Get(priceId, params)
+	oneMonthResult, err := price.Get(oneMonthPriceId, params)
 	if err != nil {
 		log.Printf("price.Get error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"price": result})
+	lifetimeResult, err := price.Get(lifetimePriceId, params)
+	if err != nil {
+		log.Printf("price.Get error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"oneMonth": oneMonthResult, "lifetime": lifetimeResult})
 }
 
 type FulfillCheckoutPayload struct {
@@ -178,12 +187,25 @@ func _fulfillCheckout(sessionId string) {
 
 			// Only upgrade the user if they don't already have a Stripe customer ID
 			if user.StripeCustomerId == nil {
+				var planExpiration primitive.DateTime
 				if cs.LineItems != nil && len(cs.LineItems.Data) > 0 {
+					priceId := cs.LineItems.Data[0].Price.ID
+					priceDescription := ""
+					if priceId == os.Getenv("STRIPE_ONE_MONTH_PRICE_ID") {
+						priceDescription = "1-month"
+						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0))
+					} else if priceId == os.Getenv("STRIPE_LIFETIME_PRICE_ID") {
+						priceDescription = "lifetime"
+					}
 					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
-					message := fmt.Sprintf(":moneybag: %s %s (%s) paid for Schej ($%.2f) :moneybag:", user.FirstName, user.LastName, user.Email, amountTotal)
+
+					message := fmt.Sprintf(":moneybag: %s %s (%s) paid for Schej ($%.2f, %s) :moneybag:", user.FirstName, user.LastName, user.Email, amountTotal, priceDescription)
 					slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
 				}
-				db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": bson.M{"stripeCustomerId": cs.Customer.ID}})
+
+				user.StripeCustomerId = &cs.Customer.ID
+				user.PlanExpiration = &planExpiration
+				db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": user})
 			}
 		}
 	}
