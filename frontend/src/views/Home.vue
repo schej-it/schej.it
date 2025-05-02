@@ -78,9 +78,9 @@
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
-import { mapState, mapActions } from "vuex"
+import { mapState, mapActions, mapMutations } from "vuex"
 import { eventTypes } from "@/constants"
-import { isPhone } from "@/utils"
+import { isPhone, get } from "@/utils"
 
 export default {
   name: "Home",
@@ -154,6 +154,7 @@ export default {
   },
 
   methods: {
+    ...mapMutations(["setAuthUser"]),
     ...mapActions(["getEvents"]),
     userRespondedToEvent(event) {
       return event.hasResponded ?? false
@@ -171,6 +172,13 @@ export default {
     this.getEvents().then(() => {
       this.loading = false
     })
+    get("/user/profile")
+      .then((authUser) => {
+        this.setAuthUser(authUser)
+      })
+      .catch(() => {
+        this.setAuthUser(null)
+      })
   },
 }
 </script>

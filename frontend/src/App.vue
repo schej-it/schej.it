@@ -231,6 +231,7 @@ import {
   post,
   signInGoogle,
   signInOutlook,
+  isPremiumUser,
 } from "@/utils"
 import {
   authTypes,
@@ -312,7 +313,7 @@ export default {
       return c
     },
     isPremiumUser() {
-      return Boolean(this.authUser?.stripeCustomerId)
+      return isPremiumUser(this.authUser)
     },
   },
 
@@ -330,7 +331,7 @@ export default {
     createNew(eventOnly = false) {
       if (
         !this.isPremiumUser &&
-        this.createdEventsNonGroup.length >= numFreeEvents
+        this.authUser?.numEventsCreated >= numFreeEvents
       ) {
         this.showUpgradeDialog = true
         return
@@ -347,7 +348,7 @@ export default {
       if (
         newDialogOptions.show &&
         !this.isPremiumUser &&
-        this.createdEventsNonGroup.length >= numFreeEvents
+        this.authUser?.numEventsCreated >= numFreeEvents
       ) {
         this.showUpgradeDialog = true
         return

@@ -4,7 +4,15 @@
     <div
       class="tw-flex tw-flex-row tw-items-center tw-justify-between tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
     >
-      {{ eventType.header }}
+      <div class="tw-flex tw-flex-col">
+        {{ eventType.header }}
+        <div
+          v-if="eventType.header === 'Events I created' && !isPremiumUser"
+          class="tw-text-sm tw-font-normal tw-text-very-dark-gray"
+        >
+          {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
+        </div>
+      </div>
       <div
         v-if="eventType.events.length > defaultNumEventsToShow"
         @click="toggleShowAll"
@@ -64,6 +72,9 @@
 
 <script>
 import EventItem from "@/components/EventItem.vue"
+import { numFreeEvents } from "@/constants"
+import { mapState } from "vuex"
+import { isPremiumUser } from "@/utils"
 
 export default {
   name: "EventType",
@@ -82,6 +93,7 @@ export default {
   }),
 
   computed: {
+    ...mapState(["authUser"]),
     defaultNumEventsToShow() {
       return this.$vuetify.breakpoint.lgAndUp ? 6 : 4
     },
@@ -93,6 +105,12 @@ export default {
     sortedEvents() {
       // Events are sorted serverside, so no need to sort here
       return this.eventType.events
+    },
+    numFreeEvents() {
+      return numFreeEvents
+    },
+    isPremiumUser() {
+      return isPremiumUser(this.authUser)
     },
   },
 

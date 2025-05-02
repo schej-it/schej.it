@@ -2,11 +2,11 @@
   <v-dialog
     :value="value"
     @input="(e) => $emit('input', e)"
-    width="400"
+    width="600"
     content-class="tw-m-0"
   >
-    <v-card class="tw-rounded-lg tw-p-6 tw-pb-4 sm:tw-p-8 sm:tw-pb-4">
-      <div class="tw-mb-10 tw-flex tw-flex-col tw-items-start tw-gap-4">
+    <v-card class="tw-rounded-lg tw-p-4 tw-pb-2 sm:tw-p-8 sm:tw-pb-4">
+      <div class="tw-mb-4 tw-flex tw-flex-col tw-items-start tw-gap-4">
         <h2 class="tw-text-xl tw-font-medium">
           Upgrade to
           <span
@@ -14,43 +14,10 @@
             >Schej Premium</span
           >
         </h2>
-        <div class="tw-mb-4 tw-text-sm tw-font-medium tw-text-dark-gray">
-          You've run out of
-          <v-tooltip
-            top
-            content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100 tw-py-4"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <span v-bind="attrs" v-on="on">
-                <span class="tw-cursor-pointer tw-underline">free events</span>.
-              </span>
-            </template>
-            <div>
-              Free users can have up to {{ numFreeEvents }} events associated
-              <br />
-              with their account at a time.
-            </div>
-          </v-tooltip>
-          Delete old events or upgrade to create unlimited events.
+        <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
+          You've run out of free events. Upgrade to create unlimited events.
         </div>
-        <div
-          class="tw-inline-block tw-rounded tw-bg-light-green/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
-        >
-          One-time payment
-        </div>
-        <div class="tw-relative">
-          <div class="tw-font-medium">
-            <span class="tw-mr-1 tw-text-4xl">{{ formattedPrice }}</span>
-            <span class="tw-text-base">for lifetime access</span>
-          </div>
-          <v-fade-transition>
-            <div
-              v-if="price === null"
-              class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
-            ></div>
-          </v-fade-transition>
-        </div>
-        <ul
+        <!-- <ul
           class="tw-inline-block tw-space-y-0.5 tw-p-0 tw-text-sm tw-font-medium tw-text-very-dark-gray"
         >
           <li class="tw-flex tw-items-center">
@@ -65,7 +32,88 @@
             <v-icon class="tw-mr-2 tw-text-light-green">mdi-check</v-icon>
             <span>Any new premium features we add</span>
           </li>
-        </ul>
+        </ul> -->
+      </div>
+      <div
+        class="tw-mb-8 tw-flex tw-flex-col tw-gap-1 sm:tw-flex-row sm:tw-gap-4"
+      >
+        <div
+          class="tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green/20 tw-p-4"
+        >
+          <div
+            class="tw-inline-block tw-w-fit tw-rounded tw-px-2 tw-py-1 tw-text-sm tw-font-medium"
+          >
+            1-month pass
+          </div>
+          <div class="tw-relative">
+            <div class="tw-font-medium">
+              <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$15</span>
+              <span class="tw-mr-1 tw-text-4xl">{{
+                formattedPrice(oneMonthPrice)
+              }}</span>
+              <span class="tw-text-dark-gray">USD</span>
+            </div>
+            <v-fade-transition>
+              <div
+                v-if="oneMonthPrice === null"
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
+              ></div>
+            </v-fade-transition>
+          </div>
+          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
+            One-time payment.<br />No subscription.
+          </div>
+          <v-btn
+            class="tw-mb-0.5"
+            color="primary"
+            outlined
+            block
+            :dark="!loadingCheckoutUrl[oneMonthPrice?.id]"
+            :disabled="loadingCheckoutUrl[oneMonthPrice?.id]"
+            :loading="loadingCheckoutUrl[oneMonthPrice?.id]"
+            @click="handleUpgrade(oneMonthPrice)"
+          >
+            Upgrade
+          </v-btn>
+        </div>
+        <div
+          class="tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green/20 tw-bg-white tw-p-4 tw-shadow-lg"
+        >
+          <div
+            class="tw-inline-block tw-w-fit tw-rounded tw-bg-light-green/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
+          >
+            Lifetime access
+          </div>
+          <div class="tw-relative">
+            <div class="tw-font-medium">
+              <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$40</span>
+              <span class="tw-mr-1 tw-text-4xl">{{
+                formattedPrice(lifetimePrice)
+              }}</span>
+              <span class="tw-text-dark-gray">USD</span>
+            </div>
+            <v-fade-transition>
+              <div
+                v-if="lifetimePrice === null"
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
+              ></div>
+            </v-fade-transition>
+          </div>
+          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
+            One-time payment.<br />No subscription.
+          </div>
+          <v-btn
+            class="tw-mb-0.5"
+            color="primary"
+            block
+            :dark="!loadingCheckoutUrl[lifetimePrice?.id]"
+            :disabled="loadingCheckoutUrl[lifetimePrice?.id]"
+            :loading="loadingCheckoutUrl[lifetimePrice?.id]"
+            @click="handleUpgrade(lifetimePrice)"
+          >
+            Upgrade
+          </v-btn>
+        </div>
       </div>
       <div class="tw-mb-2 tw-text-center">
         <div
@@ -75,17 +123,6 @@
           I already donated :)
         </div>
       </div>
-      <v-btn
-        class="tw-mb-0.5"
-        color="primary"
-        block
-        :dark="!loadingCheckoutUrl"
-        :disabled="loadingCheckoutUrl"
-        :loading="loadingCheckoutUrl"
-        @click="handleUpgrade"
-      >
-        Upgrade
-      </v-btn>
       <v-btn text block @click="$emit('input', false)"> Cancel </v-btn>
     </v-card>
 
@@ -96,7 +133,6 @@
 <script>
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
-import { numFreeEvents } from "@/constants"
 import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
 
 export default {
@@ -110,44 +146,44 @@ export default {
 
   data() {
     return {
-      price: null,
-      loadingCheckoutUrl: false,
+      oneMonthPrice: null,
+      lifetimePrice: null,
+      loadingCheckoutUrl: {},
       showDonatedDialog: false,
     }
   },
 
   computed: {
     ...mapState(["featureFlagsLoaded", "pricingPageConversion", "authUser"]),
-    formattedPrice() {
-      if (!this.price) return ""
-      return "$" + (this.price.unit_amount / 100).toFixed(2)
-    },
-    numFreeEvents() {
-      return numFreeEvents
-    },
   },
 
   methods: {
     ...mapActions(["showError"]),
+    formattedPrice(price) {
+      if (!price) return ""
+      return "$" + Math.floor(price.unit_amount / 100)
+    },
     async init() {
       if (this.featureFlagsLoaded && this.authUser) {
-        if (!this.priceLoaded) {
+        if (!this.oneMonthPrice || !this.lifetimePrice) {
           await this.fetchPrice()
         }
       }
     },
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
-      this.price = res.price
+      const { oneMonth, lifetime } = res
+      this.oneMonthPrice = oneMonth
+      this.lifetimePrice = lifetime
     },
-    async handleUpgrade() {
+    async handleUpgrade(price) {
       this.$posthog.capture("upgrade_clicked", {
-        price: this.formattedPrice,
+        price: this.formattedPrice(price),
       })
-      this.loadingCheckoutUrl = true
+      this.$set(this.loadingCheckoutUrl, price.id, true)
       try {
         const res = await post("/stripe/create-checkout-session", {
-          priceId: this.price.id,
+          priceId: price.id,
           userId: this.authUser._id,
           originUrl: window.location.href,
         })
@@ -158,7 +194,7 @@ export default {
           "There was an error generating a checkout url. Please try again later."
         )
       } finally {
-        this.loadingCheckoutUrl = false
+        this.$set(this.loadingCheckoutUrl, price.id, false)
       }
     },
   },
@@ -180,10 +216,14 @@ export default {
         if (this.value) {
           post("/analytics/upgrade-dialog-viewed", {
             userId: this.authUser._id,
-            price: this.formattedPrice,
+            price: `${this.formattedPrice(
+              this.oneMonthPrice
+            )}, ${this.formattedPrice(this.lifetimePrice)}`,
           })
           this.$posthog.capture("upgrade_dialog_viewed", {
-            price: this.formattedPrice,
+            price: `${this.formattedPrice(
+              this.oneMonthPrice
+            )}, ${this.formattedPrice(this.lifetimePrice)}`,
           })
         }
       },

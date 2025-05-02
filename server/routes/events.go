@@ -205,6 +205,8 @@ func createEvent(c *gin.Context) {
 	var creator string
 	if signedIn {
 		creator = fmt.Sprintf("%s %s (%s)", user.FirstName, user.LastName, user.Email)
+		user.NumEventsCreated++
+		db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": ownerId}, bson.M{"$set": user})
 	} else {
 		creator = "Guest :face_with_open_eyes_and_hand_over_mouth:"
 	}
