@@ -231,6 +231,7 @@ import {
   post,
   signInGoogle,
   signInOutlook,
+  isPremiumUser,
 } from "@/utils"
 import {
   authTypes,
@@ -312,13 +313,7 @@ export default {
       return c
     },
     isPremiumUser() {
-      if (this.authUser?.stripeCustomerId) {
-        if (this.authUser?.planExpiration) {
-          return new Date(this.authUser.planExpiration) > new Date()
-        }
-        return true
-      }
-      return false
+      return isPremiumUser(this.authUser)
     },
   },
 
