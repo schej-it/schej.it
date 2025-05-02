@@ -185,17 +185,18 @@ func _fulfillCheckout(sessionId string) {
 				return
 			}
 
-			// Only upgrade the user if they don't already have a Stripe customer ID
-			if user.StripeCustomerId == nil {
+			// Only upgrade the user if customer ID is different
+			if user.StripeCustomerId == nil || *user.StripeCustomerId != cs.Customer.ID {
+				var planExpiration primitive.DateTime
 				if cs.LineItems != nil && len(cs.LineItems.Data) > 0 {
 					priceId := cs.LineItems.Data[0].Price.ID
 					priceDescription := ""
 					if priceId == os.Getenv("STRIPE_ONE_MONTH_PRICE_ID") {
 						priceDescription = "1-month"
-						planExpiration := primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0))
-						user.PlanExpiration = &planExpiration
+						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0))
 					} else if priceId == os.Getenv("STRIPE_LIFETIME_PRICE_ID") {
 						priceDescription = "lifetime"
+						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(999, 0, 0))
 					}
 					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
 
@@ -203,6 +204,7 @@ func _fulfillCheckout(sessionId string) {
 					slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
 				}
 
+				user.PlanExpiration = &planExpiration
 				user.StripeCustomerId = &cs.Customer.ID
 				db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": user})
 			}

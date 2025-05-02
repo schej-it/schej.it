@@ -312,7 +312,13 @@ export default {
       return c
     },
     isPremiumUser() {
-      return Boolean(this.authUser?.stripeCustomerId)
+      if (this.authUser?.stripeCustomerId) {
+        if (this.authUser?.planExpiration) {
+          return new Date(this.authUser.planExpiration) > new Date()
+        }
+        return true
+      }
+      return false
     },
   },
 
