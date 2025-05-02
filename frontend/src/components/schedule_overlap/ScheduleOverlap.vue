@@ -1348,6 +1348,7 @@ export default {
             dayText: this.daysOfWeek[nextDate.getUTCDay()],
             dateString: getDateString(nextDate),
             dateObject: nextDate,
+            excludeTimes: true,
           })
         }
       }
@@ -2025,13 +2026,16 @@ export default {
       if (hasSecondSplit) {
         if (isFirstSplit) {
           adjustedDayIndex = dayIndex - 1
-        } else if (dayIndex === this.event.dates.length - 1) {
+        } else if (dayIndex === this.allDays.length - 1) {
           return null
         }
       }
-      const date = this.allDays[adjustedDayIndex]?.dateObject
-      if (!date || !time) return null
-      return getDateHoursOffset(date, time.hoursOffset)
+      const day = this.allDays[adjustedDayIndex]
+      if (!day || !time) return null
+      if (day.excludeTimes) {
+        return null
+      }
+      return getDateHoursOffset(day.dateObject, time.hoursOffset)
     },
     //#endregion
 
