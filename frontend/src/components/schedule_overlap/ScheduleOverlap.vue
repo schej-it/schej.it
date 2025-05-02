@@ -1293,21 +1293,16 @@ export default {
     /** Returns all the days that are encompassed by startDate and endDate */
     allDays() {
       const days = []
+      const datesSoFar = new Set()
 
-      for (let i = 0; i < this.event.dates.length; ++i) {
-        const date = new Date(this.event.dates[i])
-        const offsetDate = new Date(date)
-        offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
-
+      const getDateString = (date) => {
         let dateString = ""
         if (this.isSpecificDates) {
-          dateString = `${
-            this.months[offsetDate.getUTCMonth()]
-          } ${offsetDate.getUTCDate()}`
+          dateString = `${this.months[date.getUTCMonth()]} ${date.getUTCDate()}`
         } else if (this.isGroup) {
           const tmpDate = dateToDowDate(
             this.event.dates,
-            offsetDate,
+            date,
             this.weekOffset,
             true
           )
@@ -1316,12 +1311,45 @@ export default {
             this.months[tmpDate.getUTCMonth()]
           } ${tmpDate.getUTCDate()}`
         }
+        return dateString
+      }
+
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
+        if (datesSoFar.has(date.getTime())) continue
+        datesSoFar.add(date.getTime())
+        // TODO: See if commenting this out breaks things
+        // const offsetDate = new Date(date)
+        // offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
         days.push({
-          dayText: this.daysOfWeek[offsetDate.getUTCDay()],
-          dateString,
+          dayText: this.daysOfWeek[date.getUTCDay()],
+          dateString: getDateString(date),
           dateObject: date,
         })
+
+        // See if the date goes into the next day
+        const localStart = new Date(
+          date.getTime() - this.timezoneOffset * 60 * 1000
+        )
+        const localEnd = new Date(
+          date.getTime() +
+            this.event.duration * 60 * 60 * 1000 -
+            this.timezoneOffset * 60 * 1000
+        )
+        if (localStart.getUTCDate() !== localEnd.getUTCDate()) {
+          // The date goes into the next day. Split the date into two dates
+          let nextDate = new Date(date)
+          nextDate.setUTCDate(nextDate.getUTCDate() + 1)
+          if (datesSoFar.has(nextDate.getTime())) continue
+          datesSoFar.add(nextDate.getTime())
+
+          days.push({
+            dayText: this.daysOfWeek[nextDate.getUTCDay()],
+            dateString: getDateString(nextDate),
+            dateObject: nextDate,
+          })
+        }
       }
 
       return days
@@ -1330,7 +1358,7 @@ export default {
     days() {
       return this.allDays.slice(
         this.page * this.maxDaysPerPage,
-        Math.min(this.event.dates.length, (this.page + 1) * this.maxDaysPerPage)
+        (this.page + 1) * this.maxDaysPerPage
       )
     },
     /** Returns all the days of the month */
