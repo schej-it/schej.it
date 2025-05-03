@@ -1271,13 +1271,11 @@ export default {
           if (num > max) max = num
         }
       } else {
-        for (const day of this.allDays) {
+        for (let i = 0; i < this.event.dates.length; i++) {
+          const date = new Date(this.event.dates[i])
           for (const time of this.times) {
             const num = [
-              ...this.getRespondentsForHoursOffset(
-                day.dateObject,
-                time.hoursOffset
-              ),
+              ...this.getRespondentsForHoursOffset(date, time.hoursOffset),
             ].filter((r) => this.curRespondentsSet.has(r)).length
 
             if (num > max) max = num
