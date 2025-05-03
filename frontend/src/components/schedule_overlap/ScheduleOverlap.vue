@@ -3023,10 +3023,10 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              console.log(
-                "mouseover",
-                this.getDateFromRowCol(row, col) //?.toISOString()
-              )
+              // console.log(
+              //   "mouseover",
+              //   this.getDateFromRowCol(row, col)?.toISOString()
+              // )
             }
           },
         }
