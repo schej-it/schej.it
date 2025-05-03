@@ -1295,12 +1295,18 @@ export default {
 
       const getDateString = (date) => {
         let dateString = ""
+        let dayString = ""
+        const offsetDate = new Date(date)
+        offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
         if (this.isSpecificDates) {
-          dateString = `${this.months[date.getUTCMonth()]} ${date.getUTCDate()}`
+          dateString = `${
+            this.months[offsetDate.getUTCMonth()]
+          } ${offsetDate.getUTCDate()}`
+          dayString = this.daysOfWeek[offsetDate.getUTCDay()]
         } else if (this.isGroup) {
           const tmpDate = dateToDowDate(
             this.event.dates,
-            date,
+            offsetDate,
             this.weekOffset,
             true
           )
@@ -1308,8 +1314,9 @@ export default {
           dateString = `${
             this.months[tmpDate.getUTCMonth()]
           } ${tmpDate.getUTCDate()}`
+          dayString = this.daysOfWeek[tmpDate.getUTCDay()]
         }
-        return dateString
+        return { dateString, dayString }
       }
 
       for (let i = 0; i < this.event.dates.length; ++i) {
@@ -1320,9 +1327,10 @@ export default {
         // const offsetDate = new Date(date)
         // offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
+        const { dayString, dateString } = getDateString(date)
         days.push({
-          dayText: this.daysOfWeek[date.getUTCDay()],
-          dateString: getDateString(date),
+          dayText: dayString,
+          dateString,
           dateObject: date,
         })
 
@@ -1335,16 +1343,22 @@ export default {
             this.event.duration * 60 * 60 * 1000 -
             this.timezoneOffset * 60 * 1000
         )
-        if (localStart.getUTCDate() !== localEnd.getUTCDate()) {
+        const localEndIsMidnight =
+          localEnd.getUTCHours() === 0 && localEnd.getUTCMinutes() === 0
+        if (
+          localStart.getUTCDate() !== localEnd.getUTCDate() &&
+          !localEndIsMidnight
+        ) {
           // The date goes into the next day. Split the date into two dates
           let nextDate = new Date(date)
           nextDate.setUTCDate(nextDate.getUTCDate() + 1)
           if (datesSoFar.has(nextDate.getTime())) continue
           datesSoFar.add(nextDate.getTime())
 
+          const { dayString, dateString } = getDateString(nextDate)
           days.push({
-            dayText: this.daysOfWeek[nextDate.getUTCDay()],
-            dateString: getDateString(nextDate),
+            dayText: dayString,
+            dateString,
             dateObject: nextDate,
             excludeTimes: true,
           })
@@ -3006,7 +3020,10 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              // console.log("mouseover", this.getDateFromRowCol(row, col))
+              console.log(
+                "mouseover",
+                this.getDateFromRowCol(row, col) //?.toISOString()
+              )
             }
           },
         }
