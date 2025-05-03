@@ -299,7 +299,7 @@
                               (dragStart && dragStart.col === d) ||
                               (!dragStart &&
                                 curScheduledEvent &&
-                                curScheduledEvent.dayIndex === d)
+                                curScheduledEvent.col === d)
                             "
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="scheduledEventStyle"
@@ -1223,7 +1223,7 @@ export default {
 
     /** Returns the max allowable drag */
     maxSignUpBlockRowSize() {
-      if (!this.dragStart) return null
+      if (!this.dragStart || !this.isSignUp) return null
 
       const selectedDay = this.signUpBlocksByDay[this.dragStart.col]
       const selectedDayToAdd = this.signUpBlocksToAddByDay[this.dragStart.col]
@@ -1271,13 +1271,11 @@ export default {
           if (num > max) max = num
         }
       } else {
-        for (const day of this.allDays) {
+        for (let i = 0; i < this.event.dates.length; i++) {
+          const date = new Date(this.event.dates[i])
           for (const time of this.times) {
             const num = [
-              ...this.getRespondentsForHoursOffset(
-                day.dateObject,
-                time.hoursOffset
-              ),
+              ...this.getRespondentsForHoursOffset(date, time.hoursOffset),
             ].filter((r) => this.curRespondentsSet.has(r)).length
 
             if (num > max) max = num
@@ -1293,17 +1291,18 @@ export default {
     /** Returns all the days that are encompassed by startDate and endDate */
     allDays() {
       const days = []
+      const datesSoFar = new Set()
 
-      for (let i = 0; i < this.event.dates.length; ++i) {
-        const date = new Date(this.event.dates[i])
+      const getDateString = (date) => {
+        let dateString = ""
+        let dayString = ""
         const offsetDate = new Date(date)
         offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
-
-        let dateString = ""
         if (this.isSpecificDates) {
           dateString = `${
             this.months[offsetDate.getUTCMonth()]
           } ${offsetDate.getUTCDate()}`
+          dayString = this.daysOfWeek[offsetDate.getUTCDay()]
         } else if (this.isGroup) {
           const tmpDate = dateToDowDate(
             this.event.dates,
@@ -1315,13 +1314,58 @@ export default {
           dateString = `${
             this.months[tmpDate.getUTCMonth()]
           } ${tmpDate.getUTCDate()}`
+          dayString = this.daysOfWeek[tmpDate.getUTCDay()]
         }
+        return { dateString, dayString }
+      }
 
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
+        datesSoFar.add(date.getTime())
+
+        const { dayString, dateString } = getDateString(date)
         days.push({
-          dayText: this.daysOfWeek[offsetDate.getUTCDay()],
+          dayText: dayString,
           dateString,
           dateObject: date,
         })
+      }
+
+      let dayIndex = 0
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
+        // See if the date goes into the next day
+        const localStart = new Date(
+          date.getTime() - this.timezoneOffset * 60 * 1000
+        )
+        const localEnd = new Date(
+          date.getTime() +
+            this.event.duration * 60 * 60 * 1000 -
+            this.timezoneOffset * 60 * 1000
+        )
+        const localEndIsMidnight =
+          localEnd.getUTCHours() === 0 && localEnd.getUTCMinutes() === 0
+        if (
+          localStart.getUTCDate() !== localEnd.getUTCDate() &&
+          !localEndIsMidnight
+        ) {
+          // The date goes into the next day. Split the date into two dates
+          let nextDate = new Date(date)
+          nextDate.setUTCDate(nextDate.getUTCDate() + 1)
+          if (!datesSoFar.has(nextDate.getTime())) {
+            datesSoFar.add(nextDate.getTime())
+
+            const { dayString, dateString } = getDateString(nextDate)
+            days.splice(dayIndex + 1, 0, {
+              dayText: dayString,
+              dateString,
+              dateObject: nextDate,
+              excludeTimes: true,
+            })
+            dayIndex++
+          }
+        }
+        dayIndex++
       }
 
       return days
@@ -1330,7 +1374,7 @@ export default {
     days() {
       return this.allDays.slice(
         this.page * this.maxDaysPerPage,
-        Math.min(this.event.dates.length, (this.page + 1) * this.maxDaysPerPage)
+        (this.page + 1) * this.maxDaysPerPage
       )
     },
     /** Returns all the days of the month */
@@ -1467,10 +1511,9 @@ export default {
         height = this.dragCur.row - this.dragStart.row + 1
         isSecondSplit = this.dragStart.row >= this.splitTimes[0].length
       } else {
-        top = this.curScheduledEvent.hoursOffset * 4
-        height = this.curScheduledEvent.hoursLength * 4
-        isSecondSplit =
-          this.curScheduledEvent.hoursOffset * 4 >= this.splitTimes[0].length
+        top = this.curScheduledEvent.row
+        height = this.curScheduledEvent.numRows
+        isSecondSplit = this.curScheduledEvent.row >= this.splitTimes[0].length
       }
 
       if (isSecondSplit) {
@@ -1729,7 +1772,7 @@ export default {
       }
 
       return (
-        this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
+        this.allDays.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
         this.event.type === eventTypes.GROUP
       )
     },
@@ -1997,13 +2040,16 @@ export default {
       if (hasSecondSplit) {
         if (isFirstSplit) {
           adjustedDayIndex = dayIndex - 1
-        } else if (dayIndex === this.event.dates.length - 1) {
+        } else if (dayIndex === this.allDays.length - 1) {
           return null
         }
       }
-      const date = this.allDays[adjustedDayIndex]?.dateObject
-      if (!date || !time) return null
-      return getDateHoursOffset(date, time.hoursOffset)
+      const day = this.allDays[adjustedDayIndex]
+      if (!day || !time) return null
+      if (day.excludeTimes) {
+        return null
+      }
+      return getDateHoursOffset(day.dateObject, time.hoursOffset)
     },
     //#endregion
 
@@ -2347,6 +2393,11 @@ export default {
 
           if (manualAvailabilityAdded) continue
         }
+      }
+
+      for (let i = 0; i < this.allDays.length; ++i) {
+        const day = this.allDays[i]
+        const date = day.dateObject
 
         // Calculate buffer time
         const bufferTimeInMS = calendarOptions.bufferTime.enabled
@@ -2357,9 +2408,9 @@ export default {
         const startTimeString = timeNumToTimeString(
           calendarOptions.workingHours.startTime
         )
-        const day = getISODateString(getDateWithTimezone(date), true)
+        const isoDateString = getISODateString(getDateWithTimezone(date), true)
         const workingHoursStartDate = dayjs
-          .tz(`${day} ${startTimeString}`, this.curTimezone.value)
+          .tz(`${isoDateString} ${startTimeString}`, this.curTimezone.value)
           .toDate()
         let duration =
           calendarOptions.workingHours.endTime -
@@ -2371,7 +2422,7 @@ export default {
         )
 
         for (let j = 0; j < this.times.length; ++j) {
-          const startDate = this.getDateFromRowCol(j, i)
+          const startDate = this.getDateFromDayTimeIndex(i, j)
           if (!startDate) continue
           const endDate = getDateHoursOffset(startDate, 0.25)
 
@@ -2972,7 +3023,10 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              // console.log("mouseover", this.getDateFromRowCol(row, col))
+              // console.log(
+              //   "mouseover",
+              //   this.getDateFromRowCol(row, col)?.toISOString()
+              // )
             }
           },
         }
@@ -3053,12 +3107,10 @@ export default {
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
       // Get start date, and end date from the area that the user has dragged out
-      const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
-      let startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)
-      let endDate = this.getDateFromDayHoursOffset(
-        dayIndex,
-        hoursOffset + hoursLength
-      )
+      const { col, row, numRows } = this.curScheduledEvent
+      let startDate = this.getDateFromRowCol(row, col)
+      let endDate = new Date(startDate)
+      endDate.setMinutes(startDate.getMinutes() + (numRows / 4) * 60)
 
       if (this.isWeekly) {
         // Determine offset based on current day of the week.
@@ -3269,12 +3321,12 @@ export default {
         this.availability = new Set(this.availability)
       } else if (this.state === this.states.SCHEDULE_EVENT) {
         // Update scheduled event
-        const dayIndex = this.dragStart.col
-        const hoursOffset = this.dragStart.row / 4
-        const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
+        const col = this.dragStart.col
+        const row = this.dragStart.row
+        const numRows = this.dragCur.row - this.dragStart.row + 1
 
-        if (hoursLength > 0) {
-          this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
+        if (numRows > 0) {
+          this.curScheduledEvent = { col, row, numRows }
         } else {
           this.curScheduledEvent = null
         }
@@ -3484,7 +3536,7 @@ export default {
       if (this.event.type === eventTypes.GROUP) {
         // Go to next page if there are still more days left to see
         // Otherwise, update week offset
-        if ((this.page + 1) * this.maxDaysPerPage < this.event.dates.length) {
+        if ((this.page + 1) * this.maxDaysPerPage < this.allDays.length) {
           this.page++
         } else {
           this.page = 0
@@ -3503,8 +3555,7 @@ export default {
         if (this.page > 0) {
           this.page--
         } else {
-          this.page =
-            Math.ceil(this.event.dates.length / this.maxDaysPerPage) - 1
+          this.page = Math.ceil(this.allDays.length / this.maxDaysPerPage) - 1
           this.$emit("update:weekOffset", this.weekOffset - 1)
         }
       } else {
@@ -3814,6 +3865,11 @@ export default {
         this.setTimeslotSize()
       })
     },
+    allDays() {
+      this.$nextTick(() => {
+        this.setTimeslotSize()
+      })
+    },
     showStickyRespondents: {
       immediate: true,
       handler(cur) {
@@ -3826,7 +3882,7 @@ export default {
     maxDaysPerPage() {
       // Set page to 0 if user switches from portrait to landscape orientation and we're on an invalid page number,
       // i.e. we're on a page that displays 0 days
-      if (this.page * this.maxDaysPerPage >= this.event.dates.length) {
+      if (this.page * this.maxDaysPerPage >= this.allDays.length) {
         this.page = 0
       }
     },
