@@ -1746,6 +1746,12 @@ export default {
           splitTimes[0].push({
             hoursOffset: this.event.duration - 0.25,
           })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration + 0.25,
+          })
         }
         splitTimes[1] = []
       }
@@ -2738,12 +2744,17 @@ export default {
           "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
-        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-        if (fractionalTime === 0.25) {
-          classStyle.class += "tw-border-b "
-          classStyle.style.borderBottomStyle = "dashed"
-        } else if (fractionalTime === 0.75) {
-          classStyle.class += "tw-border-b "
+        if (date) {
+          const localDate = new Date(
+            date.getTime() - this.timezoneOffset * 60 * 1000
+          )
+          const fractionalTime = localDate.getMinutes()
+          if (fractionalTime === 15) {
+            classStyle.class += "tw-border-b "
+            classStyle.style.borderBottomStyle = "dashed"
+          } else if (fractionalTime === 45) {
+            classStyle.class += "tw-border-b "
+          }
         }
 
         classStyle.class += "tw-border-r "
