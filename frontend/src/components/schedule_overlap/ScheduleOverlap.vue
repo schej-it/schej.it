@@ -1321,11 +1321,7 @@ export default {
 
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
-        if (datesSoFar.has(date.getTime())) continue
         datesSoFar.add(date.getTime())
-        // TODO: See if commenting this out breaks things
-        // const offsetDate = new Date(date)
-        // offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
 
         const { dayString, dateString } = getDateString(date)
         days.push({
@@ -1333,7 +1329,11 @@ export default {
           dateString,
           dateObject: date,
         })
+      }
 
+      let dayIndex = 0
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
         // See if the date goes into the next day
         const localStart = new Date(
           date.getTime() - this.timezoneOffset * 60 * 1000
@@ -1352,17 +1352,20 @@ export default {
           // The date goes into the next day. Split the date into two dates
           let nextDate = new Date(date)
           nextDate.setUTCDate(nextDate.getUTCDate() + 1)
-          if (datesSoFar.has(nextDate.getTime())) continue
-          datesSoFar.add(nextDate.getTime())
+          if (!datesSoFar.has(nextDate.getTime())) {
+            datesSoFar.add(nextDate.getTime())
 
-          const { dayString, dateString } = getDateString(nextDate)
-          days.push({
-            dayText: dayString,
-            dateString,
-            dateObject: nextDate,
-            excludeTimes: true,
-          })
+            const { dayString, dateString } = getDateString(nextDate)
+            days.splice(dayIndex + 1, 0, {
+              dayText: dayString,
+              dateString,
+              dateObject: nextDate,
+              excludeTimes: true,
+            })
+            dayIndex++
+          }
         }
+        dayIndex++
       }
 
       return days
