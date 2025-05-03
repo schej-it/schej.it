@@ -2383,7 +2383,6 @@ export default {
 
       for (let i = 0; i < this.allDays.length; ++i) {
         const day = this.allDays[i]
-        if (day.excludeTimes) continue
         const date = day.dateObject
 
         // Calculate buffer time
