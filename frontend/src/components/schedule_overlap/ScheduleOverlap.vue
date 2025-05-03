@@ -2379,6 +2379,12 @@ export default {
 
           if (manualAvailabilityAdded) continue
         }
+      }
+
+      for (let i = 0; i < this.allDays.length; ++i) {
+        const day = this.allDays[i]
+        if (day.excludeTimes) continue
+        const date = day.dateObject
 
         // Calculate buffer time
         const bufferTimeInMS = calendarOptions.bufferTime.enabled
@@ -2389,9 +2395,9 @@ export default {
         const startTimeString = timeNumToTimeString(
           calendarOptions.workingHours.startTime
         )
-        const day = getISODateString(getDateWithTimezone(date), true)
+        const isoDateString = getISODateString(getDateWithTimezone(date), true)
         const workingHoursStartDate = dayjs
-          .tz(`${day} ${startTimeString}`, this.curTimezone.value)
+          .tz(`${isoDateString} ${startTimeString}`, this.curTimezone.value)
           .toDate()
         let duration =
           calendarOptions.workingHours.endTime -
