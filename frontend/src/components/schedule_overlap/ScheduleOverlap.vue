@@ -1223,7 +1223,7 @@ export default {
 
     /** Returns the max allowable drag */
     maxSignUpBlockRowSize() {
-      if (!this.dragStart) return null
+      if (!this.dragStart || !this.isSignUp) return null
 
       const selectedDay = this.signUpBlocksByDay[this.dragStart.col]
       const selectedDayToAdd = this.signUpBlocksToAddByDay[this.dragStart.col]
@@ -3842,6 +3842,11 @@ export default {
       this.reanimateAvailability()
     },
     page() {
+      this.$nextTick(() => {
+        this.setTimeslotSize()
+      })
+    },
+    allDays() {
       this.$nextTick(() => {
         this.setTimeslotSize()
       })
