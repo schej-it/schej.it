@@ -1662,6 +1662,14 @@ export default {
       )
       const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
 
+      // Weird timezones are timezones that are not a multiple of 60 minutes (e.g. GMT-2:30)
+      const isWeirdTimezone = this.timezoneOffset % 60 !== 0
+      const startTimeIsWeird = utcStartTime % 1 !== 0
+      let timeOffset = 0
+      if (isWeirdTimezone !== startTimeIsWeird) {
+        timeOffset = -0.5
+      }
+
       if (localEndTime <= localStartTime && localEndTime !== 0) {
         for (let i = 0; i < localEndTime; ++i) {
           splitTimes[0].push({
@@ -1679,25 +1687,72 @@ export default {
           })
         }
         for (let i = 0; i < 24 - localStartTime; ++i) {
+          const adjustedI = i + timeOffset
           splitTimes[1].push({
-            hoursOffset: i,
+            hoursOffset: adjustedI,
             text: timeNumToTimeText(
-              localStartTime + i,
+              localStartTime + adjustedI,
               this.timeType === timeTypes.HOUR12
             ),
           })
           splitTimes[1].push({
-            hoursOffset: i + 0.25,
+            hoursOffset: adjustedI + 0.25,
           })
           splitTimes[1].push({
-            hoursOffset: i + 0.5,
+            hoursOffset: adjustedI + 0.5,
           })
           splitTimes[1].push({
-            hoursOffset: i + 0.75,
+            hoursOffset: adjustedI + 0.75,
           })
         }
       } else {
-        splitTimes[0] = this.times
+        for (let i = 0; i < this.event.duration; ++i) {
+          const adjustedI = i + timeOffset
+          const utcTimeNum = this.event.startTime + adjustedI
+          const localTimeNum = utcTimeToLocalTime(
+            utcTimeNum,
+            this.timezoneOffset
+          )
+
+          splitTimes[0].push({
+            hoursOffset: adjustedI,
+            text: timeNumToTimeText(
+              localTimeNum,
+              this.timeType === timeTypes.HOUR12
+            ),
+          })
+          splitTimes[0].push({
+            hoursOffset: adjustedI + 0.25,
+          })
+          splitTimes[0].push({
+            hoursOffset: adjustedI + 0.5,
+          })
+          splitTimes[0].push({
+            hoursOffset: adjustedI + 0.75,
+          })
+        }
+        if (timeOffset !== 0) {
+          const localTimeNum = utcTimeToLocalTime(
+            this.event.startTime + this.event.duration - 0.5,
+            this.timezoneOffset
+          )
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - 0.5,
+            text: timeNumToTimeText(
+              localTimeNum,
+              this.timeType === timeTypes.HOUR12
+            ),
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration - 0.25,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration,
+          })
+          splitTimes[0].push({
+            hoursOffset: this.event.duration + 0.25,
+          })
+        }
         splitTimes[1] = []
       }
 
@@ -1705,31 +1760,7 @@ export default {
     },
     /** Returns the times that are encompassed by startTime and endTime */
     times() {
-      const times = []
-
-      for (let i = 0; i < this.event.duration; ++i) {
-        const utcTimeNum = this.event.startTime + i
-        const localTimeNum = utcTimeToLocalTime(utcTimeNum, this.timezoneOffset)
-
-        times.push({
-          hoursOffset: i,
-          text: timeNumToTimeText(
-            localTimeNum,
-            this.timeType === timeTypes.HOUR12
-          ),
-        })
-        times.push({
-          hoursOffset: i + 0.25,
-        })
-        times.push({
-          hoursOffset: i + 0.5,
-        })
-        times.push({
-          hoursOffset: i + 0.75,
-        })
-      }
-
-      return times
+      return [...this.splitTimes[1], ...this.splitTimes[0]]
     },
     timezoneOffset() {
       if (!("offset" in this.curTimezone)) {
@@ -2047,6 +2078,9 @@ export default {
       const day = this.allDays[adjustedDayIndex]
       if (!day || !time) return null
       if (day.excludeTimes) {
+        return null
+      }
+      if (time.hoursOffset < 0 || time.hoursOffset >= this.event.duration) {
         return null
       }
       return getDateHoursOffset(day.dateObject, time.hoursOffset)
@@ -2710,12 +2744,17 @@ export default {
           "tw-border tw-border-dashed tw-border-black tw-z-10 "
       } else {
         // Normal border
-        const fractionalTime = time.hoursOffset - parseInt(time.hoursOffset)
-        if (fractionalTime === 0.25) {
-          classStyle.class += "tw-border-b "
-          classStyle.style.borderBottomStyle = "dashed"
-        } else if (fractionalTime === 0.75) {
-          classStyle.class += "tw-border-b "
+        if (date) {
+          const localDate = new Date(
+            date.getTime() - this.timezoneOffset * 60 * 1000
+          )
+          const fractionalTime = localDate.getMinutes()
+          if (fractionalTime === 15) {
+            classStyle.class += "tw-border-b "
+            classStyle.style.borderBottomStyle = "dashed"
+          } else if (fractionalTime === 45) {
+            classStyle.class += "tw-border-b "
+          }
         }
 
         classStyle.class += "tw-border-r "
