@@ -299,7 +299,7 @@
                               (dragStart && dragStart.col === d) ||
                               (!dragStart &&
                                 curScheduledEvent &&
-                                curScheduledEvent.dayIndex === d)
+                                curScheduledEvent.col === d)
                             "
                             class="tw-absolute tw-w-full tw-select-none tw-p-px"
                             :style="scheduledEventStyle"
@@ -1496,10 +1496,9 @@ export default {
         height = this.dragCur.row - this.dragStart.row + 1
         isSecondSplit = this.dragStart.row >= this.splitTimes[0].length
       } else {
-        top = this.curScheduledEvent.hoursOffset * 4
-        height = this.curScheduledEvent.hoursLength * 4
-        isSecondSplit =
-          this.curScheduledEvent.hoursOffset * 4 >= this.splitTimes[0].length
+        top = this.curScheduledEvent.row
+        height = this.curScheduledEvent.numRows
+        isSecondSplit = this.curScheduledEvent.row >= this.splitTimes[0].length
       }
 
       if (isSecondSplit) {
@@ -3090,12 +3089,10 @@ export default {
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
       // Get start date, and end date from the area that the user has dragged out
-      const { dayIndex, hoursOffset, hoursLength } = this.curScheduledEvent
-      let startDate = this.getDateFromDayHoursOffset(dayIndex, hoursOffset)
-      let endDate = this.getDateFromDayHoursOffset(
-        dayIndex,
-        hoursOffset + hoursLength
-      )
+      const { col, row, numRows } = this.curScheduledEvent
+      let startDate = this.getDateFromRowCol(row, col)
+      let endDate = new Date(startDate)
+      endDate.setMinutes(startDate.getMinutes() + (numRows / 4) * 60)
 
       if (this.isWeekly) {
         // Determine offset based on current day of the week.
@@ -3306,12 +3303,12 @@ export default {
         this.availability = new Set(this.availability)
       } else if (this.state === this.states.SCHEDULE_EVENT) {
         // Update scheduled event
-        const dayIndex = this.dragStart.col
-        const hoursOffset = this.dragStart.row / 4
-        const hoursLength = (this.dragCur.row - this.dragStart.row + 1) / 4
+        const col = this.dragStart.col
+        const row = this.dragStart.row
+        const numRows = this.dragCur.row - this.dragStart.row + 1
 
-        if (hoursLength > 0) {
-          this.curScheduledEvent = { dayIndex, hoursOffset, hoursLength }
+        if (numRows > 0) {
+          this.curScheduledEvent = { col, row, numRows }
         } else {
           this.curScheduledEvent = null
         }
