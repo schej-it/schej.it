@@ -2074,6 +2074,9 @@ export default {
       if (day.excludeTimes) {
         return null
       }
+      if (time.hoursOffset < 0 || time.hoursOffset >= this.event.duration) {
+        return null
+      }
       return getDateHoursOffset(day.dateObject, time.hoursOffset)
     },
     //#endregion
@@ -2716,8 +2719,7 @@ export default {
 
       // Add time timeslot specific stuff
       const isFirstSplit = t < this.splitTimes[0].length
-      const isDisabled =
-        !date || time.hoursOffset < 0 || time.hoursOffset >= this.event.duration
+      const isDisabled = !date
 
       // Animation
       if (this.animateTimeslotAlways || this.availabilityAnimEnabled) {
