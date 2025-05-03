@@ -16,6 +16,8 @@
         </h2>
         <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
           You've run out of free events. Upgrade to create unlimited events.
+          <br />
+          Your payment helps us keep the site running.
         </div>
         <!-- <ul
           class="tw-inline-block tw-space-y-0.5 tw-p-0 tw-text-sm tw-font-medium tw-text-very-dark-gray"
@@ -115,9 +117,18 @@
           </v-btn>
         </div>
       </div>
-      <div class="tw-mb-2 tw-text-center">
+      <div
+        class="tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-4 tw-text-center"
+      >
+        <a
+          class="tw-cursor-pointer tw-py-2 tw-text-xs tw-font-medium tw-text-dark-gray hover:tw-underline"
+          target="_blank"
+          href="https://forms.gle/aaBzFvoKkHLPDjio7"
+        >
+          I don't want to pay
+        </a>
         <div
-          class="tw-cursor-pointer tw-text-xs tw-font-medium tw-text-dark-gray hover:tw-underline"
+          class="tw-cursor-pointer tw-py-2 tw-text-xs tw-font-medium tw-text-dark-gray hover:tw-underline"
           @click="showDonatedDialog = true"
         >
           I already donated :)
