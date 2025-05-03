@@ -510,9 +510,12 @@ export const processTimeBlocks = (
   timeBlocks.sort((a, b) => dateCompare(a.startDate, b.startDate))
 
   // Format array of calendar events by day
+  const datesSoFar = new Set()
   const timeBlocksByDay = []
   for (let i = 0; i < dates.length; ++i) {
     timeBlocksByDay[i] = []
+    const date = new Date(dates[i])
+    datesSoFar.add(date.getTime())
   }
 
   // Iterate through all dates and add calendar events to array
@@ -652,9 +655,13 @@ export const processTimeBlocks = (
 
     // Check if the start and end of the current day are on different days in this timezone
     if (localDayStart.getUTCDate() !== localDayEnd.getUTCDate()) {
-      // The start and end of the current day are on different days in this timezone, append a new index to the timeBlocksByDay array
-      timeBlocksByDay.push([])
-      i += 1
+      const nextDate = new Date(start)
+      nextDate.setUTCDate(nextDate.getUTCDate() + 1)
+      if (!datesSoFar.has(nextDate.getTime())) {
+        // The start and end of the current day are on different days in this timezone, append a new index to the timeBlocksByDay array
+        timeBlocksByDay.push([])
+        i += 1
+      }
     }
     i++
   }

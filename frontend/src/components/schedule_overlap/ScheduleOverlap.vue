@@ -2422,7 +2422,7 @@ export default {
         )
 
         for (let j = 0; j < this.times.length; ++j) {
-          const startDate = this.getDateFromRowCol(j, i)
+          const startDate = this.getDateFromDayTimeIndex(i, j)
           if (!startDate) continue
           const endDate = getDateHoursOffset(startDate, 0.25)
 
