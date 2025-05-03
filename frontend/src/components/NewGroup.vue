@@ -316,6 +316,7 @@ export default {
           dates,
           attendees,
           type,
+          creatorPosthogId: this.$posthog?.get_distinct_id(),
         })
           .then(({ eventId, shortId }) => {
             this.$router.push({

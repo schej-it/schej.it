@@ -55,6 +55,9 @@ func createEvent(c *gin.Context) {
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
 
+		// PostHog ID for the event creator
+		CreatorPosthogId *string `json:"creatorPosthogId"`
+
 		// Only for sign up form events
 		IsSignUpForm *bool                 `json:"isSignUpForm"`
 		SignUpBlocks *[]models.SignUpBlock `json:"signUpBlocks"`
@@ -95,6 +98,7 @@ func createEvent(c *gin.Context) {
 	event := models.Event{
 		Id:                       primitive.NewObjectID(),
 		OwnerId:                  ownerId,
+		CreatorPosthogId:         payload.CreatorPosthogId,
 		Name:                     payload.Name,
 		Duration:                 payload.Duration,
 		Dates:                    payload.Dates,

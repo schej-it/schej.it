@@ -57,6 +57,9 @@ type Event struct {
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
+	// PostHog ID for the event creator
+	CreatorPosthogId *string `json:"creatorPosthogId" bson:"creatorPosthogId,omitempty"`
+
 	// Sign up form details
 	IsSignUpForm    *bool                      `json:"isSignUpForm" bson:"isSignUpForm,omitempty"`
 	SignUpBlocks    *[]SignUpBlock             `json:"signUpBlocks" bson:"signUpBlocks,omitempty"`
