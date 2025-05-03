@@ -1772,7 +1772,7 @@ export default {
       }
 
       return (
-        this.event.dates.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
+        this.allDays.length - (this.page + 1) * this.maxDaysPerPage > 0 ||
         this.event.type === eventTypes.GROUP
       )
     },
@@ -3536,7 +3536,7 @@ export default {
       if (this.event.type === eventTypes.GROUP) {
         // Go to next page if there are still more days left to see
         // Otherwise, update week offset
-        if ((this.page + 1) * this.maxDaysPerPage < this.event.dates.length) {
+        if ((this.page + 1) * this.maxDaysPerPage < this.allDays.length) {
           this.page++
         } else {
           this.page = 0
@@ -3555,8 +3555,7 @@ export default {
         if (this.page > 0) {
           this.page--
         } else {
-          this.page =
-            Math.ceil(this.event.dates.length / this.maxDaysPerPage) - 1
+          this.page = Math.ceil(this.allDays.length / this.maxDaysPerPage) - 1
           this.$emit("update:weekOffset", this.weekOffset - 1)
         }
       } else {
@@ -3883,7 +3882,7 @@ export default {
     maxDaysPerPage() {
       // Set page to 0 if user switches from portrait to landscape orientation and we're on an invalid page number,
       // i.e. we're on a page that displays 0 days
-      if (this.page * this.maxDaysPerPage >= this.event.dates.length) {
+      if (this.page * this.maxDaysPerPage >= this.allDays.length) {
         this.page = 0
       }
     },
