@@ -16,7 +16,7 @@
         </h2>
         <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
           You've run out of free events. Upgrade to create unlimited events.
-          <br />
+          <br class="tw-hidden sm:tw-block" />
           Your payment helps us keep the site running.
         </div>
         <!-- <ul
