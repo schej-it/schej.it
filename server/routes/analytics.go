@@ -31,9 +31,11 @@ func AnalyticsBasicAuth() gin.HandlerFunc {
 }
 
 func InitAnalytics(router *gin.RouterGroup) {
-	router.POST("/scanned-poster", scannedPoster)
-	router.POST("/upgrade-dialog-viewed", upgradeDialogViewed)
-	router.GET("/monthly-active-event-creators", AnalyticsBasicAuth(), getMonthlyActiveEventCreators)
+	analyticsRouter := router.Group("/analytics")
+
+	analyticsRouter.POST("/scanned-poster", scannedPoster)
+	analyticsRouter.POST("/upgrade-dialog-viewed", upgradeDialogViewed)
+	analyticsRouter.GET("/monthly-active-event-creators", AnalyticsBasicAuth(), getMonthlyActiveEventCreators)
 }
 
 // @Summary Notifies us when poster QR code has been scanned
