@@ -287,3 +287,27 @@ func GenerateShortEventId(eventId primitive.ObjectID) string {
 
 	return id
 }
+
+func CountDistinctMonthlyActiveEventCreators(date time.Time) (int64, error) {
+	thirtyDaysAgo := date.AddDate(0, 0, -30)
+	// Generate a minimal ObjectID for the timestamp 30 days ago
+	minObjectId := primitive.NewObjectIDFromTimestamp(thirtyDaysAgo)
+	maxObjectId := primitive.NewObjectIDFromTimestamp(date)
+
+	filter := bson.M{
+		"_id": bson.M{
+			"$gte": minObjectId,
+			"$lte": maxObjectId,
+		},
+		// Ensure creatorPosthogId exists and is not null/empty if needed
+		"creatorPosthogId": bson.M{"$exists": true, "$ne": ""},
+	}
+
+	distinctValues, err := EventsCollection.Distinct(context.Background(), "creatorPosthogId", filter)
+	if err != nil {
+		logger.StdErr.Printf("Error counting distinct monthly active creators: %v\n", err)
+		return 0, err
+	}
+
+	return int64(len(distinctValues)), nil
+}

@@ -4,6 +4,9 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"schej.it/server/db"
@@ -11,11 +14,26 @@ import (
 	"schej.it/server/slackbot"
 )
 
-func InitAnalytics(router *gin.RouterGroup) {
-	authRouter := router.Group("/analytics")
+// BasicAuth middleware for analytics routes
+func AnalyticsBasicAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		analyticsUsername := os.Getenv("ANALYTICS_USERNAME")
+		analyticsPassword := os.Getenv("ANALYTICS_PASSWORD")
+		user, pass, hasAuth := c.Request.BasicAuth()
 
-	authRouter.POST("/scanned-poster", scannedPoster)
-	authRouter.POST("/upgrade-dialog-viewed", upgradeDialogViewed)
+		if !hasAuth || user != analyticsUsername || pass != analyticsPassword {
+			c.Header("WWW-Authenticate", `Basic realm="Restricted"`)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		c.Next()
+	}
+}
+
+func InitAnalytics(router *gin.RouterGroup) {
+	router.POST("/scanned-poster", scannedPoster)
+	router.POST("/upgrade-dialog-viewed", upgradeDialogViewed)
+	router.GET("/monthly-active-event-creators", AnalyticsBasicAuth(), getMonthlyActiveEventCreators)
 }
 
 // @Summary Notifies us when poster QR code has been scanned
@@ -80,4 +98,77 @@ func upgradeDialogViewed(c *gin.Context) {
 	)
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Gets the daily count of monthly active event creators over a date range
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param startDate query string true "Start date (YYYY-MM-DD) for the range"
+// @Param endDate query string true "End date (YYYY-MM-DD) for the range"
+// @Param timezoneOffset query integer true "Client's timezone offset in minutes from UTC (e.g., -420 for UTC-7)"
+// @Success 200 {array} object{date=string,count=int}
+// @Failure 400 {object} object{error=string} "Invalid date format, range, or timezone offset"
+// @Failure 500 {object} object{error=string} "Internal server error"
+// @Router /analytics/monthly-active-event-creators [get]
+func getMonthlyActiveEventCreators(c *gin.Context) {
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	timezoneOffsetStr := c.Query("timezoneOffset") // Get timezone offset param
+
+	if startDateStr == "" || endDateStr == "" || timezoneOffsetStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "startDate, endDate, and timezoneOffset query parameters are required"})
+		return
+	}
+
+	// Parse timezone offset
+	timezoneOffset, err := strconv.Atoi(timezoneOffsetStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid timezoneOffset format. Must be an integer representing minutes."})
+		return
+	}
+	// Convert offset minutes to a location (Go's time package uses seconds west of UTC)
+	// Note: JS getTimezoneOffset() is positive for west, negative for east.
+	// Go FixedZone expects seconds east of UTC. So, offset needs to be negated and converted to seconds.
+	location := time.FixedZone("UserOffset", -timezoneOffset*60)
+
+	layout := "2006-01-02" // YYYY-MM-DD
+	startDate, err := time.Parse(layout, startDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid startDate format. Use YYYY-MM-DD"})
+		return
+	}
+	endDate, err := time.Parse(layout, endDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid endDate format. Use YYYY-MM-DD"})
+		return
+	}
+
+	if endDate.Before(startDate) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "endDate cannot be before startDate"})
+		return
+	}
+
+	var results []int64
+
+	// Loop through each day from startDate to endDate (inclusive)
+	for d := startDate; !d.After(endDate); d = d.AddDate(0, 0, 1) {
+		// Set time to end of the day using the *client's timezone* location
+		year, month, day := d.Date()
+		currentDateEndOfDay := time.Date(year, month, day, 23, 59, 59, 0, location) // Use parsed location
+
+		count, err := db.CountDistinctMonthlyActiveEventCreators(currentDateEndOfDay)
+		if err != nil {
+			// Log the error but continue if possible, or decide to fail the whole request
+			fmt.Printf("Error fetching count for date %s: %v\n", d.Format(layout), err)
+			// Depending on requirements, you might want to return partial results or a full error
+			// For now, let's skip this day's count on error
+			// Alternatively: c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get count for %s: %s", d.Format(layout), err.Error())}); return
+			continue // Skip this date if there's an error
+		}
+
+		results = append(results, count)
+	}
+
+	c.JSON(http.StatusOK, results)
 }
