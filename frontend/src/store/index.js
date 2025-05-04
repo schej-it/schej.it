@@ -21,6 +21,7 @@ export default new Vuex.Store({
     signUpFormEnabled: false,
     daysOnlyEnabled: true,
     overlayAvailabilitiesEnabled: true,
+    enablePaywall: false,
 
     // Experiments
     pricingPageConversion: "control",
@@ -62,6 +63,9 @@ export default new Vuex.Store({
     },
     setPricingPageConversion(state, conversion) {
       state.pricingPageConversion = conversion
+    },
+    setEnablePaywall(state, enabled) {
+      state.enablePaywall = enabled
     },
   },
   actions: {

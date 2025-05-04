@@ -7,7 +7,11 @@
       <div class="tw-flex tw-flex-col">
         {{ eventType.header }}
         <div
-          v-if="eventType.header === 'Events I created' && !isPremiumUser"
+          v-if="
+            eventType.header === 'Events I created' &&
+            enablePaywall &&
+            !isPremiumUser
+          "
           class="tw-text-sm tw-font-normal tw-text-very-dark-gray"
         >
           {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
@@ -93,7 +97,7 @@ export default {
   }),
 
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "enablePaywall"]),
     defaultNumEventsToShow() {
       return this.$vuetify.breakpoint.lgAndUp ? 6 : 4
     },

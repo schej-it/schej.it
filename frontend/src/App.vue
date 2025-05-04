@@ -284,7 +284,13 @@ export default {
   }),
 
   computed: {
-    ...mapState(["authUser", "error", "info", "createdEvents"]),
+    ...mapState([
+      "authUser",
+      "error",
+      "info",
+      "createdEvents",
+      "enablePaywall",
+    ]),
     createdEventsNonGroup() {
       return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
     },
@@ -322,6 +328,7 @@ export default {
       "setAuthUser",
       "setSignUpFormEnabled",
       "setPricingPageConversion",
+      "setEnablePaywall",
       "setFeatureFlagsLoaded",
     ]),
     ...mapActions(["getEvents"]),
@@ -330,6 +337,7 @@ export default {
     },
     createNew(eventOnly = false) {
       if (
+        this.enablePaywall &&
         !this.isPremiumUser &&
         this.authUser?.numEventsCreated >= numFreeEvents
       ) {
@@ -347,6 +355,7 @@ export default {
     setNewDialogOptions(newDialogOptions) {
       if (
         newDialogOptions.show &&
+        this.enablePaywall &&
         !this.isPremiumUser &&
         this.authUser?.numEventsCreated >= numFreeEvents
       ) {
@@ -408,6 +417,7 @@ export default {
       this.setPricingPageConversion(
         this.$posthog.getFeatureFlag("pricing-page-conversion")
       )
+      this.setEnablePaywall(this.$posthog.isFeatureEnabled("enable-paywall"))
       this.setFeatureFlagsLoaded(true)
     },
   },
