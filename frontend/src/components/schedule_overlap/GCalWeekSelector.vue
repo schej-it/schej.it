@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { isPhone } from "@/utils"
+import { isPhone, dateToDowDate } from "@/utils"
 import dayjs from "dayjs"
 
 export default {
@@ -20,6 +20,7 @@ export default {
   props: {
     weekOffset: { type: Number, required: true },
     startOnMonday: { type: Boolean, default: false },
+    event: { type: Object, required: true },
   },
 
   data() {
@@ -31,7 +32,12 @@ export default {
       return isPhone(this.$vuetify)
     },
     weekText() {
-      const date = new Date()
+      const date = dateToDowDate(
+        this.event.dates,
+        this.event.dates[0],
+        this.weekOffset,
+        true
+      )
       // Set date to the Sunday of the current week
       date.setDate(date.getDate() - date.getDay())
       // Change date by the weekoffset

@@ -417,13 +417,20 @@ export const getCalendarEventsMap = async (
     ).toISOString()
   } else if (event.type === eventTypes.DOW || event.type === eventTypes.GROUP) {
     // Get all calendar events for the current week offsetted by weekOffset
-    const curDateWithWeekOffset = getDateDayOffset(new Date(), weekOffset * 7)
-    const curDateDay = curDateWithWeekOffset.getDay()
-    timeMin = getDateDayOffset(
-      curDateWithWeekOffset,
-      -(curDateDay + 1)
-    ).toISOString()
-    timeMax = getDateDayOffset(timeMin, 7 + 2).toISOString()
+    const firstDate = dateToDowDate(
+      event.dates,
+      event.dates[0],
+      weekOffset,
+      true
+    )
+    const lastDate = dateToDowDate(
+      event.dates,
+      event.dates[event.dates.length - 1],
+      weekOffset,
+      true
+    )
+    timeMin = getDateDayOffset(firstDate, -2).toISOString()
+    timeMax = getDateDayOffset(lastDate, 2).toISOString()
   }
 
   // Fetch calendar events from Google Calendar

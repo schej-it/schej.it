@@ -73,6 +73,7 @@
             <GCalWeekSelector
               v-if="calendarPermissionGranted"
               :week-offset="weekOffset"
+              :event="event"
               @update:weekOffset="(val) => $emit('update:weekOffset', val)"
               :start-on-monday="event.startOnMonday"
             />
@@ -199,7 +200,6 @@ export default {
     //   "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4082178684015354"
     // adScript.crossOrigin = "anonymous"
     // document.head.appendChild(adScript)
-
     // // Initialize Google Ads
     // adScript.onload = () => {
     //   (window.adsbygoogle = window.adsbygoogle || []).push({})

@@ -814,6 +814,7 @@
             <div class="tw-h-16 tw-text-sm">
               <GCalWeekSelector
                 :week-offset="weekOffset"
+                :event="event"
                 @update:weekOffset="(val) => $emit('update:weekOffset', val)"
                 :start-on-monday="event.startOnMonday"
               />
