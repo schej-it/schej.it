@@ -1303,7 +1303,7 @@ export default {
             this.months[offsetDate.getUTCMonth()]
           } ${offsetDate.getUTCDate()}`
           dayString = this.daysOfWeek[offsetDate.getUTCDay()]
-        } else if (this.isGroup) {
+        } else if (this.isGroup || this.isWeekly) {
           const tmpDate = dateToDowDate(
             this.event.dates,
             offsetDate,
