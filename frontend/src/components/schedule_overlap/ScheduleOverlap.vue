@@ -2393,11 +2393,13 @@ export default {
       calendarOptions = calendarOptionsDefaults, // User id of the user we are getting availability for
     }) {
       const availability = new Set()
-      for (let i = 0; i < this.event.dates.length; ++i) {
-        const date = new Date(this.event.dates[i])
+
+      for (let i = 0; i < this.allDays.length; ++i) {
+        const day = this.allDays[i]
+        const date = day.dateObject
 
         if (includeTouchedAvailability) {
-          const endDate = getDateHoursOffset(date, this.event.duration)
+          const endDate = getDateHoursOffset(date, this.times.length / 4)
 
           // Check if manual availability has been added for the current date
           let manualAvailabilityAdded = false
@@ -2428,11 +2430,6 @@ export default {
 
           if (manualAvailabilityAdded) continue
         }
-      }
-
-      for (let i = 0; i < this.allDays.length; ++i) {
-        const day = this.allDays[i]
-        const date = day.dateObject
 
         // Calculate buffer time
         const bufferTimeInMS = calendarOptions.bufferTime.enabled
