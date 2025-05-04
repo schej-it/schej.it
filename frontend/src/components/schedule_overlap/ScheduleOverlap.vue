@@ -2469,7 +2469,7 @@ export default {
           }
 
           // Check if there exists a calendar event that overlaps [startDate, endDate]
-          const index = calendarEventsByDay[i].findIndex((e) => {
+          const index = calendarEventsByDay[i]?.findIndex((e) => {
             const startDateBuffered = new Date(
               e.startDate.getTime() - bufferTimeInMS
             )
