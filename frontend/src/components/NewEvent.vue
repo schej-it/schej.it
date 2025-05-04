@@ -164,7 +164,7 @@
         </div>
 
         <v-checkbox
-          v-if="allowNotifications && !guestEvent"
+          v-if="allowNotifications && !guestEvent && authUser"
           v-model="notificationsEnabled"
           hide-details
           class="tw-mt-2"

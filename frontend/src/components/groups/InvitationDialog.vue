@@ -191,13 +191,15 @@ export default {
     },
 
     toggleCalendarAccount(payload) {
-      this.calendarAccounts[payload.email].enabled = payload.enabled
+      this.calendarAccounts[
+        `${payload.email}_${payload.calendarType}`
+      ].enabled = payload.enabled
     },
 
     toggleSubCalendarAccount(payload) {
-      this.calendarAccounts[payload.email].subCalendars[
-        payload.subCalendarId
-      ].enabled = payload.enabled
+      this.calendarAccounts[
+        `${payload.email}_${payload.calendarType}`
+      ].subCalendars[payload.subCalendarId].enabled = payload.enabled
     },
   },
 }
