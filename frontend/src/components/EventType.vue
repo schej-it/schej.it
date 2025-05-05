@@ -18,6 +18,22 @@
         </div>
       </div>
       <div
+        v-if="eventType.header === 'Events I created'"
+        class="tw-hidden tw-flex-row tw-items-center tw-gap-2 sm:tw-flex"
+      >
+        <div
+          @click="showW2MDialog = true"
+          class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
+        >
+          Convert When2meet to Schej
+        </div>
+        <div
+          class="tw-rounded-md tw-bg-green tw-px-2 tw-py-1 tw-text-xs tw-text-white"
+        >
+          NEW
+        </div>
+      </div>
+      <div
         v-if="eventType.events.length > defaultNumEventsToShow"
         @click="toggleShowAll"
         class="tw-mt-2 tw-cursor-pointer tw-text-sm tw-font-normal tw-text-very-dark-gray sm:tw-hidden"
@@ -71,6 +87,8 @@
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
       </div>
     </div>
+    <!-- Add the dialog component -->
+    <When2meetImportDialog v-model="showW2MDialog" />
   </div>
 </template>
 
@@ -79,12 +97,14 @@ import EventItem from "@/components/EventItem.vue"
 import { numFreeEvents } from "@/constants"
 import { mapState } from "vuex"
 import { isPremiumUser } from "@/utils"
+import When2meetImportDialog from "@/components/When2meetImportDialog.vue"
 
 export default {
   name: "EventType",
 
   components: {
     EventItem,
+    When2meetImportDialog,
   },
 
   props: {
@@ -94,6 +114,7 @@ export default {
 
   data: () => ({
     showAll: false,
+    showW2MDialog: false,
   }),
 
   computed: {
