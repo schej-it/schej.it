@@ -121,14 +121,14 @@
         class="tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-4 tw-text-center"
       >
         <a
-          class="tw-cursor-pointer tw-py-2 tw-text-xs tw-font-medium tw-text-dark-gray hover:tw-underline"
+          class="tw-cursor-pointer tw-py-2 tw-text-xs tw-font-medium tw-text-dark-gray tw-underline"
           target="_blank"
           href="https://forms.gle/aaBzFvoKkHLPDjio7"
         >
           I don't want to pay
         </a>
         <div
-          class="tw-cursor-pointer tw-py-2 tw-text-xs tw-font-medium tw-text-dark-gray hover:tw-underline"
+          class="tw-cursor-pointer tw-py-2 tw-text-xs tw-font-medium tw-text-dark-gray tw-underline"
           @click="showDonatedDialog = true"
         >
           I already donated :)
