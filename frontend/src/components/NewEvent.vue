@@ -315,7 +315,11 @@
                   </div>
                 </template>
               </v-checkbox>
-              <TimezoneSelector v-model="timezone" label="Timezone" />
+              <TimezoneSelector
+                v-model="timezone"
+                label="Timezone"
+                @input="trackTimezoneChange"
+              />
             </div>
           </ExpandableSection>
         </div>
@@ -836,6 +840,11 @@ export default {
         this.sendEmailAfterXResponses !==
           this.initialEventData.sendEmailAfterXResponses
       )
+    },
+    trackTimezoneChange(newTimezone) {
+      this.$posthog.capture("timezone_selected_in_new_event_dialog", {
+        timezone: newTimezone?.value,
+      })
     },
   },
 

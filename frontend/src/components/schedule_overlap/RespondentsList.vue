@@ -35,7 +35,12 @@
             <v-list class="tw-py-1" dense>
               <v-dialog v-model="exportCsvDialog.visible" width="400">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-list-item id="export-csv-btn" v-on="on" v-bind="attrs">
+                  <v-list-item
+                    id="export-csv-btn"
+                    v-on="on"
+                    v-bind="attrs"
+                    @click="trackExportCsvClick"
+                  >
                     <v-list-item-title>Export CSV</v-list-item-title>
                   </v-list-item>
                 </template>
@@ -717,6 +722,12 @@ export default {
       document.body.appendChild(downloadLink)
       downloadLink.click()
       document.body.removeChild(downloadLink)
+    },
+    trackExportCsvClick() {
+      this.$posthog.capture("export_csv_clicked", {
+        eventId: this.eventId,
+        numRespondents: this.respondents.length,
+      })
     },
     setDesktopMaxHeight() {
       const el = this.$refs.scrollableSection

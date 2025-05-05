@@ -3135,6 +3135,7 @@ export default {
     // -----------------------------------
     scheduleEvent() {
       this.state = this.states.SCHEDULE_EVENT
+      this.$posthog.capture("schedule_event_button_clicked")
     },
     cancelScheduleEvent() {
       this.state = this.defaultState
@@ -3143,6 +3144,7 @@ export default {
     /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
+      this.$posthog.capture("schedule_event_confirmed")
       // Get start date, and end date from the area that the user has dragged out
       const { col, row, numRows } = this.curScheduledEvent
       let startDate = this.getDateFromRowCol(row, col)
@@ -3534,6 +3536,9 @@ export default {
     },
     updateOverlayAvailability(val) {
       this.overlayAvailability = !!val
+      this.$posthog.capture("overlay_availability_toggled", {
+        enabled: !!val,
+      })
     },
     //#endregion
 

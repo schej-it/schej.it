@@ -12,7 +12,13 @@
   >
     Enjoying Schej? Help us reach more people by upvoting our Reddit post and
     leaving a comment with your thoughts :)
-    <v-btn :href="redditUrl" target="_blank" small color="#FF4501">
+    <v-btn
+      :href="redditUrl"
+      target="_blank"
+      small
+      color="#FF4501"
+      @click="trackRedditClick"
+    >
       Upvote
       <v-icon small class="-tw-mr-px -tw-mt-px">mdi-arrow-up-bold</v-icon>
     </v-btn>
@@ -51,6 +57,12 @@ export default {
     dismiss() {
       this.show = false
       localStorage.setItem(this.localStorageKey, "true")
+      this.$posthog.capture("reddit_upvote_snackbar_dismissed")
+    },
+    trackRedditClick() {
+      this.$posthog.capture("reddit_upvote_snackbar_clicked", {
+        redditUrl: this.redditUrl,
+      })
     },
   },
 

@@ -48,6 +48,7 @@
           text
           href="https://forms.gle/9AgRy4PQfWfVuBnw8"
           target="_blank"
+          @click="trackFeedbackClick"
         >
           Give feedback
         </v-btn>
@@ -336,6 +337,9 @@ export default {
       this.scrollY = window.scrollY
     },
     createNew(eventOnly = false) {
+      this.$posthog.capture("create_new_button_clicked", {
+        eventOnly: eventOnly,
+      })
       if (
         this.enablePaywall &&
         !this.isPremiumUser &&
@@ -419,6 +423,9 @@ export default {
       )
       this.setEnablePaywall(this.$posthog.isFeatureEnabled("enable-paywall"))
       this.setFeatureFlagsLoaded(true)
+    },
+    trackFeedbackClick() {
+      this.$posthog.capture("give_feedback_button_clicked")
     },
   },
 

@@ -7,7 +7,7 @@
     <v-switch
       id="buffer-time-switch"
       :input-value="bufferTime.enabled"
-      @change="(val) => updateBufferTime('enabled', val)"
+      @change="handleBufferTimeToggle"
       inset
       class="tw-flex tw-items-center"
       hide-details
@@ -73,6 +73,15 @@ export default {
         })
       }
       this.$emit("update:bufferTime", bufferTime)
+    },
+    handleBufferTimeToggle(isEnabled) {
+      // Update the buffer time state
+      this.updateBufferTime("enabled", isEnabled)
+
+      // Capture PostHog event
+      this.$posthog.capture("buffer_time_switch_toggled", {
+        enabled: isEnabled,
+      })
     },
   },
 }

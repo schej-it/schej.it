@@ -138,9 +138,11 @@ export default {
       this.$emit("setAvailabilityManually")
     },
     autofillWithGcal() {
+      this.$posthog.capture("autofill_with_gcal_clicked")
       this.state = this.states.GCAL_PERMISSIONS
     },
     autofillWithApple() {
+      this.$posthog.capture("autofill_with_apple_clicked")
       if (this.authUser) {
         this.state = this.states.APPLE_CREDENTIALS
       } else {
@@ -148,6 +150,7 @@ export default {
       }
     },
     autofillWithOutlook() {
+      this.$posthog.capture("autofill_with_outlook_clicked")
       this.$emit("allowOutlookCalendar")
     },
     showChoices() {

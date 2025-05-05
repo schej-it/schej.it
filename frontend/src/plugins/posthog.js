@@ -5,9 +5,7 @@ export default {
     Vue.prototype.$posthog = posthog.init(process.env.VUE_APP_POSTHOG_API_KEY, {
       api_host: "https://e.schej.it",
       capture_pageview: false,
-      autocapture: {
-        dom_event_allowlist: ["click"],
-      },
+      autocapture: false,
     })
   },
 }
