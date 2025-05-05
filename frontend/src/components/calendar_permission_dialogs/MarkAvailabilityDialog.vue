@@ -8,9 +8,12 @@
     <v-card class="tw-p-4 sm:tw-p-6">
       <v-expand-transition>
         <div v-show="state === states.CHOICES">
-          <div class="tw-text-md tw-pb-4 tw-text-center">
-            How would you like to add <br v-if="isPhone" />
+          <div class="tw-text-md mb-1 tw-text-center">
+            How would you like to add <br class="tw-block sm:tw-hidden" />
             your availability?
+          </div>
+          <div class="tw-pb-4 tw-text-center tw-text-xs tw-text-dark-gray">
+            You can always manually edit after autofilling
           </div>
           <div class="tw-flex tw-flex-col tw-gap-2">
             <v-btn block @click="autofillWithGcal" class="tw-bg-white">
