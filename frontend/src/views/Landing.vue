@@ -88,12 +88,12 @@
             class=""
           /> -->
           <!-- Placeholder when schejy is not shown -->
-          <div
+          <!-- <div
             v-if="!showSchejy"
             id="canvas"
             class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
-          ></div>
-          <v-slide-y-reverse-transition>
+          ></div> -->
+          <!-- <v-slide-y-reverse-transition>
             <div v-show="showSchejy" class="tw-self-center tw-overflow-hidden">
               <canvas
                 id="canvas"
@@ -102,7 +102,15 @@
                 class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
               ></canvas>
             </div>
-          </v-slide-y-reverse-transition>
+          </v-slide-y-reverse-transition> -->
+          <v-img
+            alt="schej character"
+            src="@/assets/schejie/wave.png"
+            :height="80"
+            transition="fade-transition"
+            contain
+            class="tw-mt-2 tw-block"
+          />
           <NewEvent
             class="tw-drop-shadow-lg"
             :dialog="false"
@@ -354,25 +362,25 @@ export default {
 
   methods: {
     loadRiveAnimation() {
-      if (!this.rive) {
-        this.rive = new Rive({
-          src: "/rive/schej.riv",
-          canvas: document.querySelector("canvas"),
-          autoplay: false,
-          stateMachines: "wave",
-          onLoad: () => {
-            // r.resizeDrawingSurfaceToCanvas()
-          },
-        })
-        setTimeout(() => {
-          this.showSchejy = true
-          setTimeout(() => {
-            this.rive.play("wave")
-          }, 1000)
-        }, 4000)
-      } else {
-        this.rive.play("wave")
-      }
+      // if (!this.rive) {
+      //   this.rive = new Rive({
+      //     src: "/rive/schej.riv",
+      //     canvas: document.querySelector("canvas"),
+      //     autoplay: false,
+      //     stateMachines: "wave",
+      //     onLoad: () => {
+      //       // r.resizeDrawingSurfaceToCanvas()
+      //     },
+      //   })
+      //   setTimeout(() => {
+      //     this.showSchejy = true
+      //     setTimeout(() => {
+      //       this.rive.play("wave")
+      //     }, 1000)
+      //   }, 4000)
+      // } else {
+      //   this.rive.play("wave")
+      // }
     },
     _signIn(calendarType) {
       if (calendarType === calendarTypes.GOOGLE) {
