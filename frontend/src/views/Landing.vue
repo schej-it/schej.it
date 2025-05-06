@@ -277,7 +277,7 @@ export default {
   name: "Landing",
 
   metaInfo: {
-    title: "Schej - Finding a time to meet, made simple",
+    title: "Schej - Find a time to meet",
   },
 
   components: {
