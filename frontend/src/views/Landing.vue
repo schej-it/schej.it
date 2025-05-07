@@ -16,7 +16,7 @@
           <v-spacer />
 
           <LandingPageHeader>
-            <v-btn text href="#how-it-works">How it works</v-btn>
+            <v-btn text @click="openHowItWorksDialog">How it works</v-btn>
             <v-btn text href="/blog">Blog</v-btn>
             <v-btn text @click="signIn">Sign in</v-btn>
           </LandingPageHeader>
@@ -254,6 +254,9 @@
         </v-btn>
       </template>
     </v-snackbar>
+
+    <!-- Add the dialog component -->
+    <HowItWorksDialog v-model="showHowItWorksDialog" />
   </div>
 </template>
 
@@ -280,6 +283,7 @@ import { Rive } from "@rive-app/canvas"
 import GithubButton from "vue-github-button"
 import SignInDialog from "@/components/SignInDialog.vue"
 import { calendarTypes } from "@/constants"
+import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
 
 export default {
   name: "Landing",
@@ -299,6 +303,7 @@ export default {
     GithubButton,
     Logo,
     SignInDialog,
+    HowItWorksDialog,
   },
 
   data: () => ({
@@ -352,6 +357,7 @@ export default {
     ],
     rive: null,
     showSchejy: false,
+    showHowItWorksDialog: false,
   }),
 
   computed: {
@@ -392,6 +398,10 @@ export default {
     },
     signIn() {
       this.signInDialog = true
+    },
+    openHowItWorksDialog() {
+      this.showHowItWorksDialog = true
+      this.$posthog.capture("how_it_works_clicked")
     },
   },
 
