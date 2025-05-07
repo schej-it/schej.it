@@ -4,7 +4,7 @@
       <iframe
         width="100%"
         height="100%"
-        :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`"
+        :src="`https://www.youtube.com/embed/I7jl850X1P4?si=4xUlkXJebxBaDP1I&autoplay=1`"
         title="YouTube video player - How Schej Works"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -21,12 +21,6 @@ export default {
   name: "HowItWorksDialog",
   props: {
     value: Boolean, // v-model for dialog visibility
-  },
-  data() {
-    return {
-      // TODO: Replace with your actual YouTube video ID for "How it works"
-      youtubeVideoId: "I7jl850X1P4",
-    }
   },
   computed: {
     dialog: {
