@@ -256,7 +256,10 @@
     </v-snackbar>
 
     <!-- Add the dialog component -->
-    <HowItWorksDialog v-model="showHowItWorksDialog" />
+    <HowItWorksDialog
+      v-if="showHowItWorksDialog"
+      v-model="showHowItWorksDialog"
+    />
   </div>
 </template>
 
