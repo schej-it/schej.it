@@ -8,6 +8,7 @@ type EventType string
 
 const (
 	SPECIFIC_DATES EventType = "specific_dates"
+	SPECIFIC_TIMES EventType = "specific_times"
 	DOW            EventType = "dow"
 	GROUP          EventType = "group"
 )
@@ -54,6 +55,9 @@ type Event struct {
 	SendEmailAfterXResponses *int                 `json:"sendEmailAfterXResponses" bson:"sendEmailAfterXResponses,omitempty"`
 	When2meetHref            *string              `json:"when2meetHref" bson:"when2meetHref,omitempty"`
 	CollectEmails            *bool                `json:"collectEmails" bson:"collectEmails,omitempty"`
+
+	// Used for specific times for specific dates feature
+	Times []primitive.DateTime `json:"times" bson:"times,omitempty"`
 
 	Type EventType `json:"type" bson:"type,omitempty"`
 
