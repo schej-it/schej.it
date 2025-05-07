@@ -153,4 +153,4 @@ export const allTimezones = Object.freeze({
 
 export const guestUserId = "000000000000000000000000"
 
-export const numFreeEvents = 5
+export const numFreeEvents = 3
