@@ -525,12 +525,12 @@
             />
           </template>
           <template v-else-if="state === states.SET_SPECIFIC_TIMES">
-            <div class="tw-flex tw-flex-col tw-gap-2">
+            <div class="tw-flex tw-flex-col tw-gap-4">
               <div class="tw-text-sm tw-italic tw-text-dark-gray">
                 Click and drag on the grid to select the potential meeting times
               </div>
 
-              <div class="tw-mt-2 tw-flex tw-flex-col tw-gap-1">
+              <div class="tw-flex tw-flex-col tw-gap-1">
                 <div class="tw-text-sm tw-font-medium">Legend:</div>
                 <div class="tw-flex tw-items-center tw-gap-2">
                   <div class="tw-h-4 tw-w-4 tw-rounded tw-bg-gray"></div>
@@ -543,6 +543,12 @@
                   <span class="tw-text-sm">Potential meeting times</span>
                 </div>
               </div>
+              <v-btn
+                color="primary"
+                @click="saveTempTimes"
+                :disabled="!tempTimes.size"
+                >Next</v-btn
+              >
             </div>
           </template>
           <template v-else>
@@ -3917,6 +3923,24 @@ export default {
     handleSignUpBlockClick(block) {
       if (!this.alreadyRespondedToSignUpForm && !this.isOwner)
         this.$emit("signUpForBlock", block)
+    },
+
+    //#endregion
+
+    // -----------------------------------
+    //#region Specific times for specific days
+    // -----------------------------------
+
+    /** Saves the temporary times to the event */
+    saveTempTimes() {
+      this.event.times = [...this.tempTimes].map((t) => new Date(t))
+      put(`/events/${this.event._id}`, this.event)
+        .then(() => {
+          this.state = this.defaultState
+        })
+        .catch((err) => {
+          this.showError(err)
+        })
     },
 
     //#endregion

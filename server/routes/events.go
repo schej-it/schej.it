@@ -263,6 +263,7 @@ func editEvent(c *gin.Context) {
 		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		logger.StdErr.Println(err)
 		return
 	}
 
