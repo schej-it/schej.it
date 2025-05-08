@@ -493,8 +493,59 @@
           class="tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
           :style="{ width: rightSideWidth }"
         >
-          <!-- Show respondents if not sign up form, otherwise, show sign up blocks -->
-          <template v-if="!isSignUp">
+          <!-- Show section on the right depending on some if conditions -->
+          <template v-if="isSignUp">
+            <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
+            <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
+              <div
+                class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-3 tw-text-xs tw-italic tw-text-dark-gray"
+              >
+                <div v-if="!authUser || alreadyRespondedToSignUpForm">
+                  <a class="tw-underline" :href="`mailto:${event.ownerId}`"
+                    >Contact sign up creator</a
+                  >
+                  to edit your slot
+                </div>
+                <div v-if="event.blindAvailabilityEnabled">
+                  Responses are only visible to creator
+                </div>
+              </div>
+            </div>
+            <SignUpBlocksList
+              ref="signUpBlocksList"
+              :signUpBlocks="signUpBlocksByDay.flat()"
+              :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
+              :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
+              :isOwner="isOwner"
+              :alreadyResponded="alreadyRespondedToSignUpForm"
+              :anonymous="event.blindAvailabilityEnabled"
+              @update:signUpBlock="editSignUpBlock"
+              @delete:signUpBlock="deleteSignUpBlock"
+              @signUpForBlock="$emit('signUpForBlock', $event)"
+            />
+          </template>
+          <template v-else-if="state === states.SET_SPECIFIC_TIMES">
+            <div class="tw-flex tw-flex-col tw-gap-2">
+              <div class="tw-text-sm tw-italic tw-text-dark-gray">
+                Click and drag on the grid to select the potential meeting times
+              </div>
+
+              <div class="tw-mt-2 tw-flex tw-flex-col tw-gap-1">
+                <div class="tw-text-sm tw-font-medium">Legend:</div>
+                <div class="tw-flex tw-items-center tw-gap-2">
+                  <div class="tw-h-4 tw-w-4 tw-rounded tw-bg-gray"></div>
+                  <span class="tw-text-sm">Blocked off</span>
+                </div>
+                <div class="tw-flex tw-items-center tw-gap-2">
+                  <div
+                    class="tw-h-4 tw-w-4 tw-rounded tw-border tw-border-gray tw-bg-white"
+                  ></div>
+                  <span class="tw-text-sm">Potential meeting times</span>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
             <div
               class="tw-flex tw-flex-col tw-gap-5"
               v-if="state == states.EDIT_AVAILABILITY"
@@ -713,36 +764,6 @@
                 @refreshEvent="refreshEvent"
               />
             </template>
-          </template>
-          <template v-else>
-            <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
-            <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
-              <div
-                class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-3 tw-text-xs tw-italic tw-text-dark-gray"
-              >
-                <div v-if="!authUser || alreadyRespondedToSignUpForm">
-                  <a class="tw-underline" :href="`mailto:${event.ownerId}`"
-                    >Contact sign up creator</a
-                  >
-                  to edit your slot
-                </div>
-                <div v-if="event.blindAvailabilityEnabled">
-                  Responses are only visible to creator
-                </div>
-              </div>
-            </div>
-            <SignUpBlocksList
-              ref="signUpBlocksList"
-              :signUpBlocks="signUpBlocksByDay.flat()"
-              :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
-              :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
-              :isOwner="isOwner"
-              :alreadyResponded="alreadyRespondedToSignUpForm"
-              :anonymous="event.blindAvailabilityEnabled"
-              @update:signUpBlock="editSignUpBlock"
-              @delete:signUpBlock="deleteSignUpBlock"
-              @signUpForBlock="$emit('signUpForBlock', $event)"
-            />
           </template>
         </div>
       </div>
