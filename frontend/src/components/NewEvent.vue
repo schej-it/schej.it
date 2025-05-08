@@ -651,6 +651,7 @@ export default {
         name: this.name,
         duration: duration,
         dates: dates,
+        hasSpecificTimes: this.specificTimesEnabled,
         notificationsEnabled: !this.authUser
           ? false
           : this.notificationsEnabled,
@@ -666,21 +667,11 @@ export default {
         creatorPosthogId: this.$posthog?.get_distinct_id(),
       }
 
-      // if (this.specificTimesEnabled) {
-      //   this.$router.push({
-      //     name: "event",
-      //     params: {
-      //       tempPayload: payload,
-      //       initialTimezone: this.timezone,
-      //     },
-      //   })
-      //   return
-      // }
-
       const posthogPayload = {
         eventName: this.name,
         eventDuration: duration,
         eventDates: JSON.stringify(dates),
+        eventHasSpecificTimes: this.specificTimesEnabled,
         eventNotificationsEnabled: !this.authUser
           ? false
           : this.notificationsEnabled,
