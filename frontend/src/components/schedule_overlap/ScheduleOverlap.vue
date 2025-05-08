@@ -1350,6 +1350,31 @@ export default {
         return { dateString, dayString }
       }
 
+      if (this.isSpecificTimes && this.event.times?.length > 0) {
+        for (const time of this.event.times) {
+          const timeDate = new Date(time)
+          const date = new Date(
+            timeDate.getTime() - this.timezoneOffset * 60 * 1000
+          )
+          date.setUTCHours(0, 0, 0, 0)
+          date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
+          const dateTime = date.getTime()
+
+          if (!datesSoFar.has(dateTime)) {
+            datesSoFar.add(dateTime)
+
+            const { dayString, dateString } = getDateString(date)
+            days.push({
+              dayText: dayString,
+              dateString,
+              dateObject: date,
+            })
+          }
+        }
+        console.log(days)
+        return days
+      }
+
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
         datesSoFar.add(date.getTime())
@@ -1687,6 +1712,40 @@ export default {
      * */
     splitTimes() {
       const splitTimes = [[], []]
+
+      if (this.isSpecificTimes && this.event.times?.length > 0) {
+        let minHours = 24
+        let maxHours = 0
+        for (const time of this.event.times) {
+          const timeDate = new Date(time)
+          const date = new Date(
+            timeDate.getTime() - this.timezoneOffset * 60 * 1000
+          )
+          const localHours = date.getUTCHours()
+          if (localHours < minHours) {
+            minHours = localHours
+          } else if (localHours > maxHours) {
+            maxHours = localHours
+          }
+        }
+        // Hours offset for specific times starts from midnight = 0
+        for (let i = minHours; i <= maxHours; ++i) {
+          splitTimes[0].push({
+            hoursOffset: i,
+            text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
+          })
+          splitTimes[0].push({
+            hoursOffset: i + 0.25,
+          })
+          splitTimes[0].push({
+            hoursOffset: i + 0.5,
+          })
+          splitTimes[0].push({
+            hoursOffset: i + 0.75,
+          })
+        }
+        return splitTimes
+      }
 
       const utcStartTime = this.event.startTime
       const utcEndTime = this.event.startTime + this.event.duration
