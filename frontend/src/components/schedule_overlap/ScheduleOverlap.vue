@@ -2771,9 +2771,14 @@ export default {
         )
           classStyle.class += "tw-border-b tw-border-b-gray "
 
+        const totalRespondents =
+          this.state === this.states.SUBSET_AVAILABILITY
+            ? this.curRespondents.length
+            : this.respondents.length
         if (
           this.state === this.states.EDIT_AVAILABILITY ||
-          this.state === this.states.SINGLE_AVAILABILITY
+          this.state === this.states.SINGLE_AVAILABILITY ||
+          totalRespondents === 1
         ) {
           classStyle.class += "tw-border-[#999999] "
         } else {
@@ -2822,7 +2827,7 @@ export default {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
             if (this.availabilityType === availabilityTypes.AVAILABLE) {
-              s.backgroundColor = "#00994C88"
+              s.backgroundColor = "#00994C77"
             } else if (this.availabilityType === availabilityTypes.IF_NEEDED) {
               c += "tw-bg-yellow "
             }
@@ -2832,7 +2837,7 @@ export default {
           // Otherwise just show the current availability
           // Show current availability from availability set
           if (this.availability.has(date.getTime())) {
-            s.backgroundColor = "#00994C88"
+            s.backgroundColor = "#00994C77"
           } else if (this.ifNeeded.has(date.getTime())) {
             c += "tw-bg-yellow "
           }
@@ -2846,11 +2851,12 @@ export default {
           if (this.parsedResponses[respondent]?.ifNeeded?.has(date.getTime())) {
             c += "tw-bg-yellow "
           } else {
-            s.backgroundColor = "#00994C88"
+            s.backgroundColor = "#00994C77"
           }
         } else {
           s.backgroundColor = "#E523230D"
         }
+        return { class: c, style: s }
       }
 
       if (
@@ -2900,7 +2906,7 @@ export default {
             // Only set timeslot to green for the times that most people are available
             if (totalRespondents === 1 || this.overlayAvailability) {
               // Make single responses less saturated
-              const green = "#00994CAA"
+              const green = "#00994C88"
               s.backgroundColor = green
             } else {
               const green = "#00994C"
@@ -2921,7 +2927,7 @@ export default {
               ) {
                 c += "tw-bg-yellow "
               } else {
-                const green = "#00994CAA"
+                const green = "#00994C88"
                 s.backgroundColor = green
               }
             } else {
@@ -2954,6 +2960,9 @@ export default {
 
               s.backgroundColor = green + alpha
             }
+          } else if (totalRespondents === 1) {
+            const red = "#E523230D"
+            s.backgroundColor = red
           }
         }
       }
