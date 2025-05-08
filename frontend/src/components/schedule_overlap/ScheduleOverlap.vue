@@ -984,11 +984,13 @@ export default {
         EDIT_AVAILABILITY: "edit_availability", // Edit current user's availability
         EDIT_SIGN_UP_BLOCKS: "edit_sign_up_blocks", // Edit the slots on a sign up form
         SCHEDULE_EVENT: "schedule_event", // Schedule event on gcal
+        SET_SPECIFIC_TIMES: "set_specific_times", // Set specific times for the event
       },
       state: "best_times",
 
       availability: new Set(), // The current user's availability
       ifNeeded: new Set(), // The current user's "if needed" availability
+      tempTimes: new Set(), // The specific times that the user has selected for the event (pending save)
       availabilityAnimTimeouts: [], // Timeouts for availability animation
       availabilityAnimEnabled: false, // Whether to animate timeslots changing colors
       maxAnimTime: 1200, // Max amount of time for availability animation
@@ -1128,7 +1130,8 @@ export default {
       return (
         this.state === this.states.EDIT_AVAILABILITY ||
         this.state === this.states.EDIT_SIGN_UP_BLOCKS ||
-        this.state === this.states.SCHEDULE_EVENT
+        this.state === this.states.SCHEDULE_EVENT ||
+        this.state === this.states.SET_SPECIFIC_TIMES
       )
     },
     /** Returns an array of calendar events for all of the authUser's enabled calendars, separated by the day they occur on */
@@ -1490,6 +1493,9 @@ export default {
     },
     isSignUp() {
       return this.event.isSignUpForm
+    },
+    isSpecificTimes() {
+      return this.event.hasSpecificTimes
     },
     respondents() {
       return Object.values(this.parsedResponses)
@@ -2732,7 +2738,9 @@ export default {
 
       // Border style
       if (
-        (this.respondents.length > 0 || this.editing) &&
+        (this.respondents.length > 0 ||
+          this.editing ||
+          this.state === this.states.SET_SPECIFIC_TIMES) &&
         this.curTimeslot.row === row &&
         this.curTimeslot.col === col &&
         !isDisabled
@@ -2810,8 +2818,9 @@ export default {
       }
 
       if (
-        !this.overlayAvailability &&
-        this.state === this.states.EDIT_AVAILABILITY
+        (!this.overlayAvailability &&
+          this.state === this.states.EDIT_AVAILABILITY) ||
+        this.state === this.states.SET_SPECIFIC_TIMES
       ) {
         // Set default background color to red (unavailable)
         s.backgroundColor = "#E523230D"
@@ -2821,20 +2830,37 @@ export default {
         if (inDragRange) {
           // Set style if drag range goes over the current timeslot
           if (this.dragType === this.DRAG_TYPES.ADD) {
-            if (this.availabilityType === availabilityTypes.AVAILABLE) {
-              s.backgroundColor = "#00994C88"
-            } else if (this.availabilityType === availabilityTypes.IF_NEEDED) {
-              c += "tw-bg-yellow "
+            if (this.state === this.states.SET_SPECIFIC_TIMES) {
+              c += "tw-bg-white "
+            } else {
+              if (this.availabilityType === availabilityTypes.AVAILABLE) {
+                s.backgroundColor = "#00994C88"
+              } else if (
+                this.availabilityType === availabilityTypes.IF_NEEDED
+              ) {
+                c += "tw-bg-yellow "
+              }
             }
           } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
+            if (this.state === this.states.SET_SPECIFIC_TIMES) {
+              c += "tw-bg-gray "
+            }
           }
         } else {
           // Otherwise just show the current availability
           // Show current availability from availability set
-          if (this.availability.has(date.getTime())) {
-            s.backgroundColor = "#00994C88"
-          } else if (this.ifNeeded.has(date.getTime())) {
-            c += "tw-bg-yellow "
+          if (this.state === this.states.SET_SPECIFIC_TIMES) {
+            if (this.tempTimes.has(date.getTime())) {
+              c += "tw-bg-white "
+            } else {
+              c += "tw-bg-gray "
+            }
+          } else {
+            if (this.availability.has(date.getTime())) {
+              s.backgroundColor = "#00994C88"
+            } else if (this.ifNeeded.has(date.getTime())) {
+              c += "tw-bg-yellow "
+            }
           }
         }
       }
@@ -3255,7 +3281,10 @@ export default {
       if (!this.dragStart || !this.dragCur) return
 
       // Update availability set based on drag region
-      if (this.state === this.states.EDIT_AVAILABILITY) {
+      if (
+        this.state === this.states.EDIT_AVAILABILITY ||
+        this.state === this.states.SET_SPECIFIC_TIMES
+      ) {
         // Determine colInc and rowInc
         let colInc =
           (this.dragCur.col - this.dragStart.col) /
@@ -3294,19 +3323,28 @@ export default {
             }
 
             if (this.dragType === this.DRAG_TYPES.ADD) {
-              // Add / remove time from availability set
-              if (this.availabilityType === availabilityTypes.AVAILABLE) {
-                this.availability.add(date.getTime())
-                this.ifNeeded.delete(date.getTime())
-              } else if (
-                this.availabilityType === availabilityTypes.IF_NEEDED
-              ) {
-                this.ifNeeded.add(date.getTime())
-                this.availability.delete(date.getTime())
+              if (this.state === this.states.SET_SPECIFIC_TIMES) {
+                this.tempTimes.add(date.getTime())
+              } else {
+                // Add / remove time from availability set
+                if (this.availabilityType === availabilityTypes.AVAILABLE) {
+                  this.availability.add(date.getTime())
+                  this.ifNeeded.delete(date.getTime())
+                } else if (
+                  this.availabilityType === availabilityTypes.IF_NEEDED
+                ) {
+                  this.ifNeeded.add(date.getTime())
+                  this.availability.delete(date.getTime())
+                }
               }
             } else if (this.dragType === this.DRAG_TYPES.REMOVE) {
-              this.availability.delete(date.getTime())
-              this.ifNeeded.delete(date.getTime())
+              if (this.state === this.states.SET_SPECIFIC_TIMES) {
+                this.tempTimes.delete(date.getTime())
+              } else {
+                // Add / remove time from availability set
+                this.availability.delete(date.getTime())
+                this.ifNeeded.delete(date.getTime())
+              }
             }
 
             // Edit manualAvailability set if event is a GROUP
@@ -3495,6 +3533,8 @@ export default {
       if (this.isSignUp) {
         this.dragType = this.DRAG_TYPES.ADD
       } else if (
+        (this.state === this.states.SET_SPECIFIC_TIMES &&
+          this.tempTimes.has(date.getTime())) ||
         (this.availabilityType === availabilityTypes.AVAILABLE &&
           this.availability.has(date.getTime())) ||
         (this.availabilityType === availabilityTypes.IF_NEEDED &&
@@ -3985,8 +4025,17 @@ export default {
     addEventListener("click", this.deselectRespondents)
   },
   mounted() {
-    // Set initial state to best_times or heatmap depending on show best times toggle.
-    this.state = this.showBestTimes ? "best_times" : "heatmap"
+    // Set initial state
+    if (
+      this.event.hasSpecificTimes &&
+      (!this.event.times || this.event.times.length === 0)
+    ) {
+      this.state = this.states.SET_SPECIFIC_TIMES
+    } else if (this.showBestTimes) {
+      this.state = "best_times"
+    } else {
+      this.state = "heatmap"
+    }
 
     // Set calendar options defaults
     if (this.authUser) {
