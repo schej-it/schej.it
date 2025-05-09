@@ -1350,28 +1350,52 @@ export default {
         return { dateString, dayString }
       }
 
-      if (this.isSpecificTimes && this.event.times?.length > 0) {
-        for (const time of this.event.times) {
-          const timeDate = new Date(time)
-          const date = new Date(
-            timeDate.getTime() - this.timezoneOffset * 60 * 1000
-          )
-          date.setUTCHours(0, 0, 0, 0)
-          date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
-          const dateTime = date.getTime()
+      if (this.isSpecificTimes) {
+        if (this.event.times?.length > 0) {
+          for (const time of this.event.times) {
+            const timeDate = new Date(time)
+            const date = new Date(
+              timeDate.getTime() - this.timezoneOffset * 60 * 1000
+            )
+            // TODO: check if we should set utc hours to 0,0,0,0 or the min time?
+            date.setUTCHours(0, 0, 0, 0)
+            date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
+            const dateTime = date.getTime()
 
-          if (!datesSoFar.has(dateTime)) {
-            datesSoFar.add(dateTime)
+            if (!datesSoFar.has(dateTime)) {
+              datesSoFar.add(dateTime)
 
-            const { dayString, dateString } = getDateString(date)
-            days.push({
-              dayText: dayString,
-              dateString,
-              dateObject: date,
-            })
+              const { dayString, dateString } = getDateString(date)
+              days.push({
+                dayText: dayString,
+                dateString,
+                dateObject: date,
+              })
+            }
+          }
+        } else {
+          for (let i = 0; i < this.event.dates.length; ++i) {
+            const date = new Date(this.event.dates[i])
+            const localDate = new Date(
+              date.getTime() - this.timezoneOffset * 60 * 1000
+            )
+            localDate.setUTCHours(0, 0, 0, 0)
+            localDate.setTime(
+              localDate.getTime() + this.timezoneOffset * 60 * 1000
+            )
+
+            if (!datesSoFar.has(localDate.getTime())) {
+              datesSoFar.add(localDate.getTime())
+
+              const { dayString, dateString } = getDateString(date)
+              days.push({
+                dayText: dayString,
+                dateString,
+                dateObject: date,
+              })
+            }
           }
         }
-        console.log(days)
         return days
       }
 
@@ -1713,19 +1737,23 @@ export default {
     splitTimes() {
       const splitTimes = [[], []]
 
-      if (this.isSpecificTimes && this.event.times?.length > 0) {
-        let minHours = 24
-        let maxHours = 0
-        for (const time of this.event.times) {
-          const timeDate = new Date(time)
-          const date = new Date(
-            timeDate.getTime() - this.timezoneOffset * 60 * 1000
-          )
-          const localHours = date.getUTCHours()
-          if (localHours < minHours) {
-            minHours = localHours
-          } else if (localHours > maxHours) {
-            maxHours = localHours
+      if (this.isSpecificTimes) {
+        let minHours = 0
+        let maxHours = 23
+        if (this.event.times?.length > 0) {
+          minHours = 24
+          maxHours = 0
+          for (const time of this.event.times) {
+            const timeDate = new Date(time)
+            const date = new Date(
+              timeDate.getTime() - this.timezoneOffset * 60 * 1000
+            )
+            const localHours = date.getUTCHours()
+            if (localHours < minHours) {
+              minHours = localHours
+            } else if (localHours > maxHours) {
+              maxHours = localHours
+            }
           }
         }
         // Hours offset for specific times starts from midnight = 0
