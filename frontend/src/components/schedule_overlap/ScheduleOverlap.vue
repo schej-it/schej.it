@@ -1758,6 +1758,10 @@ export default {
 
       return { minHours, maxHours }
     },
+    /** Returns a set containing the times for the event if it has specific times */
+    specificTimesSet() {
+      return new Set(this.event.times?.map((t) => new Date(t).getTime()) ?? [])
+    },
     /**
      * Returns a two dimensional array of times
      * IF endTime < startTime:
@@ -2215,14 +2219,20 @@ export default {
       if (day.excludeTimes) {
         return null
       }
+
+      const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
       if (this.isSpecificTimes) {
         // TODO: see if we need to do anything for 0.5 timezones
+        if (!this.specificTimesSet.has(date.getTime())) {
+          return null
+        }
       } else {
+        // Return null for times outside of the correct range
         if (time.hoursOffset < 0 || time.hoursOffset >= this.event.duration) {
           return null
         }
       }
-      return getDateHoursOffset(day.dateObject, time.hoursOffset)
+      return date
     },
     //#endregion
 
