@@ -525,7 +525,7 @@
             />
           </template>
           <template v-else-if="state === states.SET_SPECIFIC_TIMES">
-            <div class="tw-flex tw-flex-col tw-gap-4">
+            <div class="tw-flex tw-flex-col tw-gap-4 tw-pr-2 lg:tw-pr-0">
               <div class="tw-text-sm tw-italic tw-text-dark-gray">
                 Click and drag on the grid to select the potential meeting times
               </div>
@@ -1324,11 +1324,13 @@ export default {
       const days = []
       const datesSoFar = new Set()
 
-      const getDateString = (date) => {
+      const getDateString = (date, ignoreDayOffset = false) => {
         let dateString = ""
         let dayString = ""
         const offsetDate = new Date(date)
-        offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
+        if (!ignoreDayOffset) {
+          offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
+        }
         if (this.isSpecificDates) {
           dateString = `${
             this.months[offsetDate.getUTCMonth()]
@@ -1357,7 +1359,7 @@ export default {
             const date = new Date(
               timeDate.getTime() - this.timezoneOffset * 60 * 1000
             )
-            // TODO: check if we should set utc hours to 0,0,0,0 or the min time?
+            // Set UTC hours to 0 because hoursOffset for times is relative to midnight
             date.setUTCHours(0, 0, 0, 0)
             date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
             const dateTime = date.getTime()
@@ -1365,7 +1367,8 @@ export default {
             if (!datesSoFar.has(dateTime)) {
               datesSoFar.add(dateTime)
 
-              const { dayString, dateString } = getDateString(date)
+              // Ignore day offset because the date is not based on this.event.startTime anymore
+              const { dayString, dateString } = getDateString(date, true)
               days.push({
                 dayText: dayString,
                 dateString,
@@ -1387,11 +1390,12 @@ export default {
             if (!datesSoFar.has(localDate.getTime())) {
               datesSoFar.add(localDate.getTime())
 
-              const { dayString, dateString } = getDateString(date)
+              // Ignore day offset because the date is not based on this.event.startTime anymore
+              const { dayString, dateString } = getDateString(localDate, true)
               days.push({
                 dayText: dayString,
                 dateString,
-                dateObject: date,
+                dateObject: localDate,
               })
             }
           }
@@ -1727,6 +1731,33 @@ export default {
 
       return max
     },
+    /** Returns the minHours and maxHours that event.times takes up if the event has specific times */
+    specificTimesMinMaxHours() {
+      if (!this.isSpecificTimes) {
+        return { minHours: 0, maxHours: 0 }
+      }
+
+      let minHours = 0
+      let maxHours = 23
+      if (this.event.times?.length > 0) {
+        minHours = 24
+        maxHours = 0
+        for (const time of this.event.times) {
+          const timeDate = new Date(time)
+          const date = new Date(
+            timeDate.getTime() - this.timezoneOffset * 60 * 1000
+          )
+          const localHours = date.getUTCHours()
+          if (localHours < minHours) {
+            minHours = localHours
+          } else if (localHours > maxHours) {
+            maxHours = localHours
+          }
+        }
+      }
+
+      return { minHours, maxHours }
+    },
     /**
      * Returns a two dimensional array of times
      * IF endTime < startTime:
@@ -1738,24 +1769,7 @@ export default {
       const splitTimes = [[], []]
 
       if (this.isSpecificTimes) {
-        let minHours = 0
-        let maxHours = 23
-        if (this.event.times?.length > 0) {
-          minHours = 24
-          maxHours = 0
-          for (const time of this.event.times) {
-            const timeDate = new Date(time)
-            const date = new Date(
-              timeDate.getTime() - this.timezoneOffset * 60 * 1000
-            )
-            const localHours = date.getUTCHours()
-            if (localHours < minHours) {
-              minHours = localHours
-            } else if (localHours > maxHours) {
-              maxHours = localHours
-            }
-          }
-        }
+        const { minHours, maxHours } = this.specificTimesMinMaxHours
         // Hours offset for specific times starts from midnight = 0
         for (let i = minHours; i <= maxHours; ++i) {
           splitTimes[0].push({
@@ -2201,8 +2215,12 @@ export default {
       if (day.excludeTimes) {
         return null
       }
-      if (time.hoursOffset < 0 || time.hoursOffset >= this.event.duration) {
-        return null
+      if (this.isSpecificTimes) {
+        // TODO: see if we need to do anything for 0.5 timezones
+      } else {
+        if (time.hoursOffset < 0 || time.hoursOffset >= this.event.duration) {
+          return null
+        }
       }
       return getDateHoursOffset(day.dateObject, time.hoursOffset)
     },
@@ -3211,7 +3229,9 @@ export default {
               this.showAvailability(row, col)
               // console.log(
               //   "mouseover",
-              //   this.getDateFromRowCol(row, col)?.toISOString()
+              //   row,
+              //   col,
+              //   this.getDateFromRowCol(row, col) //?.toISOString()
               // )
             }
           },
