@@ -722,12 +722,14 @@ export default {
 
               // this.$emit("input", false)
               // this.reset()
+              localStorage.setItem(`from-edit-event-${this.event._id}`, "true")
               window.location.reload()
             })
             .catch((err) => {
               this.showError(
                 "There was a problem editing this event! Please try again later."
               )
+              console.log(err)
             })
             .finally(() => {
               this.loading = false
@@ -793,6 +795,7 @@ export default {
         this.notificationsEnabled = this.event.notificationsEnabled
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
         this.daysOnly = this.event.daysOnly
+        this.specificTimesEnabled = this.event.hasSpecificTimes
 
         if (
           this.event.sendEmailAfterXResponses !== null &&

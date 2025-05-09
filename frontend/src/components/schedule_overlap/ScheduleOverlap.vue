@@ -977,6 +977,7 @@ export default {
   name: "ScheduleOverlap",
   props: {
     event: { type: Object, required: true },
+    fromEditEvent: { type: Boolean, default: false },
 
     loadingCalendarEvents: { type: Boolean, default: false }, // Whether we are currently loading the calendar events
     calendarEventsMap: { type: Object, default: () => {} }, // Object of different users' calendar events
@@ -1353,7 +1354,10 @@ export default {
       }
 
       if (this.isSpecificTimes) {
-        if (this.event.times?.length > 0) {
+        if (
+          this.state !== this.states.SET_SPECIFIC_TIMES &&
+          this.event.times?.length > 0
+        ) {
           for (const time of this.event.times) {
             const timeDate = new Date(time)
             const date = new Date(
@@ -1739,7 +1743,10 @@ export default {
 
       let minHours = 0
       let maxHours = 23
-      if (this.event.times?.length > 0) {
+      if (
+        this.state !== this.states.SET_SPECIFIC_TIMES &&
+        this.event.times?.length > 0
+      ) {
         minHours = 24
         maxHours = 0
         for (const time of this.event.times) {
@@ -2223,8 +2230,13 @@ export default {
       const date = getDateHoursOffset(day.dateObject, time.hoursOffset)
       if (this.isSpecificTimes) {
         // TODO: see if we need to do anything for 0.5 timezones
-        if (!this.specificTimesSet.has(date.getTime())) {
-          return null
+        if (
+          this.state !== this.states.SET_SPECIFIC_TIMES &&
+          this.event.times?.length > 0
+        ) {
+          if (!this.specificTimesSet.has(date.getTime())) {
+            return null
+          }
         }
       } else {
         // Return null for times outside of the correct range
@@ -4189,6 +4201,14 @@ export default {
     timeType() {
       localStorage["timeType"] = this.timeType
     },
+    fromEditEvent() {
+      if (this.fromEditEvent && this.isSpecificTimes) {
+        this.tempTimes = new Set(
+          this.event.times.map((t) => new Date(t).getTime())
+        )
+        this.state = this.states.SET_SPECIFIC_TIMES
+      }
+    },
   },
   created() {
     this.resetCurUserAvailability()
@@ -4199,7 +4219,7 @@ export default {
     // Set initial state
     if (
       this.event.hasSpecificTimes &&
-      (!this.event.times || this.event.times.length === 0)
+      (this.fromEditEvent || !this.event.times || this.event.times.length === 0)
     ) {
       this.state = this.states.SET_SPECIFIC_TIMES
     } else if (this.showBestTimes) {

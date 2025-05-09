@@ -245,6 +245,7 @@
       <ScheduleOverlap
         ref="scheduleOverlap"
         :event="event"
+        :fromEditEvent="fromEditEvent"
         :loadingCalendarEvents="loading"
         :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
@@ -418,6 +419,8 @@ export default {
   },
 
   data: () => ({
+    fromEditEvent: false,
+
     choiceDialog: false,
     webviewDialog: false,
     guestDialog: false,
@@ -1018,6 +1021,14 @@ export default {
             },
           })
         }
+      }
+
+      const fromEditEvent = localStorage.getItem(
+        `from-edit-event-${this.event._id}`
+      )
+      if (fromEditEvent) {
+        localStorage.removeItem(`from-edit-event-${this.event._id}`)
+        this.fromEditEvent = true
       }
     } catch (err) {
       switch (err.error) {
