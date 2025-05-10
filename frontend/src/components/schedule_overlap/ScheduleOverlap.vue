@@ -525,31 +525,11 @@
             />
           </template>
           <template v-else-if="state === states.SET_SPECIFIC_TIMES">
-            <div class="tw-flex tw-flex-col tw-gap-4 tw-pr-2 lg:tw-pr-0">
-              <div class="tw-text-sm tw-italic tw-text-dark-gray">
-                Click and drag on the grid to select the potential meeting times
-              </div>
-
-              <div class="tw-flex tw-flex-col tw-gap-1">
-                <div class="tw-text-sm tw-font-medium">Legend:</div>
-                <div class="tw-flex tw-items-center tw-gap-2">
-                  <div class="tw-h-4 tw-w-4 tw-rounded tw-bg-gray"></div>
-                  <span class="tw-text-sm">Blocked off</span>
-                </div>
-                <div class="tw-flex tw-items-center tw-gap-2">
-                  <div
-                    class="tw-h-4 tw-w-4 tw-rounded tw-border tw-border-gray tw-bg-white"
-                  ></div>
-                  <span class="tw-text-sm">Potential meeting times</span>
-                </div>
-              </div>
-              <v-btn
-                color="primary"
-                @click="saveTempTimes"
-                :disabled="!tempTimes.size"
-                >Next</v-btn
-              >
-            </div>
+            <SpecificTimesInstructions
+              v-if="!isPhone"
+              :numTempTimes="tempTimes.size"
+              @saveTempTimes="saveTempTimes"
+            />
           </template>
           <template v-else>
             <div
@@ -889,6 +869,19 @@
             </div>
           </div>
         </v-expand-transition>
+
+        <!-- Specific times instructions -->
+        <v-expand-transition>
+          <div
+            v-if="state === states.SET_SPECIFIC_TIMES"
+            class="-tw-mb-16 tw-bg-white tw-p-4"
+          >
+            <SpecificTimesInstructions
+              :numTempTimes="tempTimes.size"
+              @saveTempTimes="saveTempTimes"
+            />
+          </div>
+        </v-expand-transition>
       </div>
     </div>
   </span>
@@ -970,6 +963,7 @@ import timezonePlugin from "dayjs/plugin/timezone"
 import AvailabilityTypeToggle from "./AvailabilityTypeToggle.vue"
 import BufferTimeSwitch from "./BufferTimeSwitch.vue"
 import CalendarEventBlock from "./CalendarEventBlock.vue" // Added import
+import SpecificTimesInstructions from "./SpecificTimesInstructions.vue"
 dayjs.extend(utcPlugin)
 dayjs.extend(timezonePlugin)
 
@@ -4062,7 +4056,9 @@ export default {
 
     /** Saves the temporary times to the event */
     saveTempTimes() {
-      this.event.times = [...this.tempTimes].map((t) => new Date(t))
+      this.event.times = [...this.tempTimes]
+        .map((t) => new Date(t))
+        .sort((a, b) => a.getTime() - b.getTime())
       put(`/events/${this.event._id}`, this.event)
         .then(() => {
           this.state = this.defaultState
@@ -4297,6 +4293,7 @@ export default {
     SignUpCalendarBlock,
     SignUpBlocksList,
     CalendarEventBlock, // Added component registration
+    SpecificTimesInstructions, // Added component registration
   },
 }
 </script>
