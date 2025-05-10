@@ -1765,6 +1765,22 @@ export default {
     splitTimes() {
       const splitTimes = [[], []]
 
+      const utcStartTime = this.event.startTime
+      const utcEndTime = this.event.startTime + this.event.duration
+      const localStartTime = utcTimeToLocalTime(
+        utcStartTime,
+        this.timezoneOffset
+      )
+      const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
+
+      // Weird timezones are timezones that are not a multiple of 60 minutes (e.g. GMT-2:30)
+      const isWeirdTimezone = this.timezoneOffset % 60 !== 0
+      const startTimeIsWeird = utcStartTime % 1 !== 0
+      let timeOffset = 0
+      if (isWeirdTimezone !== startTimeIsWeird) {
+        timeOffset = -0.5
+      }
+
       if (this.isSpecificTimes) {
         const { minHours, maxHours } = this.specificTimesMinMaxHours
         // Hours offset for specific times starts from minHours
@@ -1794,22 +1810,6 @@ export default {
           })
         }
         return splitTimes
-      }
-
-      const utcStartTime = this.event.startTime
-      const utcEndTime = this.event.startTime + this.event.duration
-      const localStartTime = utcTimeToLocalTime(
-        utcStartTime,
-        this.timezoneOffset
-      )
-      const localEndTime = utcTimeToLocalTime(utcEndTime, this.timezoneOffset)
-
-      // Weird timezones are timezones that are not a multiple of 60 minutes (e.g. GMT-2:30)
-      const isWeirdTimezone = this.timezoneOffset % 60 !== 0
-      const startTimeIsWeird = utcStartTime % 1 !== 0
-      let timeOffset = 0
-      if (isWeirdTimezone !== startTimeIsWeird) {
-        timeOffset = -0.5
       }
 
       if (localEndTime <= localStartTime && localEndTime !== 0) {
@@ -3245,12 +3245,11 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              // console.log(
-              //   "mouseover",
-              //   row,
-              //   col,
-              //   this.getDateFromRowCol(row, col) //?.toISOString()
-              // )
+              // const date = this.getDateFromRowCol(row, col)
+              // if (date) {
+              //   date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
+              //   console.log("mouseover", row, col, date?.toISOString())
+              // }
             }
           },
         }
