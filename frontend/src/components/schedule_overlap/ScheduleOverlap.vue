@@ -1354,13 +1354,14 @@ export default {
           this.state !== this.states.SET_SPECIFIC_TIMES &&
           this.event.times?.length > 0
         ) {
+          const { minHours } = this.specificTimesMinMaxHours
           for (const time of this.event.times) {
             const timeDate = new Date(time)
             const date = new Date(
               timeDate.getTime() - this.timezoneOffset * 60 * 1000
             )
-            // Set UTC hours to 0 because hoursOffset for times is relative to midnight
-            date.setUTCHours(0, 0, 0, 0)
+            // Set UTC hours to minHours because that's what hoursOffset is relative to
+            date.setUTCHours(minHours, 0, 0, 0)
             date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
             const dateTime = date.getTime()
 
@@ -1777,29 +1778,30 @@ export default {
 
       if (this.isSpecificTimes) {
         const { minHours, maxHours } = this.specificTimesMinMaxHours
-        // Hours offset for specific times starts from midnight = 0
+        // Hours offset for specific times starts from minHours
         for (let i = minHours; i <= maxHours; ++i) {
+          const hoursOffset = i - minHours
           if (i === 9) {
             // add an id so we can scroll to it
             splitTimes[0].push({
               id: "time-9",
-              hoursOffset: i,
+              hoursOffset,
               text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
             })
           } else {
             splitTimes[0].push({
-              hoursOffset: i,
+              hoursOffset,
               text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
             })
           }
           splitTimes[0].push({
-            hoursOffset: i + 0.25,
+            hoursOffset: hoursOffset + 0.25,
           })
           splitTimes[0].push({
-            hoursOffset: i + 0.5,
+            hoursOffset: hoursOffset + 0.5,
           })
           splitTimes[0].push({
-            hoursOffset: i + 0.75,
+            hoursOffset: hoursOffset + 0.75,
           })
         }
         return splitTimes
