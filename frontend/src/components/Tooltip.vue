@@ -27,18 +27,42 @@ export default {
   data() {
     return {
       position: { x: 0, y: 0 },
-      isVisible: true,
+      isVisible: false,
+      showTimeout: null,
     }
+  },
+  watch: {
+    content: {
+      handler(newContent) {
+        // Clear any existing timeout
+        if (this.showTimeout) {
+          clearTimeout(this.showTimeout)
+        }
+
+        // Hide tooltip immediately when content changes
+        this.isVisible = false
+
+        // If there's new content, set a timeout to show it
+        if (newContent) {
+          this.showTimeout = setTimeout(() => {
+            this.isVisible = true
+          }, 700)
+        }
+      },
+      immediate: true,
+    },
   },
   methods: {
     handleMouseMove(e) {
       this.position = {
-        x: e.clientX, // Offset from cursor
+        x: e.clientX,
         y: e.clientY - 30,
       }
     },
     handleMouseEnter() {
-      this.isVisible = true
+      if (this.content) {
+        this.isVisible = true
+      }
     },
     handleMouseLeave() {
       this.isVisible = false
@@ -61,6 +85,9 @@ export default {
     }
   },
   beforeDestroy() {
+    if (this.showTimeout) {
+      clearTimeout(this.showTimeout)
+    }
     if (this.$refs.tooltipTrigger) {
       this.$refs.tooltipTrigger.removeEventListener(
         "mousemove",
