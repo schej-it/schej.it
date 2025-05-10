@@ -71,28 +71,61 @@
               <div class="tw-mb-2 tw-text-lg tw-text-black">
                 What times might work?
               </div>
-              <div
-                class="tw-mb-6 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
-              >
-                <v-select
-                  :value="startTime"
-                  @input="(t) => (startTime = t.time)"
-                  menu-props="auto"
-                  :items="times"
-                  return-object
-                  hide-details
-                  solo
-                ></v-select>
-                <div>to</div>
-                <v-select
-                  :value="endTime"
-                  @input="(t) => (endTime = t.time)"
-                  menu-props="auto"
-                  :items="times"
-                  return-object
-                  hide-details
-                  solo
-                ></v-select>
+              <v-expand-transition>
+                <div v-if="!specificTimesEnabled">
+                  <div
+                    class="tw-mb-2 tw-flex tw-items-baseline tw-justify-center tw-space-x-2"
+                  >
+                    <v-select
+                      :value="startTime"
+                      @input="(t) => (startTime = t.time)"
+                      menu-props="auto"
+                      :items="times"
+                      return-object
+                      hide-details
+                      solo
+                    ></v-select>
+                    <div>to</div>
+                    <v-select
+                      :value="endTime"
+                      @input="(t) => (endTime = t.time)"
+                      menu-props="auto"
+                      :items="times"
+                      return-object
+                      hide-details
+                      solo
+                    ></v-select>
+                  </div>
+                </div>
+              </v-expand-transition>
+              <div class="tw-mb-2">
+                <v-checkbox
+                  v-model="specificTimesEnabled"
+                  messages="Specify the times in the next step"
+                >
+                  <template v-slot:label>
+                    <span
+                      class="tw-text-sm"
+                      :class="
+                        specificTimesEnabled
+                          ? 'tw-text-black'
+                          : 'tw-text-very-dark-gray'
+                      "
+                    >
+                      Set specific times per day
+                    </span>
+                  </template>
+                  <template v-slot:message="{ key, message }">
+                    <v-expand-transition>
+                      <div
+                        v-if="specificTimesEnabled"
+                        class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+                      >
+                        {{ message }}
+                      </div>
+                    </v-expand-transition>
+                  </template>
+                </v-checkbox>
               </div>
             </div>
           </v-expand-transition>
@@ -335,7 +368,9 @@
           class="tw-mt-4 tw-bg-green"
           @click="submit"
         >
-          {{ edit ? "Save edits" : "Create event" }}
+          {{
+            specificTimesEnabled ? "Next" : edit ? "Save edits" : "Create event"
+          }}
         </v-btn>
         <div
           :class="formValid ? 'tw-invisible' : 'tw-visible'"
@@ -421,6 +456,7 @@ export default {
     name: "",
     startTime: 9,
     endTime: 17,
+    specificTimesEnabled: false,
     loading: false,
     selectedDays: [],
     selectedDaysOfWeek: [],
@@ -474,6 +510,7 @@ export default {
       this.selectedDays = this.contactsPayload.selectedDays
       this.notificationsEnabled = this.contactsPayload.notificationsEnabled
       this.timezone = this.contactsPayload.timezone
+      this.specificTimesEnabled = this.contactsPayload.specificTimesEnabled
 
       this.$refs.form.resetValidation()
     }
@@ -533,6 +570,7 @@ export default {
       this.name = ""
       this.startTime = 9
       this.endTime = 17
+      this.specificTimesEnabled = false
       this.selectedDays = []
       this.selectedDaysOfWeek = []
       this.notificationsEnabled = true
@@ -613,6 +651,7 @@ export default {
         name: this.name,
         duration: duration,
         dates: dates,
+        hasSpecificTimes: this.specificTimesEnabled,
         notificationsEnabled: !this.authUser
           ? false
           : this.notificationsEnabled,
@@ -627,10 +666,12 @@ export default {
         startOnMonday: this.startOnMonday,
         creatorPosthogId: this.$posthog?.get_distinct_id(),
       }
+
       const posthogPayload = {
         eventName: this.name,
         eventDuration: duration,
         eventDates: JSON.stringify(dates),
+        eventHasSpecificTimes: this.specificTimesEnabled,
         eventNotificationsEnabled: !this.authUser
           ? false
           : this.notificationsEnabled,
@@ -681,12 +722,14 @@ export default {
 
               // this.$emit("input", false)
               // this.reset()
+              localStorage.setItem(`from-edit-event-${this.event._id}`, "true")
               window.location.reload()
             })
             .catch((err) => {
               this.showError(
                 "There was a problem editing this event! Please try again later."
               )
+              console.log(err)
             })
             .finally(() => {
               this.loading = false
@@ -752,6 +795,7 @@ export default {
         this.notificationsEnabled = this.event.notificationsEnabled
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
         this.daysOnly = this.event.daysOnly
+        this.specificTimesEnabled = this.event.hasSpecificTimes
 
         if (
           this.event.sendEmailAfterXResponses !== null &&
@@ -807,6 +851,7 @@ export default {
         name: this.name,
         startTime: this.startTime,
         endTime: this.endTime,
+        specificTimesEnabled: this.specificTimesEnabled,
         daysOnly: this.daysOnly,
         selectedDays: this.selectedDays,
         selectedDaysOfWeek: this.selectedDaysOfWeek,
@@ -823,6 +868,8 @@ export default {
         this.name !== this.initialEventData.name ||
         this.startTime !== this.initialEventData.startTime ||
         this.endTime !== this.initialEventData.endTime ||
+        this.specificTimesEnabled !==
+          this.initialEventData.specificTimesEnabled ||
         this.selectedDateOption !== this.initialEventData.selectedDateOption ||
         JSON.stringify(this.selectedDays) !==
           JSON.stringify(this.initialEventData.selectedDays) ||

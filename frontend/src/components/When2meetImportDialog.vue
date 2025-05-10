@@ -60,12 +60,6 @@ export default {
   props: {
     value: Boolean, // v-model
   },
-  data() {
-    return {
-      // TODO: Replace with your actual YouTube video ID
-      youtubeVideoId: "k7t4ZplhtT8",
-    }
-  },
   computed: {
     dialog: {
       get() {

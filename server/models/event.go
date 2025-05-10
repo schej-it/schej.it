@@ -55,6 +55,10 @@ type Event struct {
 	When2meetHref            *string              `json:"when2meetHref" bson:"when2meetHref,omitempty"`
 	CollectEmails            *bool                `json:"collectEmails" bson:"collectEmails,omitempty"`
 
+	// Used for specific times for specific dates feature
+	HasSpecificTimes *bool                `json:"hasSpecificTimes" bson:"hasSpecificTimes,omitempty"`
+	Times            []primitive.DateTime `json:"times" bson:"times,omitempty"`
+
 	Type EventType `json:"type" bson:"type,omitempty"`
 
 	// PostHog ID for the event creator

@@ -90,7 +90,7 @@
     </v-dialog>
 
     <div class="tw-mx-auto tw-mt-4 tw-max-w-5xl">
-      <div class="tw-mx-4">
+      <div v-if="!isSettingSpecificTimes" class="tw-mx-4">
         <!-- Title and copy link -->
         <div class="tw-flex tw-items-center tw-text-black">
           <div>
@@ -245,6 +245,7 @@
       <ScheduleOverlap
         ref="scheduleOverlap"
         :event="event"
+        :fromEditEvent="fromEditEvent"
         :loadingCalendarEvents="loading"
         :calendarEventsMap="calendarEventsMap"
         :calendarPermissionGranted="calendarPermissionGranted"
@@ -308,7 +309,7 @@
     <div class="tw-h-8"></div>
     <!-- Bottom bar for phones -->
     <div
-      v-if="isPhone && (!isSignUp || canEdit)"
+      v-if="!isSettingSpecificTimes && isPhone && (!isSignUp || canEdit)"
       class="tw-fixed tw-bottom-0 tw-z-20 tw-flex tw-h-16 tw-w-full tw-items-center tw-px-4"
       :class="`${isIOS ? 'tw-pb-2' : ''} ${
         isScheduling ? 'tw-bg-blue' : 'tw-bg-green'
@@ -418,6 +419,8 @@ export default {
   },
 
   data: () => ({
+    fromEditEvent: false,
+
     choiceDialog: false,
     webviewDialog: false,
     guestDialog: false,
@@ -532,6 +535,12 @@ export default {
     },
     isIOS() {
       return isIOS()
+    },
+    isSettingSpecificTimes() {
+      return (
+        this.scheduleOverlapComponent?.state ===
+        this.scheduleOverlapComponent?.states.SET_SPECIFIC_TIMES
+      )
     },
   },
 
@@ -1018,6 +1027,14 @@ export default {
             },
           })
         }
+      }
+
+      const fromEditEvent = localStorage.getItem(
+        `from-edit-event-${this.event._id}`
+      )
+      if (fromEditEvent) {
+        localStorage.removeItem(`from-edit-event-${this.event._id}`)
+        this.fromEditEvent = true
       }
     } catch (err) {
       switch (err.error) {

@@ -55,6 +55,10 @@ func createEvent(c *gin.Context) {
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
 
+		// Only for specific times for specific dates events
+		HasSpecificTimes *bool                `json:"hasSpecificTimes"`
+		Times            []primitive.DateTime `json:"times"`
+
 		// PostHog ID for the event creator
 		CreatorPosthogId *string `json:"creatorPosthogId"`
 
@@ -102,6 +106,8 @@ func createEvent(c *gin.Context) {
 		Name:                     payload.Name,
 		Duration:                 payload.Duration,
 		Dates:                    payload.Dates,
+		HasSpecificTimes:         payload.HasSpecificTimes,
+		Times:                    payload.Times,
 		IsSignUpForm:             payload.IsSignUpForm,
 		SignUpBlocks:             payload.SignUpBlocks,
 		StartOnMonday:            payload.StartOnMonday,
@@ -234,6 +240,10 @@ func editEvent(c *gin.Context) {
 		Dates    []primitive.DateTime `json:"dates" binding:"required"`
 		Type     models.EventType     `json:"type" binding:"required"`
 
+		// Only for specific times for specific dates events
+		HasSpecificTimes *bool                `json:"hasSpecificTimes"`
+		Times            []primitive.DateTime `json:"times"`
+
 		// For both events and groups
 		Description *string `json:"description"`
 
@@ -253,6 +263,7 @@ func editEvent(c *gin.Context) {
 		Attendees []string `json:"attendees"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
+		logger.StdErr.Println(err)
 		return
 	}
 
@@ -287,6 +298,8 @@ func editEvent(c *gin.Context) {
 	event.Description = payload.Description
 	event.Duration = payload.Duration
 	event.Dates = payload.Dates
+	event.Times = payload.Times
+	event.HasSpecificTimes = payload.HasSpecificTimes
 	event.SignUpBlocks = payload.SignUpBlocks
 	event.StartOnMonday = payload.StartOnMonday
 	event.NotificationsEnabled = payload.NotificationsEnabled
