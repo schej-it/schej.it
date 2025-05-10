@@ -124,6 +124,7 @@
                 <div
                   v-for="(time, i) in splitTimes[0]"
                   :key="i"
+                  :id="time.id"
                   class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
                 >
                   {{ time.text }}
@@ -144,6 +145,7 @@
                   <div
                     v-for="(time, i) in splitTimes[1]"
                     :key="i"
+                    :id="time.id"
                     class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
                   >
                     {{ time.text }}
@@ -1777,10 +1779,19 @@ export default {
         const { minHours, maxHours } = this.specificTimesMinMaxHours
         // Hours offset for specific times starts from midnight = 0
         for (let i = minHours; i <= maxHours; ++i) {
-          splitTimes[0].push({
-            hoursOffset: i,
-            text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
-          })
+          if (i === 9) {
+            // add an id so we can scroll to it
+            splitTimes[0].push({
+              id: "time-9",
+              hoursOffset: i,
+              text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
+            })
+          } else {
+            splitTimes[0].push({
+              hoursOffset: i,
+              text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
+            })
+          }
           splitTimes[0].push({
             hoursOffset: i + 0.25,
           })
@@ -4107,6 +4118,18 @@ export default {
         this.curScheduledEvent = null
       } else if (prevState === this.states.EDIT_AVAILABILITY) {
         this.unsavedChanges = false
+      }
+
+      if (nextState === this.states.SET_SPECIFIC_TIMES) {
+        this.$nextTick(() => {
+          const time9 = document.getElementById("time-9")
+          if (time9) {
+            const yOffset = -150
+            const y =
+              time9.getBoundingClientRect().top + window.scrollY + yOffset
+            window.scrollTo({ top: y, behavior: "smooth" })
+          }
+        })
       }
     },
     respondents: {
