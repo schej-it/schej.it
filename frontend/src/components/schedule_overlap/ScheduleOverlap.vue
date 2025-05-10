@@ -3260,19 +3260,21 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              const date = this.getDateFromRowCol(row, col)
-              if (date) {
-                date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
-                const startDate = dayjs(date).utc()
-                const endDate = dayjs(date).utc().add(15, "minutes")
-                const timeFormat =
-                  this.timeType === timeTypes.HOUR12 ? "h:mm A" : "HH:mm"
-                const dateFormat = "ddd, MMM D, YYYY"
-                this.tooltipContent = `${startDate.format(
-                  dateFormat
-                )} ${startDate.format(timeFormat)} to ${endDate.format(
-                  timeFormat
-                )}`
+              if (!this.event.daysOnly) {
+                const date = this.getDateFromRowCol(row, col)
+                if (date) {
+                  date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
+                  const startDate = dayjs(date).utc()
+                  const endDate = dayjs(date).utc().add(15, "minutes")
+                  const timeFormat =
+                    this.timeType === timeTypes.HOUR12 ? "h:mm A" : "HH:mm"
+                  const dateFormat = "ddd, MMM D, YYYY"
+                  this.tooltipContent = `${startDate.format(
+                    dateFormat
+                  )} ${startDate.format(timeFormat)} to ${endDate.format(
+                    timeFormat
+                  )}`
+                }
               }
             }
           },
