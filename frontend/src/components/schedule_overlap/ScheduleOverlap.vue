@@ -1,149 +1,136 @@
 <template>
   <span>
-    <div class="tw-select-none tw-py-4" style="-webkit-touch-callout: none">
-      <div class="tw-flex tw-flex-col sm:tw-flex-row">
-        <div class="tw-flex tw-grow tw-pl-4" :class="isSignUp ? '' : 'tw-pr-4'">
-          <template v-if="event.daysOnly">
-            <div class="tw-grow">
-              <div class="tw-flex tw-items-center tw-justify-between">
-                <v-btn
-                  :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                  class="tw-border-gray"
-                  outlined
-                  icon
-                  @click="prevPage"
-                  ><v-icon>mdi-chevron-left</v-icon></v-btn
-                >
-                <div
-                  class="tw-text-lg tw-font-medium tw-capitalize sm:tw-text-xl"
-                >
-                  {{ curMonthText }}
-                </div>
-                <v-btn
-                  :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-                  class="tw-border-gray"
-                  outlined
-                  icon
-                  @click="nextPage"
-                  ><v-icon>mdi-chevron-right</v-icon></v-btn
-                >
-              </div>
-              <!-- Header -->
-              <div class="tw-flex tw-w-full">
-                <div
-                  v-for="day in daysOfWeek"
-                  class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-dark-gray"
-                >
-                  {{ day }}
-                </div>
-              </div>
-              <!-- Days grid -->
-              <div
-                id="drag-section"
-                class="tw-grid tw-grid-cols-7"
-                @mouseleave="resetCurTimeslot"
-              >
-                <div
-                  v-for="(day, i) in monthDays"
-                  :key="day.time"
-                  class="timeslot tw-aspect-square tw-p-2 tw-text-sm sm:tw-text-base"
-                  :class="dayTimeslotClassStyle[i].class"
-                  :style="dayTimeslotClassStyle[i].style"
-                  v-on="dayTimeslotVon[i]"
-                >
-                  {{ day.date }}
-                </div>
-              </div>
-
-              <v-expand-transition>
-                <div
-                  :key="hintText"
-                  v-if="!isPhone && hintTextShown"
-                  class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
-                >
-                  <div
-                    class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
-                  >
-                    <div class="tw-flex tw-items-center tw-gap-1">
-                      <v-icon small>mdi-information-outline</v-icon>
-                      {{ hintText }}
-                    </div>
-                    <v-icon small @click="closeHint">mdi-close</v-icon>
-                  </div>
-                </div>
-              </v-expand-transition>
-
-              <ToolRow
-                v-if="!isPhone && !calendarOnly"
-                :event="event"
-                :state="state"
-                :states="states"
-                :cur-timezone.sync="curTimezone"
-                :show-best-times.sync="showBestTimes"
-                :hide-if-needed.sync="hideIfNeeded"
-                :is-weekly="isWeekly"
-                :calendar-permission-granted="calendarPermissionGranted"
-                :week-offset="weekOffset"
-                :num-responses="respondents.length"
-                :mobile-num-days.sync="mobileNumDays"
-                :allow-schedule-event="allowScheduleEvent"
-                :show-event-options="showEventOptions"
-                :time-type.sync="timeType"
-                @toggleShowEventOptions="toggleShowEventOptions"
-                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @scheduleEvent="scheduleEvent"
-                @cancelScheduleEvent="cancelScheduleEvent"
-                @confirmScheduleEvent="confirmScheduleEvent"
-              />
-            </div>
-          </template>
-          <template v-else>
-            <!-- Times -->
-            <div
-              :class="calendarOnly ? 'tw-w-12' : ''"
-              class="tw-w-8 tw-flex-none sm:tw-w-12"
-            >
-              <div
-                :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-                class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
-              >
-                <div
-                  :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
-                  class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
-                >
-                  <v-btn class="tw-border-gray" outlined icon @click="prevPage"
+    <Tooltip :content="tooltipContent">
+      <div class="tw-select-none tw-py-4" style="-webkit-touch-callout: none">
+        <div class="tw-flex tw-flex-col sm:tw-flex-row">
+          <div
+            class="tw-flex tw-grow tw-pl-4"
+            :class="isSignUp ? '' : 'tw-pr-4'"
+          >
+            <template v-if="event.daysOnly">
+              <div class="tw-grow">
+                <div class="tw-flex tw-items-center tw-justify-between">
+                  <v-btn
+                    :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                    class="tw-border-gray"
+                    outlined
+                    icon
+                    @click="prevPage"
                     ><v-icon>mdi-chevron-left</v-icon></v-btn
                   >
+                  <div
+                    class="tw-text-lg tw-font-medium tw-capitalize sm:tw-text-xl"
+                  >
+                    {{ curMonthText }}
+                  </div>
+                  <v-btn
+                    :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+                    class="tw-border-gray"
+                    outlined
+                    icon
+                    @click="nextPage"
+                    ><v-icon>mdi-chevron-right</v-icon></v-btn
+                  >
                 </div>
-              </div>
-
-              <div
-                :class="calendarOnly ? '' : '-tw-ml-3'"
-                class="-tw-mt-[8px] sm:tw-ml-0"
-              >
-                <div
-                  v-for="(time, i) in splitTimes[0]"
-                  :key="i"
-                  :id="time.id"
-                  class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
-                >
-                  {{ time.text }}
+                <!-- Header -->
+                <div class="tw-flex tw-w-full">
+                  <div
+                    v-for="day in daysOfWeek"
+                    class="tw-flex-1 tw-p-2 tw-text-center tw-text-base tw-capitalize tw-text-dark-gray"
+                  >
+                    {{ day }}
+                  </div>
                 </div>
-              </div>
-
-              <template v-if="splitTimes[1].length > 0">
+                <!-- Days grid -->
                 <div
-                  :style="{
-                    height: `${SPLIT_GAP_HEIGHT}px`,
-                  }"
-                ></div>
-                <div
-                  v-if="splitTimes[1].length > 0"
-                  :class="calendarOnly ? '' : '-tw-ml-3'"
-                  class="sm:tw-ml-0"
+                  id="drag-section"
+                  class="tw-grid tw-grid-cols-7"
+                  @mouseleave="resetCurTimeslot"
                 >
                   <div
-                    v-for="(time, i) in splitTimes[1]"
+                    v-for="(day, i) in monthDays"
+                    :key="day.time"
+                    class="timeslot tw-aspect-square tw-p-2 tw-text-sm sm:tw-text-base"
+                    :class="dayTimeslotClassStyle[i].class"
+                    :style="dayTimeslotClassStyle[i].style"
+                    v-on="dayTimeslotVon[i]"
+                  >
+                    {{ day.date }}
+                  </div>
+                </div>
+
+                <v-expand-transition>
+                  <div
+                    :key="hintText"
+                    v-if="!isPhone && hintTextShown"
+                    class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
+                  >
+                    <div
+                      class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                    >
+                      <div class="tw-flex tw-items-center tw-gap-1">
+                        <v-icon small>mdi-information-outline</v-icon>
+                        {{ hintText }}
+                      </div>
+                      <v-icon small @click="closeHint">mdi-close</v-icon>
+                    </div>
+                  </div>
+                </v-expand-transition>
+
+                <ToolRow
+                  v-if="!isPhone && !calendarOnly"
+                  :event="event"
+                  :state="state"
+                  :states="states"
+                  :cur-timezone.sync="curTimezone"
+                  :show-best-times.sync="showBestTimes"
+                  :hide-if-needed.sync="hideIfNeeded"
+                  :is-weekly="isWeekly"
+                  :calendar-permission-granted="calendarPermissionGranted"
+                  :week-offset="weekOffset"
+                  :num-responses="respondents.length"
+                  :mobile-num-days.sync="mobileNumDays"
+                  :allow-schedule-event="allowScheduleEvent"
+                  :show-event-options="showEventOptions"
+                  :time-type.sync="timeType"
+                  @toggleShowEventOptions="toggleShowEventOptions"
+                  @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                  @scheduleEvent="scheduleEvent"
+                  @cancelScheduleEvent="cancelScheduleEvent"
+                  @confirmScheduleEvent="confirmScheduleEvent"
+                />
+              </div>
+            </template>
+            <template v-else>
+              <!-- Times -->
+              <div
+                :class="calendarOnly ? 'tw-w-12' : ''"
+                class="tw-w-8 tw-flex-none sm:tw-w-12"
+              >
+                <div
+                  :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
+                  class="tw-sticky tw-top-14 tw-z-10 -tw-ml-3 tw-mb-3 tw-h-11 tw-bg-white sm:tw-top-16 sm:tw-ml-0"
+                >
+                  <div
+                    :class="hasPrevPage ? 'tw-visible' : 'tw-invisible'"
+                    class="tw-sticky tw-top-14 tw-ml-0.5 tw-self-start tw-pt-1.5 sm:tw-top-16 sm:-tw-ml-2"
+                  >
+                    <v-btn
+                      class="tw-border-gray"
+                      outlined
+                      icon
+                      @click="prevPage"
+                      ><v-icon>mdi-chevron-left</v-icon></v-btn
+                    >
+                  </div>
+                </div>
+
+                <div
+                  :class="calendarOnly ? '' : '-tw-ml-3'"
+                  class="-tw-mt-[8px] sm:tw-ml-0"
+                >
+                  <div
+                    v-for="(time, i) in splitTimes[0]"
                     :key="i"
                     :id="time.id"
                     class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
@@ -151,741 +138,767 @@
                     {{ time.text }}
                   </div>
                 </div>
-              </template>
-            </div>
 
-            <!-- Middle section -->
-            <div class="tw-grow">
-              <div
-                ref="calendar"
-                @scroll="onCalendarScroll"
-                class="tw-relative tw-flex tw-flex-col"
-              >
-                <!-- Days -->
-                <div
-                  :class="
-                    sampleCalendarEventsByDay
-                      ? undefined
-                      : 'tw-sticky tw-top-14'
-                  "
-                  class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
-                >
+                <template v-if="splitTimes[1].length > 0">
                   <div
-                    v-for="(day, i) in days"
-                    :key="i"
-                    class="tw-flex-1 tw-bg-white"
+                    :style="{
+                      height: `${SPLIT_GAP_HEIGHT}px`,
+                    }"
+                  ></div>
+                  <div
+                    v-if="splitTimes[1].length > 0"
+                    :class="calendarOnly ? '' : '-tw-ml-3'"
+                    class="sm:tw-ml-0"
                   >
-                    <div class="tw-text-center">
-                      <div
-                        v-if="isSpecificDates || isGroup"
-                        class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
-                      >
-                        {{ day.dateString }}
-                      </div>
-                      <div class="tw-text-base tw-capitalize sm:tw-text-lg">
-                        {{ day.dayText }}
+                    <div
+                      v-for="(time, i) in splitTimes[1]"
+                      :key="i"
+                      :id="time.id"
+                      class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                    >
+                      {{ time.text }}
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Middle section -->
+              <div class="tw-grow">
+                <div
+                  ref="calendar"
+                  @scroll="onCalendarScroll"
+                  class="tw-relative tw-flex tw-flex-col"
+                >
+                  <!-- Days -->
+                  <div
+                    :class="
+                      sampleCalendarEventsByDay
+                        ? undefined
+                        : 'tw-sticky tw-top-14'
+                    "
+                    class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
+                  >
+                    <div
+                      v-for="(day, i) in days"
+                      :key="i"
+                      class="tw-flex-1 tw-bg-white"
+                    >
+                      <div class="tw-text-center">
+                        <div
+                          v-if="isSpecificDates || isGroup"
+                          class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
+                        >
+                          {{ day.dateString }}
+                        </div>
+                        <div class="tw-text-base tw-capitalize sm:tw-text-lg">
+                          {{ day.dayText }}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Calendar -->
-                <div class="tw-flex tw-flex-col">
-                  <div class="tw-flex-1">
-                    <div
-                      id="drag-section"
-                      data-long-press-delay="500"
-                      class="tw-relative tw-flex"
-                      @mouseleave="resetCurTimeslot"
-                    >
-                      <!-- Loader -->
+                  <!-- Calendar -->
+                  <div class="tw-flex tw-flex-col">
+                    <div class="tw-flex-1">
                       <div
-                        v-if="showLoader"
-                        class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
+                        id="drag-section"
+                        data-long-press-delay="500"
+                        class="tw-relative tw-flex"
+                        @mouseleave="resetCurTimeslot"
                       >
-                        <v-progress-circular
-                          class="tw-text-green"
-                          indeterminate
-                        />
-                      </div>
-
-                      <div
-                        v-for="(_, d) in days"
-                        :key="d"
-                        class="tw-relative tw-flex-1"
-                        :class="
-                          ((isGroup && loadingCalendarEvents) ||
-                            loadingResponses.loading) &&
-                          'tw-opacity-50'
-                        "
-                      >
-                        <!-- Timeslots -->
+                        <!-- Loader -->
                         <div
-                          v-for="(_, t) in splitTimes[0]"
-                          :key="`${d}-${t}-0`"
-                          class="tw-w-full"
+                          v-if="showLoader"
+                          class="tw-absolute tw-z-10 tw-grid tw-h-full tw-w-full tw-place-content-center"
                         >
-                          <div
-                            class="timeslot tw-h-4"
-                            :class="
-                              timeslotClassStyle[d * times.length + t]?.class
-                            "
-                            :style="
-                              timeslotClassStyle[d * times.length + t]?.style
-                            "
-                            v-on="timeslotVon[d * times.length + t]"
-                          ></div>
+                          <v-progress-circular
+                            class="tw-text-green"
+                            indeterminate
+                          />
                         </div>
 
-                        <template v-if="splitTimes[1].length > 0">
+                        <div
+                          v-for="(_, d) in days"
+                          :key="d"
+                          class="tw-relative tw-flex-1"
+                          :class="
+                            ((isGroup && loadingCalendarEvents) ||
+                              loadingResponses.loading) &&
+                            'tw-opacity-50'
+                          "
+                        >
+                          <!-- Timeslots -->
                           <div
-                            :style="{
-                              height: `${SPLIT_GAP_HEIGHT}px`,
-                            }"
-                          ></div>
-                          <div
-                            v-for="(_, t) in splitTimes[1]"
-                            :key="`${d}-${t}-1`"
+                            v-for="(_, t) in splitTimes[0]"
+                            :key="`${d}-${t}-0`"
                             class="tw-w-full"
                           >
                             <div
                               class="timeslot tw-h-4"
                               :class="
-                                timeslotClassStyle[
-                                  d * times.length + t + splitTimes[0].length
-                                ]?.class
+                                timeslotClassStyle[d * times.length + t]?.class
                               "
                               :style="
-                                timeslotClassStyle[
-                                  d * times.length + t + splitTimes[0].length
-                                ]?.style
+                                timeslotClassStyle[d * times.length + t]?.style
                               "
-                              v-on="
-                                timeslotVon[
-                                  d * times.length + t + splitTimes[0].length
-                                ]
-                              "
+                              v-on="timeslotVon[d * times.length + t]"
                             ></div>
                           </div>
-                        </template>
 
-                        <!-- Calendar events -->
-                        <template
-                          v-if="
-                            !loadingCalendarEvents &&
-                            (editing ||
-                              alwaysShowCalendarEvents ||
-                              showCalendarEvents)
-                          "
-                          v-for="calendarEvent in calendarEventsByDay[
-                            d + page * maxDaysPerPage
-                          ]"
-                        >
-                          <CalendarEventBlock
-                            :blockStyle="getTimeBlockStyle(calendarEvent)"
-                            :key="calendarEvent.id"
-                            :calendarEvent="calendarEvent"
-                            :isGroup="isGroup"
-                            :isEditingAvailability="
-                              state === states.EDIT_AVAILABILITY
-                            "
-                            :noEventNames="noEventNames"
-                            :transitionName="isGroup ? '' : 'fade-transition'"
-                          />
-                        </template>
-
-                        <!-- Scheduled event -->
-                        <div v-if="state === states.SCHEDULE_EVENT">
-                          <div
-                            v-if="
-                              (dragStart && dragStart.col === d) ||
-                              (!dragStart &&
-                                curScheduledEvent &&
-                                curScheduledEvent.col === d)
-                            "
-                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="scheduledEventStyle"
-                            style="pointer-events: none"
-                          >
+                          <template v-if="splitTimes[1].length > 0">
                             <div
-                              class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                              :style="{
+                                height: `${SPLIT_GAP_HEIGHT}px`,
+                              }"
+                            ></div>
+                            <div
+                              v-for="(_, t) in splitTimes[1]"
+                              :key="`${d}-${t}-1`"
+                              class="tw-w-full"
                             >
-                              <div class="tw-font-medium tw-text-white">
-                                {{ event.name }}
+                              <div
+                                class="timeslot tw-h-4"
+                                :class="
+                                  timeslotClassStyle[
+                                    d * times.length + t + splitTimes[0].length
+                                  ]?.class
+                                "
+                                :style="
+                                  timeslotClassStyle[
+                                    d * times.length + t + splitTimes[0].length
+                                  ]?.style
+                                "
+                                v-on="
+                                  timeslotVon[
+                                    d * times.length + t + splitTimes[0].length
+                                  ]
+                                "
+                              ></div>
+                            </div>
+                          </template>
+
+                          <!-- Calendar events -->
+                          <template
+                            v-if="
+                              !loadingCalendarEvents &&
+                              (editing ||
+                                alwaysShowCalendarEvents ||
+                                showCalendarEvents)
+                            "
+                            v-for="calendarEvent in calendarEventsByDay[
+                              d + page * maxDaysPerPage
+                            ]"
+                          >
+                            <CalendarEventBlock
+                              :blockStyle="getTimeBlockStyle(calendarEvent)"
+                              :key="calendarEvent.id"
+                              :calendarEvent="calendarEvent"
+                              :isGroup="isGroup"
+                              :isEditingAvailability="
+                                state === states.EDIT_AVAILABILITY
+                              "
+                              :noEventNames="noEventNames"
+                              :transitionName="isGroup ? '' : 'fade-transition'"
+                            />
+                          </template>
+
+                          <!-- Scheduled event -->
+                          <div v-if="state === states.SCHEDULE_EVENT">
+                            <div
+                              v-if="
+                                (dragStart && dragStart.col === d) ||
+                                (!dragStart &&
+                                  curScheduledEvent &&
+                                  curScheduledEvent.col === d)
+                              "
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              :style="scheduledEventStyle"
+                              style="pointer-events: none"
+                            >
+                              <div
+                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                              >
+                                <div class="tw-font-medium tw-text-white">
+                                  {{ event.name }}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        <!-- Sign up block being dragged -->
-                        <div v-if="state === states.EDIT_SIGN_UP_BLOCKS">
-                          <div
-                            v-if="dragStart && dragStart.col === d"
-                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="signUpBlockBeingDraggedStyle"
-                            style="pointer-events: none"
-                          >
-                            <SignUpCalendarBlock
-                              :title="newSignUpBlockName"
-                              titleOnly
-                              unsaved
-                            />
-                          </div>
-                        </div>
-
-                        <div v-if="isSignUp">
-                          <!-- Sign up blocks -->
-                          <div
-                            v-for="block in signUpBlocksByDay[
-                              d + page * maxDaysPerPage
-                            ]"
-                            :key="block._id"
-                          >
+                          <!-- Sign up block being dragged -->
+                          <div v-if="state === states.EDIT_SIGN_UP_BLOCKS">
                             <div
+                              v-if="dragStart && dragStart.col === d"
                               class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="{
-                                top: `calc(${block.hoursOffset} * 4 * 1rem)`,
-                                height: `calc(${block.hoursLength} * 4 * 1rem)`,
-                              }"
-                              @click="handleSignUpBlockClick(block)"
-                            >
-                              <SignUpCalendarBlock :signUpBlock="block" />
-                            </div>
-                          </div>
-
-                          <!-- Sign up blocks to be added after hitting 'save' -->
-                          <div
-                            v-for="block in signUpBlocksToAddByDay[
-                              d + page * maxDaysPerPage
-                            ]"
-                            :key="block._id"
-                          >
-                            <div
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="{
-                                top: `calc(${block.hoursOffset} * 4 * 1rem)`,
-                                height: `calc(${block.hoursLength} * 4 * 1rem)`,
-                              }"
+                              :style="signUpBlockBeingDraggedStyle"
+                              style="pointer-events: none"
                             >
                               <SignUpCalendarBlock
-                                :title="block.name"
+                                :title="newSignUpBlockName"
                                 titleOnly
                                 unsaved
                               />
                             </div>
                           </div>
-                        </div>
 
-                        <!-- Overlaid availabilities -->
-                        <div v-if="overlayAvailability">
-                          <div
-                            v-for="(timeBlock, tb) in overlaidAvailability[d]"
-                            :key="tb"
-                            class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                            :style="getTimeBlockStyle(timeBlock)"
-                            style="pointer-events: none"
-                          >
+                          <div v-if="isSignUp">
+                            <!-- Sign up blocks -->
                             <div
-                              class="tw-h-full tw-w-full tw-border-2"
-                              :class="
-                                timeBlock.type === 'available'
-                                  ? 'overlay-avail-shadow-green tw-border-[#00994CB3] tw-bg-[#00994C66]'
-                                  : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
-                              "
-                            ></div>
+                              v-for="block in signUpBlocksByDay[
+                                d + page * maxDaysPerPage
+                              ]"
+                              :key="block._id"
+                            >
+                              <div
+                                class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                                :style="{
+                                  top: `calc(${block.hoursOffset} * 4 * 1rem)`,
+                                  height: `calc(${block.hoursLength} * 4 * 1rem)`,
+                                }"
+                                @click="handleSignUpBlockClick(block)"
+                              >
+                                <SignUpCalendarBlock :signUpBlock="block" />
+                              </div>
+                            </div>
+
+                            <!-- Sign up blocks to be added after hitting 'save' -->
+                            <div
+                              v-for="block in signUpBlocksToAddByDay[
+                                d + page * maxDaysPerPage
+                              ]"
+                              :key="block._id"
+                            >
+                              <div
+                                class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                                :style="{
+                                  top: `calc(${block.hoursOffset} * 4 * 1rem)`,
+                                  height: `calc(${block.hoursLength} * 4 * 1rem)`,
+                                }"
+                              >
+                                <SignUpCalendarBlock
+                                  :title="block.name"
+                                  titleOnly
+                                  unsaved
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Overlaid availabilities -->
+                          <div v-if="overlayAvailability">
+                            <div
+                              v-for="(timeBlock, tb) in overlaidAvailability[d]"
+                              :key="tb"
+                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                              :style="getTimeBlockStyle(timeBlock)"
+                              style="pointer-events: none"
+                            >
+                              <div
+                                class="tw-h-full tw-w-full tw-border-2"
+                                :class="
+                                  timeBlock.type === 'available'
+                                    ? 'overlay-avail-shadow-green tw-border-[#00994CB3] tw-bg-[#00994C66]'
+                                    : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
+                                "
+                              ></div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <ZigZag
+                    v-if="hasPrevPage"
+                    left
+                    class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
+                  />
+                  <ZigZag
+                    v-if="hasNextPage"
+                    right
+                    class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
+                  />
                 </div>
 
-                <ZigZag
-                  v-if="hasPrevPage"
-                  left
-                  class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-3"
-                />
-                <ZigZag
-                  v-if="hasNextPage"
-                  right
-                  class="tw-absolute tw-right-0 tw-top-0 tw-h-full tw-w-3"
+                <!-- Hint text (desktop) -->
+                <v-expand-transition>
+                  <div
+                    :key="hintText"
+                    v-if="!isPhone && hintTextShown"
+                    class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
+                  >
+                    <div
+                      class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                    >
+                      <div class="tw-flex tw-items-center tw-gap-1">
+                        <v-icon small>mdi-information-outline</v-icon>
+                        {{ hintText }}
+                      </div>
+                      <v-icon small @click="closeHint">mdi-close</v-icon>
+                    </div>
+                  </div>
+                </v-expand-transition>
+
+                <v-expand-transition>
+                  <div
+                    v-if="
+                      state !== states.EDIT_AVAILABILITY &&
+                      max !== respondents.length &&
+                      Object.keys(fetchedResponses).length !== 0 &&
+                      !loadingResponses.loading
+                    "
+                  >
+                    <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
+                      Note: There's no time when all
+                      {{ respondents.length }} respondents are available.
+                    </div>
+                  </div>
+                </v-expand-transition>
+
+                <ToolRow
+                  v-if="!isPhone && !calendarOnly"
+                  :event="event"
+                  :state="state"
+                  :states="states"
+                  :cur-timezone.sync="curTimezone"
+                  :show-best-times.sync="showBestTimes"
+                  :hide-if-needed.sync="hideIfNeeded"
+                  :is-weekly="isWeekly"
+                  :calendar-permission-granted="calendarPermissionGranted"
+                  :week-offset="weekOffset"
+                  :num-responses="respondents.length"
+                  :mobile-num-days.sync="mobileNumDays"
+                  :allow-schedule-event="allowScheduleEvent"
+                  :show-event-options="showEventOptions"
+                  :time-type.sync="timeType"
+                  @toggleShowEventOptions="toggleShowEventOptions"
+                  @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                  @scheduleEvent="scheduleEvent"
+                  @cancelScheduleEvent="cancelScheduleEvent"
+                  @confirmScheduleEvent="confirmScheduleEvent"
                 />
               </div>
 
-              <!-- Hint text (desktop) -->
-              <v-expand-transition>
+              <div
+                v-if="!calendarOnly"
+                :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
+                class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
+              >
                 <div
-                  :key="hintText"
-                  v-if="!isPhone && hintTextShown"
-                  class="tw-sticky tw-bottom-4 tw-z-10 tw-flex"
+                  :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
+                  class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
                 >
-                  <div
-                    class="tw-mt-2 tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-rounded-md tw-bg-off-white tw-p-2 tw-px-[7px] tw-text-sm tw-text-very-dark-gray"
+                  <v-btn class="tw-border-gray" outlined icon @click="nextPage"
+                    ><v-icon>mdi-chevron-right</v-icon></v-btn
                   >
-                    <div class="tw-flex tw-items-center tw-gap-1">
-                      <v-icon small>mdi-information-outline</v-icon>
-                      {{ hintText }}
-                    </div>
-                    <v-icon small @click="closeHint">mdi-close</v-icon>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Right hand side content -->
+
+          <div
+            v-if="!calendarOnly"
+            class="tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
+            :style="{ width: rightSideWidth }"
+          >
+            <!-- Show section on the right depending on some if conditions -->
+            <template v-if="isSignUp">
+              <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
+              <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
+                <div
+                  class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-3 tw-text-xs tw-italic tw-text-dark-gray"
+                >
+                  <div v-if="!authUser || alreadyRespondedToSignUpForm">
+                    <a class="tw-underline" :href="`mailto:${event.ownerId}`"
+                      >Contact sign up creator</a
+                    >
+                    to edit your slot
+                  </div>
+                  <div v-if="event.blindAvailabilityEnabled">
+                    Responses are only visible to creator
                   </div>
                 </div>
-              </v-expand-transition>
-
-              <v-expand-transition>
+              </div>
+              <SignUpBlocksList
+                ref="signUpBlocksList"
+                :signUpBlocks="signUpBlocksByDay.flat()"
+                :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
+                :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
+                :isOwner="isOwner"
+                :alreadyResponded="alreadyRespondedToSignUpForm"
+                :anonymous="event.blindAvailabilityEnabled"
+                @update:signUpBlock="editSignUpBlock"
+                @delete:signUpBlock="deleteSignUpBlock"
+                @signUpForBlock="$emit('signUpForBlock', $event)"
+              />
+            </template>
+            <template v-else-if="state === states.SET_SPECIFIC_TIMES">
+              <SpecificTimesInstructions
+                v-if="!isPhone"
+                :numTempTimes="tempTimes.size"
+                @saveTempTimes="saveTempTimes"
+              />
+            </template>
+            <template v-else>
+              <div
+                class="tw-flex tw-flex-col tw-gap-5"
+                v-if="state == states.EDIT_AVAILABILITY"
+              >
                 <div
                   v-if="
-                    state !== states.EDIT_AVAILABILITY &&
-                    max !== respondents.length &&
-                    Object.keys(fetchedResponses).length !== 0 &&
-                    !loadingResponses.loading
+                    !(
+                      calendarPermissionGranted &&
+                      !event.daysOnly &&
+                      !addingAvailabilityAsGuest
+                    )
                   "
+                  class="tw-text-sm tw-italic tw-text-dark-gray"
                 >
-                  <div class="tw-mt-2 tw-text-sm tw-text-dark-gray">
-                    Note: There's no time when all
-                    {{ respondents.length }} respondents are available.
-                  </div>
+                  {{
+                    (userHasResponded && !addingAvailabilityAsGuest) ||
+                    curGuestId
+                      ? "Editing"
+                      : "Adding"
+                  }}
+                  availability as
+                  {{
+                    authUser && !addingAvailabilityAsGuest
+                      ? `${authUser.firstName} ${authUser.lastName}`
+                      : curGuestId?.length > 0
+                      ? curGuestId
+                      : "a guest"
+                  }}
                 </div>
-              </v-expand-transition>
-
-              <ToolRow
-                v-if="!isPhone && !calendarOnly"
-                :event="event"
-                :state="state"
-                :states="states"
-                :cur-timezone.sync="curTimezone"
-                :show-best-times.sync="showBestTimes"
-                :hide-if-needed.sync="hideIfNeeded"
-                :is-weekly="isWeekly"
-                :calendar-permission-granted="calendarPermissionGranted"
-                :week-offset="weekOffset"
-                :num-responses="respondents.length"
-                :mobile-num-days.sync="mobileNumDays"
-                :allow-schedule-event="allowScheduleEvent"
-                :show-event-options="showEventOptions"
-                :time-type.sync="timeType"
-                @toggleShowEventOptions="toggleShowEventOptions"
-                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                @scheduleEvent="scheduleEvent"
-                @cancelScheduleEvent="cancelScheduleEvent"
-                @confirmScheduleEvent="confirmScheduleEvent"
-              />
-            </div>
-
-            <div
-              v-if="!calendarOnly"
-              :class="calendarOnly ? 'tw-invisible' : 'tw-visible'"
-              class="tw-sticky tw-top-14 tw-z-10 tw-mb-4 tw-h-11 tw-bg-white sm:tw-top-16"
-            >
-              <div
-                :class="hasNextPage ? 'tw-visible' : 'tw-invisible'"
-                class="tw-sticky tw-top-14 -tw-mr-2 tw-self-start tw-pt-1.5 sm:tw-top-16"
-              >
-                <v-btn class="tw-border-gray" outlined icon @click="nextPage"
-                  ><v-icon>mdi-chevron-right</v-icon></v-btn
-                >
-              </div>
-            </div>
-          </template>
-        </div>
-
-        <!-- Right hand side content -->
-
-        <div
-          v-if="!calendarOnly"
-          class="tw-px-4 tw-py-4 sm:tw-sticky sm:tw-top-16 sm:tw-flex-none sm:tw-self-start sm:tw-py-0 sm:tw-pl-0 sm:tw-pr-0 sm:tw-pt-14"
-          :style="{ width: rightSideWidth }"
-        >
-          <!-- Show section on the right depending on some if conditions -->
-          <template v-if="isSignUp">
-            <div class="tw-mb-2 tw-text-lg tw-text-black">Slots</div>
-            <div v-if="!isOwner" class="tw-mb-3 tw-flex tw-flex-col">
-              <div
-                class="tw-flex tw-flex-col tw-gap-1 tw-rounded-md tw-bg-light-gray tw-p-3 tw-text-xs tw-italic tw-text-dark-gray"
-              >
-                <div v-if="!authUser || alreadyRespondedToSignUpForm">
-                  <a class="tw-underline" :href="`mailto:${event.ownerId}`"
-                    >Contact sign up creator</a
-                  >
-                  to edit your slot
-                </div>
-                <div v-if="event.blindAvailabilityEnabled">
-                  Responses are only visible to creator
-                </div>
-              </div>
-            </div>
-            <SignUpBlocksList
-              ref="signUpBlocksList"
-              :signUpBlocks="signUpBlocksByDay.flat()"
-              :signUpBlocksToAdd="signUpBlocksToAddByDay.flat()"
-              :isEditing="state == states.EDIT_SIGN_UP_BLOCKS"
-              :isOwner="isOwner"
-              :alreadyResponded="alreadyRespondedToSignUpForm"
-              :anonymous="event.blindAvailabilityEnabled"
-              @update:signUpBlock="editSignUpBlock"
-              @delete:signUpBlock="deleteSignUpBlock"
-              @signUpForBlock="$emit('signUpForBlock', $event)"
-            />
-          </template>
-          <template v-else-if="state === states.SET_SPECIFIC_TIMES">
-            <SpecificTimesInstructions
-              v-if="!isPhone"
-              :numTempTimes="tempTimes.size"
-              @saveTempTimes="saveTempTimes"
-            />
-          </template>
-          <template v-else>
-            <div
-              class="tw-flex tw-flex-col tw-gap-5"
-              v-if="state == states.EDIT_AVAILABILITY"
-            >
-              <div
-                v-if="
-                  !(
+                <AvailabilityTypeToggle
+                  v-if="!isGroup && !isPhone"
+                  class="tw-w-full"
+                  v-model="availabilityType"
+                />
+                <!-- User's calendar accounts -->
+                <CalendarAccounts
+                  v-if="
                     calendarPermissionGranted &&
                     !event.daysOnly &&
                     !addingAvailabilityAsGuest
-                  )
-                "
-                class="tw-text-sm tw-italic tw-text-dark-gray"
-              >
-                {{
-                  (userHasResponded && !addingAvailabilityAsGuest) || curGuestId
-                    ? "Editing"
-                    : "Adding"
-                }}
-                availability as
-                {{
-                  authUser && !addingAvailabilityAsGuest
-                    ? `${authUser.firstName} ${authUser.lastName}`
-                    : curGuestId?.length > 0
-                    ? curGuestId
-                    : "a guest"
-                }}
-              </div>
-              <AvailabilityTypeToggle
-                v-if="!isGroup && !isPhone"
-                class="tw-w-full"
-                v-model="availabilityType"
-              />
-              <!-- User's calendar accounts -->
-              <CalendarAccounts
-                v-if="
-                  calendarPermissionGranted &&
-                  !event.daysOnly &&
-                  !addingAvailabilityAsGuest
-                "
-                :toggleState="true"
-                :eventId="event._id"
-                :calendar-events-map="calendarEventsMap"
-                :syncWithBackend="!isGroup"
-                :allowAddCalendarAccount="!isGroup"
-                @toggleCalendarAccount="toggleCalendarAccount"
-                @toggleSubCalendarAccount="toggleSubCalendarAccount"
-                :initialCalendarAccountsData="
-                  isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
-                "
-              ></CalendarAccounts>
+                  "
+                  :toggleState="true"
+                  :eventId="event._id"
+                  :calendar-events-map="calendarEventsMap"
+                  :syncWithBackend="!isGroup"
+                  :allowAddCalendarAccount="!isGroup"
+                  @toggleCalendarAccount="toggleCalendarAccount"
+                  @toggleSubCalendarAccount="toggleSubCalendarAccount"
+                  :initialCalendarAccountsData="
+                    isGroup ? sharedCalendarAccounts : authUser.calendarAccounts
+                  "
+                ></CalendarAccounts>
 
-              <div v-if="showOverlayAvailabilityToggle">
-                <v-switch
-                  id="overlay-availabilities-toggle"
-                  inset
-                  :input-value="overlayAvailability"
-                  @change="updateOverlayAvailability"
-                  hide-details
+                <div v-if="showOverlayAvailabilityToggle">
+                  <v-switch
+                    id="overlay-availabilities-toggle"
+                    inset
+                    :input-value="overlayAvailability"
+                    @change="updateOverlayAvailability"
+                    hide-details
+                  >
+                    <template v-slot:label>
+                      <div class="tw-text-sm tw-text-black">
+                        Overlay availabilities
+                      </div>
+                    </template>
+                  </v-switch>
+
+                  <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
+                    View everyone's availability while inputting your own
+                  </div>
+                </div>
+
+                <!-- Options section -->
+                <div
+                  v-if="!event.daysOnly && showCalendarOptions"
+                  ref="optionsSection"
                 >
-                  <template v-slot:label>
-                    <div class="tw-text-sm tw-text-black">
-                      Overlay availabilities
-                    </div>
-                  </template>
-                </v-switch>
+                  <ExpandableSection
+                    label="Options"
+                    :value="showEditOptions"
+                    @input="toggleShowEditOptions"
+                  >
+                    <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2.5">
+                      <v-dialog
+                        v-if="showCalendarOptions"
+                        v-model="calendarOptionsDialog"
+                        width="500"
+                      >
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn
+                            outlined
+                            class="tw-border-gray tw-text-sm"
+                            v-on="on"
+                            v-bind="attrs"
+                          >
+                            Calendar options...
+                          </v-btn>
+                        </template>
 
-                <div class="tw-mt-2 tw-text-xs tw-text-dark-gray">
-                  View everyone's availability while inputting your own
+                        <v-card>
+                          <v-card-title class="tw-flex">
+                            <div>Calendar options</div>
+                            <v-spacer />
+                            <v-btn icon @click="calendarOptionsDialog = false">
+                              <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                          </v-card-title>
+                          <v-card-text
+                            class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
+                          >
+                            <AlertText v-if="isGroup" class="-tw-mb-4">
+                              Calendar options will only updated for the current
+                              group
+                            </AlertText>
+
+                            <BufferTimeSwitch
+                              :bufferTime.sync="bufferTime"
+                              :syncWithBackend="!isGroup"
+                            />
+
+                            <WorkingHoursToggle
+                              :workingHours.sync="workingHours"
+                              :timezone="curTimezone"
+                              :syncWithBackend="!isGroup"
+                            />
+                          </v-card-text>
+                        </v-card>
+                      </v-dialog>
+                    </div>
+                  </ExpandableSection>
+                </div>
+
+                <!-- Delete availability button -->
+                <div
+                  v-if="
+                    (!addingAvailabilityAsGuest && userHasResponded) ||
+                    curGuestId
+                  "
+                >
+                  <v-dialog
+                    v-model="deleteAvailabilityDialog"
+                    width="500"
+                    persistent
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <span
+                        v-bind="attrs"
+                        v-on="on"
+                        class="tw-cursor-pointer tw-text-sm tw-text-red"
+                      >
+                        {{ !isGroup ? "Delete availability" : "Leave group" }}
+                      </span>
+                    </template>
+
+                    <v-card>
+                      <v-card-title>Are you sure?</v-card-title>
+                      <v-card-text class="tw-text-sm tw-text-dark-gray"
+                        >Are you sure you want to
+                        {{
+                          !isGroup
+                            ? "delete your availability from this event?"
+                            : "leave this group?"
+                        }}</v-card-text
+                      >
+                      <v-card-actions>
+                        <v-spacer />
+                        <v-btn text @click="deleteAvailabilityDialog = false"
+                          >Cancel</v-btn
+                        >
+                        <v-btn
+                          text
+                          color="error"
+                          @click="
+                            $emit('deleteAvailability')
+                            deleteAvailabilityDialog = false
+                          "
+                          >{{ !isGroup ? "Delete" : "Leave" }}</v-btn
+                        >
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </div>
               </div>
+              <template v-else>
+                <RespondentsList
+                  ref="respondentsList"
+                  :event="event"
+                  :eventId="event._id"
+                  :days="allDays"
+                  :times="times"
+                  :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
+                  :curRespondent="curRespondent"
+                  :curRespondents="curRespondents"
+                  :curTimeslot="curTimeslot"
+                  :curTimeslotAvailability="curTimeslotAvailability"
+                  :respondents="respondents"
+                  :parsedResponses="parsedResponses"
+                  :isOwner="isOwner"
+                  :isGroup="isGroup"
+                  :attendees="event.attendees"
+                  :showCalendarEvents.sync="showCalendarEvents"
+                  :responsesFormatted="responsesFormatted"
+                  :timezone="curTimezone"
+                  :show-best-times.sync="showBestTimes"
+                  :hide-if-needed.sync="hideIfNeeded"
+                  :start-calendar-on-monday.sync="startCalendarOnMonday"
+                  :show-event-options="showEventOptions"
+                  :guestAddedAvailability="guestAddedAvailability"
+                  :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
+                  @toggleShowEventOptions="toggleShowEventOptions"
+                  @addAvailability="$emit('addAvailability')"
+                  @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
+                  @mouseOverRespondent="mouseOverRespondent"
+                  @mouseLeaveRespondent="mouseLeaveRespondent"
+                  @clickRespondent="clickRespondent"
+                  @editGuestAvailability="editGuestAvailability"
+                  @refreshEvent="refreshEvent"
+                />
+              </template>
+            </template>
+          </div>
+        </div>
 
-              <!-- Options section -->
-              <div
-                v-if="!event.daysOnly && showCalendarOptions"
-                ref="optionsSection"
-              >
-                <ExpandableSection
-                  label="Options"
-                  :value="showEditOptions"
-                  @input="toggleShowEditOptions"
+        <ToolRow
+          v-if="isPhone && !calendarOnly"
+          class="tw-px-4"
+          :event="event"
+          :state="state"
+          :states="states"
+          :cur-timezone.sync="curTimezone"
+          :show-best-times.sync="showBestTimes"
+          :hide-if-needed.sync="hideIfNeeded"
+          :start-calendar-on-monday.sync="startCalendarOnMonday"
+          :is-weekly="isWeekly"
+          :calendar-permission-granted="calendarPermissionGranted"
+          :week-offset="weekOffset"
+          :num-responses="respondents.length"
+          :mobile-num-days.sync="mobileNumDays"
+          :allow-schedule-event="allowScheduleEvent"
+          :show-event-options="showEventOptions"
+          :time-type.sync="timeType"
+          @toggleShowEventOptions="toggleShowEventOptions"
+          @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+          @scheduleEvent="scheduleEvent"
+          @cancelScheduleEvent="cancelScheduleEvent"
+          @confirmScheduleEvent="confirmScheduleEvent"
+        />
+
+        <!-- Fixed bottom section for mobile -->
+        <div
+          v-if="isPhone && !calendarOnly"
+          class="tw-fixed tw-bottom-16 tw-z-20 tw-w-full"
+        >
+          <!-- Hint text (mobile) -->
+          <v-expand-transition>
+            <template v-if="hintTextShown">
+              <div :key="hintText">
+                <div
+                  :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-very-dark-gray`"
                 >
-                  <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2.5">
-                    <v-dialog
-                      v-if="showCalendarOptions"
-                      v-model="calendarOptionsDialog"
-                      width="500"
-                    >
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-btn
-                          outlined
-                          class="tw-border-gray tw-text-sm"
-                          v-on="on"
-                          v-bind="attrs"
-                        >
-                          Calendar options...
-                        </v-btn>
-                      </template>
-
-                      <v-card>
-                        <v-card-title class="tw-flex">
-                          <div>Calendar options</div>
-                          <v-spacer />
-                          <v-btn icon @click="calendarOptionsDialog = false">
-                            <v-icon>mdi-close</v-icon>
-                          </v-btn>
-                        </v-card-title>
-                        <v-card-text
-                          class="tw-flex tw-flex-col tw-gap-6 tw-pb-8 tw-pt-2"
-                        >
-                          <AlertText v-if="isGroup" class="-tw-mb-4">
-                            Calendar options will only updated for the current
-                            group
-                          </AlertText>
-
-                          <BufferTimeSwitch
-                            :bufferTime.sync="bufferTime"
-                            :syncWithBackend="!isGroup"
-                          />
-
-                          <WorkingHoursToggle
-                            :workingHours.sync="workingHours"
-                            :timezone="curTimezone"
-                            :syncWithBackend="!isGroup"
-                          />
-                        </v-card-text>
-                      </v-card>
-                    </v-dialog>
+                  <div
+                    :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`"
+                  >
+                    <v-icon small>mdi-information-outline</v-icon>
+                    <div>
+                      {{ hintText }}
+                    </div>
                   </div>
-                </ExpandableSection>
+                  <v-icon small @click="closeHint">mdi-close</v-icon>
+                </div>
               </div>
+            </template>
+          </v-expand-transition>
 
-              <!-- Delete availability button -->
-              <div
-                v-if="
-                  (!addingAvailabilityAsGuest && userHasResponded) || curGuestId
-                "
-              >
-                <v-dialog
-                  v-model="deleteAvailabilityDialog"
-                  width="500"
-                  persistent
-                >
-                  <template v-slot:activator="{ on, attrs }">
-                    <span
-                      v-bind="attrs"
-                      v-on="on"
-                      class="tw-cursor-pointer tw-text-sm tw-text-red"
-                    >
-                      {{ !isGroup ? "Delete availability" : "Leave group" }}
-                    </span>
-                  </template>
-
-                  <v-card>
-                    <v-card-title>Are you sure?</v-card-title>
-                    <v-card-text class="tw-text-sm tw-text-dark-gray"
-                      >Are you sure you want to
-                      {{
-                        !isGroup
-                          ? "delete your availability from this event?"
-                          : "leave this group?"
-                      }}</v-card-text
-                    >
-                    <v-card-actions>
-                      <v-spacer />
-                      <v-btn text @click="deleteAvailabilityDialog = false"
-                        >Cancel</v-btn
-                      >
-                      <v-btn
-                        text
-                        color="error"
-                        @click="
-                          $emit('deleteAvailability')
-                          deleteAvailabilityDialog = false
-                        "
-                        >{{ !isGroup ? "Delete" : "Leave" }}</v-btn
-                      >
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
+          <!-- Fixed pos availability toggle (mobile) -->
+          <v-expand-transition>
+            <div v-if="!isGroup && editing && !isSignUp">
+              <div class="tw-bg-white tw-p-4">
+                <AvailabilityTypeToggle
+                  class="tw-w-full"
+                  v-model="availabilityType"
+                />
               </div>
             </div>
-            <template v-else>
-              <RespondentsList
-                ref="respondentsList"
-                :event="event"
-                :eventId="event._id"
-                :days="allDays"
-                :times="times"
-                :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
-                :curRespondent="curRespondent"
-                :curRespondents="curRespondents"
-                :curTimeslot="curTimeslot"
-                :curTimeslotAvailability="curTimeslotAvailability"
-                :respondents="respondents"
-                :parsedResponses="parsedResponses"
-                :isOwner="isOwner"
-                :isGroup="isGroup"
-                :attendees="event.attendees"
-                :showCalendarEvents.sync="showCalendarEvents"
-                :responsesFormatted="responsesFormatted"
-                :timezone="curTimezone"
-                :show-best-times.sync="showBestTimes"
-                :hide-if-needed.sync="hideIfNeeded"
-                :start-calendar-on-monday.sync="startCalendarOnMonday"
-                :show-event-options="showEventOptions"
-                :guestAddedAvailability="guestAddedAvailability"
-                :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
-                @toggleShowEventOptions="toggleShowEventOptions"
-                @addAvailability="$emit('addAvailability')"
-                @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
-                @mouseOverRespondent="mouseOverRespondent"
-                @mouseLeaveRespondent="mouseLeaveRespondent"
-                @clickRespondent="clickRespondent"
-                @editGuestAvailability="editGuestAvailability"
-                @refreshEvent="refreshEvent"
+          </v-expand-transition>
+
+          <!-- GCal week selector -->
+          <v-expand-transition>
+            <div v-if="isWeekly && editing && calendarPermissionGranted">
+              <div class="tw-h-16 tw-text-sm">
+                <GCalWeekSelector
+                  :week-offset="weekOffset"
+                  :event="event"
+                  @update:weekOffset="(val) => $emit('update:weekOffset', val)"
+                  :start-on-monday="event.startOnMonday"
+                />
+              </div>
+            </div>
+          </v-expand-transition>
+
+          <!-- Respondents list -->
+          <v-expand-transition>
+            <div v-if="delayedShowStickyRespondents">
+              <div class="tw-bg-white tw-p-4">
+                <RespondentsList
+                  :max-height="100"
+                  :event="event"
+                  :eventId="event._id"
+                  :days="allDays"
+                  :times="times"
+                  :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
+                  :curRespondent="curRespondent"
+                  :curRespondents="curRespondents"
+                  :curTimeslot="curTimeslot"
+                  :curTimeslotAvailability="curTimeslotAvailability"
+                  :respondents="respondents"
+                  :parsedResponses="parsedResponses"
+                  :isOwner="isOwner"
+                  :isGroup="isGroup"
+                  :attendees="event.attendees"
+                  :showCalendarEvents.sync="showCalendarEvents"
+                  :responsesFormatted="responsesFormatted"
+                  :timezone="curTimezone"
+                  :show-best-times.sync="showBestTimes"
+                  :hide-if-needed.sync="hideIfNeeded"
+                  :show-event-options="showEventOptions"
+                  :guestAddedAvailability="guestAddedAvailability"
+                  :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
+                  @toggleShowEventOptions="toggleShowEventOptions"
+                  @addAvailability="$emit('addAvailability')"
+                  @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
+                  @mouseOverRespondent="mouseOverRespondent"
+                  @mouseLeaveRespondent="mouseLeaveRespondent"
+                  @clickRespondent="clickRespondent"
+                  @editGuestAvailability="editGuestAvailability"
+                  @refreshEvent="refreshEvent"
+                />
+              </div>
+            </div>
+          </v-expand-transition>
+
+          <!-- Specific times instructions -->
+          <v-expand-transition>
+            <div
+              v-if="state === states.SET_SPECIFIC_TIMES"
+              class="-tw-mb-16 tw-bg-white tw-p-4"
+            >
+              <SpecificTimesInstructions
+                :numTempTimes="tempTimes.size"
+                @saveTempTimes="saveTempTimes"
               />
-            </template>
-          </template>
+            </div>
+          </v-expand-transition>
         </div>
       </div>
-
-      <ToolRow
-        v-if="isPhone && !calendarOnly"
-        class="tw-px-4"
-        :event="event"
-        :state="state"
-        :states="states"
-        :cur-timezone.sync="curTimezone"
-        :show-best-times.sync="showBestTimes"
-        :hide-if-needed.sync="hideIfNeeded"
-        :start-calendar-on-monday.sync="startCalendarOnMonday"
-        :is-weekly="isWeekly"
-        :calendar-permission-granted="calendarPermissionGranted"
-        :week-offset="weekOffset"
-        :num-responses="respondents.length"
-        :mobile-num-days.sync="mobileNumDays"
-        :allow-schedule-event="allowScheduleEvent"
-        :show-event-options="showEventOptions"
-        :time-type.sync="timeType"
-        @toggleShowEventOptions="toggleShowEventOptions"
-        @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-        @scheduleEvent="scheduleEvent"
-        @cancelScheduleEvent="cancelScheduleEvent"
-        @confirmScheduleEvent="confirmScheduleEvent"
-      />
-
-      <!-- Fixed bottom section for mobile -->
-      <div
-        v-if="isPhone && !calendarOnly"
-        class="tw-fixed tw-bottom-16 tw-z-20 tw-w-full"
-      >
-        <!-- Hint text (mobile) -->
-        <v-expand-transition>
-          <template v-if="hintTextShown">
-            <div :key="hintText">
-              <div
-                :class="`tw-flex tw-w-full tw-items-center tw-justify-between tw-gap-1 tw-bg-light-gray tw-px-2 tw-py-2 tw-text-sm tw-text-very-dark-gray`"
-              >
-                <div :class="`tw-flex tw-gap-${hintText.length > 60 ? 2 : 1}`">
-                  <v-icon small>mdi-information-outline</v-icon>
-                  <div>
-                    {{ hintText }}
-                  </div>
-                </div>
-                <v-icon small @click="closeHint">mdi-close</v-icon>
-              </div>
-            </div>
-          </template>
-        </v-expand-transition>
-
-        <!-- Fixed pos availability toggle (mobile) -->
-        <v-expand-transition>
-          <div v-if="!isGroup && editing && !isSignUp">
-            <div class="tw-bg-white tw-p-4">
-              <AvailabilityTypeToggle
-                class="tw-w-full"
-                v-model="availabilityType"
-              />
-            </div>
-          </div>
-        </v-expand-transition>
-
-        <!-- GCal week selector -->
-        <v-expand-transition>
-          <div v-if="isWeekly && editing && calendarPermissionGranted">
-            <div class="tw-h-16 tw-text-sm">
-              <GCalWeekSelector
-                :week-offset="weekOffset"
-                :event="event"
-                @update:weekOffset="(val) => $emit('update:weekOffset', val)"
-                :start-on-monday="event.startOnMonday"
-              />
-            </div>
-          </div>
-        </v-expand-transition>
-
-        <!-- Respondents list -->
-        <v-expand-transition>
-          <div v-if="delayedShowStickyRespondents">
-            <div class="tw-bg-white tw-p-4">
-              <RespondentsList
-                :max-height="100"
-                :event="event"
-                :eventId="event._id"
-                :days="allDays"
-                :times="times"
-                :curDate="getDateFromRowCol(curTimeslot.row, curTimeslot.col)"
-                :curRespondent="curRespondent"
-                :curRespondents="curRespondents"
-                :curTimeslot="curTimeslot"
-                :curTimeslotAvailability="curTimeslotAvailability"
-                :respondents="respondents"
-                :parsedResponses="parsedResponses"
-                :isOwner="isOwner"
-                :isGroup="isGroup"
-                :attendees="event.attendees"
-                :showCalendarEvents.sync="showCalendarEvents"
-                :responsesFormatted="responsesFormatted"
-                :timezone="curTimezone"
-                :show-best-times.sync="showBestTimes"
-                :hide-if-needed.sync="hideIfNeeded"
-                :show-event-options="showEventOptions"
-                :guestAddedAvailability="guestAddedAvailability"
-                :addingAvailabilityAsGuest="addingAvailabilityAsGuest"
-                @toggleShowEventOptions="toggleShowEventOptions"
-                @addAvailability="$emit('addAvailability')"
-                @addAvailabilityAsGuest="$emit('addAvailabilityAsGuest')"
-                @mouseOverRespondent="mouseOverRespondent"
-                @mouseLeaveRespondent="mouseLeaveRespondent"
-                @clickRespondent="clickRespondent"
-                @editGuestAvailability="editGuestAvailability"
-                @refreshEvent="refreshEvent"
-              />
-            </div>
-          </div>
-        </v-expand-transition>
-
-        <!-- Specific times instructions -->
-        <v-expand-transition>
-          <div
-            v-if="state === states.SET_SPECIFIC_TIMES"
-            class="-tw-mb-16 tw-bg-white tw-p-4"
-          >
-            <SpecificTimesInstructions
-              :numTempTimes="tempTimes.size"
-              @saveTempTimes="saveTempTimes"
-            />
-          </div>
-        </v-expand-transition>
-      </div>
-    </div>
+    </Tooltip>
   </span>
 </template>
 
@@ -957,6 +970,7 @@ import GCalWeekSelector from "./GCalWeekSelector.vue"
 import ExpandableSection from "../ExpandableSection.vue"
 import WorkingHoursToggle from "./WorkingHoursToggle.vue"
 import AlertText from "../AlertText.vue"
+import Tooltip from "../Tooltip.vue"
 
 import dayjs from "dayjs"
 import ObjectID from "bson-objectid"
@@ -1028,6 +1042,7 @@ export default {
       fetchedResponses: {}, // Responses fetched from the server for the dates currently shown
       loadingResponses: { loading: false, lastFetched: new Date().getTime() }, // Whether we're currently fetching the responses
       responsesFormatted: new Map(), // Map where date/time is mapped to the people that are available then
+      tooltipContent: "", // The content of the tooltip
 
       /* Sign up form */
       signUpBlocksByDay: [], // The current event's sign up blocks by day
@@ -3245,12 +3260,23 @@ export default {
             // Only show availability on hover if timeslot is not being persisted
             if (!this.timeslotSelected) {
               this.showAvailability(row, col)
-              // const date = this.getDateFromRowCol(row, col)
-              // if (date) {
-              //   date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
-              //   console.log("mouseover", row, col, date?.toISOString())
-              // }
+              const date = this.getDateFromRowCol(row, col)
+              if (date) {
+                date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
+                if (this.timeType === timeTypes.HOUR12) {
+                  this.tooltipContent = dayjs(date).format(
+                    "ddd, MMM D, YYYY h:mm A"
+                  )
+                } else {
+                  this.tooltipContent = dayjs(date).format(
+                    "ddd, MMM D, YYYY HH:mm"
+                  )
+                }
+              }
             }
+          },
+          mouseleave: () => {
+            this.tooltipContent = ""
           },
         }
       }
@@ -4345,6 +4371,7 @@ export default {
     SignUpBlocksList,
     CalendarEventBlock, // Added component registration
     SpecificTimesInstructions, // Added component registration
+    Tooltip,
   },
 }
 </script>
