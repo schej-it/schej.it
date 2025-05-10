@@ -3263,13 +3263,16 @@ export default {
               const date = this.getDateFromRowCol(row, col)
               if (date) {
                 date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
-                this.tooltipContent = dayjs(date)
-                  .utc()
-                  .format(
-                    this.timeType === timeTypes.HOUR12
-                      ? "ddd, MMM D, YYYY h:mm A"
-                      : "ddd, MMM D, YYYY HH:mm"
-                  )
+                const startDate = dayjs(date).utc()
+                const endDate = dayjs(date).utc().add(15, "minutes")
+                const timeFormat =
+                  this.timeType === timeTypes.HOUR12 ? "h:mm A" : "HH:mm"
+                const dateFormat = "ddd, MMM D, YYYY"
+                this.tooltipContent = `${startDate.format(
+                  dateFormat
+                )} ${startDate.format(timeFormat)} to ${endDate.format(
+                  timeFormat
+                )}`
               }
             }
           },
