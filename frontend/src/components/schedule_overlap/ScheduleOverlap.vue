@@ -1744,20 +1744,9 @@ export default {
         this.state !== this.states.SET_SPECIFIC_TIMES &&
         this.event.times?.length > 0
       ) {
-        minHours = 24
-        maxHours = 0
-        for (const time of this.event.times) {
-          const timeDate = new Date(time)
-          const date = new Date(
-            timeDate.getTime() - this.timezoneOffset * 60 * 1000
-          )
-          const localHours = date.getUTCHours()
-          if (localHours < minHours) {
-            minHours = localHours
-          } else if (localHours > maxHours) {
-            maxHours = localHours
-          }
-        }
+        const result = this.getMinMaxHoursFromTimes(this.event.times)
+        minHours = result.minHours
+        maxHours = result.maxHours
       }
 
       return { minHours, maxHours }
@@ -4069,9 +4058,28 @@ export default {
 
     /** Saves the temporary times to the event */
     saveTempTimes() {
+      // Set event times
       this.event.times = [...this.tempTimes]
         .map((t) => new Date(t))
         .sort((a, b) => a.getTime() - b.getTime())
+
+      const { minHours, maxHours } = this.getMinMaxHoursFromTimes(
+        this.event.times
+      )
+
+      // Set event dates to start at the new times
+      for (let i = 0; i < this.event.dates.length; ++i) {
+        const date = new Date(this.event.dates[i])
+        date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
+        date.setUTCHours(minHours, 0, 0, 0)
+        date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
+        this.event.dates[i] = date.toISOString()
+      }
+
+      // Set event duration to the difference between the max and min hours
+      this.event.duration = maxHours - minHours + 1
+
+      // Update event
       put(`/events/${this.event._id}`, this.event)
         .then(() => {
           this.state = this.defaultState
@@ -4079,6 +4087,25 @@ export default {
         .catch((err) => {
           this.showError(err)
         })
+    },
+
+    /** Returns the min and max hours from the times */
+    getMinMaxHoursFromTimes(times) {
+      let minHours = 24
+      let maxHours = 0
+      for (const time of times) {
+        const timeDate = new Date(time)
+        const date = new Date(
+          timeDate.getTime() - this.timezoneOffset * 60 * 1000
+        )
+        const localHours = date.getUTCHours()
+        if (localHours < minHours) {
+          minHours = localHours
+        } else if (localHours > maxHours) {
+          maxHours = localHours
+        }
+      }
+      return { minHours, maxHours }
     },
 
     //#endregion
