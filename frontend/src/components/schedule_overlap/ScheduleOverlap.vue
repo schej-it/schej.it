@@ -2209,7 +2209,9 @@ export default {
     /** Returns a date object from the row and column given on the current page */
     getDateFromRowCol(row, col) {
       if (this.event.daysOnly) {
-        return this.monthDays[row * 7 + col]?.dateObject
+        const dateObject = this.monthDays[row * 7 + col]?.dateObject
+        if (!dateObject) return null
+        return new Date(dateObject)
       } else {
         return this.getDateFromDayTimeIndex(
           this.maxDaysPerPage * this.page + col,
