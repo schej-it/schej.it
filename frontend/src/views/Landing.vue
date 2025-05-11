@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      class="tw-relative tw-m-auto tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col"
+      class="tw-relative tw-m-auto tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col tw-bg-light-gray"
     >
       <!-- Green background -->
       <div
@@ -28,10 +28,23 @@
           class="tw-mx-4 tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
         >
           <div
+            class="tw-mb-4 tw-flex tw-select-none tw-items-center tw-rounded-full tw-border tw-border-light-gray-stroke tw-bg-white/70 tw-px-2.5 tw-py-1.5 tw-text-sm tw-text-dark-gray"
+          >
+            We're open source!
+            <github-button
+              v-once
+              class="-tw-mb-1 tw-ml-2"
+              href="https://github.com/schej-it/schej.it"
+              data-show-count="true"
+              aria-label="Star schej-it/schej.it on GitHub"
+              >Star</github-button
+            >
+          </div>
+          <div
             id="header"
             class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
           >
-            <div>Find a time to meet</div>
+            <h1>Find a time to meet</h1>
           </div>
 
           <div
@@ -53,7 +66,7 @@
           Create event
         </v-btn>
         <div
-          class="tw-rounded-lg tw-border tw-border-light-gray tw-bg-white tw-shadow-xl"
+          class="tw-rounded-xl tw-border tw-border-light-gray-stroke tw-bg-white tw-shadow-xl"
         >
           <div class="tw-relative tw-mx-4 tw-h-[800px] tw-w-[800px]">
             <v-img
@@ -188,34 +201,6 @@
       no-tabs
       @signIn="signIn"
     />
-
-    <!-- GitHub button -->
-    <v-snackbar
-      v-if="!isPhone"
-      min-width="unset"
-      v-model="githubSnackbar"
-      bottom
-      :timeout="-1"
-      content-class="tw-flex tw-items-center tw-gap-x-4"
-      rounded="pill"
-    >
-      We're fully open source on GitHub!
-      <!-- Place this tag where you want the button to render. -->
-      <github-button
-        class="-tw-mb-1"
-        href="https://github.com/schej-it/schej.it"
-        data-color-scheme="no-preference: light; light: light; dark: dark;"
-        data-size="large"
-        data-show-count="true"
-        aria-label="Star schej-it/schej.it on GitHub"
-        >Star</github-button
-      >
-      <template v-slot:action="{ attrs }">
-        <v-btn v-bind="attrs" icon @click="githubSnackbar = false">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </template>
-    </v-snackbar>
 
     <!-- Add the dialog component -->
     <HowItWorksDialog
