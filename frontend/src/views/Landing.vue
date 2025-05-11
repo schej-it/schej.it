@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="tw-bg-light-gray">
     <div
-      class="tw-relative tw-m-auto tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col tw-bg-light-gray"
+      class="tw-relative tw-m-auto tw-mb-32 tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col"
     >
       <!-- Green background -->
       <div
-        class="tw-absolute tw-bottom-0 tw-left-1/2 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:tw-h-[47%]"
+        class="tw-absolute -tw-bottom-32 tw-left-1/2 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:tw-h-[800px]"
       ></div>
 
       <!-- Header -->
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="tw-z-20 tw-mt-16 tw-flex tw-flex-col tw-items-center">
+      <div class="tw-z-20 tw-mt-12 tw-flex tw-flex-col tw-items-center">
         <div
           class="tw-mx-4 tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
         >
@@ -179,7 +179,7 @@
     <!-- Privacy Policy -->
     <div class="tw-flex tw-flex-col tw-bg-green">
       <div
-        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pb-6 tw-pt-6 sm:tw-pb-20"
+        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pb-6 tw-pt-6"
       >
         <router-link
           class="tw-font-bold tw-text-white"
