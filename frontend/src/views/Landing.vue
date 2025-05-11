@@ -23,100 +23,62 @@
         </div>
       </div>
 
-      <div
-        class="tw-relative tw-flex tw-justify-center tw-pb-12 lg:tw-justify-between lg:tw-pb-24"
-      >
-        <!-- Left side -->
-        <div class="tw-flex tw-flex-col">
-          <!-- Hero -->
+      <div class="tw-z-20 tw-mt-16 tw-flex tw-flex-col tw-items-center">
+        <div
+          class="tw-mx-4 tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
+        >
           <div
-            class="tw-mx-4 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none sm:tw-items-start lg:tw-mb-14"
+            id="header"
+            class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
           >
-            <div
-              id="header"
-              class="tw-mb-4 tw-text-center tw-text-2xl tw-font-medium sm:tw-text-left sm:tw-text-4xl lg:tw-text-4xl xl:tw-text-5xl"
-            >
-              <div
-                class="tw-bg-gradient-to-r tw-from-light-green tw-to-darkest-green tw-bg-clip-text tw-pb-1 tw-text-transparent"
-              >
-                Let's schej it!
-              </div>
-              <div class="-tw-mt-1 tw-leading-snug">Find a time to meet</div>
-            </div>
-
-            <div
-              class="lg:tw-text-md tw-mb-4 tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-left sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
-            >
-              <b>Automatically</b> fill in your availability—it's like When2Meet
-              with Google Calendar integration!
-            </div>
+            <div>Find a time to meet</div>
           </div>
 
-          <v-btn
-            id="lets-schej-it-btn"
-            class="tw-my-6 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-hidden lg:tw-px-12"
-            dark
-            @click="newDialog = true"
-            large
-            :x-large="$vuetify.breakpoint.mdAndUp"
+          <div
+            class="lg:tw-text-md tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
           >
-            Create event
-          </v-btn>
-
-          <!-- Calendar -->
-          <div>
-            <v-img
-              alt="schej character"
-              src="@/assets/schejie/wave.png"
-              :height="isPhone ? 70 : 80"
-              transition="fade-transition"
-              contain
-              class="-tw-mb-4 tw-mt-2 tw-block sm:tw-mt-6 lg:tw-hidden"
-            />
-            <LandingPageCalendar class="tw-drop-shadow-lg" />
+            Coordinate group meetings without the back and forth. <br />
+            Integrates with your calendar of choice.
           </div>
         </div>
 
-        <!-- Right side -->
-        <div class="tw-ml-6 tw-mr-4 tw-hidden lg:tw-flex lg:tw-flex-col">
-          <!-- <v-img
-            alt="schej character"
-            src="@/assets/schejie/wave.png"
-            :height="90"
-            transition="fade-transition"
-            contain
-            class=""
-          /> -->
-          <!-- Placeholder when schejy is not shown -->
-          <!-- <div
-            v-if="!showSchejy"
-            id="canvas"
-            class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
-          ></div> -->
-          <!-- <v-slide-y-reverse-transition>
-            <div v-show="showSchejy" class="tw-self-center tw-overflow-hidden">
-              <canvas
-                id="canvas"
-                width="700"
-                height="700"
-                class="-tw-mb-36 -tw-mt-24 tw-h-[350px] tw-w-[350px] tw-overflow-hidden"
-              ></canvas>
-            </div>
-          </v-slide-y-reverse-transition> -->
-          <v-img
-            alt="schej character"
-            src="@/assets/schejie/wave.png"
-            :height="80"
-            transition="fade-transition"
-            contain
-            class="tw-mt-2 tw-block"
-          />
-          <NewEvent
-            class="tw-drop-shadow-lg"
-            :dialog="false"
-            :allow-notifications="false"
-            @signIn="signIn"
-          />
+        <v-btn
+          id="lets-schej-it-btn"
+          class="tw-mb-12 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
+          dark
+          @click="newDialog = true"
+          large
+          :x-large="$vuetify.breakpoint.mdAndUp"
+        >
+          Create event
+        </v-btn>
+        <div
+          class="tw-rounded-lg tw-border tw-border-light-gray tw-bg-white tw-shadow-xl"
+        >
+          <div class="tw-relative tw-mx-4 tw-h-[800px] tw-w-[800px]">
+            <v-img
+              class="tw-absolute tw-left-0 tw-top-0 tw-transition-opacity tw-duration-300"
+              :class="{ 'tw-opacity-0': isVideoPlaying }"
+              src="@/assets/img/hero.jpg"
+              :height="800"
+              :width="800"
+              transition="fade-transition"
+              contain
+            />
+            <vue-vimeo-player
+              video-url="https://player.vimeo.com/video/1083205305?h=d58bef862a"
+              :player-width="800"
+              :player-height="800"
+              :options="{
+                muted: true,
+                playsinline: true,
+              }"
+              :controls="false"
+              :autoplay="true"
+              :loop="true"
+              @play="onPlay"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -282,11 +244,11 @@ import NewEvent from "@/components/NewEvent.vue"
 import NewDialog from "@/components/NewDialog.vue"
 import LandingPageHeader from "@/components/landing/LandingPageHeader.vue"
 import Logo from "@/components/Logo.vue"
-import { Rive } from "@rive-app/canvas"
 import GithubButton from "vue-github-button"
 import SignInDialog from "@/components/SignInDialog.vue"
 import { calendarTypes } from "@/constants"
 import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
+import { vueVimeoPlayer } from "vue-vimeo-player"
 
 export default {
   name: "Landing",
@@ -307,6 +269,7 @@ export default {
     Logo,
     SignInDialog,
     HowItWorksDialog,
+    vueVimeoPlayer,
   },
 
   data: () => ({
@@ -361,6 +324,7 @@ export default {
     rive: null,
     showSchejy: false,
     showHowItWorksDialog: false,
+    isVideoPlaying: false,
   }),
 
   computed: {
@@ -405,6 +369,11 @@ export default {
     openHowItWorksDialog() {
       this.showHowItWorksDialog = true
       this.$posthog.capture("how_it_works_clicked")
+    },
+    onPlay() {
+      setTimeout(() => {
+        this.isVideoPlaying = true
+      }, 300)
     },
   },
 
