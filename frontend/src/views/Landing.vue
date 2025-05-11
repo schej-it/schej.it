@@ -114,15 +114,7 @@
         >
           <NumberBullet>{{ i + 1 }}</NumberBullet>
           <div class="tw-text-base tw-font-medium md:tw-text-xl">
-            <div v-if="i == 1">
-              <span
-                class="tw-underline tw-decoration-[#29BC6888] tw-decoration-4"
-                style="text-underline-position: under"
-                >Autofill</span
-              >
-              your availability with Google Calendar
-            </div>
-            <div v-else v-html="step"></div>
+            <div v-html="step"></div>
           </div>
         </div>
       </div>
@@ -148,10 +140,11 @@
       <div class="tw-h-64 tw-max-w-3xl tw-flex-1 sm:tw-h-80 md:tw-h-96">
         <iframe
           class="tw-h-full tw-w-full"
-          src="https://www.youtube.com/embed/58UcQnaXnBs?fs=0&color=white&rel=0&controls=0"
-          title="schej demo"
+          src="https://www.youtube.com/embed/I7jl850X1P4?si=4xUlkXJebxBaDP1I"
+          title="Schej demo"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen
         ></iframe>
       </div>
@@ -262,13 +255,13 @@ export default {
     newDialog: false,
     githubSnackbar: true,
     howItWorksSteps: [
-      "Create a schej event",
-      "Autofill your availability with Google Calendar",
-      "Share the schej with your group and find the best time to meet!",
+      "Create a Schej event",
+      "Share the Schej link with your group for them to fill out",
+      "See where everybody's availability overlaps!",
     ],
     faqs: [
       {
-        question: "How is schej different from lettucemeet or when2meet?",
+        question: "How is Schej different from Lettucemeet or When2meet?",
         points: [
           "Much better UI (web and mobile)",
           "Seamless and working calendar integration",
@@ -276,9 +269,14 @@ export default {
         ],
       },
       {
-        question: "Is Google Calendar access required in order to use schej?",
+        question: "What calendars does Schej integrate with?",
         answer:
-          "Nope! You can manually input your availability, but we highly recommend allowing Google Calendar access in order to view your calendar events while doing so.",
+          "Schej currently supports Google Calendar, Outlook, and Apple Calendar. We are working on adding more calendar types soon!",
+      },
+      {
+        question: "Is calendar access required in order to use Schej?",
+        answer:
+          "Nope! You can manually input your availability, but we highly recommend allowing calendar access in order to view your calendar events while doing so.",
       },
       {
         question: "Will other people be able to see my calendar events?",
