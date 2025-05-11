@@ -51,7 +51,24 @@
             class="lg:tw-text-md tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
           >
             Coordinate group meetings without the back and forth. <br />
-            Integrates with your calendar of choice.
+            Integrates with your
+            <v-tooltip
+              top
+              content-class="tw-bg-very-dark-gray tw-shadow-lg tw-opacity-100"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  class="tw-cursor-pointer tw-border-b tw-border-dashed tw-border-dark-gray"
+                  v-bind="attrs"
+                  v-on="on"
+                  >calendar of choice</span
+                >
+              </template>
+              <span
+                >Schej currently supports Google Calendar,<br />
+                Outlook, and Apple Calendar</span
+              > </v-tooltip
+            >.
           </div>
         </div>
 

@@ -1,8 +1,10 @@
 <template>
   <div
-    :class="`${
-      toggled ? 'tw-border-green' : 'tw-border-gray'
-    } tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-overflow-hidden tw-rounded-md tw-border-[1px] tw-p-4 tw-text-left tw-transition-all sm:tw-p-6`"
+    class="tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-overflow-hidden tw-rounded-md tw-border-[1px] tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition-all sm:tw-p-6"
+    :class="{
+      'tw-border-green': toggled,
+      'tw-border-light-gray-stroke': !toggled,
+    }"
     @click="() => (toggled = !toggled)"
   >
     <div
