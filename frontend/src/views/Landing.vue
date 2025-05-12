@@ -1,7 +1,7 @@
 <template>
   <div class="tw-bg-light-gray">
     <div
-      class="tw-relative tw-m-auto tw-mb-12 tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col tw-px-4 sm:tw-mb-20"
+      class="tw-relative tw-m-auto tw-mb-12 tw-flex tw-max-w-6xl tw-flex-col tw-px-4 sm:tw-mb-20"
     >
       <!-- Green background -->
       <!-- <div
@@ -9,7 +9,7 @@
       ></div> -->
 
       <!-- Header -->
-      <div class="tw-mb-16">
+      <div class="tw-mb-16 sm:tw-mb-28">
         <div class="tw-flex tw-items-center tw-pt-5">
           <Logo type="schej" />
 
@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="tw-flex tw-flex-col tw-items-center sm:tw-mt-12">
+      <div class="tw-flex tw-flex-col tw-items-center">
         <div
           class="tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
         >

@@ -8,7 +8,7 @@
     @click="() => (toggled = !toggled)"
   >
     <div
-      class="tw-flex tw-flex-row tw-content-center tw-justify-between sm:tw-text-lg"
+      class="tw-flex tw-flex-row tw-content-center tw-justify-between tw-text-base"
     >
       <div class="tw-mr-4 tw-font-medium" v-html="question"></div>
       <v-icon
@@ -22,7 +22,7 @@
 
     <v-expand-transition>
       <div v-if="toggled">
-        <div class="tw-pt-4 tw-text-base sm:tw-pt-6 sm:tw-text-lg">
+        <div class="tw-pt-4 tw-text-sm sm:tw-pt-6">
           <div v-html="answer"></div>
           <div class="tw-flex tw-flex-col tw-gap-2">
             <div
