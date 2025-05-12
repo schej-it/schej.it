@@ -3,11 +3,6 @@
     <div
       class="tw-relative tw-m-auto tw-mb-12 tw-flex tw-max-w-6xl tw-flex-col tw-px-4 sm:tw-mb-20"
     >
-      <!-- Green background -->
-      <!-- <div
-        class="tw-absolute -tw-bottom-32 tw-left-1/2 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green md:tw-h-[800px]"
-      ></div> -->
-
       <!-- Header -->
       <div class="tw-mb-16 sm:tw-mb-28">
         <div class="tw-flex tw-items-center tw-pt-5">
@@ -93,7 +88,7 @@
 
           <!-- Hero video -->
           <div
-            class="tw-relative tw-z-20 tw-w-full tw-rounded-xl tw-border tw-border-light-gray-stroke tw-bg-white tw-shadow-xl md:tw-mx-auto md:tw-w-fit"
+            class="tw-relative tw-z-20 tw-w-full tw-rounded-lg tw-border tw-border-light-gray-stroke tw-bg-white tw-shadow-xl sm:tw-rounded-xl md:tw-mx-auto md:tw-w-fit"
           >
             <div
               class="tw-relative tw-mx-4 tw-aspect-square md:tw-size-[700px] lg:tw-size-[800px]"
