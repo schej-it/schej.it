@@ -1,16 +1,16 @@
 <template>
   <div class="tw-bg-light-gray">
     <div
-      class="tw-relative tw-m-auto tw-mb-32 tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col"
+      class="tw-relative tw-m-auto tw-mb-12 tw-flex tw-min-h-screen tw-max-w-6xl tw-flex-col tw-px-4 sm:tw-mb-20"
     >
       <!-- Green background -->
-      <div
-        class="tw-absolute -tw-bottom-32 tw-left-1/2 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:tw-h-[800px]"
-      ></div>
+      <!-- <div
+        class="tw-absolute -tw-bottom-32 tw-left-1/2 tw-h-[40%] tw-w-screen -tw-translate-x-1/2 tw-bg-green md:tw-h-[800px]"
+      ></div> -->
 
       <!-- Header -->
       <div class="tw-mb-16">
-        <div class="tw-flex tw-items-center tw-px-5 tw-pt-5">
+        <div class="tw-flex tw-items-center tw-pt-5">
           <Logo type="schej" />
 
           <v-spacer />
@@ -23,9 +23,9 @@
         </div>
       </div>
 
-      <div class="tw-z-20 tw-mt-12 tw-flex tw-flex-col tw-items-center">
+      <div class="tw-flex tw-flex-col tw-items-center sm:tw-mt-12">
         <div
-          class="tw-mx-4 tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
+          class="tw-mb-6 tw-flex tw-max-w-[26rem] tw-flex-col tw-items-center sm:tw-w-[35rem] sm:tw-max-w-none"
         >
           <div
             class="tw-mb-4 tw-flex tw-select-none tw-items-center tw-rounded-full tw-border tw-border-light-gray-stroke tw-bg-white/70 tw-px-2.5 tw-py-1.5 tw-text-sm tw-text-dark-gray"
@@ -50,7 +50,8 @@
           <div
             class="lg:tw-text-md tw-text-left tw-text-center tw-text-sm tw-text-very-dark-gray sm:tw-text-lg md:tw-text-lg xl:tw-text-lg"
           >
-            Coordinate group meetings without the back and forth. <br />
+            Coordinate group meetings without the back and forth.
+            <br class="tw-hidden sm:tw-block" />
             Integrates with your
             <v-tooltip
               top
@@ -65,7 +66,9 @@
                 >
               </template>
               <span
-                >Schej currently supports Google Calendar,<br />
+                >Schej currently supports Google Calendar,<br
+                  class="tw-hidden sm:tw-block"
+                />
                 Outlook, and Apple Calendar</span
               > </v-tooltip
             >.
@@ -82,32 +85,41 @@
         >
           Create event
         </v-btn>
-        <div
-          class="tw-rounded-xl tw-border tw-border-light-gray-stroke tw-bg-white tw-shadow-xl"
-        >
-          <div class="tw-relative tw-mx-4 tw-h-[800px] tw-w-[800px]">
-            <v-img
-              class="tw-absolute tw-left-0 tw-top-0 tw-transition-opacity tw-duration-300"
-              :class="{ 'tw-opacity-0': isVideoPlaying }"
-              src="@/assets/img/hero.jpg"
-              :height="800"
-              :width="800"
-              transition="fade-transition"
-              contain
-            />
-            <vue-vimeo-player
-              video-url="https://player.vimeo.com/video/1083205305?h=d58bef862a"
-              :player-width="800"
-              :player-height="800"
-              :options="{
-                muted: true,
-                playsinline: true,
-              }"
-              :controls="false"
-              :autoplay="true"
-              :loop="true"
-              @play="onPlay"
-            />
+        <div class="tw-relative tw-w-full">
+          <!-- Green background -->
+          <div
+            class="tw-absolute -tw-bottom-12 tw-left-1/2 tw-h-[85%] tw-w-screen -tw-translate-x-1/2 tw-bg-green sm:-tw-bottom-20"
+          ></div>
+
+          <!-- Hero video -->
+          <div
+            class="tw-relative tw-z-20 tw-w-full tw-rounded-xl tw-border tw-border-light-gray-stroke tw-bg-white tw-shadow-xl md:tw-mx-auto md:tw-w-fit"
+          >
+            <div
+              class="tw-relative tw-mx-4 tw-aspect-square md:tw-size-[700px] lg:tw-size-[800px]"
+            >
+              <v-img
+                class="tw-absolute tw-left-0 tw-top-0 tw-transition-opacity tw-duration-300"
+                :class="{ 'tw-opacity-0': isVideoPlaying }"
+                src="@/assets/img/hero.jpg"
+                transition="fade-transition"
+                contain
+              />
+              <vue-vimeo-player
+                video-url="https://player.vimeo.com/video/1083205305?h=d58bef862a"
+                :player-width="800"
+                :player-height="800"
+                :options="{
+                  muted: true,
+                  playsinline: true,
+                  responsive: true,
+                }"
+                :controls="false"
+                :autoplay="true"
+                :loop="true"
+                @play="onPlay"
+              />
+            </div>
           </div>
         </div>
       </div>
