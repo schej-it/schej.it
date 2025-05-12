@@ -16,6 +16,53 @@
             <v-btn text @click="signIn">Sign in</v-btn>
           </LandingPageHeader>
         </div>
+
+        <div
+          class="tw-relative tw-mt-2 tw-flex tw-items-center tw-justify-center"
+        >
+          <div
+            class="tw-absolute tw-left-8 tw-top-0 tw-flex tw-items-center sm:tw-left-12"
+          >
+            <div class="-tw-mt-3.5 tw-text-dark-gray">
+              <v-icon>mdi-arrow-up-left</v-icon>
+            </div>
+            <div class="tw-text-sm tw-text-dark-gray">
+              <v-menu
+                offset-y
+                @input="(val) => (val ? onMenuOpen() : onMenuClose())"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <span
+                    class="tw-cursor-pointer hover:tw-underline"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    how to pronounce "schej"?
+                  </span>
+                </template>
+                <v-card class="tw-p-3">
+                  <div class="tw-text-sm">
+                    Pronounced like "schedule" but shorter - "skej"
+                  </div>
+                  <div class="tw-mt-2">
+                    <audio
+                      ref="pronunciationAudio"
+                      autoplay
+                      controls
+                      class="tw-w-full"
+                    >
+                      <source
+                        src="@/assets/audio/schej_pronunciation.mp3"
+                        type="audio/mpeg"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                </v-card>
+              </v-menu>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="tw-flex tw-flex-col tw-items-center">
@@ -381,6 +428,18 @@ export default {
       setTimeout(() => {
         this.isVideoPlaying = true
       }, 300)
+    },
+    onMenuOpen() {
+      if (this.$refs.pronunciationAudio) {
+        this.$refs.pronunciationAudio.currentTime = 0
+        this.$refs.pronunciationAudio.play()
+      }
+    },
+    onMenuClose() {
+      if (this.$refs.pronunciationAudio) {
+        this.$refs.pronunciationAudio.pause()
+        this.$refs.pronunciationAudio.currentTime = 0
+      }
     },
   },
 
