@@ -141,7 +141,7 @@
               class="tw-relative tw-mx-4 tw-aspect-square md:tw-size-[700px] lg:tw-size-[800px]"
             >
               <v-img
-                class="tw-absolute tw-left-0 tw-top-0 tw-transition-opacity tw-duration-300"
+                class="tw-absolute tw-left-0 tw-top-0 tw-z-20 tw-size-full tw-transition-opacity tw-duration-300"
                 :class="{ 'tw-opacity-0': isVideoPlaying }"
                 src="@/assets/img/hero.jpg"
                 transition="fade-transition"
@@ -208,7 +208,9 @@
     <div
       class="tw-flex tw-justify-center tw-bg-green tw-px-4 tw-pb-12 tw-pt-24 md:tw-pb-16"
     >
-      <div class="tw-h-64 tw-max-w-3xl tw-flex-1 sm:tw-h-80 md:tw-h-96">
+      <div
+        class="tw-h-[300px] tw-max-w-3xl tw-flex-1 sm:tw-h-[400px] md:tw-h-[450px]"
+      >
         <iframe
           class="tw-h-full tw-w-full"
           src="https://www.youtube.com/embed/I7jl850X1P4?si=4xUlkXJebxBaDP1I"
@@ -427,7 +429,7 @@ export default {
     onPlay() {
       setTimeout(() => {
         this.isVideoPlaying = true
-      }, 300)
+      }, 1000)
     },
     onMenuOpen() {
       if (this.$refs.pronunciationAudio) {
