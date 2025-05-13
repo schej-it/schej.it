@@ -8,7 +8,7 @@
             <v-icon class="tw-mr-1 tw-text-white">mdi-calendar-blank</v-icon>
             <span class="tw-text-2xl tw-font-medium">schej</span>
           </div>
-          <div class="tw-mb-6">
+          <div class="tw-mb-6 tw-leading-snug">
             Made with 💚 by
             <a
               href="https://x.com/jonathanzliu/"
@@ -54,12 +54,7 @@
               ></a
             >
           </div>
-          <a
-            href="/privacy-policy"
-            target="_blank"
-            class="tw-text-sm md:tw-mt-4"
-            >Privacy Policy</a
-          >
+          <a href="/privacy-policy" class="tw-text-sm">Privacy Policy</a>
         </div>
         <!-- Links -->
         <div class="tw-flex tw-flex-col tw-gap-2">
