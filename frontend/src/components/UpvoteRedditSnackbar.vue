@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       redditUrl:
-        "https://www.reddit.com/r/opensource/comments/1dlol7r/i_made_a_better_when2meet/",
+        "https://www.reddit.com/r/opensource/comments/1klu471/i_made_a_doodle_alternative/",
       show: false,
     }
   },
@@ -70,7 +70,8 @@ export default {
     $route: {
       immediate: true,
       handler() {
-        const showOnRoute = this.$route.name === "home"
+        const showOnRoute =
+          this.$route.name === "home" || this.$route.name === "event"
         const userHasDismissed =
           localStorage.getItem(this.localStorageKey) === "true"
 

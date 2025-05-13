@@ -123,6 +123,14 @@
               >I made a better when2meet</a
             >
           </div>
+          <div>
+            <a
+              href="https://www.reddit.com/r/opensource/comments/1klu471/i_made_a_doodle_alternative/"
+              target="_blank"
+              class="tw-text-sm"
+              >I made a Doodle alternative</a
+            >
+          </div>
         </div>
       </div>
     </div>

@@ -296,7 +296,7 @@
     </template>
 
     <div
-      class="tw-hidden tw-flex-col tw-items-center tw-justify-between sm:tw-flex"
+      class="tw-mb-16 tw-hidden tw-flex-col tw-items-center tw-justify-between sm:tw-flex"
     >
       <router-link
         class="tw-text-xs tw-font-medium tw-text-gray"
