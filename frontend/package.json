@@ -27,6 +27,7 @@
     "vue-html2canvas": "^0.0.4",
     "vue-meta": "^2.4.0",
     "vue-router": "^3.6.5",
+    "vue-vimeo-player": "^0.2.2",
     "vue-worker": "^1.2.1",
     "vuetify": "^2.7.1",
     "vuex": "^3.6.2"

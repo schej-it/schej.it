@@ -1,14 +1,15 @@
 <template>
   <div v-if="isPhone">
-    <v-btn icon @click="toggleMenu">
-      <v-icon>mdi-menu</v-icon>
-    </v-btn>
-    <div
-      v-if="menuOpen"
-      class="tw-absolute tw-left-0 twj-right-0 tw-z-30 tw-flex tw-w-full tw-flex-col tw-gap-2 tw-bg-white tw-p-2"
-    >
-      <slot></slot>
-    </div>
+    <v-menu v-model="menuOpen">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn icon v-bind="attrs" v-on="on">
+          <v-icon>mdi-menu</v-icon>
+        </v-btn>
+      </template>
+      <v-card class="tw-flex tw-flex-col tw-gap-2 tw-p-2 tw-text-left">
+        <slot></slot>
+      </v-card>
+    </v-menu>
   </div>
   <div v-else class="tw-flex tw-items-center">
     <slot></slot>

@@ -1,12 +1,14 @@
 <template>
   <div
-    :class="`${
-      toggled ? 'tw-border-green' : 'tw-border-gray'
-    } tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-overflow-hidden tw-rounded-md tw-border-[1px] tw-p-4 tw-text-left tw-transition-all sm:tw-p-6`"
+    class="tw-flex tw-w-full tw-cursor-pointer tw-flex-col tw-overflow-hidden tw-rounded-md tw-border-[1px] tw-bg-white tw-p-4 tw-text-left tw-shadow-sm tw-transition-all sm:tw-p-6"
+    :class="{
+      'tw-border-green': toggled,
+      'tw-border-light-gray-stroke': !toggled,
+    }"
     @click="() => (toggled = !toggled)"
   >
     <div
-      class="tw-flex tw-flex-row tw-content-center tw-justify-between sm:tw-text-lg"
+      class="tw-flex tw-flex-row tw-content-center tw-justify-between tw-text-base"
     >
       <div class="tw-mr-4 tw-font-medium" v-html="question"></div>
       <v-icon
@@ -20,7 +22,7 @@
 
     <v-expand-transition>
       <div v-if="toggled">
-        <div class="tw-pt-4 tw-text-base sm:tw-pt-6 sm:tw-text-lg">
+        <div class="tw-pt-4 tw-text-sm sm:tw-pt-6">
           <div v-html="answer"></div>
           <div class="tw-flex tw-flex-col tw-gap-2">
             <div
