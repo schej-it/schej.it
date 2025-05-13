@@ -28,6 +28,7 @@
             </div>
             <div class="tw-text-sm tw-text-dark-gray">
               <v-menu
+                :nudge-bottom="10"
                 offset-y
                 @input="(val) => (val ? onMenuOpen() : onMenuClose())"
               >
