@@ -30,6 +30,7 @@
               <v-menu
                 :nudge-bottom="10"
                 offset-y
+                :close-on-content-click="false"
                 @input="(val) => (val ? onMenuOpen() : onMenuClose())"
               >
                 <template v-slot:activator="{ on, attrs }">
@@ -243,20 +244,7 @@
       </div>
     </div>
 
-    <!-- Privacy Policy -->
-    <div class="tw-flex tw-flex-col tw-bg-green">
-      <div
-        class="tw-m-2 tw-flex tw-flex-col tw-items-center tw-gap-4 tw-pb-6 tw-pt-6"
-      >
-        <router-link
-          class="tw-font-bold tw-text-white"
-          :to="{ name: 'privacy-policy' }"
-        >
-          Privacy Policy
-        </router-link>
-        <div class="tw-text-light-gray">Made with 💚 by the schej team</div>
-      </div>
-    </div>
+    <Footer />
 
     <!-- Sign in dialog -->
     <SignInDialog v-model="signInDialog" @signIn="_signIn" />
@@ -301,6 +289,7 @@ import SignInDialog from "@/components/SignInDialog.vue"
 import { calendarTypes } from "@/constants"
 import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
 import { vueVimeoPlayer } from "vue-vimeo-player"
+import Footer from "@/components/Footer.vue"
 
 export default {
   name: "Landing",
@@ -322,6 +311,7 @@ export default {
     SignInDialog,
     HowItWorksDialog,
     vueVimeoPlayer,
+    Footer,
   },
 
   data: () => ({
