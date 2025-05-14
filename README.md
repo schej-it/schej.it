@@ -36,6 +36,8 @@ Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/m
 - Email notifications + reminders
 - Duplicating polls
 - Availability groups - stay up to date with people's real-time calendar availability
+- Export availability as CSV
+- Only show responses to event creator
 
 ## Self-hosting
 
