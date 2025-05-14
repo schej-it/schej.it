@@ -1340,7 +1340,11 @@ export default {
         let dateString = ""
         let dayString = ""
         const offsetDate = new Date(date)
-        if (!this.isSpecificTimes) {
+        if (this.isSpecificTimes) {
+          offsetDate.setTime(
+            offsetDate.getTime() - this.timezoneOffset * 60 * 1000
+          )
+        } else {
           offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
         }
         if (this.isSpecificDates) {
