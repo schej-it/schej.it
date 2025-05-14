@@ -19,7 +19,7 @@ Schej is a scheduling platform helps you find the best time for a group to meet.
 
 Hosted version of the site: https://schej.it
 
-Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/mongodb/mongo), & [TailwindCSS](https://github.com/tailwindlabs/tailwindcss)
+Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/mongodb/mongo), [Go](https://github.com/golang/go), and [TailwindCSS](https://github.com/tailwindlabs/tailwindcss)
 
 ## Demo
 
