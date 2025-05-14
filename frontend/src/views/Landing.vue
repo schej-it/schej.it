@@ -27,41 +27,7 @@
               <v-icon>mdi-arrow-up-left</v-icon>
             </div>
             <div class="tw-text-sm tw-text-dark-gray">
-              <v-menu
-                :nudge-bottom="10"
-                offset-y
-                :close-on-content-click="false"
-                @input="(val) => (val ? onMenuOpen() : onMenuClose())"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <span
-                    class="tw-cursor-pointer hover:tw-underline"
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    how to pronounce "schej"?
-                  </span>
-                </template>
-                <v-card class="tw-p-3">
-                  <div class="tw-text-sm">
-                    Pronounced like "schedule" but shorter - "skej"
-                  </div>
-                  <div class="tw-mt-2">
-                    <audio
-                      ref="pronunciationAudio"
-                      autoplay
-                      controls
-                      class="tw-w-full"
-                    >
-                      <source
-                        src="@/assets/audio/schej_pronunciation.mp3"
-                        type="audio/mpeg"
-                      />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                </v-card>
-              </v-menu>
+              <PronunciationMenu />
             </div>
           </div>
         </div>
@@ -290,6 +256,7 @@ import { calendarTypes } from "@/constants"
 import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
 import { vueVimeoPlayer } from "vue-vimeo-player"
 import Footer from "@/components/Footer.vue"
+import PronunciationMenu from "@/components/PronunciationMenu.vue"
 
 export default {
   name: "Landing",
@@ -312,6 +279,7 @@ export default {
     HowItWorksDialog,
     vueVimeoPlayer,
     Footer,
+    PronunciationMenu,
   },
 
   data: () => ({
@@ -421,18 +389,6 @@ export default {
       setTimeout(() => {
         this.isVideoPlaying = true
       }, 1000)
-    },
-    onMenuOpen() {
-      if (this.$refs.pronunciationAudio) {
-        this.$refs.pronunciationAudio.currentTime = 0
-        this.$refs.pronunciationAudio.play()
-      }
-    },
-    onMenuClose() {
-      if (this.$refs.pronunciationAudio) {
-        this.$refs.pronunciationAudio.pause()
-        this.$refs.pronunciationAudio.currentTime = 0
-      }
     },
   },
 
