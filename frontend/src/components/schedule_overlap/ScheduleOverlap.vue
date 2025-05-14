@@ -1336,11 +1336,11 @@ export default {
       const days = []
       const datesSoFar = new Set()
 
-      const getDateString = (date, ignoreDayOffset = false) => {
+      const getDateString = (date) => {
         let dateString = ""
         let dayString = ""
         const offsetDate = new Date(date)
-        if (!ignoreDayOffset) {
+        if (!this.isSpecificTimes) {
           offsetDate.setDate(offsetDate.getDate() + this.dayOffset)
         }
         if (this.isSpecificDates) {
@@ -1384,7 +1384,7 @@ export default {
               datesSoFar.add(dateTime)
 
               // Ignore day offset because the date is not based on this.event.startTime anymore
-              const { dayString, dateString } = getDateString(date, true)
+              const { dayString, dateString } = getDateString(date)
               days.push({
                 dayText: dayString,
                 dateString,
@@ -1407,7 +1407,7 @@ export default {
               datesSoFar.add(localDate.getTime())
 
               // Ignore day offset because the date is not based on this.event.startTime anymore
-              const { dayString, dateString } = getDateString(localDate, true)
+              const { dayString, dateString } = getDateString(localDate)
               days.push({
                 dayText: dayString,
                 dateString,
@@ -3270,7 +3270,12 @@ export default {
                   const endDate = dayjs(date).utc().add(15, "minutes")
                   const timeFormat =
                     this.timeType === timeTypes.HOUR12 ? "h:mm A" : "HH:mm"
-                  const dateFormat = "ddd, MMM D, YYYY"
+                  let dateFormat
+                  if (this.isSpecificTimes) {
+                    dateFormat = "ddd, MMM D, YYYY"
+                  } else {
+                    dateFormat = "ddd"
+                  }
                   this.tooltipContent = `${startDate.format(
                     dateFormat
                   )} ${startDate.format(timeFormat)} to ${endDate.format(
