@@ -1,6 +1,6 @@
 <div align="center">
   
-<img src="./.github/assets/images/logo.png" width="200px" alt="Schej logo" />
+<img src="./.github/assets/images/logo.svg" width="200px" alt="Schej logo" />
 
 </div>
 <br />
