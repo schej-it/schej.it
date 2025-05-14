@@ -13,7 +13,10 @@
           <LandingPageHeader>
             <v-btn text @click="openHowItWorksDialog">How it works</v-btn>
             <v-btn text href="/blog">Blog</v-btn>
-            <v-btn text @click="signIn">Sign in</v-btn>
+            <div v-if="authUser" class="tw-ml-2">
+              <AuthUserMenu />
+            </div>
+            <v-btn v-else text @click="signIn">Sign in</v-btn>
           </LandingPageHeader>
         </div>
 
@@ -89,11 +92,11 @@
           id="lets-schej-it-btn"
           class="tw-mb-12 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
           dark
-          @click="newDialog = true"
+          @click="authUser ? openDashboard() : (newDialog = true)"
           large
           :x-large="$vuetify.breakpoint.mdAndUp"
         >
-          Create event
+          {{ authUser ? "Open dashboard" : "Create event" }}
         </v-btn>
         <div class="tw-relative tw-w-full">
           <!-- Green background -->
@@ -257,6 +260,8 @@ import HowItWorksDialog from "@/components/HowItWorksDialog.vue"
 import { vueVimeoPlayer } from "vue-vimeo-player"
 import Footer from "@/components/Footer.vue"
 import PronunciationMenu from "@/components/PronunciationMenu.vue"
+import { mapState } from "vuex"
+import AuthUserMenu from "@/components/AuthUserMenu.vue"
 
 export default {
   name: "Landing",
@@ -280,6 +285,7 @@ export default {
     vueVimeoPlayer,
     Footer,
     PronunciationMenu,
+    AuthUserMenu,
   },
 
   data: () => ({
@@ -343,6 +349,7 @@ export default {
   }),
 
   computed: {
+    ...mapState(["authUser"]),
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -389,6 +396,9 @@ export default {
       setTimeout(() => {
         this.isVideoPlaying = true
       }, 1000)
+    },
+    openDashboard() {
+      this.$router.push({ name: "home" })
     },
   },
 
