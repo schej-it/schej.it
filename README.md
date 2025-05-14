@@ -21,7 +21,7 @@ Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/m
 
 ## Demo
 
-[![demo video](http://markdown-videos-api.jorgenkh.no/youtube/LAW1wW6SjTo)](https://www.youtube.com/watch?v=I7jl850X1P4)
+[![demo video](http://markdown-videos-api.jorgenkh.no/youtube/I7jl850X1P4)](https://www.youtube.com/watch?v=I7jl850X1P4)
 
 ## Features
 
