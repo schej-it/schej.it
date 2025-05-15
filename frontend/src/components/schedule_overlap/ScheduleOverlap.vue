@@ -3042,7 +3042,8 @@ export default {
 
       // Edit fill color and border color if day is not interactable
       if (isDisabled) {
-        classStyle.class += "tw-bg-off-white tw-border-off-white "
+        classStyle.class +=
+          "tw-bg-light-gray-stroke tw-border-light-gray-stroke "
       }
 
       // Change default red:
