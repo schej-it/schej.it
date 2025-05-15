@@ -371,9 +371,14 @@ export default {
           "Nope! All other users will be able to see is the availability that you enter for an event.",
       },
       {
+        question: "How many people can respond to an event?",
+        answer:
+          "Unlimited! We've tested events with over 500+ responses and it works great.",
+      },
+      {
         question: "How do I edit my availability?",
         answer:
-          'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, click on your name first and then "Edit availability".',
+          'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, hover over your name and click the pencil icon next to it.',
       },
       {
         question: `I want it so that only I can see people's responses.`,
