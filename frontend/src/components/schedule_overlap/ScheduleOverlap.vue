@@ -178,23 +178,26 @@
                     "
                     class="tw-z-10 tw-flex tw-h-14 tw-items-center tw-bg-white sm:tw-top-16"
                   >
-                    <div
-                      v-for="(day, i) in days"
-                      :key="i"
-                      class="tw-flex-1 tw-bg-white"
-                    >
-                      <div class="tw-text-center">
-                        <div
-                          v-if="isSpecificDates || isGroup"
-                          class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
-                        >
-                          {{ day.dateString }}
-                        </div>
-                        <div class="tw-text-base tw-capitalize sm:tw-text-lg">
-                          {{ day.dayText }}
+                    <template v-for="(day, i) in days">
+                      <div
+                        v-if="!day.isConsecutive"
+                        :style="{ width: `${SPLIT_GAP_WIDTH}px` }"
+                        :key="`${i}-gap`"
+                      ></div>
+                      <div :key="i" class="tw-flex-1 tw-bg-white">
+                        <div class="tw-text-center">
+                          <div
+                            v-if="isSpecificDates || isGroup"
+                            class="tw-text-[12px] tw-font-light tw-capitalize tw-text-very-dark-gray sm:tw-text-xs"
+                          >
+                            {{ day.dateString }}
+                          </div>
+                          <div class="tw-text-base tw-capitalize sm:tw-text-lg">
+                            {{ day.dayText }}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </template>
                   </div>
 
                   <!-- Calendar -->
@@ -217,193 +220,211 @@
                           />
                         </div>
 
-                        <div
-                          v-for="(_, d) in days"
-                          :key="d"
-                          class="tw-relative tw-flex-1"
-                          :class="
-                            ((isGroup && loadingCalendarEvents) ||
-                              loadingResponses.loading) &&
-                            'tw-opacity-50'
-                          "
-                        >
-                          <!-- Timeslots -->
+                        <template v-for="(day, d) in days">
                           <div
-                            v-for="(_, t) in splitTimes[0]"
-                            :key="`${d}-${t}-0`"
-                            class="tw-w-full"
+                            v-if="!day.isConsecutive"
+                            :style="{ width: `${SPLIT_GAP_WIDTH}px` }"
+                            :key="`${d}-gap`"
+                          ></div>
+                          <div
+                            :key="d"
+                            class="tw-relative tw-flex-1"
+                            :class="
+                              ((isGroup && loadingCalendarEvents) ||
+                                loadingResponses.loading) &&
+                              'tw-opacity-50'
+                            "
                           >
+                            <!-- Timeslots -->
                             <div
-                              class="timeslot tw-h-4"
-                              :class="
-                                timeslotClassStyle[d * times.length + t]?.class
-                              "
-                              :style="
-                                timeslotClassStyle[d * times.length + t]?.style
-                              "
-                              v-on="timeslotVon[d * times.length + t]"
-                            ></div>
-                          </div>
-
-                          <template v-if="splitTimes[1].length > 0">
-                            <div
-                              :style="{
-                                height: `${SPLIT_GAP_HEIGHT}px`,
-                              }"
-                            ></div>
-                            <div
-                              v-for="(_, t) in splitTimes[1]"
-                              :key="`${d}-${t}-1`"
+                              v-for="(_, t) in splitTimes[0]"
+                              :key="`${d}-${t}-0`"
                               class="tw-w-full"
                             >
                               <div
                                 class="timeslot tw-h-4"
                                 :class="
-                                  timeslotClassStyle[
-                                    d * times.length + t + splitTimes[0].length
-                                  ]?.class
+                                  timeslotClassStyle[d * times.length + t]
+                                    ?.class
                                 "
                                 :style="
-                                  timeslotClassStyle[
-                                    d * times.length + t + splitTimes[0].length
-                                  ]?.style
+                                  timeslotClassStyle[d * times.length + t]
+                                    ?.style
                                 "
-                                v-on="
-                                  timeslotVon[
-                                    d * times.length + t + splitTimes[0].length
-                                  ]
-                                "
+                                v-on="timeslotVon[d * times.length + t]"
                               ></div>
                             </div>
-                          </template>
 
-                          <!-- Calendar events -->
-                          <template
-                            v-if="
-                              !loadingCalendarEvents &&
-                              (editing ||
-                                alwaysShowCalendarEvents ||
-                                showCalendarEvents)
-                            "
-                            v-for="calendarEvent in calendarEventsByDay[
-                              d + page * maxDaysPerPage
-                            ]"
-                          >
-                            <CalendarEventBlock
-                              :blockStyle="getTimeBlockStyle(calendarEvent)"
-                              :key="calendarEvent.id"
-                              :calendarEvent="calendarEvent"
-                              :isGroup="isGroup"
-                              :isEditingAvailability="
-                                state === states.EDIT_AVAILABILITY
-                              "
-                              :noEventNames="noEventNames"
-                              :transitionName="isGroup ? '' : 'fade-transition'"
-                            />
-                          </template>
-
-                          <!-- Scheduled event -->
-                          <div v-if="state === states.SCHEDULE_EVENT">
-                            <div
-                              v-if="
-                                (dragStart && dragStart.col === d) ||
-                                (!dragStart &&
-                                  curScheduledEvent &&
-                                  curScheduledEvent.col === d)
-                              "
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="scheduledEventStyle"
-                              style="pointer-events: none"
-                            >
+                            <template v-if="splitTimes[1].length > 0">
                               <div
-                                class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                                :style="{
+                                  height: `${SPLIT_GAP_HEIGHT}px`,
+                                }"
+                              ></div>
+                              <div
+                                v-for="(_, t) in splitTimes[1]"
+                                :key="`${d}-${t}-1`"
+                                class="tw-w-full"
                               >
-                                <div class="tw-font-medium tw-text-white">
-                                  {{ event.name }}
+                                <div
+                                  class="timeslot tw-h-4"
+                                  :class="
+                                    timeslotClassStyle[
+                                      d * times.length +
+                                        t +
+                                        splitTimes[0].length
+                                    ]?.class
+                                  "
+                                  :style="
+                                    timeslotClassStyle[
+                                      d * times.length +
+                                        t +
+                                        splitTimes[0].length
+                                    ]?.style
+                                  "
+                                  v-on="
+                                    timeslotVon[
+                                      d * times.length +
+                                        t +
+                                        splitTimes[0].length
+                                    ]
+                                  "
+                                ></div>
+                              </div>
+                            </template>
+
+                            <!-- Calendar events -->
+                            <template
+                              v-if="
+                                !loadingCalendarEvents &&
+                                (editing ||
+                                  alwaysShowCalendarEvents ||
+                                  showCalendarEvents)
+                              "
+                              v-for="calendarEvent in calendarEventsByDay[
+                                d + page * maxDaysPerPage
+                              ]"
+                            >
+                              <CalendarEventBlock
+                                :blockStyle="getTimeBlockStyle(calendarEvent)"
+                                :key="calendarEvent.id"
+                                :calendarEvent="calendarEvent"
+                                :isGroup="isGroup"
+                                :isEditingAvailability="
+                                  state === states.EDIT_AVAILABILITY
+                                "
+                                :noEventNames="noEventNames"
+                                :transitionName="
+                                  isGroup ? '' : 'fade-transition'
+                                "
+                              />
+                            </template>
+
+                            <!-- Scheduled event -->
+                            <div v-if="state === states.SCHEDULE_EVENT">
+                              <div
+                                v-if="
+                                  (dragStart && dragStart.col === d) ||
+                                  (!dragStart &&
+                                    curScheduledEvent &&
+                                    curScheduledEvent.col === d)
+                                "
+                                class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                                :style="scheduledEventStyle"
+                                style="pointer-events: none"
+                              >
+                                <div
+                                  class="tw-h-full tw-w-full tw-overflow-hidden tw-text-ellipsis tw-rounded tw-border tw-border-solid tw-border-blue tw-bg-blue tw-p-px tw-text-xs"
+                                >
+                                  <div class="tw-font-medium tw-text-white">
+                                    {{ event.name }}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
 
-                          <!-- Sign up block being dragged -->
-                          <div v-if="state === states.EDIT_SIGN_UP_BLOCKS">
-                            <div
-                              v-if="dragStart && dragStart.col === d"
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="signUpBlockBeingDraggedStyle"
-                              style="pointer-events: none"
-                            >
-                              <SignUpCalendarBlock
-                                :title="newSignUpBlockName"
-                                titleOnly
-                                unsaved
-                              />
-                            </div>
-                          </div>
-
-                          <div v-if="isSignUp">
-                            <!-- Sign up blocks -->
-                            <div
-                              v-for="block in signUpBlocksByDay[
-                                d + page * maxDaysPerPage
-                              ]"
-                              :key="block._id"
-                            >
+                            <!-- Sign up block being dragged -->
+                            <div v-if="state === states.EDIT_SIGN_UP_BLOCKS">
                               <div
+                                v-if="dragStart && dragStart.col === d"
                                 class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                                :style="{
-                                  top: `calc(${block.hoursOffset} * 4 * 1rem)`,
-                                  height: `calc(${block.hoursLength} * 4 * 1rem)`,
-                                }"
-                                @click="handleSignUpBlockClick(block)"
-                              >
-                                <SignUpCalendarBlock :signUpBlock="block" />
-                              </div>
-                            </div>
-
-                            <!-- Sign up blocks to be added after hitting 'save' -->
-                            <div
-                              v-for="block in signUpBlocksToAddByDay[
-                                d + page * maxDaysPerPage
-                              ]"
-                              :key="block._id"
-                            >
-                              <div
-                                class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                                :style="{
-                                  top: `calc(${block.hoursOffset} * 4 * 1rem)`,
-                                  height: `calc(${block.hoursLength} * 4 * 1rem)`,
-                                }"
+                                :style="signUpBlockBeingDraggedStyle"
+                                style="pointer-events: none"
                               >
                                 <SignUpCalendarBlock
-                                  :title="block.name"
+                                  :title="newSignUpBlockName"
                                   titleOnly
                                   unsaved
                                 />
                               </div>
                             </div>
-                          </div>
 
-                          <!-- Overlaid availabilities -->
-                          <div v-if="overlayAvailability">
-                            <div
-                              v-for="(timeBlock, tb) in overlaidAvailability[d]"
-                              :key="tb"
-                              class="tw-absolute tw-w-full tw-select-none tw-p-px"
-                              :style="getTimeBlockStyle(timeBlock)"
-                              style="pointer-events: none"
-                            >
+                            <div v-if="isSignUp">
+                              <!-- Sign up blocks -->
                               <div
-                                class="tw-h-full tw-w-full tw-border-2"
-                                :class="
-                                  timeBlock.type === 'available'
-                                    ? 'overlay-avail-shadow-green tw-border-[#00994CB3] tw-bg-[#00994C66]'
-                                    : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
-                                "
-                              ></div>
+                                v-for="block in signUpBlocksByDay[
+                                  d + page * maxDaysPerPage
+                                ]"
+                                :key="block._id"
+                              >
+                                <div
+                                  class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                                  :style="{
+                                    top: `calc(${block.hoursOffset} * 4 * 1rem)`,
+                                    height: `calc(${block.hoursLength} * 4 * 1rem)`,
+                                  }"
+                                  @click="handleSignUpBlockClick(block)"
+                                >
+                                  <SignUpCalendarBlock :signUpBlock="block" />
+                                </div>
+                              </div>
+
+                              <!-- Sign up blocks to be added after hitting 'save' -->
+                              <div
+                                v-for="block in signUpBlocksToAddByDay[
+                                  d + page * maxDaysPerPage
+                                ]"
+                                :key="block._id"
+                              >
+                                <div
+                                  class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                                  :style="{
+                                    top: `calc(${block.hoursOffset} * 4 * 1rem)`,
+                                    height: `calc(${block.hoursLength} * 4 * 1rem)`,
+                                  }"
+                                >
+                                  <SignUpCalendarBlock
+                                    :title="block.name"
+                                    titleOnly
+                                    unsaved
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Overlaid availabilities -->
+                            <div v-if="overlayAvailability">
+                              <div
+                                v-for="(timeBlock, tb) in overlaidAvailability[
+                                  d
+                                ]"
+                                :key="tb"
+                                class="tw-absolute tw-w-full tw-select-none tw-p-px"
+                                :style="getTimeBlockStyle(timeBlock)"
+                                style="pointer-events: none"
+                              >
+                                <div
+                                  class="tw-h-full tw-w-full tw-border-2"
+                                  :class="
+                                    timeBlock.type === 'available'
+                                      ? 'overlay-avail-shadow-green tw-border-[#00994CB3] tw-bg-[#00994C66]'
+                                      : 'overlay-avail-shadow-yellow tw-border-[#997700CC] tw-bg-[#FFE8B8B3]'
+                                  "
+                                ></div>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </template>
                       </div>
                     </div>
                   </div>
@@ -1075,6 +1096,7 @@ export default {
         REMOVE: "remove",
       },
       SPLIT_GAP_HEIGHT: 40,
+      SPLIT_GAP_WIDTH: 20,
       timeslot: {
         width: 0,
         height: 0,
