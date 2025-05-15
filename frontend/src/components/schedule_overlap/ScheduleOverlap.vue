@@ -2250,6 +2250,20 @@ export default {
         (this.isGroup || (!this.isGroup && !this.userHasResponded))
       )
     },
+
+    /** Returns an array of the x-offsets of the columns, taking into account the split gaps from non-consecutive days */
+    columnOffsets() {
+      const offsets = []
+      let accumulatedOffset = 0
+      for (let i = 0; i < this.days.length; ++i) {
+        offsets.push(accumulatedOffset)
+        if (!this.days[i].isConsecutive) {
+          accumulatedOffset += this.SPLIT_GAP_WIDTH
+        }
+        accumulatedOffset += this.timeslot.width
+      }
+      return offsets
+    },
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
@@ -2902,7 +2916,7 @@ export default {
           // window.location.reload()
         })
         .catch((err) => {
-          console.log(err)
+          console.error(err)
           this.showError(
             "There was a problem editing this event! Please try again later."
           )
@@ -3512,8 +3526,14 @@ export default {
     },
     /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
     getRowColFromXY(x, y) {
-      const { width, height } = this.timeslot
-      let col = Math.floor(x / width)
+      const { height } = this.timeslot
+      let col = this.columnOffsets.length
+      for (let i = 0; i < this.columnOffsets.length; ++i) {
+        if (x < this.columnOffsets[i]) {
+          col = i - 1
+          break
+        }
+      }
       let row = Math.floor(y / height)
 
       // Account for split gap
