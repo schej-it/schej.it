@@ -2276,6 +2276,9 @@ export default {
         )
       }
     },
+    isColConsecutive(col) {
+      return Boolean(this.days[col]?.isConsecutive)
+    },
     /** Returns a date object from the day index and time index given */
     getDateFromDayTimeIndex(dayIndex, timeIndex) {
       const hasSecondSplit = this.splitTimes[1].length > 0
@@ -2988,8 +2991,9 @@ export default {
         }
 
         classStyle.class += "tw-border-r "
-        if (col === 0) classStyle.class += "tw-border-l tw-border-l-gray "
-        if (col === this.days.length - 1)
+        if (col === 0 || !this.isColConsecutive(col))
+          classStyle.class += "tw-border-l tw-border-l-gray "
+        if (col === this.days.length - 1 || !this.isColConsecutive(col + 1))
           classStyle.class += "tw-border-r-gray "
         if (isFirstSplit && row === 0)
           classStyle.class += "tw-border-t tw-border-t-gray "
