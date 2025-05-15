@@ -1369,6 +1369,7 @@ export default {
       }
 
       if (this.isSpecificTimes) {
+        let prevDate = null // Stores the prevDate to check if the current date is consecutive to the previous date
         if (
           this.state !== this.states.SET_SPECIFIC_TIMES &&
           this.event.times?.length > 0
@@ -1382,18 +1383,28 @@ export default {
             // Set UTC hours to minHours because that's what hoursOffset is relative to
             date.setUTCHours(minHours, 0, 0, 0)
             date.setTime(date.getTime() + this.timezoneOffset * 60 * 1000)
-            const dateTime = date.getTime()
 
-            if (!datesSoFar.has(dateTime)) {
-              datesSoFar.add(dateTime)
+            if (!datesSoFar.has(date.getTime())) {
+              datesSoFar.add(date.getTime())
 
-              // Ignore day offset because the date is not based on this.event.startTime anymore
+              let isConsecutive = true
+              if (prevDate) {
+                isConsecutive =
+                  prevDate.getTime() ===
+                  date.getTime() -
+                    minHours * 60 * 60 * 1000 -
+                    24 * 60 * 60 * 1000
+              }
               const { dayString, dateString } = getDateString(date)
               days.push({
                 dayText: dayString,
                 dateString,
                 dateObject: date,
+                isConsecutive,
               })
+
+              prevDate = new Date(date)
+              prevDate.setTime(prevDate.getTime() - minHours * 60 * 60 * 1000)
             }
           }
         } else {
@@ -1410,29 +1421,47 @@ export default {
             if (!datesSoFar.has(localDate.getTime())) {
               datesSoFar.add(localDate.getTime())
 
-              // Ignore day offset because the date is not based on this.event.startTime anymore
+              let isConsecutive = true
+              if (prevDate) {
+                isConsecutive =
+                  prevDate.getTime() ===
+                  localDate.getTime() - 24 * 60 * 60 * 1000
+              }
               const { dayString, dateString } = getDateString(localDate)
               days.push({
                 dayText: dayString,
                 dateString,
                 dateObject: localDate,
+                isConsecutive,
               })
+
+              prevDate = new Date(localDate)
             }
           }
         }
         return days
       }
 
+      let prevDate = null // Stores the prevDate to check if the current date is consecutive to the previous date
       for (let i = 0; i < this.event.dates.length; ++i) {
         const date = new Date(this.event.dates[i])
         datesSoFar.add(date.getTime())
+
+        let isConsecutive = true
+        if (prevDate) {
+          isConsecutive =
+            prevDate.getTime() === date.getTime() - 24 * 60 * 60 * 1000
+        }
 
         const { dayString, dateString } = getDateString(date)
         days.push({
           dayText: dayString,
           dateString,
           dateObject: date,
+          isConsecutive,
         })
+
+        prevDate = new Date(date)
       }
 
       let dayIndex = 0
