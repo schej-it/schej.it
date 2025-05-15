@@ -3531,12 +3531,15 @@ export default {
     },
     /** Returns row, col for the timeslot we are currently hovering over given the x and y position */
     getRowColFromXY(x, y) {
-      const { height } = this.timeslot
-      let col = this.columnOffsets.length
-      for (let i = 0; i < this.columnOffsets.length; ++i) {
-        if (x < this.columnOffsets[i]) {
-          col = i - 1
-          break
+      const { width, height } = this.timeslot
+      let col = Math.floor(x / width)
+      if (!this.event.daysOnly) {
+        col = this.columnOffsets.length
+        for (let i = 0; i < this.columnOffsets.length; ++i) {
+          if (x < this.columnOffsets[i]) {
+            col = i - 1
+            break
+          }
         }
       }
       let row = Math.floor(y / height)
