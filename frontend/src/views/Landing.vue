@@ -194,6 +194,50 @@
       </div>
     </div>
 
+    <!-- Reddit Testimonials -->
+    <div class="tw-flex tw-justify-center tw-bg-light-gray tw-py-12">
+      <div class="tw-mx-4 tw-max-w-3xl tw-flex-1 sm:tw-mx-16">
+        <div class="tw-text-center">
+          <Header> People love us on Reddit! </Header>
+          <div
+            class="tw-mt-8 tw-grid tw-grid-cols-1 tw-gap-4 sm:tw-grid-cols-2"
+          >
+            <div
+              v-for="(comment, index) in redditComments"
+              :key="index"
+              class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-p-4 tw-shadow-md"
+            >
+              <div class="tw-flex tw-flex-1 tw-items-center">
+                <p
+                  class="reddit-comment tw-text-left tw-text-sm tw-text-very-dark-gray"
+                  v-html="comment.text.replace(/\n/g, '<br />')"
+                ></p>
+              </div>
+              <div
+                class="tw-my-4 tw-h-px tw-w-full tw-bg-light-gray-stroke"
+              ></div>
+              <div class="tw-flex tw-items-center tw-justify-between">
+                <div class="tw-text-right">
+                  <a
+                    :href="comment.link"
+                    target="_blank"
+                    class="tw-text-sm tw-font-medium tw-text-dark-gray hover:tw-underline"
+                  >
+                    {{ comment.author }}
+                  </a>
+                </div>
+                <div class="tw-flex tw-items-center tw-gap-2">
+                  <v-avatar size="24">
+                    <v-img :src="comment.picture" />
+                  </v-avatar>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- FAQ -->
     <div class="tw-flex tw-justify-center tw-pt-12">
       <div class="tw-mx-4 tw-mb-12 tw-max-w-3xl tw-flex-1 sm:tw-mx-16">
@@ -240,6 +284,11 @@
     font-size: 1.875rem !important; /* 30px */
     line-height: 2.25rem !important; /* 36px */
   }
+}
+</style>
+<style>
+.rdt-h {
+  @apply tw-rounded tw-bg-light-green/20 tw-px-px tw-text-black;
 }
 </style>
 
@@ -341,6 +390,43 @@ export default {
         answer: `Open the "Email Reminders" section when creating an event and input everybody's email address. Reminder emails will be sent the day of event creation, one day after, and three days after. <br><br>You will also receive an email once everybody has filled out the Schej.`,
         authRequired: true,
       },
+    ],
+    redditComments: [
+      {
+        text: "I LOVE this thing. Every aspect of it is so much better than when2meet and I can't for the life of myself understand why it's not exploding in popularity.\n\n<span class='rdt-h'>It's almost comically easy to schedule meetings with this tool.</span>\n\nThe developers are also constantly coming with new and improved features, and respond to emails - a huge green flag.",
+        author: "u/stuffingmybrain",
+        link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8rvty",
+        picture:
+          "https://styles.redditmedia.com/t5_qqojf/styles/profileIcon_snooa54a8eae-bc7f-406f-9778-b3b9dfb818e5-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=a0a91575ff7cfc3b6698cac69da6c012c7deb8d6",
+      },
+      {
+        text: "Been using this for all my D&D campaigns for a few months now. Literally a life saver, a time saver, and a brilliant piece of software. Schej is everything I've ever wanted and more.\n\nOn top of that, <span class='rdt-h'>community support is the best I've seen of any app or software, ever.</span>\n\nWith regular updates, quick response times, and two ears to the ground for community feedback and constant ways to improve, Schej is 11/5 ⭐️👩‍🍳😘👌",
+        author: "u/DMODD",
+        link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8udud",
+        picture:
+          "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_6.png",
+      },
+      {
+        text: "For Teachers looking to schedule online meetings and events with students outside regular class time: this works beautifully.\n\nThe key is the simplicity. It is very easy to get students to actually use this vs other products -since there is no login account required!\n\nWith it, <span class='rdt-h'>I'm very quickly able to figure out the optimal time</span> to schedule online extra help sessions before an exam.",
+        author: "u/crackwurst",
+        link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb9dmbe",
+        picture:
+          "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_3.png",
+      },
+      {
+        text: "Exactly what I was looking for! Clear and clean interface, also on mobile (<span class='rdt-h'>Doodle is a disaster</span>).\n\nThe option to pick dates without times and spanning multiple months is a game changer.\n\nThank you!",
+        author: "u/Willem1976",
+        link: "https://www.reddit.com/r/opensource/comments/1dlol7r/comment/lkn7sle",
+        picture:
+          "https://styles.redditmedia.com/t5_c0qtc/styles/profileIcon_snooa9d429ce-e3d9-458a-be9e-1b6dd157a209-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=7eba44ea268928b969bcf73ee8667357412132ca",
+      },
+      // {
+      //   text: "Thank you very much! My workplace cannot seem to pick between when2meet and Doodle and I feel like this brings the best of each into one.\n\nWell done <3",
+      //   author: "u/jadiepants",
+      //   link: "https://www.reddit.com/r/opensource/comments/1dlol7r/comment/m6bf3li",
+      //   picture:
+      //     "https://styles.redditmedia.com/t5_d7myp/styles/profileIcon_snoof50f1128-f439-433b-a6b2-8e987630e506-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=94077bf80603c2855747f1bfc0b9dd1539fae75c",
+      // },
     ],
     rive: null,
     showSchejy: false,
