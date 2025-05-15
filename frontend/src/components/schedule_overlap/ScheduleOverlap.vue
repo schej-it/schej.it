@@ -1505,10 +1505,12 @@ export default {
     },
     /** Returns a subset of all days based on the page number */
     days() {
-      return this.allDays.slice(
+      const slice = this.allDays.slice(
         this.page * this.maxDaysPerPage,
         (this.page + 1) * this.maxDaysPerPage
       )
+      slice[0] = { ...slice[0], isConsecutive: true }
+      return slice
     },
     /** Returns all the days of the month */
     monthDays() {
@@ -3304,7 +3306,7 @@ export default {
                   const timeFormat =
                     this.timeType === timeTypes.HOUR12 ? "h:mm A" : "HH:mm"
                   let dateFormat
-                  if (this.isSpecificTimes) {
+                  if (this.isSpecificDates) {
                     dateFormat = "ddd, MMM D, YYYY"
                   } else {
                     dateFormat = "ddd"
