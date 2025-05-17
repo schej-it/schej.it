@@ -32,10 +32,9 @@ type User struct {
 	CalendarOptions *CalendarOptions `json:"calendarOptions" bson:"calendarOptions,omitempty"`
 
 	// Stripe customer ID
-	StripeCustomerId *string             `json:"stripeCustomerId" bson:"stripeCustomerId,omitempty"`
-	PlanExpiration   *primitive.DateTime `json:"planExpiration" bson:"planExpiration,omitempty"`
-	IsPremium        *bool               `json:"isPremium" bson:"isPremium,omitempty"`
-	NumEventsCreated int                 `json:"numEventsCreated" bson:"numEventsCreated,omitempty"`
+	StripeCustomerId *string `json:"stripeCustomerId" bson:"stripeCustomerId,omitempty"`
+	IsPremium        *bool   `json:"isPremium" bson:"isPremium,omitempty"`
+	NumEventsCreated int     `json:"numEventsCreated" bson:"numEventsCreated,omitempty"`
 }
 
 // Declare the possible types of TokenOrigin

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v82"
@@ -113,7 +112,6 @@ func createCheckoutSession(c *gin.Context) {
 func getPrice(c *gin.Context) {
 	// Get the experiment query parameter
 	// exp := c.Query("exp")
-	oneMonthPriceId := os.Getenv("STRIPE_ONE_MONTH_PRICE_ID")
 	monthlyPriceId := os.Getenv("STRIPE_MONTHLY_PRICE_ID")
 	lifetimePriceId := os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 
@@ -127,13 +125,6 @@ func getPrice(c *gin.Context) {
 	// }
 
 	params := &stripe.PriceParams{}
-	oneMonthResult, err := price.Get(oneMonthPriceId, params)
-	if err != nil {
-		log.Printf("price.Get error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
-		return
-	}
-
 	monthlyResult, err := price.Get(monthlyPriceId, params)
 	if err != nil {
 		log.Printf("price.Get error: %v", err)
@@ -148,7 +139,7 @@ func getPrice(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"oneMonth": oneMonthResult, "lifetime": lifetimeResult, "monthly": monthlyResult})
+	c.JSON(http.StatusOK, gin.H{"lifetime": lifetimeResult, "monthly": monthlyResult})
 }
 
 type FulfillCheckoutPayload struct {
@@ -200,21 +191,14 @@ func _fulfillCheckout(sessionId string) {
 
 			// Only upgrade the user if customer ID is different
 			if user.StripeCustomerId == nil || *user.StripeCustomerId != cs.Customer.ID {
-				var planExpiration primitive.DateTime
 				if cs.LineItems != nil && len(cs.LineItems.Data) > 0 {
 					price := cs.LineItems.Data[0].Price
 					priceId := price.ID
 					priceDescription := ""
-					if priceId == os.Getenv("STRIPE_ONE_MONTH_PRICE_ID") {
-						priceDescription = "1-month"
-						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0))
-					} else if priceId == os.Getenv("STRIPE_LIFETIME_PRICE_ID") {
+					if priceId == os.Getenv("STRIPE_LIFETIME_PRICE_ID") {
 						priceDescription = "lifetime"
-						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(999, 0, 0))
 					} else if priceId == os.Getenv("STRIPE_MONTHLY_PRICE_ID") {
 						priceDescription = "monthly"
-						// Set plan expiration to 999 years from now because we use isPremium to determine if the user is premium
-						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(999, 0, 0))
 					}
 					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
 
@@ -222,7 +206,6 @@ func _fulfillCheckout(sessionId string) {
 					slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
 				}
 
-				user.PlanExpiration = &planExpiration
 				user.StripeCustomerId = &cs.Customer.ID
 				user.IsPremium = utils.TruePtr()
 				db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": user})

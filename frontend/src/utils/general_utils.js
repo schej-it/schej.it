@@ -215,9 +215,11 @@ export const lightOrDark = (color) => {
 
 /** Returns whether the given user is a premium user */
 export const isPremiumUser = (authUser) => {
-  if (authUser?.stripeCustomerId) {
-    if (authUser?.planExpiration) {
-      return new Date(authUser.planExpiration) > new Date()
+  if (!authUser) return false
+
+  if (authUser.stripeCustomerId) {
+    if (authUser.isPremium !== null) {
+      return authUser.isPremium
     }
     return true
   }
