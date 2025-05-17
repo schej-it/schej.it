@@ -34,6 +34,7 @@ type User struct {
 	// Stripe customer ID
 	StripeCustomerId *string             `json:"stripeCustomerId" bson:"stripeCustomerId,omitempty"`
 	PlanExpiration   *primitive.DateTime `json:"planExpiration" bson:"planExpiration,omitempty"`
+	IsPremium        *bool               `json:"isPremium" bson:"isPremium,omitempty"`
 	NumEventsCreated int                 `json:"numEventsCreated" bson:"numEventsCreated,omitempty"`
 }
 
