@@ -34,9 +34,10 @@ func InitStripe(router *gin.RouterGroup) {
 }
 
 type CheckoutSessionPayload struct {
-	PriceID   string `json:"priceId" binding:"required"`
-	UserID    string `json:"userId" binding:"required"`
-	OriginURL string `json:"originUrl" binding:"required"`
+	PriceID        string `json:"priceId" binding:"required"`
+	UserID         string `json:"userId" binding:"required"`
+	IsSubscription *bool  `json:"isSubscription" binding:"required"`
+	OriginURL      string `json:"originUrl" binding:"required"`
 }
 
 func createCheckoutSession(c *gin.Context) {
@@ -85,13 +86,17 @@ func createCheckoutSession(c *gin.Context) {
 				Quantity: stripe.Int64(1),
 			},
 		},
-		Mode:             stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL:       stripe.String(successURLStr + "&session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:        stripe.String(cancelURLStr),
-		AutomaticTax:     &stripe.CheckoutSessionAutomaticTaxParams{Enabled: stripe.Bool(true)},
-		CustomerCreation: stripe.String(string(stripe.CheckoutSessionCustomerCreationAlways)),
+		SuccessURL:   stripe.String(successURLStr + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:    stripe.String(cancelURLStr),
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{Enabled: stripe.Bool(true)},
 		// Provide the Customer ID (for example, cus_1234) for an existing customer to associate it with this session
 		// Customer: "cus_RnhPlBnbBbXapY",
+	}
+	if *payload.IsSubscription {
+		params.Mode = stripe.String(string(stripe.CheckoutSessionModeSubscription))
+	} else {
+		params.Mode = stripe.String(string(stripe.CheckoutSessionModePayment))
+		params.CustomerCreation = stripe.String(string(stripe.CheckoutSessionCustomerCreationAlways))
 	}
 
 	s, err := session.New(params)
@@ -109,6 +114,7 @@ func getPrice(c *gin.Context) {
 	// Get the experiment query parameter
 	// exp := c.Query("exp")
 	oneMonthPriceId := os.Getenv("STRIPE_ONE_MONTH_PRICE_ID")
+	monthlyPriceId := os.Getenv("STRIPE_MONTHLY_PRICE_ID")
 	lifetimePriceId := os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 
 	// switch exp {
@@ -128,6 +134,13 @@ func getPrice(c *gin.Context) {
 		return
 	}
 
+	monthlyResult, err := price.Get(monthlyPriceId, params)
+	if err != nil {
+		log.Printf("price.Get error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
+		return
+	}
+
 	lifetimeResult, err := price.Get(lifetimePriceId, params)
 	if err != nil {
 		log.Printf("price.Get error: %v", err)
@@ -135,7 +148,7 @@ func getPrice(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"oneMonth": oneMonthResult, "lifetime": lifetimeResult})
+	c.JSON(http.StatusOK, gin.H{"oneMonth": oneMonthResult, "lifetime": lifetimeResult, "monthly": monthlyResult})
 }
 
 type FulfillCheckoutPayload struct {
