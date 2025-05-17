@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v82"
+	portalsession "github.com/stripe/stripe-go/v82/billingportal/session"
 	"github.com/stripe/stripe-go/v82/checkout/session"
 	"github.com/stripe/stripe-go/v82/price"
 	"github.com/stripe/stripe-go/v82/webhook"
@@ -30,6 +31,7 @@ func InitStripe(router *gin.RouterGroup) {
 	stripeRouter.GET("/price", getPrice)
 	stripeRouter.POST("/fulfill-checkout", fulfillCheckout)
 	stripeRouter.POST("/webhook", stripeWebhook)
+	stripeRouter.GET("/billing-portal", getBillingPortalUrl)
 }
 
 type CheckoutSessionPayload struct {
@@ -96,6 +98,7 @@ func createCheckoutSession(c *gin.Context) {
 	} else {
 		params.Mode = stripe.String(string(stripe.CheckoutSessionModePayment))
 		params.CustomerCreation = stripe.String(string(stripe.CheckoutSessionCustomerCreationAlways))
+		params.InvoiceCreation = &stripe.CheckoutSessionInvoiceCreationParams{Enabled: stripe.Bool(true)}
 	}
 
 	s, err := session.New(params)
@@ -301,4 +304,26 @@ func stripeWebhook(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK) // Return 200 OK to acknowledge receipt of the event
+}
+
+func getBillingPortalUrl(c *gin.Context) {
+	// The URL to which the user is redirected when they're done managing
+	// billing in the portal.
+	returnURL := c.Query("returnUrl")
+	if returnURL == "" {
+		returnURL = utils.GetBaseUrl() // Fallback to base URL if not provided
+	}
+
+	customerID := c.Query("customerId")
+	if customerID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Customer ID is required"})
+		return
+	}
+
+	params := &stripe.BillingPortalSessionParams{
+		Customer:  stripe.String(customerID),
+		ReturnURL: stripe.String(returnURL),
+	}
+	ps, _ := portalsession.New(params)
+	c.JSON(http.StatusOK, gin.H{"url": ps.URL})
 }
