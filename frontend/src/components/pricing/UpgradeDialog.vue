@@ -88,7 +88,9 @@
           </div>
           <div class="tw-relative">
             <div class="tw-font-medium">
-              <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$40</span>
+              <span class="tw-mr-1 tw-text-dark-gray tw-line-through"
+                >$100</span
+              >
               <span class="tw-mr-1 tw-text-4xl">{{
                 formattedPrice(lifetimePrice)
               }}</span>
