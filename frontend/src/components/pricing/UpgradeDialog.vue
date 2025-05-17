@@ -45,35 +45,35 @@
           <div
             class="tw-inline-block tw-w-fit tw-rounded tw-px-2 tw-py-1 tw-text-sm tw-font-medium"
           >
-            1-month pass
+            Monthly
           </div>
           <div class="tw-relative">
             <div class="tw-font-medium">
               <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$15</span>
               <span class="tw-mr-1 tw-text-4xl">{{
-                formattedPrice(oneMonthPrice)
+                formattedPrice(monthlyPrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
             <v-fade-transition>
               <div
-                v-if="oneMonthPrice === null"
+                v-if="monthlyPrice === null"
                 class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
               ></div>
             </v-fade-transition>
           </div>
           <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
-            One-time payment.<br />No subscription.
+            Billed monthly.<br />Cancel anytime.
           </div>
           <v-btn
             class="tw-mb-0.5"
             color="primary"
             outlined
             block
-            :dark="!loadingCheckoutUrl[oneMonthPrice?.id]"
-            :disabled="loadingCheckoutUrl[oneMonthPrice?.id]"
-            :loading="loadingCheckoutUrl[oneMonthPrice?.id]"
-            @click="handleUpgrade(oneMonthPrice)"
+            :dark="!loadingCheckoutUrl[monthlyPrice?.id]"
+            :disabled="loadingCheckoutUrl[monthlyPrice?.id]"
+            :loading="loadingCheckoutUrl[monthlyPrice?.id]"
+            @click="handleUpgrade(monthlyPrice)"
           >
             Upgrade
           </v-btn>
@@ -159,7 +159,7 @@ export default {
 
   data() {
     return {
-      oneMonthPrice: null,
+      monthlyPrice: null,
       lifetimePrice: null,
       loadingCheckoutUrl: {},
       showDonatedDialog: false,
@@ -178,16 +178,16 @@ export default {
     },
     async init() {
       if (this.featureFlagsLoaded && this.authUser) {
-        if (!this.oneMonthPrice || !this.lifetimePrice) {
+        if (!this.lifetimePrice || !this.monthlyPrice) {
           await this.fetchPrice()
         }
       }
     },
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
-      const { oneMonth, lifetime } = res
-      this.oneMonthPrice = oneMonth
+      const { lifetime, monthly } = res
       this.lifetimePrice = lifetime
+      this.monthlyPrice = monthly
     },
     async handleUpgrade(price) {
       this.$posthog.capture("upgrade_clicked", {
@@ -198,6 +198,7 @@ export default {
         const res = await post("/stripe/create-checkout-session", {
           priceId: price.id,
           userId: this.authUser._id,
+          isSubscription: price.recurring !== null,
           originUrl: window.location.href,
         })
         window.location.href = res.url
@@ -230,12 +231,12 @@ export default {
           post("/analytics/upgrade-dialog-viewed", {
             userId: this.authUser._id,
             price: `${this.formattedPrice(
-              this.oneMonthPrice
+              this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
           })
           this.$posthog.capture("upgrade_dialog_viewed", {
             price: `${this.formattedPrice(
-              this.oneMonthPrice
+              this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
           })
         }

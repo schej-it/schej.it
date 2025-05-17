@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v82"
+	portalsession "github.com/stripe/stripe-go/v82/billingportal/session"
 	"github.com/stripe/stripe-go/v82/checkout/session"
 	"github.com/stripe/stripe-go/v82/price"
 	"github.com/stripe/stripe-go/v82/webhook"
@@ -31,12 +31,14 @@ func InitStripe(router *gin.RouterGroup) {
 	stripeRouter.GET("/price", getPrice)
 	stripeRouter.POST("/fulfill-checkout", fulfillCheckout)
 	stripeRouter.POST("/webhook", stripeWebhook)
+	stripeRouter.GET("/billing-portal", getBillingPortalUrl)
 }
 
 type CheckoutSessionPayload struct {
-	PriceID   string `json:"priceId" binding:"required"`
-	UserID    string `json:"userId" binding:"required"`
-	OriginURL string `json:"originUrl" binding:"required"`
+	PriceID        string `json:"priceId" binding:"required"`
+	UserID         string `json:"userId" binding:"required"`
+	IsSubscription *bool  `json:"isSubscription" binding:"required"`
+	OriginURL      string `json:"originUrl" binding:"required"`
 }
 
 func createCheckoutSession(c *gin.Context) {
@@ -85,13 +87,18 @@ func createCheckoutSession(c *gin.Context) {
 				Quantity: stripe.Int64(1),
 			},
 		},
-		Mode:             stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL:       stripe.String(successURLStr + "&session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:        stripe.String(cancelURLStr),
-		AutomaticTax:     &stripe.CheckoutSessionAutomaticTaxParams{Enabled: stripe.Bool(true)},
-		CustomerCreation: stripe.String(string(stripe.CheckoutSessionCustomerCreationAlways)),
+		SuccessURL:   stripe.String(successURLStr + "&session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:    stripe.String(cancelURLStr),
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{Enabled: stripe.Bool(true)},
 		// Provide the Customer ID (for example, cus_1234) for an existing customer to associate it with this session
 		// Customer: "cus_RnhPlBnbBbXapY",
+	}
+	if *payload.IsSubscription {
+		params.Mode = stripe.String(string(stripe.CheckoutSessionModeSubscription))
+	} else {
+		params.Mode = stripe.String(string(stripe.CheckoutSessionModePayment))
+		params.CustomerCreation = stripe.String(string(stripe.CheckoutSessionCustomerCreationAlways))
+		params.InvoiceCreation = &stripe.CheckoutSessionInvoiceCreationParams{Enabled: stripe.Bool(true)}
 	}
 
 	s, err := session.New(params)
@@ -108,7 +115,7 @@ func createCheckoutSession(c *gin.Context) {
 func getPrice(c *gin.Context) {
 	// Get the experiment query parameter
 	// exp := c.Query("exp")
-	oneMonthPriceId := os.Getenv("STRIPE_ONE_MONTH_PRICE_ID")
+	monthlyPriceId := os.Getenv("STRIPE_MONTHLY_PRICE_ID")
 	lifetimePriceId := os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 
 	// switch exp {
@@ -121,7 +128,7 @@ func getPrice(c *gin.Context) {
 	// }
 
 	params := &stripe.PriceParams{}
-	oneMonthResult, err := price.Get(oneMonthPriceId, params)
+	monthlyResult, err := price.Get(monthlyPriceId, params)
 	if err != nil {
 		log.Printf("price.Get error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
@@ -135,7 +142,7 @@ func getPrice(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"oneMonth": oneMonthResult, "lifetime": lifetimeResult})
+	c.JSON(http.StatusOK, gin.H{"lifetime": lifetimeResult, "monthly": monthlyResult})
 }
 
 type FulfillCheckoutPayload struct {
@@ -187,16 +194,14 @@ func _fulfillCheckout(sessionId string) {
 
 			// Only upgrade the user if customer ID is different
 			if user.StripeCustomerId == nil || *user.StripeCustomerId != cs.Customer.ID {
-				var planExpiration primitive.DateTime
 				if cs.LineItems != nil && len(cs.LineItems.Data) > 0 {
-					priceId := cs.LineItems.Data[0].Price.ID
+					price := cs.LineItems.Data[0].Price
+					priceId := price.ID
 					priceDescription := ""
-					if priceId == os.Getenv("STRIPE_ONE_MONTH_PRICE_ID") {
-						priceDescription = "1-month"
-						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(0, 1, 0))
-					} else if priceId == os.Getenv("STRIPE_LIFETIME_PRICE_ID") {
+					if priceId == os.Getenv("STRIPE_LIFETIME_PRICE_ID") {
 						priceDescription = "lifetime"
-						planExpiration = primitive.NewDateTimeFromTime(time.Now().AddDate(999, 0, 0))
+					} else if priceId == os.Getenv("STRIPE_MONTHLY_PRICE_ID") {
+						priceDescription = "monthly"
 					}
 					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
 
@@ -204,8 +209,8 @@ func _fulfillCheckout(sessionId string) {
 					slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
 				}
 
-				user.PlanExpiration = &planExpiration
 				user.StripeCustomerId = &cs.Customer.ID
+				user.IsPremium = utils.TruePtr()
 				db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": userIdObj}, bson.M{"$set": user})
 			}
 		}
@@ -250,7 +255,75 @@ func stripeWebhook(c *gin.Context) {
 		}
 		logger.StdOut.Printf("Checkout Session %s completed!\n", cs.ID)
 		_fulfillCheckout(cs.ID) // Call fulfillCheckout when session is completed
+	} else if event.Type == stripe.EventTypeInvoicePaid {
+		var inv stripe.Invoice
+		err := json.Unmarshal(event.Data.Raw, &inv)
+		if err != nil {
+			logger.StdErr.Printf("Error parsing webhook JSON: %v\n", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		db.UsersCollection.UpdateOne(context.Background(), bson.M{"stripeCustomerId": inv.Customer.ID}, bson.M{"$set": bson.M{"isPremium": true}})
+		logger.StdOut.Printf("Customer %s renewed Schej!\n", inv.Customer.ID)
+	} else if event.Type == stripe.EventTypeInvoicePaymentFailed {
+		var inv stripe.Invoice
+		err := json.Unmarshal(event.Data.Raw, &inv)
+		if err != nil {
+			logger.StdErr.Printf("Error parsing webhook JSON: %v\n", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		user := db.GetUserByStripeCustomerId(inv.Customer.ID)
+		if user == nil {
+			logger.StdErr.Printf("Error getting user: %v", err)
+			return
+		}
+		db.UsersCollection.UpdateOne(context.Background(), bson.M{"stripeCustomerId": inv.Customer.ID}, bson.M{"$set": bson.M{"isPremium": false}})
+		logger.StdOut.Printf("Customer %s failed to pay for Schej!\n", inv.Customer.ID)
+
+		message := fmt.Sprintf(":x: %s %s (%s) failed to pay for Schej :x:", user.FirstName, user.LastName, user.Email)
+		slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
+	} else if event.Type == stripe.EventTypeCustomerSubscriptionDeleted {
+		var sub stripe.Subscription
+		err := json.Unmarshal(event.Data.Raw, &sub)
+		if err != nil {
+			logger.StdErr.Printf("Error parsing webhook JSON: %v\n", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		user := db.GetUserByStripeCustomerId(sub.Customer.ID)
+		if user == nil {
+			logger.StdErr.Printf("Error getting user: %v", err)
+			return
+		}
+		db.UsersCollection.UpdateOne(context.Background(), bson.M{"stripeCustomerId": sub.Customer.ID}, bson.M{"$set": bson.M{"isPremium": false}})
+		logger.StdOut.Printf("Customer %s cancelled their subscription!\n", sub.Customer.ID)
+
+		message := fmt.Sprintf(":x: %s %s (%s) cancelled their subscription :x:", user.FirstName, user.LastName, user.Email)
+		slackbot.SendTextMessageWithType(message, slackbot.MONETIZATION)
 	}
 
 	c.Status(http.StatusOK) // Return 200 OK to acknowledge receipt of the event
+}
+
+func getBillingPortalUrl(c *gin.Context) {
+	// The URL to which the user is redirected when they're done managing
+	// billing in the portal.
+	returnURL := c.Query("returnUrl")
+	if returnURL == "" {
+		returnURL = utils.GetBaseUrl() // Fallback to base URL if not provided
+	}
+
+	customerID := c.Query("customerId")
+	if customerID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Customer ID is required"})
+		return
+	}
+
+	params := &stripe.BillingPortalSessionParams{
+		Customer:  stripe.String(customerID),
+		ReturnURL: stripe.String(returnURL),
+	}
+	ps, _ := portalsession.New(params)
+	c.JSON(http.StatusOK, gin.H{"url": ps.URL})
 }
