@@ -51,7 +51,7 @@
             <div class="tw-font-medium">
               <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$15</span>
               <span class="tw-mr-1 tw-text-4xl">{{
-                formattedPrice(monthlyPrice)
+                isStudent ? studentMonthlyPrice : formattedPrice(monthlyPrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
@@ -73,7 +73,11 @@
             :dark="!loadingCheckoutUrl[monthlyPrice?.id]"
             :disabled="loadingCheckoutUrl[monthlyPrice?.id]"
             :loading="loadingCheckoutUrl[monthlyPrice?.id]"
-            @click="handleUpgrade(monthlyPrice)"
+            @click="
+              isStudent
+                ? handleUpgrade(studentMonthlyPrice)
+                : handleUpgrade(monthlyPrice)
+            "
           >
             Upgrade
           </v-btn>
@@ -92,7 +96,7 @@
                 >$100</span
               >
               <span class="tw-mr-1 tw-text-4xl">{{
-                formattedPrice(lifetimePrice)
+                isStudent ? studentLifetimePrice : formattedPrice(lifetimePrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
@@ -113,11 +117,29 @@
             :dark="!loadingCheckoutUrl[lifetimePrice?.id]"
             :disabled="loadingCheckoutUrl[lifetimePrice?.id]"
             :loading="loadingCheckoutUrl[lifetimePrice?.id]"
-            @click="handleUpgrade(lifetimePrice)"
+            @click="
+              isStudent
+                ? handleUpgrade(studentLifetimePrice)
+                : handleUpgrade(lifetimePrice)
+            "
           >
             Upgrade
           </v-btn>
         </div>
+      </div>
+      <div class="tw-flex tw-w-full tw-items-center tw-justify-center tw-pb-4">
+        <v-checkbox
+          id="student-checkbox"
+          v-model="isStudent"
+          dense
+          hide-details
+        >
+        </v-checkbox>
+        <label
+          for="student-checkbox"
+          class="tw-cursor-pointer tw-select-none tw-text-sm tw-text-very-dark-gray"
+          >I'm a student</label
+        >
       </div>
       <div
         class="tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-4 tw-text-center"
@@ -140,6 +162,7 @@
     </v-card>
 
     <AlreadyDonatedDialog v-model="showDonatedDialog" />
+    <StudentProofDialog v-model="showStudentProofDialog" />
   </v-dialog>
 </template>
 
@@ -147,11 +170,13 @@
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
 import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
+import StudentProofDialog from "./StudentProofDialog.vue"
 
 export default {
   name: "UpgradeDialog",
   components: {
     AlreadyDonatedDialog,
+    StudentProofDialog,
   },
   props: {
     value: { type: Boolean, required: true },
@@ -163,6 +188,10 @@ export default {
       lifetimePrice: null,
       loadingCheckoutUrl: {},
       showDonatedDialog: false,
+      isStudent: false,
+      studentMonthlyPrice: "$5",
+      studentLifetimePrice: "$19",
+      showStudentProofDialog: false,
     }
   },
 
@@ -190,6 +219,13 @@ export default {
       this.monthlyPrice = monthly
     },
     async handleUpgrade(price) {
+      if (this.isStudent) {
+        this.showStudentProofDialog = true
+        this.$posthog.capture("student_upgrade_attempt", {
+          price: price,
+        })
+        return
+      }
       this.$posthog.capture("upgrade_clicked", {
         price: this.formattedPrice(price),
       })
