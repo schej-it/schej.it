@@ -73,7 +73,11 @@
             :dark="!loadingCheckoutUrl[monthlyPrice?.id]"
             :disabled="loadingCheckoutUrl[monthlyPrice?.id]"
             :loading="loadingCheckoutUrl[monthlyPrice?.id]"
-            @click="handleUpgrade(monthlyPrice)"
+            @click="
+              isStudent
+                ? handleUpgrade(studentMonthlyPrice)
+                : handleUpgrade(monthlyPrice)
+            "
           >
             Upgrade
           </v-btn>
@@ -113,20 +117,29 @@
             :dark="!loadingCheckoutUrl[lifetimePrice?.id]"
             :disabled="loadingCheckoutUrl[lifetimePrice?.id]"
             :loading="loadingCheckoutUrl[lifetimePrice?.id]"
-            @click="handleUpgrade(lifetimePrice)"
+            @click="
+              isStudent
+                ? handleUpgrade(studentLifetimePrice)
+                : handleUpgrade(lifetimePrice)
+            "
           >
             Upgrade
           </v-btn>
         </div>
       </div>
-      <div class="tw-flex tw-w-full tw-justify-center tw-pb-2">
+      <div class="tw-flex tw-w-full tw-items-center tw-justify-center tw-pb-4">
         <v-checkbox
+          id="student-checkbox"
           v-model="isStudent"
           dense
-          label="I'm a student"
-          class="tw-mt-0 tw-pt-0"
+          hide-details
         >
         </v-checkbox>
+        <label
+          for="student-checkbox"
+          class="tw-cursor-pointer tw-select-none tw-text-sm tw-text-very-dark-gray"
+          >I'm a student</label
+        >
       </div>
       <div
         class="tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-4 tw-text-center"
@@ -209,7 +222,7 @@ export default {
       if (this.isStudent) {
         this.showStudentProofDialog = true
         this.$posthog.capture("student_upgrade_attempt", {
-          price: this.formattedPrice(price),
+          price: price,
         })
         return
       }
