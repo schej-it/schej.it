@@ -89,14 +89,16 @@ func upgradeDialogViewed(c *gin.Context) {
 		return
 	}
 
+	var message string
 	user := db.GetUserById(payload.UserId)
 	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{})
-		return
+		message = fmt.Sprintf(":eyes: %s viewed the upgrade dialog (%s), type: %s", payload.UserId, payload.Price, payload.Type)
+	} else {
+		message = fmt.Sprintf(":eyes: %s %s (%s) viewed the upgrade dialog (%s), type: %s", user.FirstName, user.LastName, user.Email, payload.Price, payload.Type)
 	}
 
 	slackbot.SendTextMessageWithType(
-		fmt.Sprintf(":eyes: %s %s (%s) viewed the upgrade dialog (%s), type: %s", user.FirstName, user.LastName, user.Email, payload.Price, payload.Type),
+		message,
 		slackbot.MONETIZATION,
 	)
 

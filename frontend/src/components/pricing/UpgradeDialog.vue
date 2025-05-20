@@ -25,9 +25,8 @@
           <template
             v-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
           >
-            Upgrade to schedule events with Schej.
-            <br class="tw-hidden sm:tw-block" />
-            Your payment helps us keep the site running.
+            Upgrade to schedule events with Schej. Your payment helps us keep
+            the site running.
           </template>
         </div>
         <!-- <ul
@@ -227,7 +226,7 @@ export default {
       return "$" + Math.floor(price.unit_amount / 100)
     },
     async init() {
-      if (this.featureFlagsLoaded && this.authUser) {
+      if (this.featureFlagsLoaded) {
         if (!this.lifetimePrice || !this.monthlyPrice) {
           await this.fetchPrice()
         }
@@ -285,16 +284,11 @@ export default {
       },
       immediate: true,
     },
-    authUser: {
-      handler() {
-        this.init()
-      },
-    },
     value: {
       handler() {
         if (this.value) {
           post("/analytics/upgrade-dialog-viewed", {
-            userId: this.authUser._id,
+            userId: this.authUser?._id ?? this.$posthog?.get_distinct_id(),
             price: `${this.formattedPrice(
               this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
