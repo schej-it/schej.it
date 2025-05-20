@@ -241,3 +241,8 @@ export const getEventsCreated = () => {
   }
   return eventsCreated
 }
+
+/** Deletes the 'eventsCreated' list from localStorage */
+export const deleteEventsCreated = () => {
+  localStorage.removeItem("eventsCreated")
+}

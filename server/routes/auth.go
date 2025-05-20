@@ -46,6 +46,7 @@ func signIn(c *gin.Context) {
 		Scope          string              `json:"scope" binding:"required"`
 		CalendarType   models.CalendarType `json:"calendarType" binding:"required"`
 		TimezoneOffset *int                `json:"timezoneOffset" binding:"required"`
+		EventsToLink   []string            `json:"eventsToLink"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
@@ -54,6 +55,14 @@ func signIn(c *gin.Context) {
 	tokens := auth.GetTokensFromAuthCode(payload.Code, payload.Scope, utils.GetOrigin(c), payload.CalendarType)
 
 	user := signInHelper(c, tokens, models.WEB, payload.CalendarType, *payload.TimezoneOffset)
+
+	// Link events to user
+	for _, eventIdString := range payload.EventsToLink {
+		eventId, err := primitive.ObjectIDFromHex(eventIdString)
+		if err == nil {
+			db.EventsCollection.UpdateOne(context.Background(), bson.M{"_id": eventId, "ownerId": nil}, bson.M{"$set": bson.M{"ownerId": user.Id}})
+		}
+	}
 
 	c.JSON(http.StatusOK, user)
 }
