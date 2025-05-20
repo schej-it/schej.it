@@ -15,9 +15,20 @@
           >
         </h2>
         <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
-          You've run out of free events. Upgrade to create unlimited events.
-          <br class="tw-hidden sm:tw-block" />
-          Your payment helps us keep the site running.
+          <template
+            v-if="upgradeDialogType === upgradeDialogTypes.CREATE_EVENT"
+          >
+            You've run out of free events. Upgrade to create unlimited events.
+            <br class="tw-hidden sm:tw-block" />
+            Your payment helps us keep the site running.
+          </template>
+          <template
+            v-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
+          >
+            Upgrade to schedule events with Schej.
+            <br class="tw-hidden sm:tw-block" />
+            Your payment helps us keep the site running.
+          </template>
         </div>
         <!-- <ul
           class="tw-inline-block tw-space-y-0.5 tw-p-0 tw-text-sm tw-font-medium tw-text-very-dark-gray"
@@ -169,6 +180,7 @@
 <script>
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
+import { upgradeDialogTypes } from "@/constants"
 import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
 import StudentProofDialog from "./StudentProofDialog.vue"
 
@@ -196,7 +208,15 @@ export default {
   },
 
   computed: {
-    ...mapState(["featureFlagsLoaded", "pricingPageConversion", "authUser"]),
+    ...mapState([
+      "featureFlagsLoaded",
+      "pricingPageConversion",
+      "authUser",
+      "upgradeDialogType",
+    ]),
+    upgradeDialogTypes() {
+      return upgradeDialogTypes
+    },
   },
 
   methods: {

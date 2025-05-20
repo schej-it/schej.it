@@ -10,6 +10,8 @@ export default new Vuex.Store({
     info: "",
 
     authUser: null,
+    upgradeDialogVisible: false,
+    upgradeDialogType: null,
 
     createdEvents: [],
     joinedEvents: [],
@@ -67,6 +69,12 @@ export default new Vuex.Store({
     setEnablePaywall(state, enabled) {
       state.enablePaywall = enabled
     },
+    setUpgradeDialogVisible(state, visible) {
+      state.upgradeDialogVisible = visible
+    },
+    setUpgradeDialogType(state, type) {
+      state.upgradeDialogType = type
+    },
   },
   actions: {
     // Error & info
@@ -98,6 +106,14 @@ export default new Vuex.Store({
       } else {
         return null
       }
+    },
+    showUpgradeDialog({ commit }, type) {
+      commit("setUpgradeDialogVisible", true)
+      commit("setUpgradeDialogType", type)
+    },
+    hideUpgradeDialog({ commit }) {
+      commit("setUpgradeDialogVisible", false)
+      commit("setUpgradeDialogType", null)
     },
   },
   modules: {},
