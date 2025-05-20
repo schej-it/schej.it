@@ -349,7 +349,9 @@ export default {
         !this.isPremiumUser &&
         this.authUser?.numEventsCreated >= numFreeEvents
       ) {
-        this.showUpgradeDialog(upgradeDialogTypes.CREATE_EVENT)
+        this.showUpgradeDialog({
+          type: upgradeDialogTypes.CREATE_EVENT,
+        })
         return
       }
 
@@ -367,7 +369,9 @@ export default {
         !this.isPremiumUser &&
         this.authUser?.numEventsCreated >= numFreeEvents
       ) {
-        this.showUpgradeDialog(upgradeDialogTypes.CREATE_EVENT)
+        this.showUpgradeDialog({
+          type: upgradeDialogTypes.CREATE_EVENT,
+        })
         return
       }
 

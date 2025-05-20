@@ -10,8 +10,6 @@ export default new Vuex.Store({
     info: "",
 
     authUser: null,
-    upgradeDialogVisible: false,
-    upgradeDialogType: null,
 
     createdEvents: [],
     joinedEvents: [],
@@ -27,6 +25,11 @@ export default new Vuex.Store({
 
     // Experiments
     pricingPageConversion: "control",
+
+    // Upgrade dialog
+    upgradeDialogVisible: false,
+    upgradeDialogType: null,
+    upgradeDialogData: null,
   },
   getters: {},
   mutations: {
@@ -75,6 +78,9 @@ export default new Vuex.Store({
     setUpgradeDialogType(state, type) {
       state.upgradeDialogType = type
     },
+    setUpgradeDialogData(state, data) {
+      state.upgradeDialogData = data
+    },
   },
   actions: {
     // Error & info
@@ -107,13 +113,15 @@ export default new Vuex.Store({
         return null
       }
     },
-    showUpgradeDialog({ commit }, type) {
+    showUpgradeDialog({ commit }, { type, data = null }) {
       commit("setUpgradeDialogVisible", true)
       commit("setUpgradeDialogType", type)
+      commit("setUpgradeDialogData", data)
     },
     hideUpgradeDialog({ commit }) {
       commit("setUpgradeDialogVisible", false)
       commit("setUpgradeDialogType", null)
+      commit("setUpgradeDialogData", null)
     },
   },
   modules: {},

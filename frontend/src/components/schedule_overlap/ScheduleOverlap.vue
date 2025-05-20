@@ -3449,7 +3449,12 @@ export default {
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
       if (!isPremiumUser(this.authUser)) {
-        this.showUpgradeDialog(upgradeDialogTypes.SCHEDULE_EVENT)
+        this.showUpgradeDialog({
+          type: upgradeDialogTypes.SCHEDULE_EVENT,
+          data: {
+            scheduledEvent: this.curScheduledEvent,
+          },
+        })
         return
       }
 
@@ -4395,12 +4400,24 @@ export default {
     addEventListener("click", this.deselectRespondents)
   },
   mounted() {
+    // Get query parameters from URL
+    const urlParams = new URLSearchParams(window.location.search)
+
     // Set initial state
     if (
       this.event.hasSpecificTimes &&
       (this.fromEditEvent || !this.event.times || this.event.times.length === 0)
     ) {
       this.state = this.states.SET_SPECIFIC_TIMES
+    } else if (urlParams.get("scheduled_event")) {
+      const scheduledEvent = JSON.parse(urlParams.get("scheduled_event"))
+      this.curScheduledEvent = scheduledEvent
+      this.state = this.states.SCHEDULE_EVENT
+
+      // Remove the scheduled_event parameter from URL to avoid reloading the same state
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete("scheduled_event")
+      window.history.replaceState({}, document.title, newUrl.toString())
     } else if (this.showBestTimes) {
       this.state = "best_times"
     } else {

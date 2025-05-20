@@ -213,6 +213,7 @@ export default {
       "pricingPageConversion",
       "authUser",
       "upgradeDialogType",
+      "upgradeDialogData",
     ]),
     upgradeDialogTypes() {
       return upgradeDialogTypes
@@ -251,11 +252,19 @@ export default {
       })
       this.$set(this.loadingCheckoutUrl, price.id, true)
       try {
+        let originUrl = window.location.href
+        if (this.upgradeDialogData) {
+          if (this.upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT) {
+            originUrl = `${originUrl}?scheduled_event=${encodeURIComponent(
+              JSON.stringify(this.upgradeDialogData.scheduledEvent)
+            )}`
+          }
+        }
         const res = await post("/stripe/create-checkout-session", {
           priceId: price.id,
           userId: this.authUser._id,
           isSubscription: price.recurring !== null,
-          originUrl: window.location.href,
+          originUrl: originUrl,
         })
         window.location.href = res.url
       } catch (e) {
