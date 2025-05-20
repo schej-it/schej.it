@@ -969,12 +969,14 @@ import {
   getISODateString,
   getDateWithTimezone,
   timeNumToTimeString,
+  isPremiumUser,
 } from "@/utils"
 import {
   availabilityTypes,
   calendarOptionsDefaults,
   eventTypes,
   timeTypes,
+  upgradeDialogTypes,
 } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
@@ -2271,7 +2273,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
-    ...mapActions(["showInfo", "showError"]),
+    ...mapActions(["showInfo", "showError", "showUpgradeDialog"]),
 
     // -----------------------------------
     //#region Date
@@ -3446,6 +3448,11 @@ export default {
     /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
+      if (!isPremiumUser(this.authUser)) {
+        this.showUpgradeDialog(upgradeDialogTypes.SCHEDULE_EVENT)
+        return
+      }
+
       this.$posthog.capture("schedule_event_confirmed")
       // Get start date, and end date from the area that the user has dragged out
       const { col, row, numRows } = this.curScheduledEvent

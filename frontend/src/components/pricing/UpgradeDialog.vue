@@ -289,11 +289,13 @@ export default {
             price: `${this.formattedPrice(
               this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
+            type: this.upgradeDialogType,
           })
           this.$posthog.capture("upgrade_dialog_viewed", {
             price: `${this.formattedPrice(
               this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
+            type: this.upgradeDialogType,
           })
         }
       },

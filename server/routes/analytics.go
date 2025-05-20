@@ -83,6 +83,7 @@ func upgradeDialogViewed(c *gin.Context) {
 	payload := struct {
 		UserId string `json:"userId" binding:"required"`
 		Price  string `json:"price" binding:"required"`
+		Type   string `json:"type" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
@@ -95,7 +96,7 @@ func upgradeDialogViewed(c *gin.Context) {
 	}
 
 	slackbot.SendTextMessageWithType(
-		fmt.Sprintf(":eyes: %s %s (%s) viewed the upgrade dialog (%s)", user.FirstName, user.LastName, user.Email, payload.Price),
+		fmt.Sprintf(":eyes: %s %s (%s) viewed the upgrade dialog (%s), type: %s", user.FirstName, user.LastName, user.Email, payload.Price, payload.Type),
 		slackbot.MONETIZATION,
 	)
 
