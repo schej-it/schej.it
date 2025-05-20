@@ -189,7 +189,7 @@ export default {
       loadingCheckoutUrl: {},
       showDonatedDialog: false,
       isStudent: false,
-      studentMonthlyPrice: "$5",
+      studentMonthlyPrice: "$4",
       studentLifetimePrice: "$19",
       showStudentProofDialog: false,
     }
