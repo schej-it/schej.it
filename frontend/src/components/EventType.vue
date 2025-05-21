@@ -21,7 +21,7 @@
         v-if="eventType.header === 'Events I created'"
         text
         @click="createFolder"
-        class="tw-text-very-dark-gray"
+        class="tw-hidden tw-text-very-dark-gray sm:tw-block"
       >
         <v-icon class="tw-mr-2 tw-text-lg">mdi-folder-plus</v-icon>
         New folder
