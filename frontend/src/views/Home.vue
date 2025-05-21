@@ -194,7 +194,6 @@ export default {
     convertW2M() {
       this.showW2MDialog = true
       this.$posthog?.capture("convert_when2meet_to_schej_clicked")
-      console.log("convert_when2meet_to_schej_clicked")
     },
   },
 

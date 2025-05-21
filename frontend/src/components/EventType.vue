@@ -17,6 +17,15 @@
           {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
         </div>
       </div>
+      <v-btn
+        v-if="eventType.header === 'Events I created'"
+        text
+        @click="createFolder"
+        class="tw-text-very-dark-gray"
+      >
+        <v-icon class="tw-mr-2 tw-text-lg">mdi-folder-plus</v-icon>
+        New folder
+      </v-btn>
       <div
         v-if="eventType.events.length > defaultNumEventsToShow"
         @click="toggleShowAll"
@@ -71,11 +80,13 @@
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
       </div>
     </div>
+    <FeatureNotReadyDialog v-model="showFeatureNotReadyDialog" />
   </div>
 </template>
 
 <script>
 import EventItem from "@/components/EventItem.vue"
+import FeatureNotReadyDialog from "@/components/FeatureNotReadyDialog.vue"
 import { numFreeEvents } from "@/constants"
 import { mapState } from "vuex"
 import { isPremiumUser } from "@/utils"
@@ -85,6 +96,7 @@ export default {
 
   components: {
     EventItem,
+    FeatureNotReadyDialog,
   },
 
   props: {
@@ -92,9 +104,12 @@ export default {
     emptyText: { type: String, default: "" },
   },
 
-  data: () => ({
-    showAll: false,
-  }),
+  data() {
+    return {
+      showFeatureNotReadyDialog: false,
+      showAll: false,
+    }
+  },
 
   computed: {
     ...mapState(["authUser", "enablePaywall"]),
@@ -121,6 +136,10 @@ export default {
   methods: {
     toggleShowAll() {
       this.showAll = !this.showAll
+    },
+    createFolder() {
+      this.showFeatureNotReadyDialog = true
+      this.$posthog?.capture("create_folder_clicked")
     },
   },
 }
