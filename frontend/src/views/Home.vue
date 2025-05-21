@@ -52,6 +52,25 @@
       </div>
     </v-fade-transition>
 
+    <div
+      class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
+      v-if="!loading || eventsNotEmpty"
+    >
+      <div
+        class="tw-mb-3 tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+      >
+        Tools
+      </div>
+      <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
+        <div
+          @click="convertW2M"
+          class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
+        >
+          Convert When2meet to Schej
+        </div>
+      </div>
+    </div>
+
     <div v-if="!loading || eventsNotEmpty" class="tw-flex tw-justify-center">
       <div
         class="animate-boba tw-size-48 tw-bg-contain tw-bg-no-repeat sm:tw-size-48"
@@ -71,6 +90,9 @@
     <BottomFab v-if="isPhone" id="create-event-btn" @click="createNew">
       <v-icon>mdi-plus</v-icon>
     </BottomFab>
+
+    <!-- When2meet Import Dialog -->
+    <When2meetImportDialog v-model="showW2MDialog" />
   </div>
 </template>
 
@@ -78,6 +100,7 @@
 import EventType from "@/components/EventType.vue"
 import BottomFab from "@/components/BottomFab.vue"
 import CreateSpeedDial from "@/components/CreateSpeedDial.vue"
+import When2meetImportDialog from "@/components/When2meetImportDialog.vue"
 import { mapState, mapActions, mapMutations } from "vuex"
 import { eventTypes } from "@/constants"
 import { isPhone, get } from "@/utils"
@@ -93,6 +116,7 @@ export default {
     EventType,
     BottomFab,
     CreateSpeedDial,
+    When2meetImportDialog,
   },
 
   props: {
@@ -105,6 +129,7 @@ export default {
 
   data: () => ({
     loading: true,
+    showW2MDialog: false,
   }),
 
   mounted() {
@@ -165,6 +190,10 @@ export default {
         contactsPayload: {},
         openNewGroup: false,
       })
+    },
+    convertW2M() {
+      this.showW2MDialog = true
+      this.$posthog?.capture("convert_when2meet_to_schej_clicked")
     },
   },
 
