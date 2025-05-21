@@ -63,7 +63,7 @@
       </div>
       <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
         <div
-          @click="showW2MDialog = true"
+          @click="convertW2M"
           class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
         >
           Convert When2meet to Schej
@@ -190,6 +190,11 @@ export default {
         contactsPayload: {},
         openNewGroup: false,
       })
+    },
+    convertW2M() {
+      this.showW2MDialog = true
+      this.$posthog?.capture("convert_when2meet_to_schej_clicked")
+      console.log("convert_when2meet_to_schej_clicked")
     },
   },
 
