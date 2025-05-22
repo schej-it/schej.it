@@ -275,12 +275,7 @@
     <SignInDialog v-model="signInDialog" @signIn="_signIn" />
 
     <!-- New event dialog -->
-    <NewDialog
-      v-model="newDialog"
-      :allow-notifications="false"
-      no-tabs
-      @signIn="signIn"
-    />
+    <NewDialog v-model="newDialog" no-tabs @signIn="signIn" />
 
     <!-- Add the dialog component -->
     <HowItWorksDialog

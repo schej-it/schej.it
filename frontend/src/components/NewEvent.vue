@@ -197,7 +197,7 @@
         </div>
 
         <v-checkbox
-          v-if="allowNotifications && !guestEvent && authUser"
+          v-if="!guestEvent && authUser"
           v-model="notificationsEnabled"
           hide-details
           class="tw-mt-2"
@@ -206,6 +206,29 @@
             <span class="tw-text-sm tw-text-very-dark-gray"
               >Email me each time someone joins my event</span
             >
+          </template>
+        </v-checkbox>
+        <v-checkbox
+          v-else-if="!guestEvent"
+          disabled
+          messages="test"
+          off-icon="mdi-checkbox-blank-off-outline"
+          class="tw-mt-2"
+        >
+          <template v-slot:label>
+            <span class="tw-text-sm"
+              >Email me each time someone joins my event</span
+            >
+          </template>
+          <template v-slot:message="{ key, message }">
+            <div
+              class="tw-pointer-events-auto -tw-mt-1 tw-ml-[32px] tw-text-xs tw-text-dark-gray"
+            >
+              <span class="tw-font-medium tw-text-very-dark-gray"
+                ><a @click="$emit('signIn')">Sign in</a>
+                to use this feature
+              </span>
+            </div>
           </template>
         </v-checkbox>
 
@@ -458,7 +481,6 @@ export default {
     event: { type: Object },
     edit: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
-    allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     showHelp: { type: Boolean, default: false },
   },
