@@ -796,6 +796,8 @@ export default {
         this.blindAvailabilityEnabled = this.event.blindAvailabilityEnabled
         this.daysOnly = this.event.daysOnly
         this.specificTimesEnabled = this.event.hasSpecificTimes
+        this.startOnMonday = this.event.startOnMonday
+        this.collectEmails = this.event.collectEmails
 
         if (
           this.event.sendEmailAfterXResponses !== null &&
