@@ -55,6 +55,7 @@
           solo
           @keyup.enter="blurNameField"
           :rules="nameRules"
+          autofocus
           required
         />
 
