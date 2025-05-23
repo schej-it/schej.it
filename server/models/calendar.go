@@ -70,4 +70,7 @@ type CalendarEvent struct {
 
 	// Whether the user is free during this event
 	Free bool `json:"free" bson:"free,omitempty"`
+
+	// Whether the event is an all day event
+	AllDay bool `json:"allDay" bson:"allDay,omitempty"`
 }
