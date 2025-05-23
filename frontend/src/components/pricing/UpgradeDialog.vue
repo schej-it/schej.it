@@ -51,7 +51,9 @@
             <div class="tw-font-medium">
               <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$15</span>
               <span class="tw-mr-1 tw-text-4xl">{{
-                isStudent ? studentMonthlyPrice : formattedPrice(monthlyPrice)
+                isStudent
+                  ? formattedPrice(monthlyStudentPrice)
+                  : formattedPrice(monthlyPrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
@@ -70,12 +72,24 @@
             color="primary"
             outlined
             block
-            :dark="!loadingCheckoutUrl[monthlyPrice?.id]"
-            :disabled="loadingCheckoutUrl[monthlyPrice?.id]"
-            :loading="loadingCheckoutUrl[monthlyPrice?.id]"
+            :dark="
+              isStudent
+                ? !loadingCheckoutUrl[monthlyStudentPrice?.id]
+                : !loadingCheckoutUrl[monthlyPrice?.id]
+            "
+            :disabled="
+              isStudent
+                ? loadingCheckoutUrl[monthlyStudentPrice?.id]
+                : loadingCheckoutUrl[monthlyPrice?.id]
+            "
+            :loading="
+              isStudent
+                ? loadingCheckoutUrl[monthlyStudentPrice?.id]
+                : loadingCheckoutUrl[monthlyPrice?.id]
+            "
             @click="
               isStudent
-                ? handleUpgrade(studentMonthlyPrice)
+                ? handleUpgrade(monthlyStudentPrice)
                 : handleUpgrade(monthlyPrice)
             "
           >
@@ -96,7 +110,9 @@
                 >$100</span
               >
               <span class="tw-mr-1 tw-text-4xl">{{
-                isStudent ? studentLifetimePrice : formattedPrice(lifetimePrice)
+                isStudent
+                  ? formattedPrice(lifetimeStudentPrice)
+                  : formattedPrice(lifetimePrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
@@ -114,12 +130,24 @@
             class="tw-mb-0.5"
             color="primary"
             block
-            :dark="!loadingCheckoutUrl[lifetimePrice?.id]"
-            :disabled="loadingCheckoutUrl[lifetimePrice?.id]"
-            :loading="loadingCheckoutUrl[lifetimePrice?.id]"
+            :dark="
+              isStudent
+                ? !loadingCheckoutUrl[lifetimeStudentPrice?.id]
+                : !loadingCheckoutUrl[lifetimePrice?.id]
+            "
+            :disabled="
+              isStudent
+                ? loadingCheckoutUrl[lifetimeStudentPrice?.id]
+                : loadingCheckoutUrl[lifetimePrice?.id]
+            "
+            :loading="
+              isStudent
+                ? loadingCheckoutUrl[lifetimeStudentPrice?.id]
+                : loadingCheckoutUrl[lifetimePrice?.id]
+            "
             @click="
               isStudent
-                ? handleUpgrade(studentLifetimePrice)
+                ? handleUpgrade(lifetimeStudentPrice)
                 : handleUpgrade(lifetimePrice)
             "
           >
@@ -186,11 +214,11 @@ export default {
     return {
       monthlyPrice: null,
       lifetimePrice: null,
+      monthlyStudentPrice: null,
+      lifetimeStudentPrice: null,
       loadingCheckoutUrl: {},
       showDonatedDialog: false,
       isStudent: false,
-      studentMonthlyPrice: "$4",
-      studentLifetimePrice: "$19",
       showStudentProofDialog: false,
     }
   },
@@ -214,18 +242,20 @@ export default {
     },
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
-      const { lifetime, monthly } = res
+      const { lifetime, monthly, lifetimeStudent, monthlyStudent } = res
       this.lifetimePrice = lifetime
       this.monthlyPrice = monthly
+      this.lifetimeStudentPrice = lifetimeStudent
+      this.monthlyStudentPrice = monthlyStudent
     },
     async handleUpgrade(price) {
-      if (this.isStudent) {
-        this.showStudentProofDialog = true
-        this.$posthog.capture("student_upgrade_attempt", {
-          price: price,
-        })
-        return
-      }
+      // if (this.isStudent) {
+      //   this.showStudentProofDialog = true
+      //   this.$posthog.capture("student_upgrade_attempt", {
+      //     price: price,
+      //   })
+      //   return
+      // }
       this.$posthog.capture("upgrade_clicked", {
         price: this.formattedPrice(price),
       })
