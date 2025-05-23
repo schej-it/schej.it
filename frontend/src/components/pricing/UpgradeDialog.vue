@@ -280,6 +280,17 @@ export default {
   },
 
   watch: {
+    isStudent: {
+      handler(val) {
+        if (val) {
+          this.$posthog.capture("student_pricing_viewed", {
+            prices: `${this.formattedPrice(
+              this.monthlyStudentPrice
+            )}, ${this.formattedPrice(this.lifetimeStudentPrice)}`,
+          })
+        }
+      },
+    },
     featureFlagsLoaded: {
       handler() {
         this.init()
