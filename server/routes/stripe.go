@@ -218,6 +218,10 @@ func _fulfillCheckout(sessionId string) {
 						priceDescription = "lifetime"
 					} else if priceId == os.Getenv("STRIPE_MONTHLY_PRICE_ID") {
 						priceDescription = "monthly"
+					} else if priceId == os.Getenv("STRIPE_LIFETIME_STUDENT_PRICE_ID") {
+						priceDescription = "lifetime student"
+					} else if priceId == os.Getenv("STRIPE_MONTHLY_STUDENT_PRICE_ID") {
+						priceDescription = "monthly student"
 					}
 					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
 
