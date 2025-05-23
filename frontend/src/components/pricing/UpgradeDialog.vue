@@ -23,10 +23,18 @@
             Your payment helps us keep the site running.
           </template>
           <template
-            v-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
+            v-else-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
           >
             Upgrade to schedule events with Schej. Your payment helps us keep
             the site running.
+          </template>
+          <template
+            v-else-if="
+              upgradeDialogType === upgradeDialogTypes.UPGRADE_MANUALLY
+            "
+          >
+            Create unlimited events with Schej Premium. Your payment helps us
+            keep the site running.
           </template>
         </div>
         <!-- <ul
