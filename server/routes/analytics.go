@@ -83,19 +83,22 @@ func upgradeDialogViewed(c *gin.Context) {
 	payload := struct {
 		UserId string `json:"userId" binding:"required"`
 		Price  string `json:"price" binding:"required"`
+		Type   string `json:"type" binding:"required"`
 	}{}
 	if err := c.BindJSON(&payload); err != nil {
 		return
 	}
 
+	var message string
 	user := db.GetUserById(payload.UserId)
 	if user == nil {
-		c.JSON(http.StatusNotFound, gin.H{})
-		return
+		message = fmt.Sprintf(":eyes: %s viewed the upgrade dialog (%s), type: %s", payload.UserId, payload.Price, payload.Type)
+	} else {
+		message = fmt.Sprintf(":eyes: %s %s (%s) viewed the upgrade dialog (%s), type: %s", user.FirstName, user.LastName, user.Email, payload.Price, payload.Type)
 	}
 
 	slackbot.SendTextMessageWithType(
-		fmt.Sprintf(":eyes: %s %s (%s) viewed the upgrade dialog (%s)", user.FirstName, user.LastName, user.Email, payload.Price),
+		message,
 		slackbot.MONETIZATION,
 	)
 

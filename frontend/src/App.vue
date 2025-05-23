@@ -10,7 +10,10 @@
       :contactsPayload="newDialogOptions.contactsPayload"
       :no-tabs="newDialogOptions.eventOnly"
     />
-    <UpgradeDialog v-model="showUpgradeDialog" />
+    <UpgradeDialog
+      :value="upgradeDialogVisible"
+      @input="handleUpgradeDialogInput"
+    />
     <UpvoteRedditSnackbar />
     <div
       v-if="showHeader"
@@ -239,6 +242,7 @@ import {
   calendarTypes,
   eventTypes,
   numFreeEvents,
+  upgradeDialogTypes,
 } from "@/constants"
 import AutoSnackbar from "@/components/AutoSnackbar"
 import AuthUserMenu from "@/components/AuthUserMenu.vue"
@@ -280,7 +284,6 @@ export default {
       contactsPayload: {},
       openNewGroup: false,
     },
-    showUpgradeDialog: false,
     signInDialog: false,
   }),
 
@@ -291,6 +294,7 @@ export default {
       "info",
       "createdEvents",
       "enablePaywall",
+      "upgradeDialogVisible",
     ]),
     createdEventsNonGroup() {
       return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
@@ -332,7 +336,7 @@ export default {
       "setEnablePaywall",
       "setFeatureFlagsLoaded",
     ]),
-    ...mapActions(["getEvents"]),
+    ...mapActions(["getEvents", "showUpgradeDialog", "hideUpgradeDialog"]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
@@ -345,7 +349,9 @@ export default {
         !this.isPremiumUser &&
         this.authUser?.numEventsCreated >= numFreeEvents
       ) {
-        this.showUpgradeDialog = true
+        this.showUpgradeDialog({
+          type: upgradeDialogTypes.CREATE_EVENT,
+        })
         return
       }
 
@@ -363,7 +369,9 @@ export default {
         !this.isPremiumUser &&
         this.authUser?.numEventsCreated >= numFreeEvents
       ) {
-        this.showUpgradeDialog = true
+        this.showUpgradeDialog({
+          type: upgradeDialogTypes.CREATE_EVENT,
+        })
         return
       }
 
@@ -426,6 +434,11 @@ export default {
     },
     trackFeedbackClick() {
       this.$posthog.capture("give_feedback_button_clicked")
+    },
+    handleUpgradeDialogInput(value) {
+      if (!value) {
+        this.hideUpgradeDialog()
+      }
     },
   },
 

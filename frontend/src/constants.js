@@ -46,6 +46,12 @@ export const calendarTypes = Object.freeze({
   OUTLOOK: "outlook",
 })
 
+export const upgradeDialogTypes = Object.freeze({
+  CREATE_EVENT: "create-event",
+  SCHEDULE_EVENT: "schedule-event",
+  UPGRADE_MANUALLY: "upgrade-manually",
+})
+
 export const calendarOptionsDefaults = Object.freeze({
   bufferTime: {
     enabled: false,

@@ -969,12 +969,14 @@ import {
   getISODateString,
   getDateWithTimezone,
   timeNumToTimeString,
+  isPremiumUser,
 } from "@/utils"
 import {
   availabilityTypes,
   calendarOptionsDefaults,
   eventTypes,
   timeTypes,
+  upgradeDialogTypes,
 } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
 import UserAvatarContent from "@/components/UserAvatarContent.vue"
@@ -2235,7 +2237,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAuthUser"]),
-    ...mapActions(["showInfo", "showError"]),
+    ...mapActions(["showInfo", "showError", "showUpgradeDialog"]),
 
     // -----------------------------------
     //#region Date
@@ -3410,6 +3412,16 @@ export default {
     /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
+      // if (!isPremiumUser(this.authUser)) {
+      //   this.showUpgradeDialog({
+      //     type: upgradeDialogTypes.SCHEDULE_EVENT,
+      //     data: {
+      //       scheduledEvent: this.curScheduledEvent,
+      //     },
+      //   })
+      //   return
+      // }
+
       this.$posthog.capture("schedule_event_confirmed")
       // Get start date, and end date from the area that the user has dragged out
       const { col, row, numRows } = this.curScheduledEvent
@@ -4352,12 +4364,24 @@ export default {
     addEventListener("click", this.deselectRespondents)
   },
   mounted() {
+    // Get query parameters from URL
+    const urlParams = new URLSearchParams(window.location.search)
+
     // Set initial state
     if (
       this.event.hasSpecificTimes &&
       (this.fromEditEvent || !this.event.times || this.event.times.length === 0)
     ) {
       this.state = this.states.SET_SPECIFIC_TIMES
+    } else if (urlParams.get("scheduled_event")) {
+      const scheduledEvent = JSON.parse(urlParams.get("scheduled_event"))
+      this.curScheduledEvent = scheduledEvent
+      this.state = this.states.SCHEDULE_EVENT
+
+      // Remove the scheduled_event parameter from URL to avoid reloading the same state
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete("scheduled_event")
+      window.history.replaceState({}, document.title, newUrl.toString())
     } else if (this.showBestTimes) {
       this.state = "best_times"
     } else {

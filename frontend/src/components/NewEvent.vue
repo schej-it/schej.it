@@ -55,6 +55,7 @@
           solo
           @keyup.enter="blurNameField"
           :rules="nameRules"
+          autofocus
           required
         />
 
@@ -453,6 +454,7 @@ import {
   signInGoogle,
   getDateWithTimezone,
   getTimeOptions,
+  addEventToCreatedList,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
@@ -748,6 +750,11 @@ export default {
 
             posthogPayload.eventId = eventId
             this.$posthog?.capture("Event created", posthogPayload)
+
+            if (!this.authUser) {
+              // Add eventId to localStorage, so the user can claim it later
+              addEventToCreatedList(eventId)
+            }
           })
           .catch((err) => {
             this.showError(

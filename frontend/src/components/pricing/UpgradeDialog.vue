@@ -15,9 +15,27 @@
           >
         </h2>
         <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
-          You've run out of free events. Upgrade to create unlimited events.
-          <br class="tw-hidden sm:tw-block" />
-          Your payment helps us keep the site running.
+          <template
+            v-if="upgradeDialogType === upgradeDialogTypes.CREATE_EVENT"
+          >
+            You've run out of free events. Upgrade to create unlimited events.
+            <br class="tw-hidden sm:tw-block" />
+            Your payment helps us keep the site running.
+          </template>
+          <template
+            v-else-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
+          >
+            Upgrade to schedule events with Schej. Your payment helps us keep
+            the site running.
+          </template>
+          <template
+            v-else-if="
+              upgradeDialogType === upgradeDialogTypes.UPGRADE_MANUALLY
+            "
+          >
+            Create unlimited events with Schej Premium. Your payment helps us
+            keep the site running.
+          </template>
         </div>
         <!-- <ul
           class="tw-inline-block tw-space-y-0.5 tw-p-0 tw-text-sm tw-font-medium tw-text-very-dark-gray"
@@ -97,8 +115,13 @@
           </v-btn>
         </div>
         <div
-          class="tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green/20 tw-bg-white tw-p-4 tw-shadow-lg"
+          class="tw-relative tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green tw-bg-white tw-p-4 tw-shadow-lg"
         >
+          <div
+            class="tw-absolute -tw-top-3 tw-rounded-full tw-bg-light-green tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
+          >
+            Limited time offer
+          </div>
           <div
             class="tw-inline-block tw-w-fit tw-rounded tw-bg-light-green/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
           >
@@ -197,6 +220,7 @@
 <script>
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
+import { upgradeDialogTypes } from "@/constants"
 import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
 import StudentProofDialog from "./StudentProofDialog.vue"
 
@@ -224,7 +248,16 @@ export default {
   },
 
   computed: {
-    ...mapState(["featureFlagsLoaded", "pricingPageConversion", "authUser"]),
+    ...mapState([
+      "featureFlagsLoaded",
+      "pricingPageConversion",
+      "authUser",
+      "upgradeDialogType",
+      "upgradeDialogData",
+    ]),
+    upgradeDialogTypes() {
+      return upgradeDialogTypes
+    },
   },
 
   methods: {
@@ -234,7 +267,7 @@ export default {
       return "$" + Math.floor(price.unit_amount / 100)
     },
     async init() {
-      if (this.featureFlagsLoaded && this.authUser) {
+      if (this.featureFlagsLoaded) {
         if (!this.lifetimePrice || !this.monthlyPrice) {
           await this.fetchPrice()
         }
@@ -261,11 +294,19 @@ export default {
       })
       this.$set(this.loadingCheckoutUrl, price.id, true)
       try {
+        let originUrl = window.location.href
+        if (this.upgradeDialogData) {
+          if (this.upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT) {
+            originUrl = `${originUrl}?scheduled_event=${encodeURIComponent(
+              JSON.stringify(this.upgradeDialogData.scheduledEvent)
+            )}`
+          }
+        }
         const res = await post("/stripe/create-checkout-session", {
           priceId: price.id,
           userId: this.authUser._id,
           isSubscription: price.recurring !== null,
-          originUrl: window.location.href,
+          originUrl: originUrl,
         })
         window.location.href = res.url
       } catch (e) {
@@ -297,24 +338,21 @@ export default {
       },
       immediate: true,
     },
-    authUser: {
-      handler() {
-        this.init()
-      },
-    },
     value: {
       handler() {
         if (this.value) {
           post("/analytics/upgrade-dialog-viewed", {
-            userId: this.authUser._id,
+            userId: this.authUser?._id ?? this.$posthog?.get_distinct_id(),
             price: `${this.formattedPrice(
               this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
+            type: this.upgradeDialogType,
           })
           this.$posthog.capture("upgrade_dialog_viewed", {
             price: `${this.formattedPrice(
               this.monthlyPrice
             )}, ${this.formattedPrice(this.lifetimePrice)}`,
+            type: this.upgradeDialogType,
           })
         }
       },

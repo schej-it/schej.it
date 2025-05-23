@@ -25,6 +25,11 @@ export default new Vuex.Store({
 
     // Experiments
     pricingPageConversion: "control",
+
+    // Upgrade dialog
+    upgradeDialogVisible: false,
+    upgradeDialogType: null,
+    upgradeDialogData: null,
   },
   getters: {},
   mutations: {
@@ -67,6 +72,15 @@ export default new Vuex.Store({
     setEnablePaywall(state, enabled) {
       state.enablePaywall = enabled
     },
+    setUpgradeDialogVisible(state, visible) {
+      state.upgradeDialogVisible = visible
+    },
+    setUpgradeDialogType(state, type) {
+      state.upgradeDialogType = type
+    },
+    setUpgradeDialogData(state, data) {
+      state.upgradeDialogData = data
+    },
   },
   actions: {
     // Error & info
@@ -98,6 +112,16 @@ export default new Vuex.Store({
       } else {
         return null
       }
+    },
+    showUpgradeDialog({ commit }, { type, data = null }) {
+      commit("setUpgradeDialogVisible", true)
+      commit("setUpgradeDialogType", type)
+      commit("setUpgradeDialogData", data)
+    },
+    hideUpgradeDialog({ commit }) {
+      commit("setUpgradeDialogVisible", false)
+      commit("setUpgradeDialogType", null)
+      commit("setUpgradeDialogData", null)
     },
   },
   modules: {},

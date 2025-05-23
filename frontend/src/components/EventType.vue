@@ -12,9 +12,18 @@
             enablePaywall &&
             !isPremiumUser
           "
-          class="tw-text-sm tw-font-normal tw-text-very-dark-gray"
+          class="tw-flex tw-items-baseline tw-gap-2 tw-text-sm tw-font-normal tw-text-very-dark-gray"
         >
-          {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
+          <div>
+            {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
+            created
+          </div>
+          <div
+            class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-green tw-underline"
+            @click="openUpgradeDialog"
+          >
+            Upgrade
+          </div>
         </div>
       </div>
       <v-btn
@@ -87,8 +96,8 @@
 <script>
 import EventItem from "@/components/EventItem.vue"
 import FeatureNotReadyDialog from "@/components/FeatureNotReadyDialog.vue"
-import { numFreeEvents } from "@/constants"
-import { mapState } from "vuex"
+import { numFreeEvents, upgradeDialogTypes } from "@/constants"
+import { mapState, mapActions } from "vuex"
 import { isPremiumUser } from "@/utils"
 
 export default {
@@ -134,8 +143,14 @@ export default {
   },
 
   methods: {
+    ...mapActions(["showUpgradeDialog"]),
     toggleShowAll() {
       this.showAll = !this.showAll
+    },
+    openUpgradeDialog() {
+      this.showUpgradeDialog({
+        type: upgradeDialogTypes.UPGRADE_MANUALLY,
+      })
     },
     createFolder() {
       this.showFeatureNotReadyDialog = true
