@@ -51,7 +51,9 @@
             <div class="tw-font-medium">
               <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$15</span>
               <span class="tw-mr-1 tw-text-4xl">{{
-                formattedPrice(monthlyPrice)
+                isStudent
+                  ? formattedPrice(monthlyStudentPrice)
+                  : formattedPrice(monthlyPrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
@@ -70,10 +72,26 @@
             color="primary"
             outlined
             block
-            :dark="!loadingCheckoutUrl[monthlyPrice?.id]"
-            :disabled="loadingCheckoutUrl[monthlyPrice?.id]"
-            :loading="loadingCheckoutUrl[monthlyPrice?.id]"
-            @click="handleUpgrade(monthlyPrice)"
+            :dark="
+              isStudent
+                ? !loadingCheckoutUrl[monthlyStudentPrice?.id]
+                : !loadingCheckoutUrl[monthlyPrice?.id]
+            "
+            :disabled="
+              isStudent
+                ? loadingCheckoutUrl[monthlyStudentPrice?.id]
+                : loadingCheckoutUrl[monthlyPrice?.id]
+            "
+            :loading="
+              isStudent
+                ? loadingCheckoutUrl[monthlyStudentPrice?.id]
+                : loadingCheckoutUrl[monthlyPrice?.id]
+            "
+            @click="
+              isStudent
+                ? handleUpgrade(monthlyStudentPrice)
+                : handleUpgrade(monthlyPrice)
+            "
           >
             Upgrade
           </v-btn>
@@ -92,7 +110,9 @@
                 >$100</span
               >
               <span class="tw-mr-1 tw-text-4xl">{{
-                formattedPrice(lifetimePrice)
+                isStudent
+                  ? formattedPrice(lifetimeStudentPrice)
+                  : formattedPrice(lifetimePrice)
               }}</span>
               <span class="tw-text-dark-gray">USD</span>
             </div>
@@ -110,14 +130,44 @@
             class="tw-mb-0.5"
             color="primary"
             block
-            :dark="!loadingCheckoutUrl[lifetimePrice?.id]"
-            :disabled="loadingCheckoutUrl[lifetimePrice?.id]"
-            :loading="loadingCheckoutUrl[lifetimePrice?.id]"
-            @click="handleUpgrade(lifetimePrice)"
+            :dark="
+              isStudent
+                ? !loadingCheckoutUrl[lifetimeStudentPrice?.id]
+                : !loadingCheckoutUrl[lifetimePrice?.id]
+            "
+            :disabled="
+              isStudent
+                ? loadingCheckoutUrl[lifetimeStudentPrice?.id]
+                : loadingCheckoutUrl[lifetimePrice?.id]
+            "
+            :loading="
+              isStudent
+                ? loadingCheckoutUrl[lifetimeStudentPrice?.id]
+                : loadingCheckoutUrl[lifetimePrice?.id]
+            "
+            @click="
+              isStudent
+                ? handleUpgrade(lifetimeStudentPrice)
+                : handleUpgrade(lifetimePrice)
+            "
           >
             Upgrade
           </v-btn>
         </div>
+      </div>
+      <div class="tw-flex tw-w-full tw-items-center tw-justify-center tw-pb-4">
+        <v-checkbox
+          id="student-checkbox"
+          v-model="isStudent"
+          dense
+          hide-details
+        >
+        </v-checkbox>
+        <label
+          for="student-checkbox"
+          class="tw-cursor-pointer tw-select-none tw-text-sm tw-text-very-dark-gray"
+          >I'm a student</label
+        >
       </div>
       <div
         class="tw-flex tw-w-full tw-items-center tw-justify-center tw-gap-4 tw-text-center"
@@ -140,6 +190,7 @@
     </v-card>
 
     <AlreadyDonatedDialog v-model="showDonatedDialog" />
+    <StudentProofDialog v-model="showStudentProofDialog" />
   </v-dialog>
 </template>
 
@@ -147,11 +198,13 @@
 import { get, post } from "@/utils"
 import { mapState, mapActions } from "vuex"
 import AlreadyDonatedDialog from "./AlreadyDonatedDialog.vue"
+import StudentProofDialog from "./StudentProofDialog.vue"
 
 export default {
   name: "UpgradeDialog",
   components: {
     AlreadyDonatedDialog,
+    StudentProofDialog,
   },
   props: {
     value: { type: Boolean, required: true },
@@ -161,8 +214,12 @@ export default {
     return {
       monthlyPrice: null,
       lifetimePrice: null,
+      monthlyStudentPrice: null,
+      lifetimeStudentPrice: null,
       loadingCheckoutUrl: {},
       showDonatedDialog: false,
+      isStudent: false,
+      showStudentProofDialog: false,
     }
   },
 
@@ -185,11 +242,20 @@ export default {
     },
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
-      const { lifetime, monthly } = res
+      const { lifetime, monthly, lifetimeStudent, monthlyStudent } = res
       this.lifetimePrice = lifetime
       this.monthlyPrice = monthly
+      this.lifetimeStudentPrice = lifetimeStudent
+      this.monthlyStudentPrice = monthlyStudent
     },
     async handleUpgrade(price) {
+      // if (this.isStudent) {
+      //   this.showStudentProofDialog = true
+      //   this.$posthog.capture("student_upgrade_attempt", {
+      //     price: price,
+      //   })
+      //   return
+      // }
       this.$posthog.capture("upgrade_clicked", {
         price: this.formattedPrice(price),
       })
@@ -214,6 +280,17 @@ export default {
   },
 
   watch: {
+    isStudent: {
+      handler(val) {
+        if (val) {
+          this.$posthog.capture("student_pricing_viewed", {
+            prices: `${this.formattedPrice(
+              this.monthlyStudentPrice
+            )}, ${this.formattedPrice(this.lifetimeStudentPrice)}`,
+          })
+        }
+      },
+    },
     featureFlagsLoaded: {
       handler() {
         this.init()

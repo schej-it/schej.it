@@ -75,29 +75,36 @@
                   class="tw-cursor-pointer tw-border-b tw-border-dashed tw-border-dark-gray"
                   v-bind="attrs"
                   v-on="on"
-                  >calendar of choice</span
+                  >calendar</span
                 >
               </template>
               <span
-                >Schej currently supports Google Calendar,<br
-                  class="tw-hidden sm:tw-block"
-                />
+                >Schej allows you to autofill your availability from Google
+                Calendar,<br class="tw-hidden sm:tw-block" />
                 Outlook, and Apple Calendar</span
               > </v-tooltip
             >.
           </div>
         </div>
 
-        <v-btn
-          id="lets-schej-it-btn"
-          class="tw-mb-12 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
-          dark
-          @click="authUser ? openDashboard() : (newDialog = true)"
-          large
-          :x-large="$vuetify.breakpoint.mdAndUp"
-        >
-          {{ authUser ? "Open dashboard" : "Create event" }}
-        </v-btn>
+        <div class="tw-mb-12 tw-space-y-2">
+          <v-btn
+            id="lets-schej-it-btn"
+            class="tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
+            dark
+            @click="authUser ? openDashboard() : (newDialog = true)"
+            large
+            :x-large="$vuetify.breakpoint.mdAndUp"
+          >
+            {{ authUser ? "Open dashboard" : "Create event" }}
+          </v-btn>
+          <div
+            v-if="!authUser"
+            class="tw-text-center tw-text-xs tw-text-dark-gray sm:tw-text-sm"
+          >
+            It's free! No login required.
+          </div>
+        </div>
         <div class="tw-relative tw-w-full">
           <!-- Green background -->
           <div
@@ -206,12 +213,17 @@
               v-for="(comment, index) in redditComments"
               :key="index"
               class="tw-flex tw-flex-col tw-rounded-lg tw-bg-white tw-p-4 tw-shadow-md"
+              :class="{
+                'sm:tw-col-span-2 sm:tw-mx-auto sm:tw-max-w-md':
+                  redditComments.length % 2 !== 0 &&
+                  index === redditComments.length - 1,
+              }"
             >
               <div class="tw-flex tw-flex-1 tw-items-center">
-                <p
+                <div
                   class="reddit-comment tw-text-left tw-text-sm tw-text-very-dark-gray"
                   v-html="comment.text.replace(/\n/g, '<br />')"
-                ></p>
+                ></div>
               </div>
               <div
                 class="tw-my-4 tw-h-px tw-w-full tw-bg-light-gray-stroke"
@@ -263,12 +275,7 @@
     <SignInDialog v-model="signInDialog" @signIn="_signIn" />
 
     <!-- New event dialog -->
-    <NewDialog
-      v-model="newDialog"
-      :allow-notifications="false"
-      no-tabs
-      @signIn="signIn"
-    />
+    <NewDialog v-model="newDialog" no-tabs @signIn="signIn" />
 
     <!-- Add the dialog component -->
     <HowItWorksDialog
@@ -398,28 +405,35 @@ export default {
     ],
     redditComments: [
       {
-        text: "I LOVE this thing. Every aspect of it is so much better than when2meet and I can't for the life of myself understand why it's not exploding in popularity.\n\n<span class='rdt-h'>It's almost comically easy to schedule meetings with this tool.</span>\n\nThe developers are also constantly coming with new and improved features, and respond to emails - a huge green flag.",
+        text: "Genuinely the <span class='rdt-h'>best lightweight version of this kind of website</span> that I've come across so far, exceptional.",
+        author: "u/voipClock",
+        link: "https://www.reddit.com/r/opensource/comments/1klu471/comment/mt4l2ab",
+        picture:
+          "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png",
+      },
+      {
+        text: "It's almost <span class='rdt-h'>comically easy</span> to schedule meetings with Schej.",
         author: "u/stuffingmybrain",
         link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8rvty",
         picture:
           "https://styles.redditmedia.com/t5_qqojf/styles/profileIcon_snooa54a8eae-bc7f-406f-9778-b3b9dfb818e5-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=a0a91575ff7cfc3b6698cac69da6c012c7deb8d6",
       },
       {
-        text: "Been using this for all my D&D campaigns for a few months now. Literally a life saver, a time saver, and a brilliant piece of software. Schej is everything I've ever wanted and more.\n\nOn top of that, <span class='rdt-h'>community support is the best I've seen of any app or software, ever.</span>\n\nWith regular updates, quick response times, and two ears to the ground for community feedback and constant ways to improve, Schej is 11/5 ⭐️👩‍🍳😘👌",
+        text: "Schej is everything I've ever wanted and more. On top of that, <span class='rdt-h'>community support is the best I've seen</span> of any app or software, ever.",
         author: "u/DMODD",
         link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8udud",
         picture:
           "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_6.png",
       },
       {
-        text: "For Teachers looking to schedule online meetings and events with students outside regular class time: this works beautifully.\n\nThe key is the simplicity. It is very easy to get students to actually use this vs other products -since there is no login account required!\n\nWith it, <span class='rdt-h'>I'm very quickly able to figure out the optimal time</span> to schedule online extra help sessions before an exam.",
+        text: "With Schej, <span class='rdt-h'>I'm very quickly able to figure out the optimal time</span> to schedule online extra help sessions before an exam.",
         author: "u/crackwurst",
         link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb9dmbe",
         picture:
           "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_3.png",
       },
       {
-        text: "Exactly what I was looking for! Clear and clean interface, also on mobile (<span class='rdt-h'>Doodle is a disaster</span>).\n\nThe option to pick dates without times and spanning multiple months is a game changer.\n\nThank you!",
+        text: "Exactly what I was looking for! Clear and clean interface, also on mobile (<span class='rdt-h'>Doodle is a disaster</span>).",
         author: "u/Willem1976",
         link: "https://www.reddit.com/r/opensource/comments/1dlol7r/comment/lkn7sle",
         picture:

@@ -97,9 +97,11 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 			Summary string `json:"summary"`
 			Start   struct {
 				DateTime time.Time `json:"dateTime" binding:"required"`
+				Date     string    `json:"date"`
 			} `json:"start"`
 			End struct {
 				DateTime time.Time `json:"dateTime" binding:"required"`
+				Date     string    `json:"date"`
 			} `json:"end"`
 			Transparency string     `json:"transparency"`
 			Attendees    []Attendee `json:"attendees"`
@@ -121,10 +123,15 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 	// Format response to return
 	calendarEvents := make([]models.CalendarEvent, 0)
 	for _, item := range res.Items {
-		// Don't include events that are all day events
-		// Don't include events that are greater than 24 hours
-		if item.Start.DateTime.IsZero() || item.End.DateTime.Sub(item.Start.DateTime).Hours() >= 24 {
-			continue
+		startDate := item.Start.DateTime
+		endDate := item.End.DateTime
+		allDay := false
+
+		// Handle all day events
+		if item.Start.DateTime.IsZero() {
+			startDate, _ = time.Parse(time.DateOnly, item.Start.Date)
+			endDate, _ = time.Parse(time.DateOnly, item.End.Date)
+			allDay = true
 		}
 
 		// Determine if user is free during this event
@@ -143,9 +150,10 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 			Id:         item.Id,
 			CalendarId: calendarId,
 			Summary:    item.Summary,
-			StartDate:  primitive.NewDateTimeFromTime(item.Start.DateTime),
-			EndDate:    primitive.NewDateTimeFromTime(item.End.DateTime),
+			StartDate:  primitive.NewDateTimeFromTime(startDate),
+			EndDate:    primitive.NewDateTimeFromTime(endDate),
 			Free:       free,
+			AllDay:     allDay,
 		}
 		calendarEvents = append(calendarEvents, calendarEvent)
 	}
