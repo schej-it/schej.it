@@ -3412,15 +3412,15 @@ export default {
     /** Redirect user to Google Calendar to finish the creation of the event */
     confirmScheduleEvent() {
       if (!this.curScheduledEvent) return
-      if (!isPremiumUser(this.authUser)) {
-        this.showUpgradeDialog({
-          type: upgradeDialogTypes.SCHEDULE_EVENT,
-          data: {
-            scheduledEvent: this.curScheduledEvent,
-          },
-        })
-        return
-      }
+      // if (!isPremiumUser(this.authUser)) {
+      //   this.showUpgradeDialog({
+      //     type: upgradeDialogTypes.SCHEDULE_EVENT,
+      //     data: {
+      //       scheduledEvent: this.curScheduledEvent,
+      //     },
+      //   })
+      //   return
+      // }
 
       this.$posthog.capture("schedule_event_confirmed")
       // Get start date, and end date from the area that the user has dragged out
