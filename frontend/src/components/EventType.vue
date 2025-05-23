@@ -12,9 +12,17 @@
             enablePaywall &&
             !isPremiumUser
           "
-          class="tw-text-sm tw-font-normal tw-text-very-dark-gray"
+          class="tw-flex tw-items-center tw-gap-2 tw-text-sm tw-font-normal tw-text-very-dark-gray"
         >
-          {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
+          <div>
+            {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
+          </div>
+          <div
+            class="tw-text-xs tw-font-medium tw-text-green"
+            @click="openUpgradeDialog"
+          >
+            Upgrade
+          </div>
         </div>
       </div>
       <v-btn
@@ -136,6 +144,9 @@ export default {
   methods: {
     toggleShowAll() {
       this.showAll = !this.showAll
+    },
+    openUpgradeDialog() {
+      this.$emit("openUpgradeDialog")
     },
     createFolder() {
       this.showFeatureNotReadyDialog = true
