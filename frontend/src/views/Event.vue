@@ -233,15 +233,10 @@
           </div>
         </div>
 
-        <!-- Description -->
-        <EventDescription
-          :event.sync="event"
-          :canEdit="event.ownerId != 0 && canEdit"
-        />
       </div>
 
       <!-- Calendar -->
-
+      
       <ScheduleOverlap
         ref="scheduleOverlap"
         :event="event"
@@ -262,6 +257,14 @@
         @setCurGuestId="(id) => (curGuestId = id)"
         @signUpForBlock="initiateSignUpFlow"
       />
+
+      <!-- Description -->
+      <div v-if="!isSettingSpecificTimes" class="tw-mx-4 tw-mt-4">
+        <EventDescription
+          :event.sync="event"
+          :canEdit="event.ownerId != 0 && canEdit"
+        />
+      </div>
     </div>
 
     <template v-if="showFeedbackBtn">
