@@ -75,29 +75,36 @@
                   class="tw-cursor-pointer tw-border-b tw-border-dashed tw-border-dark-gray"
                   v-bind="attrs"
                   v-on="on"
-                  >calendar of choice</span
+                  >calendar</span
                 >
               </template>
               <span
-                >Schej currently supports Google Calendar,<br
-                  class="tw-hidden sm:tw-block"
-                />
+                >Schej allows you to autofill your availability from Google
+                Calendar,<br class="tw-hidden sm:tw-block" />
                 Outlook, and Apple Calendar</span
               > </v-tooltip
             >.
           </div>
         </div>
 
-        <v-btn
-          id="lets-schej-it-btn"
-          class="tw-mb-12 tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
-          dark
-          @click="authUser ? openDashboard() : (newDialog = true)"
-          large
-          :x-large="$vuetify.breakpoint.mdAndUp"
-        >
-          {{ authUser ? "Open dashboard" : "Create event" }}
-        </v-btn>
+        <div class="tw-mb-12 tw-space-y-2">
+          <v-btn
+            id="lets-schej-it-btn"
+            class="tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
+            dark
+            @click="authUser ? openDashboard() : (newDialog = true)"
+            large
+            :x-large="$vuetify.breakpoint.mdAndUp"
+          >
+            {{ authUser ? "Open dashboard" : "Create event" }}
+          </v-btn>
+          <div
+            v-if="!authUser"
+            class="tw-text-center tw-text-xs tw-text-dark-gray sm:tw-text-sm"
+          >
+            It's free! No login required.
+          </div>
+        </div>
         <div class="tw-relative tw-w-full">
           <!-- Green background -->
           <div
@@ -268,12 +275,7 @@
     <SignInDialog v-model="signInDialog" @signIn="_signIn" />
 
     <!-- New event dialog -->
-    <NewDialog
-      v-model="newDialog"
-      :allow-notifications="false"
-      no-tabs
-      @signIn="signIn"
-    />
+    <NewDialog v-model="newDialog" no-tabs @signIn="signIn" />
 
     <!-- Add the dialog component -->
     <HowItWorksDialog

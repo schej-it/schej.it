@@ -17,22 +17,15 @@
           {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
         </div>
       </div>
-      <div
+      <v-btn
         v-if="eventType.header === 'Events I created'"
-        class="tw-hidden tw-flex-row tw-items-center tw-gap-2 sm:tw-flex"
+        text
+        @click="createFolder"
+        class="tw-hidden tw-text-very-dark-gray sm:tw-block"
       >
-        <div
-          @click="showW2MDialog = true"
-          class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
-        >
-          Convert When2meet to Schej
-        </div>
-        <div
-          class="tw-rounded-md tw-bg-green tw-px-2 tw-py-1 tw-text-xs tw-text-white"
-        >
-          NEW
-        </div>
-      </div>
+        <v-icon class="tw-mr-2 tw-text-lg">mdi-folder-plus</v-icon>
+        New folder
+      </v-btn>
       <div
         v-if="eventType.events.length > defaultNumEventsToShow"
         @click="toggleShowAll"
@@ -87,24 +80,23 @@
         }}<v-icon :class="showAll && 'tw-rotate-180'">mdi-chevron-down</v-icon>
       </div>
     </div>
-    <!-- Add the dialog component -->
-    <When2meetImportDialog v-model="showW2MDialog" />
+    <FeatureNotReadyDialog v-model="showFeatureNotReadyDialog" />
   </div>
 </template>
 
 <script>
 import EventItem from "@/components/EventItem.vue"
+import FeatureNotReadyDialog from "@/components/FeatureNotReadyDialog.vue"
 import { numFreeEvents } from "@/constants"
 import { mapState } from "vuex"
 import { isPremiumUser } from "@/utils"
-import When2meetImportDialog from "@/components/When2meetImportDialog.vue"
 
 export default {
   name: "EventType",
 
   components: {
     EventItem,
-    When2meetImportDialog,
+    FeatureNotReadyDialog,
   },
 
   props: {
@@ -112,10 +104,12 @@ export default {
     emptyText: { type: String, default: "" },
   },
 
-  data: () => ({
-    showAll: false,
-    showW2MDialog: false,
-  }),
+  data() {
+    return {
+      showFeatureNotReadyDialog: false,
+      showAll: false,
+    }
+  },
 
   computed: {
     ...mapState(["authUser", "enablePaywall"]),
@@ -142,6 +136,10 @@ export default {
   methods: {
     toggleShowAll() {
       this.showAll = !this.showAll
+    },
+    createFolder() {
+      this.showFeatureNotReadyDialog = true
+      this.$posthog?.capture("create_folder_clicked")
     },
   },
 }

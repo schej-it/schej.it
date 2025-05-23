@@ -571,6 +571,10 @@ export const processTimeBlocks = (
           calendarEvent = { ...calendarEvent, startDate: start }
         }
         if (rangeEndWithinCalendarEvent) {
+          // If the calendar event potentially goes to the next day, we need to add a new time block for it (this is mostly for all day events spanning multiple days)
+          const calendarEventToAdd = { ...calendarEvent, startDate: end }
+          timeBlocks.splice(0, 0, calendarEventToAdd)
+          timeBlocks.sort((a, b) => dateCompare(a.startDate, b.startDate))
           // Clamp calendarEvent end
           calendarEvent = { ...calendarEvent, endDate: end }
         }

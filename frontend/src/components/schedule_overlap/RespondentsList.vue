@@ -153,7 +153,7 @@
                   @click="(e) => $emit('clickRespondent', e, user._id)"
                   color="primary"
                   :value="respondentSelected(user._id)"
-                  class="tw-absolute -tw-top-[2px] tw-left-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100"
+                  class="tw-absolute -tw-top-[2px] tw-left-0 tw-bg-white tw-opacity-0 group-hover:tw-opacity-100 group-[&:has(.email-hover-target:hover)]:!tw-opacity-0"
                   :class="
                     respondentSelected(user._id)
                       ? 'tw-opacity-100'
@@ -161,24 +161,31 @@
                   "
                 />
               </div>
-              <div
-                class="tw-mr-1 tw-transition-all"
-                :class="respondentClass(user._id)"
-              >
-                {{
-                  user.firstName +
-                  " " +
-                  user.lastName +
-                  (respondentIfNeeded(user._id) ? "*" : "")
-                }}
+              <div class="tw-flex tw-flex-col">
+                <div
+                  class="tw-mr-1 tw-transition-all"
+                  :class="respondentClass(user._id)"
+                >
+                  {{
+                    user.firstName +
+                    " " +
+                    user.lastName +
+                    (respondentIfNeeded(user._id) ? "*" : "")
+                  }}
+                </div>
+                <div
+                  v-if="isOwner && event.collectEmails"
+                  class="email-hover-target tw-flex tw-items-center tw-rounded-sm tw-p-px tw-text-xs tw-text-dark-gray tw-transition-all hover:tw-bg-light-gray"
+                  :class="respondentClass(user._id)"
+                  @mouseover.stop
+                  @click.stop="copyEmailToClipboard(user.email)"
+                >
+                  {{ user.email }}
+                  <v-icon class="tw-ml-1 tw-text-xs">mdi-content-copy</v-icon>
+                </div>
               </div>
-
-              <!-- <div v-if="isGroup" class="tw-ml-1">
-              <v-icon small class="tw-text-green">mdi-calendar-check</v-icon>
-            </div> -->
-
               <div
-                class="tw-absolute tw-right-0 tw-opacity-0 tw-transition-none group-hover:tw-opacity-100"
+                class="tw-absolute tw-right-0 tw-opacity-0 tw-transition-none group-hover:tw-opacity-100 group-[&:has(.email-hover-target:hover)]:!tw-opacity-0"
               >
                 <v-btn
                   v-if="isGuest(user)"
@@ -736,6 +743,16 @@ export default {
         this.desktopMaxHeight = window.innerHeight - top - 32
       } else {
         this.desktopMaxHeight = 0
+      }
+    },
+    /** Copies the given email to the clipboard */
+    async copyEmailToClipboard(email) {
+      try {
+        await navigator.clipboard.writeText(email)
+        this.showInfo("Email copied to clipboard!")
+      } catch (err) {
+        console.error("Failed to copy email: ", err)
+        this.showError("Failed to copy email.")
       }
     },
   },

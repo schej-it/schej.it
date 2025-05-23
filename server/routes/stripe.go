@@ -117,6 +117,8 @@ func getPrice(c *gin.Context) {
 	// exp := c.Query("exp")
 	monthlyPriceId := os.Getenv("STRIPE_MONTHLY_PRICE_ID")
 	lifetimePriceId := os.Getenv("STRIPE_LIFETIME_PRICE_ID")
+	monthlyStudentPriceId := os.Getenv("STRIPE_MONTHLY_STUDENT_PRICE_ID")
+	lifetimeStudentPriceId := os.Getenv("STRIPE_LIFETIME_STUDENT_PRICE_ID")
 
 	// switch exp {
 	// case "test2":
@@ -142,7 +144,21 @@ func getPrice(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"lifetime": lifetimeResult, "monthly": monthlyResult})
+	monthlyStudentResult, err := price.Get(monthlyStudentPriceId, params)
+	if err != nil {
+		log.Printf("price.Get error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
+		return
+	}
+
+	lifetimeStudentResult, err := price.Get(lifetimeStudentPriceId, params)
+	if err != nil {
+		log.Printf("price.Get error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch price"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"lifetime": lifetimeResult, "monthly": monthlyResult, "lifetimeStudent": lifetimeStudentResult, "monthlyStudent": monthlyStudentResult})
 }
 
 type FulfillCheckoutPayload struct {
@@ -202,6 +218,10 @@ func _fulfillCheckout(sessionId string) {
 						priceDescription = "lifetime"
 					} else if priceId == os.Getenv("STRIPE_MONTHLY_PRICE_ID") {
 						priceDescription = "monthly"
+					} else if priceId == os.Getenv("STRIPE_LIFETIME_STUDENT_PRICE_ID") {
+						priceDescription = "lifetime student"
+					} else if priceId == os.Getenv("STRIPE_MONTHLY_STUDENT_PRICE_ID") {
+						priceDescription = "monthly student"
 					}
 					amountTotal := float32(cs.LineItems.Data[0].AmountTotal) / 100.0
 

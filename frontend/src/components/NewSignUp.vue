@@ -160,12 +160,7 @@
           </v-expand-transition>
         </div>
 
-        <v-checkbox
-          v-if="allowNotifications"
-          v-model="notificationsEnabled"
-          hide-details
-          class="tw-mt-2"
-        >
+        <v-checkbox v-model="notificationsEnabled" hide-details class="tw-mt-2">
           <template v-slot:label>
             <span class="tw-text-sm tw-text-very-dark-gray"
               >Email me each time someone signs up</span
@@ -382,7 +377,6 @@ export default {
     event: { type: Object },
     edit: { type: Boolean, default: false },
     dialog: { type: Boolean, default: true },
-    allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     showHelp: { type: Boolean, default: false },
   },

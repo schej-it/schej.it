@@ -20,8 +20,10 @@
             :tab-value="t.type"
             text
             small
-            @click="() => tab = t.type"
-            :class="`tw-text-xs tw-text-dark-gray tw-transition-all ${t.type == tab ? 'tw-text-green tw-bg-ligher-green' : ''}`"
+            @click="() => (tab = t.type)"
+            :class="`tw-text-xs tw-text-dark-gray tw-transition-all ${
+              t.type == tab ? 'tw-bg-ligher-green tw-text-green' : ''
+            }`"
           >
             {{ t.title }}
           </v-btn>
@@ -44,7 +46,6 @@
           key="event"
           :event="event"
           :edit="edit"
-          :allow-notifications="allowNotifications"
           @input="handleDialogInput"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
@@ -66,7 +67,6 @@
           key="signup"
           :event="event"
           :edit="edit"
-          :allow-notifications="allowNotifications"
           @input="handleDialogInput"
           :contactsPayload="this.type == 'signup' ? contactsPayload : {}"
           :show-help="!_noTabs"
@@ -94,7 +94,6 @@ export default {
     type: { type: String, default: "event" }, // Either "event" or "group"
     event: { type: Object },
     edit: { type: Boolean, default: false },
-    allowNotifications: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     noTabs: { type: Boolean, default: false },
   },
@@ -164,9 +163,7 @@ export default {
     signUpFormEnabled: {
       immediate: true,
       handler() {
-        this.tabs = [
-          { title: "Event", type: "event" },
-        ]
+        this.tabs = [{ title: "Event", type: "event" }]
         if (this.signUpFormEnabled) {
           this.tabs.push({ title: "Sign up form", type: "signup" })
         }
