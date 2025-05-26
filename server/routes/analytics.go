@@ -2,6 +2,7 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"schej.it/server/db"
 	"schej.it/server/models"
 	"schej.it/server/slackbot"
@@ -36,6 +38,9 @@ func InitAnalytics(router *gin.RouterGroup) {
 	analyticsRouter.POST("/scanned-poster", scannedPoster)
 	analyticsRouter.POST("/upgrade-dialog-viewed", upgradeDialogViewed)
 	analyticsRouter.GET("/monthly-active-event-creators", AnalyticsBasicAuth(), getMonthlyActiveEventCreators)
+	analyticsRouter.POST("/upgrade-user", AnalyticsBasicAuth(), upgradeUser)
+	analyticsRouter.POST("/downgrade-user", AnalyticsBasicAuth(), downgradeUser)
+	analyticsRouter.GET("/user/:email", AnalyticsBasicAuth(), getUserByEmail)
 }
 
 // @Summary Notifies us when poster QR code has been scanned
@@ -176,4 +181,71 @@ func getMonthlyActiveEventCreators(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, results)
+}
+
+// @Summary Upgrades the specified user to Schej Premium
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string} true "Object containing the user email"
+// @Success 200
+// @Router /analytics/upgrade-user [post]
+func upgradeUser(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	user := db.GetUserByEmail(payload.Email)
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	stripeCustomerId := "premium"
+	user.StripeCustomerId = &stripeCustomerId
+	db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": user.Id}, bson.M{"$set": user})
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Downgrades the specified user to Schej Free
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param payload body object{email=string} true "Object containing the user email"
+// @Success 200
+// @Router /analytics/downgrade-user [post]
+func downgradeUser(c *gin.Context) {
+	payload := struct {
+		Email string `json:"email" binding:"required"`
+	}{}
+	if err := c.BindJSON(&payload); err != nil {
+		return
+	}
+
+	user := db.GetUserByEmail(payload.Email)
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	db.UsersCollection.UpdateOne(context.Background(), bson.M{"_id": user.Id}, bson.M{"$unset": bson.M{"stripeCustomerId": ""}})
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Gets the user by email
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param email path string true "User email"
+// @Success 200 {object} models.User
+// @Router /analytics/user/{email} [get]
+func getUserByEmail(c *gin.Context) {
+	email := c.Param("email")
+	user := db.GetUserByEmail(email)
+	c.JSON(http.StatusOK, user)
 }
