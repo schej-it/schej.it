@@ -55,6 +55,29 @@
         </ul> -->
       </div>
       <div
+        v-if="isStudent"
+        class="tw-mb-8 tw-rounded-lg tw-border tw-border-light-gray-stroke tw-p-4"
+      >
+        <div class="tw-mb-4 tw-text-sm tw-font-medium tw-text-dark-gray">
+          Schej is free for students! But you have to prove it. And make sure to
+          spread Schej to as many of your friends as possible. Pinky promise.
+        </div>
+        <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
+          Email
+          <span class="tw-font-medium tw-text-green tw-underline"
+            >schej.team@gmail.com</span
+          >
+          from your student email with:
+          <ul class="tw-list-decimal tw-py-4 tw-pl-4">
+            <li>Email address you use for Schej</li>
+            <li>Proof of enrollment</li>
+          </ul>
+          and we'll get back to you within 24 hours (but probably sooner). The
+          subject of your email should be "I AM A STUDENT".
+        </div>
+      </div>
+      <div
+        v-else
         class="tw-mb-8 tw-flex tw-flex-col tw-gap-1 sm:tw-flex-row sm:tw-gap-4"
       >
         <div
@@ -325,9 +348,7 @@ export default {
       handler(val) {
         if (val) {
           this.$posthog.capture("student_pricing_viewed", {
-            prices: `${this.formattedPrice(
-              this.monthlyStudentPrice
-            )}, ${this.formattedPrice(this.lifetimeStudentPrice)}`,
+            prices: `FREE`,
           })
         }
       },
