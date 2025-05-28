@@ -81,6 +81,7 @@
         class="tw-mb-8 tw-flex tw-flex-col tw-gap-1 sm:tw-flex-row sm:tw-gap-4"
       >
         <div
+          v-if="showMonthly"
           class="tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green/20 tw-p-4"
         >
           <div
@@ -106,7 +107,7 @@
             </v-fade-transition>
           </div>
           <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
-            Billed monthly.<br />Cancel anytime.
+            Per month.<br />Billed monthly.
           </div>
           <v-btn
             class="tw-mb-0.5"
@@ -138,6 +139,51 @@
           </v-btn>
         </div>
         <div
+          v-if="showYearly"
+          class="tw-relative tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green tw-bg-white tw-p-4 tw-shadow-lg"
+        >
+          <div
+            class="tw-absolute -tw-top-3 tw-rounded-full tw-bg-light-green tw-px-2 tw-py-0.5 tw-text-xs tw-font-medium tw-text-white"
+          >
+            Save {{ yearlyDiscount }}%
+          </div>
+          <div
+            class="tw-inline-block tw-w-fit tw-rounded tw-bg-light-green/10 tw-px-2 tw-py-1 tw-text-sm tw-font-medium tw-text-light-green"
+          >
+            Yearly
+          </div>
+          <div class="tw-relative">
+            <div class="tw-font-medium">
+              <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$9</span>
+              <span class="tw-mr-1 tw-text-4xl">{{
+                formattedPrice(yearlyPrice)
+              }}</span>
+              <span class="tw-text-dark-gray">USD</span>
+            </div>
+            <v-fade-transition>
+              <div
+                v-if="lifetimePrice === null"
+                class="tw-absolute tw-left-0 tw-top-0 tw-h-full tw-w-full tw-bg-white"
+              ></div>
+            </v-fade-transition>
+          </div>
+          <div class="tw-mb-4 tw-text-center tw-text-sm tw-text-very-dark-gray">
+            Per month.<br />Billed annually.
+          </div>
+          <v-btn
+            class="tw-mb-0.5"
+            color="primary"
+            block
+            :dark="!loadingCheckoutUrl[yearlyPrice?.id]"
+            :disabled="loadingCheckoutUrl[yearlyPrice?.id]"
+            :loading="loadingCheckoutUrl[yearlyPrice?.id]"
+            @click="handleUpgrade(yearlyPrice)"
+          >
+            Upgrade
+          </v-btn>
+        </div>
+        <div
+          v-if="showLifetime"
           class="tw-relative tw-flex tw-flex-1 tw-flex-col tw-items-center tw-gap-2 tw-rounded-lg tw-border tw-border-light-green tw-bg-white tw-p-4 tw-shadow-lg"
         >
           <div
@@ -259,14 +305,19 @@ export default {
 
   data() {
     return {
-      monthlyPrice: null,
       lifetimePrice: null,
+      monthlyPrice: null,
+      yearlyPrice: null,
       monthlyStudentPrice: null,
       lifetimeStudentPrice: null,
       loadingCheckoutUrl: {},
       showDonatedDialog: false,
       isStudent: false,
       showStudentProofDialog: false,
+
+      showMonthly: true,
+      showYearly: true,
+      showLifetime: false,
     }
   },
 
@@ -281,13 +332,45 @@ export default {
     upgradeDialogTypes() {
       return upgradeDialogTypes
     },
+    yearlyDiscount() {
+      if (!this.yearlyPrice || !this.monthlyPrice) return 0
+      return (
+        100 -
+        Math.round(
+          (this.yearlyPrice.unit_amount / 12 / this.monthlyPrice.unit_amount) *
+            100
+        )
+      )
+    },
+    pricesShown() {
+      let pricesShown = []
+      if (this.showMonthly) {
+        pricesShown.push(
+          `MONTHLY: ${this.formattedPrice(this.monthlyPrice)}/mo`
+        )
+      }
+      if (this.showYearly) {
+        pricesShown.push(`YEARLY: ${this.formattedPrice(this.yearlyPrice)}/mo`)
+      }
+      if (this.showLifetime) {
+        pricesShown.push(`LIFETIME: ${this.formattedPrice(this.lifetimePrice)}`)
+      }
+      return pricesShown.join(", ")
+    },
   },
 
   methods: {
     ...mapActions(["showError"]),
     formattedPrice(price) {
       if (!price) return ""
-      return "$" + Math.floor(price.unit_amount / 100)
+      let unitAmount = price.unit_amount / 100
+      if (price.recurring?.interval === "year") {
+        unitAmount = Math.round((price.unit_amount / 100 / 12) * 100) / 100
+      }
+      return (
+        "$" +
+        (unitAmount % 1 === 0 ? unitAmount.toFixed(0) : unitAmount.toFixed(2))
+      )
     },
     async init() {
       if (this.featureFlagsLoaded) {
@@ -298,11 +381,13 @@ export default {
     },
     async fetchPrice() {
       const res = await get("/stripe/price?exp=" + this.pricingPageConversion)
-      const { lifetime, monthly, lifetimeStudent, monthlyStudent } = res
+      const { lifetime, monthly, yearly, lifetimeStudent, monthlyStudent } = res
       this.lifetimePrice = lifetime
       this.monthlyPrice = monthly
+      this.yearlyPrice = yearly
       this.lifetimeStudentPrice = lifetimeStudent
       this.monthlyStudentPrice = monthlyStudent
+      console.log(res)
     },
     async handleUpgrade(price) {
       // if (this.isStudent) {
@@ -364,15 +449,11 @@ export default {
         if (this.value) {
           post("/analytics/upgrade-dialog-viewed", {
             userId: this.authUser?._id ?? this.$posthog?.get_distinct_id(),
-            price: `${this.formattedPrice(
-              this.monthlyPrice
-            )}, ${this.formattedPrice(this.lifetimePrice)}`,
+            price: this.pricesShown,
             type: this.upgradeDialogType,
           })
           this.$posthog.capture("upgrade_dialog_viewed", {
-            price: `${this.formattedPrice(
-              this.monthlyPrice
-            )}, ${this.formattedPrice(this.lifetimePrice)}`,
+            price: this.pricesShown,
             type: this.upgradeDialogType,
           })
         }
