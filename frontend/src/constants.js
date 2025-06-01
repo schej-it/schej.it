@@ -52,6 +52,12 @@ export const upgradeDialogTypes = Object.freeze({
   UPGRADE_MANUALLY: "upgrade-manually",
 })
 
+export const timeslotDurations = Object.freeze({
+  FIFTEEN_MINUTES: 15,
+  THIRTY_MINUTES: 30,
+  ONE_HOUR: 60,
+})
+
 export const calendarOptionsDefaults = Object.freeze({
   bufferTime: {
     enabled: false,
