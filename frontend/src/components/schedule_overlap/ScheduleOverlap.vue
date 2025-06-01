@@ -2970,11 +2970,11 @@ export default {
             date.getTime() - this.timezoneOffset * 60 * 1000
           )
           const fractionalTime = localDate.getMinutes()
-          if (fractionalTime === 15) {
-            classStyle.class += "tw-border-b "
-            classStyle.style.borderBottomStyle = "dashed"
-          } else if (fractionalTime === 45) {
-            classStyle.class += "tw-border-b "
+          if (fractionalTime === 0) {
+            classStyle.class += "tw-border-t "
+          } else if (fractionalTime === 30) {
+            classStyle.class += "tw-border-t "
+            classStyle.style.borderTopStyle = "dashed"
           }
         }
 
