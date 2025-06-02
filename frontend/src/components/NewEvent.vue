@@ -283,6 +283,17 @@
             :auto-scroll="dialog"
           >
             <div class="tw-flex tw-flex-col tw-gap-5 tw-pt-2">
+              <div v-if="!edit" class="tw-flex tw-items-center tw-gap-x-2">
+                <div class="tw-text-sm tw-text-black">Time increment:</div>
+                <v-select
+                  v-model="timeIncrement"
+                  dense
+                  class="-tw-mt-[2px] tw-w-24 tw-grow-0 tw-text-sm"
+                  menu-props="auto"
+                  hide-details
+                  :items="timeIncrementItems"
+                ></v-select>
+              </div>
               <v-checkbox
                 v-if="authUser && !guestEvent"
                 v-model="collectEmails"
@@ -529,6 +540,7 @@ export default {
 
     // Advanced options
     showAdvancedOptions: false,
+    timeIncrement: 15,
     collectEmails: false,
     blindAvailabilityEnabled: false,
     timezone: {},
@@ -605,6 +617,13 @@ export default {
     },
     guestEvent() {
       return this.event && this.event.ownerId == guestUserId
+    },
+    timeIncrementItems() {
+      return [
+        { text: "15 min", value: 15 },
+        { text: "30 min", value: 30 },
+        { text: "60 min", value: 60 },
+      ]
     },
   },
 
@@ -711,6 +730,7 @@ export default {
           : -1,
         collectEmails: this.collectEmails,
         startOnMonday: this.startOnMonday,
+        timeIncrement: this.timeIncrement,
         creatorPosthogId: this.$posthog?.get_distinct_id(),
       }
 
@@ -731,6 +751,7 @@ export default {
           : -1,
         eventCollectEmails: this.collectEmails,
         eventStartOnMonday: this.startOnMonday,
+        eventTimeIncrement: this.timeIncrement,
       }
 
       if (!this.edit) {
@@ -850,6 +871,7 @@ export default {
         this.specificTimesEnabled = this.event.hasSpecificTimes
         this.startOnMonday = this.event.startOnMonday
         this.collectEmails = this.event.collectEmails
+        this.timeIncrement = this.event.timeIncrement ?? 15
 
         if (
           this.event.sendEmailAfterXResponses !== null &&
@@ -915,6 +937,7 @@ export default {
         blindAvailabilityEnabled: this.blindAvailabilityEnabled,
         sendEmailAfterXResponsesEnabled: this.sendEmailAfterXResponsesEnabled,
         sendEmailAfterXResponses: this.sendEmailAfterXResponses,
+        timeIncrement: this.timeIncrement,
       }
     },
     hasEventBeenEdited() {
