@@ -2617,7 +2617,10 @@ export default {
         const date = day.dateObject
 
         if (includeTouchedAvailability) {
-          const endDate = getDateHoursOffset(date, this.times.length / 4)
+          const endDate = getDateHoursOffset(
+            date,
+            this.times.length * (this.timeslotDuration / 60)
+          )
 
           // Check if manual availability has been added for the current date
           let manualAvailabilityAdded = false
@@ -2674,7 +2677,10 @@ export default {
         for (let j = 0; j < this.times.length; ++j) {
           const startDate = this.getDateFromDayTimeIndex(i, j)
           if (!startDate) continue
-          const endDate = getDateHoursOffset(startDate, 0.25)
+          const endDate = getDateHoursOffset(
+            startDate,
+            this.timeslotDuration / 60
+          )
 
           // Working hours
           if (calendarOptions.workingHours.enabled) {
