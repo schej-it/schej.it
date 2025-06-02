@@ -1040,8 +1040,6 @@ export default {
   },
   data() {
     return {
-      timeslotDuration: timeslotDurations.FIFTEEN_MINUTES,
-
       states: {
         HEATMAP: "heatmap", // Display heatmap of availabilities
         SINGLE_AVAILABILITY: "single_availability", // Show one person's availability
@@ -1936,6 +1934,9 @@ export default {
     /** Returns the times that are encompassed by startTime and endTime */
     times() {
       return [...this.splitTimes[1], ...this.splitTimes[0]]
+    },
+    timeslotDuration() {
+      return this.event.timeIncrement ?? timeslotDurations.FIFTEEN_MINUTES
     },
     timeslotHeight() {
       if (this.timeslotDuration === timeslotDurations.FIFTEEN_MINUTES) {
