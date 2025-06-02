@@ -54,6 +54,7 @@ type Event struct {
 	SendEmailAfterXResponses *int                 `json:"sendEmailAfterXResponses" bson:"sendEmailAfterXResponses,omitempty"`
 	When2meetHref            *string              `json:"when2meetHref" bson:"when2meetHref,omitempty"`
 	CollectEmails            *bool                `json:"collectEmails" bson:"collectEmails,omitempty"`
+	TimeIncrement            *int                 `json:"timeIncrement" bson:"timeIncrement,omitempty"`
 
 	// Used for specific times for specific dates feature
 	HasSpecificTimes *bool                `json:"hasSpecificTimes" bson:"hasSpecificTimes,omitempty"`

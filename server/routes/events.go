@@ -44,7 +44,7 @@ func InitEvents(router *gin.RouterGroup) {
 // @Tags events
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,isSignUpForm=bool,signUpBlocks=[]models.SignUpBlock,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,when2meetHref=string,attendees=[]string} true "Object containing info about the event to create"
+// @Param payload body object{name=string,duration=float32,dates=[]string,type=models.EventType,isSignUpForm=bool,signUpBlocks=[]models.SignUpBlock,notificationsEnabled=bool,blindAvailabilityEnabled=bool,daysOnly=bool,remindees=[]string,sendEmailAfterXResponses=int,when2meetHref=string,timeIncrement=int,attendees=[]string} true "Object containing info about the event to create"
 // @Success 201 {object} object{eventId=string}
 // @Router /events [post]
 func createEvent(c *gin.Context) {
@@ -75,6 +75,7 @@ func createEvent(c *gin.Context) {
 		SendEmailAfterXResponses *int     `json:"sendEmailAfterXResponses"`
 		When2meetHref            *string  `json:"when2meetHref"`
 		CollectEmails            *bool    `json:"collectEmails"`
+		TimeIncrement            *int     `json:"timeIncrement"`
 
 		// Only for availability groups
 		Attendees []string `json:"attendees"`
@@ -117,6 +118,7 @@ func createEvent(c *gin.Context) {
 		SendEmailAfterXResponses: payload.SendEmailAfterXResponses,
 		When2meetHref:            payload.When2meetHref,
 		CollectEmails:            payload.CollectEmails,
+		TimeIncrement:            payload.TimeIncrement,
 		Type:                     payload.Type,
 		SignUpResponses:          make(map[string]*models.SignUpResponse),
 		NumResponses:             &numResponses,

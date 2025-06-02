@@ -133,7 +133,8 @@
                     v-for="(time, i) in splitTimes[0]"
                     :key="i"
                     :id="time.id"
-                    class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                    class="tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                    :style="{ height: `${timeslotHeight}px` }"
                   >
                     {{ time.text }}
                   </div>
@@ -154,7 +155,8 @@
                       v-for="(time, i) in splitTimes[1]"
                       :key="i"
                       :id="time.id"
-                      class="tw-h-4 tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                      class="tw-pr-1 tw-text-right tw-text-xs tw-font-light tw-uppercase sm:tw-pr-2"
+                      :style="{ height: `${timeslotHeight}px` }"
                     >
                       {{ time.text }}
                     </div>
@@ -242,7 +244,7 @@
                               class="tw-w-full"
                             >
                               <div
-                                class="timeslot tw-h-4"
+                                class="timeslot"
                                 :class="
                                   timeslotClassStyle[d * times.length + t]
                                     ?.class
@@ -267,7 +269,7 @@
                                 class="tw-w-full"
                               >
                                 <div
-                                  class="timeslot tw-h-4"
+                                  class="timeslot"
                                   :class="
                                     timeslotClassStyle[
                                       d * times.length +
@@ -976,6 +978,7 @@ import {
   calendarOptionsDefaults,
   eventTypes,
   timeTypes,
+  timeslotDurations,
   upgradeDialogTypes,
 } from "@/constants"
 import { mapMutations, mapActions, mapState } from "vuex"
@@ -1099,6 +1102,7 @@ export default {
       },
       SPLIT_GAP_HEIGHT: 40,
       SPLIT_GAP_WIDTH: 20,
+      HOUR_HEIGHT: 60,
       timeslot: {
         width: 0,
         height: 0,
@@ -1823,6 +1827,29 @@ export default {
         timeOffset = -0.5
       }
 
+      const getExtraTimes = (hoursOffset) => {
+        if (this.timeslotDuration === timeslotDurations.FIFTEEN_MINUTES) {
+          return [
+            {
+              hoursOffset: hoursOffset + 0.25,
+            },
+            {
+              hoursOffset: hoursOffset + 0.5,
+            },
+            {
+              hoursOffset: hoursOffset + 0.75,
+            },
+          ]
+        } else if (this.timeslotDuration === timeslotDurations.THIRTY_MINUTES) {
+          return [
+            {
+              hoursOffset: hoursOffset + 0.5,
+            },
+          ]
+        }
+        return []
+      }
+
       if (this.isSpecificTimes) {
         const { minHours, maxHours } = this.specificTimesMinMaxHours
         // Hours offset for specific times starts from minHours
@@ -1841,15 +1868,7 @@ export default {
               text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
             })
           }
-          splitTimes[0].push({
-            hoursOffset: hoursOffset + 0.25,
-          })
-          splitTimes[0].push({
-            hoursOffset: hoursOffset + 0.5,
-          })
-          splitTimes[0].push({
-            hoursOffset: hoursOffset + 0.75,
-          })
+          splitTimes[0].push(...getExtraTimes(hoursOffset))
         }
         return splitTimes
       }
@@ -1860,15 +1879,9 @@ export default {
             hoursOffset: this.event.duration - (localEndTime - i),
             text: timeNumToTimeText(i, this.timeType === timeTypes.HOUR12),
           })
-          splitTimes[0].push({
-            hoursOffset: this.event.duration - (localEndTime - i) + 0.25,
-          })
-          splitTimes[0].push({
-            hoursOffset: this.event.duration - (localEndTime - i) + 0.5,
-          })
-          splitTimes[0].push({
-            hoursOffset: this.event.duration - (localEndTime - i) + 0.75,
-          })
+          splitTimes[0].push(
+            ...getExtraTimes(this.event.duration - (localEndTime - i))
+          )
         }
         for (let i = 0; i < 24 - localStartTime; ++i) {
           const adjustedI = i + timeOffset
@@ -1879,15 +1892,7 @@ export default {
               this.timeType === timeTypes.HOUR12
             ),
           })
-          splitTimes[1].push({
-            hoursOffset: adjustedI + 0.25,
-          })
-          splitTimes[1].push({
-            hoursOffset: adjustedI + 0.5,
-          })
-          splitTimes[1].push({
-            hoursOffset: adjustedI + 0.75,
-          })
+          splitTimes[1].push(...getExtraTimes(adjustedI))
         }
       } else {
         for (let i = 0; i < this.event.duration; ++i) {
@@ -1905,15 +1910,7 @@ export default {
               this.timeType === timeTypes.HOUR12
             ),
           })
-          splitTimes[0].push({
-            hoursOffset: adjustedI + 0.25,
-          })
-          splitTimes[0].push({
-            hoursOffset: adjustedI + 0.5,
-          })
-          splitTimes[0].push({
-            hoursOffset: adjustedI + 0.75,
-          })
+          splitTimes[0].push(...getExtraTimes(adjustedI))
         }
         if (timeOffset !== 0) {
           const localTimeNum = utcTimeToLocalTime(
@@ -1927,15 +1924,7 @@ export default {
               this.timeType === timeTypes.HOUR12
             ),
           })
-          splitTimes[0].push({
-            hoursOffset: this.event.duration - 0.25,
-          })
-          splitTimes[0].push({
-            hoursOffset: this.event.duration,
-          })
-          splitTimes[0].push({
-            hoursOffset: this.event.duration + 0.25,
-          })
+          splitTimes[0].push(...getExtraTimes(this.event.duration - 0.5))
         }
         splitTimes[1] = []
       }
@@ -1945,6 +1934,19 @@ export default {
     /** Returns the times that are encompassed by startTime and endTime */
     times() {
       return [...this.splitTimes[1], ...this.splitTimes[0]]
+    },
+    timeslotDuration() {
+      return this.event.timeIncrement ?? timeslotDurations.FIFTEEN_MINUTES
+    },
+    timeslotHeight() {
+      if (this.timeslotDuration === timeslotDurations.FIFTEEN_MINUTES) {
+        return Math.floor(this.HOUR_HEIGHT / 4)
+      } else if (this.timeslotDuration === timeslotDurations.THIRTY_MINUTES) {
+        return Math.floor(this.HOUR_HEIGHT / 2)
+      } else if (this.timeslotDuration === timeslotDurations.ONE_HOUR) {
+        return this.HOUR_HEIGHT
+      }
+      return Math.floor(this.HOUR_HEIGHT / 4)
     },
     timezoneOffset() {
       if (!("offset" in this.curTimezone)) {
@@ -2589,15 +2591,15 @@ export default {
       if (!hasSecondSplit || this.getIsTimeBlockInFirstSplit(timeBlock)) {
         style.top = `calc(${
           timeBlock.hoursOffset - this.splitTimes[0][0].hoursOffset
-        } * 4 * 1rem)`
-        style.height = `calc(${timeBlock.hoursLength} * 4 * 1rem)`
+        } * ${this.HOUR_HEIGHT}px)`
+        style.height = `calc(${timeBlock.hoursLength} * ${this.HOUR_HEIGHT}px)`
       } else {
-        style.top = `calc(${this.splitTimes[0].length} * 1rem + ${
-          this.SPLIT_GAP_HEIGHT
-        }px + ${
+        style.top = `calc(${this.splitTimes[0].length} * ${
+          this.timeslotHeight
+        }px + ${this.SPLIT_GAP_HEIGHT}px + ${
           timeBlock.hoursOffset - this.splitTimes[1][0].hoursOffset
-        } * 4 * 1rem)`
-        style.height = `calc(${timeBlock.hoursLength} * 4 * 1rem)`
+        } * ${this.HOUR_HEIGHT}px)`
+        style.height = `calc(${timeBlock.hoursLength} * ${this.HOUR_HEIGHT}px)`
       }
       return style
     },
@@ -2616,7 +2618,10 @@ export default {
         const date = day.dateObject
 
         if (includeTouchedAvailability) {
-          const endDate = getDateHoursOffset(date, this.times.length / 4)
+          const endDate = getDateHoursOffset(
+            date,
+            this.times.length * (this.timeslotDuration / 60)
+          )
 
           // Check if manual availability has been added for the current date
           let manualAvailabilityAdded = false
@@ -2673,7 +2678,10 @@ export default {
         for (let j = 0; j < this.times.length; ++j) {
           const startDate = this.getDateFromDayTimeIndex(i, j)
           if (!startDate) continue
-          const endDate = getDateHoursOffset(startDate, 0.25)
+          const endDate = getDateHoursOffset(
+            startDate,
+            this.timeslotDuration / 60
+          )
 
           // Working hours
           if (calendarOptions.workingHours.enabled) {
@@ -2947,6 +2955,9 @@ export default {
         classStyle.class += "animate-bg-color "
       }
 
+      // Height
+      classStyle.style.height = `${this.timeslotHeight}px`
+
       // Border style
       if (
         (this.respondents.length > 0 ||
@@ -2966,11 +2977,11 @@ export default {
             date.getTime() - this.timezoneOffset * 60 * 1000
           )
           const fractionalTime = localDate.getMinutes()
-          if (fractionalTime === 15) {
-            classStyle.class += "tw-border-b "
-            classStyle.style.borderBottomStyle = "dashed"
-          } else if (fractionalTime === 45) {
-            classStyle.class += "tw-border-b "
+          if (fractionalTime === 0) {
+            classStyle.class += "tw-border-t "
+          } else if (fractionalTime === 30) {
+            classStyle.class += "tw-border-t "
+            classStyle.style.borderTopStyle = "dashed"
           }
         }
 
@@ -3313,7 +3324,9 @@ export default {
                 if (date) {
                   date.setTime(date.getTime() - this.timezoneOffset * 60 * 1000)
                   const startDate = dayjs(date).utc()
-                  const endDate = dayjs(date).utc().add(15, "minutes")
+                  const endDate = dayjs(date)
+                    .utc()
+                    .add(this.timeslotDuration, "minutes")
                   const timeFormat =
                     this.timeType === timeTypes.HOUR12 ? "h:mm A" : "HH:mm"
                   let dateFormat
