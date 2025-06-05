@@ -76,7 +76,7 @@ func (calendar *GoogleCalendar) GetCalendarEvents(calendarId string, timeMin tim
 	max, _ := timeMax.MarshalText()
 	req, _ := http.NewRequest(
 		"GET",
-		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end,transparency,attendees)&timeMin=%s&timeMax=%s&singleEvents=true&eventTypes=default", url.PathEscape(calendarId), min, max),
+		fmt.Sprintf("https://www.googleapis.com/calendar/v3/calendars/%s/events?fields=items(id,summary,start,end,transparency,attendees)&timeMin=%s&timeMax=%s&singleEvents=true&eventTypes=default&eventTypes=outOfOffice", url.PathEscape(calendarId), min, max),
 		nil,
 	)
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", calendar.AccessToken))
