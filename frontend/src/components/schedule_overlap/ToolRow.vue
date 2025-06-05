@@ -4,10 +4,11 @@
       class="tw-flex tw-min-h-[5rem] tw-flex-1 tw-items-center tw-justify-center tw-text-sm sm:tw-mt-0 sm:tw-justify-between"
     >
       <div
-        :class="`tw-justify-${
-          state === states.EDIT_AVAILABILITY ? 'center' : 'between'
-        } 
-        `"
+        :class="
+          state === states.EDIT_AVAILABILITY
+            ? 'tw-justify-center'
+            : 'tw-justify-between'
+        "
         class="tw-flex tw-flex-1 tw-flex-wrap tw-gap-x-4 tw-gap-y-2 tw-py-4 sm:tw-justify-start sm:tw-gap-x-4"
       >
         <!-- Select timezone -->
@@ -82,11 +83,7 @@
       </div>
 
       <div
-        v-if="
-          !event.daysOnly &&
-          numResponses > 0 &&
-          state !== states.EDIT_AVAILABILITY
-        "
+        v-if="showScheduleEventButton"
         style="width: 181.5px"
         class="tw-hidden sm:tw-flex"
       >
@@ -150,7 +147,8 @@ import { isPhone } from "@/utils"
 import Advertisement from "../event/Advertisement.vue"
 import ExpandableSection from "../ExpandableSection.vue"
 import EventOptions from "./EventOptions.vue"
-import { timeTypes } from "@/constants"
+import { timeTypes, guestUserId } from "@/constants"
+import { mapState } from "vuex"
 
 export default {
   name: "ToolRow",
@@ -208,8 +206,23 @@ export default {
   },
 
   computed: {
+    ...mapState(["authUser"]),
     isPhone() {
       return isPhone(this.$vuetify)
+    },
+    guestEvent() {
+      return this.event.ownerId == guestUserId
+    },
+    isOwner() {
+      return this.event.ownerId == this.authUser?._id
+    },
+    showScheduleEventButton() {
+      return (
+        !this.event.daysOnly &&
+        this.numResponses > 0 &&
+        this.state !== this.states.EDIT_AVAILABILITY &&
+        (this.guestEvent || this.isOwner)
+      )
     },
   },
 }
