@@ -1778,25 +1778,6 @@ export default {
 
       return max
     },
-    /** Returns the minHours and maxHours that event.times takes up if the event has specific times */
-    specificTimesMinMaxHours() {
-      if (!this.isSpecificTimes) {
-        return { minHours: 0, maxHours: 0 }
-      }
-
-      let minHours = 0
-      let maxHours = 23
-      if (
-        this.state !== this.states.SET_SPECIFIC_TIMES &&
-        this.event.times?.length > 0
-      ) {
-        const result = this.getMinMaxHoursFromTimes(this.event.times)
-        minHours = result.minHours
-        maxHours = result.maxHours
-      }
-
-      return { minHours, maxHours }
-    },
     /** Returns a set containing the times for the event if it has specific times */
     specificTimesSet() {
       return new Set(this.event.times?.map((t) => new Date(t).getTime()) ?? [])
@@ -1850,11 +1831,10 @@ export default {
         return []
       }
 
-      if (this.isSpecificTimes) {
-        const { minHours, maxHours } = this.specificTimesMinMaxHours
+      if (this.state === this.states.SET_SPECIFIC_TIMES) {
         // Hours offset for specific times starts from minHours
-        for (let i = minHours; i <= maxHours; ++i) {
-          const hoursOffset = i - minHours
+        for (let i = 0; i <= 23; ++i) {
+          const hoursOffset = i
           if (i === 9) {
             // add an id so we can scroll to it
             splitTimes[0].push({
