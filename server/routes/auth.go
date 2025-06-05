@@ -225,9 +225,9 @@ func signInHelper(c *gin.Context, token auth.TokenResponse, tokenOrigin models.T
 	}
 
 	if exists, userId := listmonk.DoesUserExist(email); exists {
-		listmonk.AddUserToListmonk(email, firstName, lastName, picture, userId)
+		listmonk.AddUserToListmonk(email, firstName, lastName, picture, userId, true)
 	} else {
-		listmonk.AddUserToListmonk(email, firstName, lastName, picture, nil)
+		listmonk.AddUserToListmonk(email, firstName, lastName, picture, nil, true)
 	}
 
 	// Set session variables

@@ -195,7 +195,7 @@ func createEvent(c *gin.Context) {
 					"ownerName": ownerName,
 					"groupName": event.Name,
 					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
-				})
+				}, false)
 				attendees = append(attendees, models.Attendee{Email: email, Declined: utils.FalsePtr(), EventId: event.Id})
 			}
 
@@ -402,7 +402,7 @@ func editEvent(c *gin.Context) {
 				"ownerName": ownerName,
 				"groupName": event.Name,
 				"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
-			})
+			}, false)
 			db.AttendeesCollection.InsertOne(context.Background(), models.Attendee{
 				Email:    addedEmail.Value,
 				Declined: utils.FalsePtr(),
@@ -421,7 +421,7 @@ func editEvent(c *gin.Context) {
 					"groupName": event.Name,
 					"groupUrl":  fmt.Sprintf("%s/g/%s", utils.GetBaseUrl(), event.GetId()),
 					"emails":    emails,
-				})
+				}, false)
 			}
 		}
 	}

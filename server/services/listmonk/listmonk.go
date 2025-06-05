@@ -14,7 +14,7 @@ import (
 
 // Adds the given user to the Listmonk contact list
 // If subscriberId is not nil, then UPDATE the user instead of adding user
-func AddUserToListmonk(email string, firstName string, lastName string, picture string, subscriberId *int) {
+func AddUserToListmonk(email string, firstName string, lastName string, picture string, subscriberId *int, sendMarketingEmails bool) {
 	if os.Getenv("LISTMONK_ENABLED") == "false" {
 		return
 	}
@@ -31,18 +31,21 @@ func AddUserToListmonk(email string, firstName string, lastName string, picture 
 	}
 
 	// Create new subscriber
-	body, _ := json.Marshal(bson.M{
+	args := bson.M{
 		"email":  email,
 		"name":   firstName + " " + lastName,
 		"status": "enabled",
-		"lists":  bson.A{listId},
 		"attribs": bson.M{
 			"firstName": firstName,
 			"lastName":  lastName,
 			"picture":   picture,
 		},
 		"preconfirm_subscriptions": true,
-	})
+	}
+	if sendMarketingEmails {
+		args["lists"] = bson.A{listId}
+	}
+	body, _ := json.Marshal(args)
 	bodyBuffer := bytes.NewBuffer(body)
 
 	var req *http.Request
@@ -143,13 +146,13 @@ func SendEmail(email string, templateId int, data bson.M) {
 }
 
 // Send a transactional email using the specified template and data. Adds subscriber if they don't exist
-func SendEmailAddSubscriberIfNotExist(email string, templateId int, data bson.M) {
+func SendEmailAddSubscriberIfNotExist(email string, templateId int, data bson.M, sendMarketingEmails bool) {
 	if os.Getenv("LISTMONK_ENABLED") == "false" {
 		return
 	}
 
 	if exists, _ := DoesUserExist(email); !exists {
-		AddUserToListmonk(email, "", "", "", nil)
+		AddUserToListmonk(email, "", "", "", nil, sendMarketingEmails)
 	}
 
 	SendEmail(email, templateId, data)

@@ -50,7 +50,7 @@ func CreateEmailTask(email string, ownerName string, eventName string, eventId s
 
 	// If subscriber doesn't exist, add subscriber to listmonk
 	if !subscriberExists {
-		listmonk.AddUserToListmonk(email, "", "", "", nil)
+		listmonk.AddUserToListmonk(email, "", "", "", nil, false)
 	}
 
 	// Get email template ids
