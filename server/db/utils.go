@@ -83,7 +83,15 @@ func GetEventById(eventId string) *models.Event {
 		return nil
 	}
 	result := EventsCollection.FindOne(context.Background(), bson.M{
-		"_id": objectId,
+		"$and": bson.A{
+			bson.M{"_id": objectId},
+			bson.M{
+				"$or": bson.A{
+					bson.M{"isDeleted": bson.M{"$exists": false}},
+					bson.M{"isDeleted": bson.M{"$eq": false}},
+				},
+			},
+		},
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event does not exist!
@@ -102,7 +110,15 @@ func GetEventById(eventId string) *models.Event {
 // Returns an event based on its shortId
 func GetEventByShortId(shortEventId string) *models.Event {
 	result := EventsCollection.FindOne(context.Background(), bson.M{
-		"shortId": shortEventId,
+		"$and": bson.A{
+			bson.M{"shortId": shortEventId},
+			bson.M{
+				"$or": bson.A{
+					bson.M{"isDeleted": bson.M{"$exists": false}},
+					bson.M{"isDeleted": bson.M{"$eq": false}},
+				},
+			},
+		},
 	})
 	if result.Err() == mongo.ErrNoDocuments {
 		// Event does not exist!

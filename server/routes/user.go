@@ -188,9 +188,19 @@ func getEvents(c *gin.Context) {
 	cursor, err = db.EventsCollection.Find(
 		context.Background(),
 		bson.M{
-			"$or": bson.A{
-				bson.M{"_id": bson.M{"$in": eventIds}},
-				bson.M{"ownerId": userId},
+			"$and": bson.A{
+				bson.M{
+					"$or": bson.A{
+						bson.M{"_id": bson.M{"$in": eventIds}},
+						bson.M{"ownerId": userId},
+					},
+				},
+				bson.M{
+					"$or": bson.A{
+						bson.M{"isDeleted": bson.M{"$exists": false}},
+						bson.M{"isDeleted": false},
+					},
+				},
 			},
 		},
 		opts,

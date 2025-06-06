@@ -1234,28 +1234,44 @@ func deleteEvent(c *gin.Context) {
 	userInterface, _ := c.Get("authUser")
 	user := userInterface.(*models.User)
 
-	_, err = db.EventsCollection.DeleteOne(context.Background(), bson.M{
+	result := db.EventsCollection.FindOneAndUpdate(context.Background(), bson.M{
 		"_id":     objectId,
 		"ownerId": user.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"isDeleted": true,
+		},
 	})
+	var event models.Event
+	err = result.Decode(&event)
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
 
 	// Delete event responses
-	_, err = db.EventResponsesCollection.DeleteMany(context.Background(), bson.M{
-		"eventId": objectId,
-	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
-	}
+	// _, err = db.EventResponsesCollection.DeleteMany(context.Background(), bson.M{
+	// 	"eventId": objectId,
+	// })
+	// if err != nil {
+	// 	logger.StdErr.Panicln(err)
+	// }
 
-	// Delete attendees
-	_, err = db.AttendeesCollection.DeleteMany(context.Background(), bson.M{
-		"eventId": objectId,
-	})
-	if err != nil {
-		logger.StdErr.Panicln(err)
+	// // Delete attendees
+	// _, err = db.AttendeesCollection.DeleteMany(context.Background(), bson.M{
+	// 	"eventId": objectId,
+	// })
+	// if err != nil {
+	// 	logger.StdErr.Panicln(err)
+	// }
+
+	// Delete gcloud tasks
+	if event.Remindees != nil {
+		for _, remindee := range *event.Remindees {
+			// Delete email tasks
+			for _, taskId := range remindee.TaskIds {
+				gcloud.DeleteEmailTask(taskId)
+			}
+		}
 	}
 
 	c.Status(http.StatusOK)
