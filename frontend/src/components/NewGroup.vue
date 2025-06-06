@@ -87,15 +87,23 @@
               solo
               color="primary"
             >
-              <v-btn depressed> S </v-btn>
-              <v-btn depressed> M </v-btn>
-              <v-btn depressed> T </v-btn>
-              <v-btn depressed> W </v-btn>
-              <v-btn depressed> T </v-btn>
-              <v-btn depressed> F </v-btn>
-              <v-btn depressed> S </v-btn>
+              <v-btn depressed v-show="!startOnMonday"> Sun </v-btn>
+              <v-btn depressed> Mon </v-btn>
+              <v-btn depressed> Tue </v-btn>
+              <v-btn depressed> Wed </v-btn>
+              <v-btn depressed> Thu </v-btn>
+              <v-btn depressed> Fri </v-btn>
+              <v-btn depressed> Sat </v-btn>
+              <v-btn depressed v-show="startOnMonday"> Sun </v-btn>
             </v-btn-toggle>
           </v-input>
+          <v-checkbox class="tw-mt-2" v-model="startOnMonday" hide-details>
+            <template v-slot:label>
+              <span class="tw-text-sm tw-text-very-dark-gray">
+                Start on Monday
+              </span>
+            </template>
+          </v-checkbox>
         </div>
 
         <!-- <div v-if="!edit"> -->
@@ -164,6 +172,7 @@ import {
   timeNumToTimeString,
   dateToTimeNum,
   signInGoogle,
+  getDateWithTimezone,
 } from "@/utils"
 import { mapState, mapActions } from "vuex"
 import { eventTypes, dayIndexToDayString, authTypes } from "@/constants"
@@ -205,6 +214,7 @@ export default {
     endTime: 17,
     loading: false,
     selectedDaysOfWeek: [],
+    startOnMonday: false,
     emails: [],
 
     showAdvancedOptions: false,
@@ -268,6 +278,7 @@ export default {
       this.startTime = this.contactsPayload.startTime
       this.endTime = this.contactsPayload.endTime
       this.selectedDaysOfWeek = this.contactsPayload.selectedDaysOfWeek
+      this.startOnMonday = this.contactsPayload.startOnMonday
 
       this.$refs.form.resetValidation()
     }
@@ -297,6 +308,9 @@ export default {
       const dates = []
       const startTimeString = timeNumToTimeString(this.startTime)
       this.selectedDaysOfWeek.sort((a, b) => a - b)
+      this.selectedDaysOfWeek = this.selectedDaysOfWeek.filter((dayIndex) => {
+        return this.startOnMonday ? dayIndex !== 0 : dayIndex !== 7
+      })
       for (const dayIndex of this.selectedDaysOfWeek) {
         const day = dayIndexToDayString[dayIndex]
         const date = dayjs.tz(`${day} ${startTimeString}`, this.timezone.value)
@@ -308,6 +322,8 @@ export default {
       const name = this.name
       const type = eventTypes.GROUP
       const attendees = this.emails
+      const startOnMonday = this.startOnMonday
+
       if (!this.edit) {
         // Create a new group
         post("/events", {
@@ -316,6 +332,7 @@ export default {
           dates,
           attendees,
           type,
+          startOnMonday,
           creatorPosthogId: this.$posthog?.get_distinct_id(),
         })
           .then(({ eventId, shortId }) => {
@@ -335,6 +352,7 @@ export default {
               eventDates: JSON.stringify(dates),
               eventAttendees: attendees,
               eventType: type,
+              eventStartOnMonday: startOnMonday,
             })
           })
           .catch((err) => {
@@ -353,6 +371,7 @@ export default {
           dates,
           attendees,
           type,
+          startOnMonday,
         })
           .then(() => {
             this.$posthog?.capture("Availability group edited", {
@@ -362,6 +381,7 @@ export default {
               eventDates: JSON.stringify(dates),
               eventAttendees: attendees,
               eventType: type,
+              eventStartOnMonday: startOnMonday,
             })
 
             this.$emit("input", false)
@@ -403,10 +423,17 @@ export default {
         this.name = this.event.name
         this.startTime = Math.floor(dateToTimeNum(this.event.dates[0]))
         this.endTime = (this.startTime + this.event.duration) % 24
+        this.startOnMonday = this.event.startOnMonday
 
         const selectedDaysOfWeek = []
-        for (const date of this.event.dates) {
-          selectedDaysOfWeek.push(new Date(date).getDay())
+        for (let date of this.event.dates) {
+          date = getDateWithTimezone(date)
+
+          if (this.startOnMonday && date.getUTCDay() === 0) {
+            selectedDaysOfWeek.push(7)
+          } else {
+            selectedDaysOfWeek.push(date.getUTCDay())
+          }
         }
         this.selectedDaysOfWeek = selectedDaysOfWeek
 
