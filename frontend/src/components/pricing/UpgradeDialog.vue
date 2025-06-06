@@ -91,7 +91,7 @@
           </div>
           <div class="tw-relative">
             <div class="tw-font-medium">
-              <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$15</span>
+              <span class="tw-mr-1 tw-text-dark-gray tw-line-through">$20</span>
               <span class="tw-mr-1 tw-text-4xl">{{
                 isStudent
                   ? formattedPrice(monthlyStudentPrice)
