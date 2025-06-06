@@ -1651,11 +1651,11 @@ export default {
       }
 
       if (isSecondSplit) {
-        style.top = `calc(${top} * 1rem + ${this.SPLIT_GAP_HEIGHT}px)`
+        style.top = `calc(${top} * ${this.timeslotHeight}px + ${this.SPLIT_GAP_HEIGHT}px)`
       } else {
-        style.top = `calc(${top} * 1rem)`
+        style.top = `calc(${top} * ${this.timeslotHeight}px)`
       }
-      style.height = `calc(${height} * 1rem)`
+      style.height = `calc(${height} * ${this.timeslotHeight}px)`
       return style
     },
     signUpBlockBeingDraggedStyle() {
@@ -3403,7 +3403,7 @@ export default {
     },
 
     /** Redirect user to Google Calendar to finish the creation of the event */
-    confirmScheduleEvent() {
+    confirmScheduleEvent(googleCalendar = true) {
       if (!this.curScheduledEvent) return
       // if (!isPremiumUser(this.authUser)) {
       //   this.showUpgradeDialog({
@@ -3420,7 +3420,9 @@ export default {
       const { col, row, numRows } = this.curScheduledEvent
       let startDate = this.getDateFromRowCol(row, col)
       let endDate = new Date(startDate)
-      endDate.setMinutes(startDate.getMinutes() + (numRows / 4) * 60)
+      endDate.setMinutes(
+        startDate.getMinutes() + this.timeslotDuration * numRows
+      )
 
       if (this.isWeekly) {
         // Determine offset based on current day of the week.
@@ -3447,16 +3449,30 @@ export default {
       })
       const emailsString = encodeURIComponent(emails.filter(Boolean).join(","))
 
-      // Format start and end date to be in the format required by gcal (remove -, :, and .000)
-      const start = startDate.toISOString().replace(/([-:]|\.000)/g, "")
-      const end = endDate.toISOString().replace(/([-:]|\.000)/g, "")
+      const eventId = this.event.shortId ?? this.event._id
 
-      // Construct Google Calendar event creation template url
-      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-        this.event.name
-      )}&dates=${start}/${end}&details=${encodeURIComponent(
-        "\n\nThis event was scheduled with schej: https://schej.it/e/"
-      )}${this.event._id}&ctz=${this.curTimezone.value}&add=${emailsString}`
+      let url = ""
+      if (googleCalendar) {
+        // Format start and end date to be in the format required by gcal (remove -, :, and .000)
+        const start = startDate.toISOString().replace(/([-:]|\.000)/g, "")
+        const end = endDate.toISOString().replace(/([-:]|\.000)/g, "")
+
+        // Construct Google Calendar event creation template url
+        url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+          this.event.name
+        )}&dates=${start}/${end}&details=${encodeURIComponent(
+          "\n\nThis event was scheduled with schej: https://schej.it/e/"
+        )}${eventId}&ctz=${this.curTimezone.value}&add=${emailsString}`
+      } else {
+        url = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
+          this.event.name
+        )}&body=${encodeURIComponent(
+          "\n\nThis event was scheduled with schej: https://schej.it/e/" +
+            eventId
+        )}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&location=${encodeURIComponent(
+          this.event.location || ""
+        )}&path=/calendar/action/compose&timezone=${this.curTimezone.value}`
+      }
 
       // Navigate to url and reset state
       window.open(url, "_blank")

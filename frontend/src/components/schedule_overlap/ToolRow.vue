@@ -93,13 +93,8 @@
             class="tw-w-full tw-text-blue"
             @click="(e) => $emit('scheduleEvent', e)"
           >
-            <span class="tw-mr-2">Schedule event</span>
-            <v-img
-              src="@/assets/gcal_logo.png"
-              class="tw-flex-none"
-              height="20"
-              width="20"
-            />
+            <v-icon small>mdi-calendar-check</v-icon>
+            <span class="tw-ml-2">Schedule event</span>
           </v-btn>
         </template>
         <template v-else>
@@ -110,13 +105,42 @@
           >
             Cancel
           </v-btn>
-          <v-btn
-            :disabled="!allowScheduleEvent"
-            class="tw-bg-blue tw-text-white"
-            @click="(e) => $emit('confirmScheduleEvent', e)"
-          >
-            Schedule
-          </v-btn>
+          <v-menu offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                :disabled="!allowScheduleEvent"
+                class="tw-bg-blue tw-text-white"
+                v-bind="attrs"
+                v-on="on"
+              >
+                Schedule
+              </v-btn>
+            </template>
+            <v-list dense>
+              <v-list-item @click="(e) => $emit('confirmScheduleEvent', true)">
+                <v-img
+                  src="@/assets/gcal_logo.png"
+                  class="tw-mr-2 tw-flex-none"
+                  height="20"
+                  width="20"
+                />
+                <v-list-item-content>
+                  <v-list-item-title>Google Calendar</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="(e) => $emit('confirmScheduleEvent', false)">
+                <v-img
+                  src="@/assets/outlook_logo.svg"
+                  class="tw-mr-2 tw-flex-none"
+                  height="20"
+                  width="20"
+                />
+                <v-list-item-content>
+                  <v-list-item-title>Outlook</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
       </div>
     </div>
