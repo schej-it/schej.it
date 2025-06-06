@@ -421,13 +421,15 @@ export const getCalendarEventsMap = async (
       event.dates,
       event.dates[0],
       weekOffset,
-      true
+      true,
+      event.startOnMonday
     )
     const lastDate = dateToDowDate(
       event.dates,
       event.dates[event.dates.length - 1],
       weekOffset,
-      true
+      true,
+      event.startOnMonday
     )
     timeMin = getDateDayOffset(firstDate, -2).toISOString()
     timeMax = getDateDayOffset(lastDate, 2).toISOString()
