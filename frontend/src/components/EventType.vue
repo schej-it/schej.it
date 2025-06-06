@@ -16,7 +16,7 @@
         >
           <div>
             {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
-            created
+            created this month
           </div>
           <div
             class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-green tw-underline"
