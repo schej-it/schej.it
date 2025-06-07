@@ -4283,8 +4283,10 @@ export default {
         }
       },
     },
-    calendarEventsByDay() {
-      this.reanimateAvailability()
+    calendarEventsByDay(val, oldVal) {
+      if (JSON.stringify(val) !== JSON.stringify(oldVal)) {
+        this.reanimateAvailability()
+      }
     },
     page() {
       this.$nextTick(() => {
