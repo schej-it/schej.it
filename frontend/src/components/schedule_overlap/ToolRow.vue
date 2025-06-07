@@ -105,7 +105,7 @@
           >
             Cancel
           </v-btn>
-          <v-menu offset-y>
+          <v-menu offset-y class="tw-z-20">
             <template v-slot:activator="{ on, attrs }">
               <v-btn
                 :disabled="!allowScheduleEvent"

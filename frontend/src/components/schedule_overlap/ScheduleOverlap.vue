@@ -3424,12 +3424,16 @@ export default {
         startDate.getMinutes() + this.timeslotDuration * numRows
       )
 
-      if (this.isWeekly) {
+      if (this.isWeekly || this.isGroup) {
         // Determine offset based on current day of the week.
         // People expect the event to be scheduled in the future, not the past, which is why this check exists
         let offset = 0
-        if (new Date().getDay() > startDate.getDay()) {
-          offset = 1
+        if (this.isGroup) {
+          offset = this.weekOffset
+        } else if (this.isWeekly) {
+          if (new Date().getDay() > startDate.getDay()) {
+            offset = 1
+          }
         }
 
         // Transform startDate and endDate to be the current week offset

@@ -146,7 +146,7 @@
           <div class="tw-flex tw-flex-row tw-items-center tw-gap-2.5">
             <div v-if="isGroup">
               <v-btn
-                v-if="weekOffset != 0"
+                v-if="event.startOnMonday ? weekOffset != 1 : weekOffset != 0"
                 :icon="isPhone"
                 text
                 class="tw-mr-1 tw-text-very-dark-gray sm:tw-mr-2.5"
@@ -943,7 +943,11 @@ export default {
 
     /** Resets week offset to 0 */
     resetWeekOffset() {
-      this.weekOffset = 0
+      if (this.event && this.event.startOnMonday) {
+        this.weekOffset = 1
+      } else {
+        this.weekOffset = 0
+      }
     },
 
     onBeforeUnload(e) {
@@ -1070,6 +1074,7 @@ export default {
   watch: {
     event() {
       if (this.event) {
+        this.resetWeekOffset()
         this.$nextTick(() => {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
