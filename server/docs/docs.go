@@ -25,6 +25,145 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/analytics/downgrade-user": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Downgrades the specified user to Schej Free",
+                "parameters": [
+                    {
+                        "description": "Object containing the user email",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/analytics/monthly-active-event-creators": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Gets the daily count of monthly active event creators over a date range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD) for the range",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD) for the range",
+                        "name": "endDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Client's timezone offset in minutes from UTC (e.g., -420 for UTC-7)",
+                        "name": "timezoneOffset",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "count": {
+                                                "type": "integer"
+                                            },
+                                            "date": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format, range, or timezone offset",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/analytics/scanned-poster": {
             "post": {
                 "consumes": [
@@ -65,6 +204,117 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {}
+                }
+            }
+        },
+        "/analytics/upgrade-dialog-viewed": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Notifies us when user has viewed the upgrade dialog",
+                "parameters": [
+                    {
+                        "description": "Object containing the user id",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "userId": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/analytics/upgrade-user": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Upgrades the specified user to Schej Premium",
+                "parameters": [
+                    {
+                        "description": "Object containing the user email",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "email": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/analytics/user/{email}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "analytics"
+                ],
+                "summary": "Gets the user by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User email",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    }
                 }
             }
         },
@@ -286,6 +536,9 @@ var doc = `{
                                             "items": {
                                                 "$ref": "#/definitions/models.SignUpBlock"
                                             }
+                                        },
+                                        "timeIncrement": {
+                                            "type": "integer"
                                         },
                                         "type": {
                                             "$ref": "#/definitions/models.EventType"
@@ -703,7 +956,7 @@ var doc = `{
                                         "signUpBlockIds": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/primitive.ObjectID"
+                                                "type": "string"
                                             }
                                         },
                                         "useCalendarAvailability": {
@@ -1431,10 +1684,16 @@ var doc = `{
         "models.Attendee": {
             "type": "object",
             "properties": {
+                "_id": {
+                    "type": "string"
+                },
                 "declined": {
                     "type": "boolean"
                 },
                 "email": {
+                    "type": "string"
+                },
+                "eventId": {
                     "type": "string"
                 }
             }
@@ -1485,6 +1744,10 @@ var doc = `{
         "models.CalendarEvent": {
             "type": "object",
             "properties": {
+                "allDay": {
+                    "description": "Whether the event is an all day event",
+                    "type": "boolean"
+                },
                 "calendarId": {
                     "type": "string"
                 },
@@ -1529,7 +1792,7 @@ var doc = `{
                     "type": "string"
                 },
                 "attendees": {
-                    "description": "Attendees for an availability group",
+                    "description": "Attendees for an availability group (fetched from Attendees collection)",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Attendee"
@@ -1545,6 +1808,10 @@ var doc = `{
                 "collectEmails": {
                     "type": "boolean"
                 },
+                "creatorPosthogId": {
+                    "description": "PostHog ID for the event creator",
+                    "type": "string"
+                },
                 "dates": {
                     "type": "string"
                 },
@@ -1558,6 +1825,17 @@ var doc = `{
                 "duration": {
                     "type": "number"
                 },
+                "hasResponded": {
+                    "description": "Whether the user has responded to the availability group (fetched based on whether user is in Attendees)",
+                    "type": "boolean"
+                },
+                "hasSpecificTimes": {
+                    "description": "Used for specific times for specific dates feature",
+                    "type": "boolean"
+                },
+                "isDeleted": {
+                    "type": "boolean"
+                },
                 "isSignUpForm": {
                     "description": "Sign up form details",
                     "type": "boolean"
@@ -1567,6 +1845,10 @@ var doc = `{
                 },
                 "notificationsEnabled": {
                     "type": "boolean"
+                },
+                "numResponses": {
+                    "description": "Used to store the number of responses for the event",
+                    "type": "integer"
                 },
                 "ownerId": {
                     "type": "string"
@@ -1579,7 +1861,7 @@ var doc = `{
                     }
                 },
                 "responses": {
-                    "description": "Availability responses",
+                    "description": "Availability responses - old format for backward compatibility (fetched from eventResponses collection)",
                     "type": "object",
                     "additionalProperties": {
                         "$ref": "#/definitions/models.Response"
@@ -1611,6 +1893,12 @@ var doc = `{
                 "startOnMonday": {
                     "description": "Whether to start the event on Monday (as opposed to Sunday, used for DOW events)",
                     "type": "boolean"
+                },
+                "timeIncrement": {
+                    "type": "integer"
+                },
+                "times": {
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
@@ -1805,14 +2093,24 @@ var doc = `{
                     "description": "Whether the user has set a custom name for themselves, i.e. don't change their name when they sign in",
                     "type": "boolean"
                 },
+                "isPremium": {
+                    "type": "boolean"
+                },
                 "lastName": {
                     "type": "string"
+                },
+                "numEventsCreated": {
+                    "type": "integer"
                 },
                 "picture": {
                     "type": "string"
                 },
                 "primaryAccountKey": {
                     "description": "The calendarAccountKey of the account the user first signed in with",
+                    "type": "string"
+                },
+                "stripeCustomerId": {
+                    "description": "Stripe customer ID",
                     "type": "string"
                 },
                 "timezoneOffset": {
@@ -1832,12 +2130,6 @@ var doc = `{
                 "startTime": {
                     "type": "number"
                 }
-            }
-        },
-        "primitive.ObjectID": {
-            "type": "array",
-            "items": {
-                "type": "integer"
             }
         },
         "responses.Error": {

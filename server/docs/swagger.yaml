@@ -22,9 +22,13 @@ definitions:
     type: object
   models.Attendee:
     properties:
+      _id:
+        type: string
       declined:
         type: boolean
       email:
+        type: string
+      eventId:
         type: string
     type: object
   models.BufferTimeOptions:
@@ -58,6 +62,9 @@ definitions:
     type: object
   models.CalendarEvent:
     properties:
+      allDay:
+        description: Whether the event is an all day event
+        type: boolean
       calendarId:
         type: string
       endDate:
@@ -88,7 +95,7 @@ definitions:
       _id:
         type: string
       attendees:
-        description: Attendees for an availability group
+        description: Attendees for an availability group (fetched from Attendees collection)
         items:
           $ref: '#/definitions/models.Attendee'
         type: array
@@ -99,6 +106,9 @@ definitions:
         type: string
       collectEmails:
         type: boolean
+      creatorPosthogId:
+        description: PostHog ID for the event creator
+        type: string
       dates:
         type: string
       daysOnly:
@@ -108,6 +118,15 @@ definitions:
         type: string
       duration:
         type: number
+      hasResponded:
+        description: Whether the user has responded to the availability group (fetched
+          based on whether user is in Attendees)
+        type: boolean
+      hasSpecificTimes:
+        description: Used for specific times for specific dates feature
+        type: boolean
+      isDeleted:
+        type: boolean
       isSignUpForm:
         description: Sign up form details
         type: boolean
@@ -115,6 +134,9 @@ definitions:
         type: string
       notificationsEnabled:
         type: boolean
+      numResponses:
+        description: Used to store the number of responses for the event
+        type: integer
       ownerId:
         type: string
       remindees:
@@ -125,7 +147,8 @@ definitions:
       responses:
         additionalProperties:
           $ref: '#/definitions/models.Response'
-        description: Availability responses
+        description: Availability responses - old format for backward compatibility
+          (fetched from eventResponses collection)
         type: object
       scheduledEvent:
         $ref: '#/definitions/models.CalendarEvent'
@@ -147,6 +170,10 @@ definitions:
         description: Whether to start the event on Monday (as opposed to Sunday, used
           for DOW events)
         type: boolean
+      timeIncrement:
+        type: integer
+      times:
+        type: string
       type:
         type: string
       when2meetHref:
@@ -283,13 +310,20 @@ definitions:
         description: Whether the user has set a custom name for themselves, i.e. don't
           change their name when they sign in
         type: boolean
+      isPremium:
+        type: boolean
       lastName:
         type: string
+      numEventsCreated:
+        type: integer
       picture:
         type: string
       primaryAccountKey:
         description: The calendarAccountKey of the account the user first signed in
           with
+        type: string
+      stripeCustomerId:
+        description: Stripe customer ID
         type: string
       timezoneOffset:
         type: integer
@@ -303,10 +337,6 @@ definitions:
       startTime:
         type: number
     type: object
-  primitive.ObjectID:
-    items:
-      type: integer
-    type: array
   responses.Error:
     properties:
       error:
@@ -322,6 +352,87 @@ info:
   title: Schej.it API
   version: "1.0"
 paths:
+  /analytics/downgrade-user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the user email
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Downgrades the specified user to Schej Free
+      tags:
+      - analytics
+  /analytics/monthly-active-event-creators:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Start date (YYYY-MM-DD) for the range
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD) for the range
+        in: query
+        name: endDate
+        required: true
+        type: string
+      - description: Client's timezone offset in minutes from UTC (e.g., -420 for
+          UTC-7)
+        in: query
+        name: timezoneOffset
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - type: object
+              - properties:
+                  count:
+                    type: integer
+                  date:
+                    type: string
+                type: object
+            type: array
+        "400":
+          description: Invalid date format, range, or timezone offset
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Gets the daily count of monthly active event creators over a date range
+      tags:
+      - analytics
   /analytics/scanned-poster:
     post:
       consumes:
@@ -346,6 +457,72 @@ paths:
       responses:
         "200": {}
       summary: Notifies us when poster QR code has been scanned
+      tags:
+      - analytics
+  /analytics/upgrade-dialog-viewed:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the user id
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              userId:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Notifies us when user has viewed the upgrade dialog
+      tags:
+      - analytics
+  /analytics/upgrade-user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Object containing the user email
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              email:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Upgrades the specified user to Schej Premium
+      tags:
+      - analytics
+  /analytics/user/{email}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: User email
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Gets the user by email
       tags:
       - analytics
   /auth/sign-in:
@@ -485,6 +662,8 @@ paths:
                 items:
                   $ref: '#/definitions/models.SignUpBlock'
                 type: array
+              timeIncrement:
+                type: integer
               type:
                 $ref: '#/definitions/models.EventType'
               when2meetHref:
@@ -777,7 +956,7 @@ paths:
                 type: string
               signUpBlockIds:
                 items:
-                  $ref: '#/definitions/primitive.ObjectID'
+                  type: string
                 type: array
               useCalendarAvailability:
                 type: boolean
