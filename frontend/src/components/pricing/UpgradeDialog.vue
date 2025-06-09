@@ -387,7 +387,6 @@ export default {
       this.yearlyPrice = yearly
       this.lifetimeStudentPrice = lifetimeStudent
       this.monthlyStudentPrice = monthlyStudent
-      console.log(res)
     },
     async handleUpgrade(price) {
       // if (this.isStudent) {
