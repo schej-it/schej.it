@@ -38,6 +38,7 @@ func InitAnalytics(router *gin.RouterGroup) {
 	analyticsRouter.POST("/scanned-poster", scannedPoster)
 	analyticsRouter.POST("/upgrade-dialog-viewed", upgradeDialogViewed)
 	analyticsRouter.GET("/monthly-active-event-creators", AnalyticsBasicAuth(), getMonthlyActiveEventCreators)
+	analyticsRouter.GET("/monthly-active-event-creators-with-more-than-x-events", AnalyticsBasicAuth(), getMonthlyActiveEventCreatorsWithMoreThanXEvents)
 	analyticsRouter.POST("/upgrade-user", AnalyticsBasicAuth(), upgradeUser)
 	analyticsRouter.POST("/downgrade-user", AnalyticsBasicAuth(), downgradeUser)
 	analyticsRouter.GET("/user/:email", AnalyticsBasicAuth(), getUserByEmail)
@@ -174,6 +175,82 @@ func getMonthlyActiveEventCreators(c *gin.Context) {
 			// Depending on requirements, you might want to return partial results or a full error
 			// For now, let's skip this day's count on error
 			// Alternatively: c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get count for %s: %s", d.Format(layout), err.Error())}); return
+			continue // Skip this date if there's an error
+		}
+
+		results = append(results, count)
+	}
+
+	c.JSON(http.StatusOK, results)
+}
+
+// @Summary Gets the daily count of monthly active event creators over a date range with more than x events
+// @Tags analytics
+// @Accept json
+// @Produce json
+// @Param startDate query string true "Start date (YYYY-MM-DD) for the range"
+// @Param endDate query string true "End date (YYYY-MM-DD) for the range"
+// @Param timezoneOffset query integer true "Client's timezone offset in minutes from UTC (e.g., -420 for UTC-7)"
+// @Success 200 {array} object{date=string,count=int}
+// @Failure 400 {object} object{error=string} "Invalid date format, range, or timezone offset"
+// @Failure 500 {object} object{error=string} "Internal server error"
+// @Router /analytics/monthly-active-event-creators-with-more-than-x-events [get]
+func getMonthlyActiveEventCreatorsWithMoreThanXEvents(c *gin.Context) {
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+	timezoneOffsetStr := c.Query("timezoneOffset") // Get timezone offset param
+	xStr := c.Query("x")
+
+	if startDateStr == "" || endDateStr == "" || timezoneOffsetStr == "" || xStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "startDate, endDate, timezoneOffset, and x query parameters are required"})
+		return
+	}
+
+	x, err := strconv.Atoi(xStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid x format. Must be an integer."})
+		return
+	}
+
+	// Parse timezone offset
+	timezoneOffset, err := strconv.Atoi(timezoneOffsetStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid timezoneOffset format. Must be an integer representing minutes."})
+		return
+	}
+	// Convert offset minutes to a location (Go's time package uses seconds west of UTC)
+	// Note: JS getTimezoneOffset() is positive for west, negative for east.
+	// Go FixedZone expects seconds east of UTC. So, offset needs to be negated and converted to seconds.
+	location := time.FixedZone("UserOffset", -timezoneOffset*60)
+
+	layout := "2006-01-02" // YYYY-MM-DD
+	startDate, err := time.Parse(layout, startDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid startDate format. Use YYYY-MM-DD"})
+		return
+	}
+	endDate, err := time.Parse(layout, endDateStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid endDate format. Use YYYY-MM-DD"})
+		return
+	}
+
+	if endDate.Before(startDate) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "endDate cannot be before startDate"})
+		return
+	}
+
+	var results []int64
+
+	// Loop through each day from startDate to endDate (inclusive)
+	for d := startDate; !d.After(endDate); d = d.AddDate(0, 0, 1) {
+		// Set time to end of the day using the *client's timezone* location
+		year, month, day := d.Date()
+		currentDateEndOfDay := time.Date(year, month, day, 23, 59, 59, 0, location) // Use parsed location
+
+		count, err := db.CountDistinctMonthlyActiveEventCreatorsWithMoreThanXEvents(currentDateEndOfDay, x)
+		if err != nil {
+			fmt.Printf("Error fetching count for date %s: %v\n", d.Format(layout), err)
 			continue // Skip this date if there's an error
 		}
 
