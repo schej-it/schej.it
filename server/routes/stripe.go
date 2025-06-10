@@ -114,20 +114,20 @@ func createCheckoutSession(c *gin.Context) {
 
 func getPrice(c *gin.Context) {
 	// Get the experiment query parameter
-	// exp := c.Query("exp")
+	exp := c.Query("exp")
+
 	monthlyPriceId := os.Getenv("STRIPE_MONTHLY_PRICE_ID")
-	lifetimePriceId := os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 	monthlyStudentPriceId := os.Getenv("STRIPE_MONTHLY_STUDENT_PRICE_ID")
 	lifetimeStudentPriceId := os.Getenv("STRIPE_LIFETIME_STUDENT_PRICE_ID")
 	yearlyPriceId := os.Getenv("STRIPE_YEARLY_PRICE_ID")
-	// switch exp {
-	// case "test2":
-	// 	priceId = os.Getenv("STRIPE_PRICE_ID_2")
-	// case "test3":
-	// 	priceId = os.Getenv("STRIPE_PRICE_ID_3")
-	// default:
-	// 	priceId = os.Getenv("STRIPE_PRICE_ID_1")
-	// }
+
+	var lifetimePriceId string
+	switch exp {
+	case "test":
+		lifetimePriceId = os.Getenv("STRIPE_LIFETIME_PRICE_ID_2")
+	default:
+		lifetimePriceId = os.Getenv("STRIPE_LIFETIME_PRICE_ID")
+	}
 
 	params := &stripe.PriceParams{}
 	monthlyResult, err := price.Get(monthlyPriceId, params)
