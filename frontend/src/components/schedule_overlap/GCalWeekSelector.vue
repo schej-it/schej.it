@@ -40,8 +40,6 @@ export default {
       )
       // Set date to the Sunday of the current week
       date.setDate(date.getDate() - date.getDay())
-      // Change date by the weekoffset
-      date.setDate(date.getDate() + 7 * this.weekOffset)
 
       if (this.startOnMonday) {
         date.setDate(date.getDate() + 1)
