@@ -671,6 +671,8 @@ export default {
           const date = new Date(`${day} 00:00:00Z`)
           dates.push(date)
         }
+
+        this.specificTimesEnabled = false
       } else {
         const startTimeString = timeNumToTimeString(this.startTime)
         if (this.selectedDateOption === this.dateOptions.SPECIFIC) {
