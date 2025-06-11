@@ -116,6 +116,7 @@ func main() {
 	routes.InitUsers(apiRouter)
 	routes.InitAnalytics(apiRouter)
 	routes.InitStripe(apiRouter)
+	routes.InitFolders(apiRouter)
 	slackbot.InitSlackbot(apiRouter)
 
 	err = filepath.WalkDir("../frontend/dist", func(path string, d fs.DirEntry, err error) error {
