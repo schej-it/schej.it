@@ -9,53 +9,23 @@ import (
 	"schej.it/server/models"
 )
 
-func CreateFolder(folder *models.Folder) (string, error) {
+func CreateFolder(folder *models.Folder) (primitive.ObjectID, error) {
 	result, err := FoldersCollection.InsertOne(context.Background(), folder)
 	if err != nil {
 		logger.StdErr.Panicln(err)
-		return "", err
+		return primitive.NilObjectID, err
 	}
-	return result.InsertedID.(primitive.ObjectID).Hex(), nil
+	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func GetTopLevelFolders(userId primitive.ObjectID) ([]models.Folder, error) {
-	var folders []models.Folder
-	cursor, err := FoldersCollection.Find(context.Background(), bson.M{
-		"userId":   userId,
-		"parentId": nil,
+func GetFolderById(folderId primitive.ObjectID, userId primitive.ObjectID) (*models.Folder, error) {
+	var folder models.Folder
+	err := FoldersCollection.FindOne(context.Background(), bson.M{
+		"_id":    folderId,
+		"userId": userId,
 		"$or": bson.A{
 			bson.M{"isDeleted": bson.M{"$exists": false}},
 			bson.M{"isDeleted": false},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if err = cursor.All(context.Background(), &folders); err != nil {
-		return nil, err
-	}
-
-	return folders, nil
-}
-
-func GetFolderById(folderId string, userId primitive.ObjectID) (*models.Folder, error) {
-	objectId, err := primitive.ObjectIDFromHex(folderId)
-	if err != nil {
-		return nil, err
-	}
-
-	var folder models.Folder
-	err = FoldersCollection.FindOne(context.Background(), bson.M{
-		"$and": bson.A{
-			bson.M{"_id": objectId},
-			bson.M{"userId": userId},
-			bson.M{
-				"$or": bson.A{
-					bson.M{"isDeleted": bson.M{"$exists": false}},
-					bson.M{"isDeleted": false},
-				},
-			},
 		},
 	}).Decode(&folder)
 	if err != nil {
@@ -65,64 +35,59 @@ func GetFolderById(folderId string, userId primitive.ObjectID) (*models.Folder, 
 	return &folder, nil
 }
 
-func UpdateFolder(folderId string, userId primitive.ObjectID, updates bson.M) error {
-	objectId, err := primitive.ObjectIDFromHex(folderId)
+func GetChildFolders(parentFolderId *primitive.ObjectID, userId primitive.ObjectID) ([]models.Folder, error) {
+	cursor, err := FoldersCollection.Find(context.Background(), bson.M{
+		"parentId": parentFolderId,
+		"userId":   userId,
+		"$or": bson.A{
+			bson.M{"isDeleted": bson.M{"$exists": false}},
+			bson.M{"isDeleted": false},
+		},
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": objectId, "userId": userId}, bson.M{"$set": updates})
+	var childFolders []models.Folder
+	if err = cursor.All(context.Background(), &childFolders); err != nil {
+		return nil, err
+	}
+
+	return childFolders, nil
+}
+
+func GetEventsInFolder(folderId *primitive.ObjectID, userId primitive.ObjectID) ([]models.Event, error) {
+	cursor, err := EventsCollection.Find(context.Background(), bson.M{
+		"folderId": folderId,
+		"ownerId":  userId,
+		"$or": bson.A{
+			bson.M{"isDeleted": bson.M{"$exists": false}},
+			bson.M{"isDeleted": false},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var events []models.Event
+	if err = cursor.All(context.Background(), &events); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}
+
+func UpdateFolder(folderId primitive.ObjectID, userId primitive.ObjectID, updates bson.M) error {
+	_, err := FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": folderId, "userId": userId}, bson.M{"$set": updates})
 	return err
 }
 
-func AddFolderToFolder(parentFolderId string, userId primitive.ObjectID, childFolderId string) error {
-	parentObjectId, err := primitive.ObjectIDFromHex(parentFolderId)
-	if err != nil {
-		return err
-	}
-	childObjectId, err := primitive.ObjectIDFromHex(childFolderId)
-	if err != nil {
-		return err
-	}
-
-	_, err = FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": parentObjectId, "userId": userId}, bson.M{"$addToSet": bson.M{"folders": childObjectId}})
+func SetEventFolder(eventId primitive.ObjectID, folderId *primitive.ObjectID, userId primitive.ObjectID) error {
+	_, err := EventsCollection.UpdateOne(context.Background(), bson.M{"_id": eventId, "ownerId": userId}, bson.M{"$set": bson.M{"folderId": folderId}})
 	return err
 }
 
-func AddEventToFolder(folderId string, userId primitive.ObjectID, eventId string) error {
-	objectId, err := primitive.ObjectIDFromHex(folderId)
-	if err != nil {
-		return err
-	}
-	eventIdObj, err := primitive.ObjectIDFromHex(eventId)
-	if err != nil {
-		return err
-	}
-
-	_, err = FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": objectId, "userId": userId}, bson.M{"$addToSet": bson.M{"events": eventIdObj}})
-	return err
-}
-
-func UpdateFolderParent(folderId string, userId primitive.ObjectID, parentId string) error {
-	objectId, err := primitive.ObjectIDFromHex(folderId)
-	if err != nil {
-		return err
-	}
-	parentObjectId, err := primitive.ObjectIDFromHex(parentId)
-	if err != nil {
-		return err
-	}
-
-	_, err = FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": objectId, "userId": userId}, bson.M{"$set": bson.M{"parentId": parentObjectId.Hex()}})
-	return err
-}
-
-func DeleteFolder(folderId string, userId primitive.ObjectID) error {
-	objectId, err := primitive.ObjectIDFromHex(folderId)
-	if err != nil {
-		return err
-	}
-
-	_, err = FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": objectId, "userId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
+func DeleteFolder(folderId primitive.ObjectID, userId primitive.ObjectID) error {
+	_, err := FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": folderId, "userId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
 	return err
 }

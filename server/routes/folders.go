@@ -16,15 +16,16 @@ func InitFolders(router *gin.RouterGroup) {
 	folderRouter := router.Group("/folders")
 	folderRouter.Use(middleware.AuthRequired())
 
-	folderRouter.GET("", GetFolders)
 	folderRouter.POST("", CreateFolder)
+	folderRouter.GET("/root", GetRootFolder)
+	folderRouter.GET("/:folderId", GetFolder)
 	folderRouter.PATCH("/:folderId", UpdateFolder)
 	folderRouter.DELETE("/:folderId", DeleteFolder)
 	folderRouter.POST("/:folderId/add-folder", AddFolderToFolder)
 	folderRouter.POST("/:folderId/add-event", AddEventToFolder)
 }
 
-func GetFolders(c *gin.Context) {
+func GetRootFolder(c *gin.Context) {
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
 	userId, err := primitive.ObjectIDFromHex(userIdString)
@@ -33,13 +34,66 @@ func GetFolders(c *gin.Context) {
 		return
 	}
 
-	folders, err := db.GetTopLevelFolders(userId)
+	folders, err := db.GetChildFolders(nil, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get folders"})
 		return
 	}
 
-	c.JSON(http.StatusOK, folders)
+	events, err := db.GetEventsInFolder(nil, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get events"})
+		return
+	}
+
+	rootFolder := models.Folder{
+		Id:       primitive.NilObjectID,
+		UserId:   userId,
+		ParentId: nil,
+		Name:     "Root",
+		Folders:  folders,
+		Events:   events,
+	}
+
+	c.JSON(http.StatusOK, rootFolder)
+}
+
+func GetFolder(c *gin.Context) {
+	session := sessions.Default(c)
+	userIdString := session.Get("userId").(string)
+	userId, err := primitive.ObjectIDFromHex(userIdString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
+		return
+	}
+
+	folder, err := db.GetFolderById(folderId, userId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Folder not found"})
+		return
+	}
+
+	childFolders, err := db.GetChildFolders(&folderId, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get child folders"})
+		return
+	}
+	folder.Folders = childFolders
+
+	events, err := db.GetEventsInFolder(&folderId, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get events in folder"})
+		return
+	}
+	folder.Events = events
+
+	c.JSON(http.StatusOK, folder)
 }
 
 func CreateFolder(c *gin.Context) {
@@ -61,12 +115,20 @@ func CreateFolder(c *gin.Context) {
 		return
 	}
 
+	var parentId *primitive.ObjectID
+	if body.ParentId != nil {
+		pId, err := primitive.ObjectIDFromHex(*body.ParentId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parent ID"})
+			return
+		}
+		parentId = &pId
+	}
+
 	folder := models.Folder{
 		UserId:   userId,
 		Name:     body.Name,
-		ParentId: body.ParentId,
-		Folders:  []primitive.ObjectID{},
-		Events:   []primitive.ObjectID{},
+		ParentId: parentId,
 	}
 
 	id, err := db.CreateFolder(&folder)
@@ -75,21 +137,18 @@ func CreateFolder(c *gin.Context) {
 		return
 	}
 
-	if body.ParentId != nil {
-		err = db.AddFolderToFolder(*body.ParentId, userId, id)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add folder to parent"})
-			return
-		}
-	}
-
-	c.JSON(http.StatusCreated, gin.H{"id": id})
+	c.JSON(http.StatusCreated, gin.H{"id": id.Hex()})
 }
 
 func UpdateFolder(c *gin.Context) {
-	folderId := c.Param("folderId")
+	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
+		return
+	}
 	var body struct {
-		Name string `json:"name" binding:"required"`
+		Name     *string `json:"name"`
+		ParentId *string `json:"parentId"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -105,7 +164,22 @@ func UpdateFolder(c *gin.Context) {
 		return
 	}
 
-	updates := bson.M{"name": body.Name}
+	updates := bson.M{}
+	if body.Name != nil {
+		updates["name"] = body.Name
+	}
+	if body.ParentId != nil {
+		if *body.ParentId == "" {
+			updates["parentId"] = nil
+		} else {
+			parentId, err := primitive.ObjectIDFromHex(*body.ParentId)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parent ID"})
+				return
+			}
+			updates["parentId"] = parentId
+		}
+	}
 
 	err = db.UpdateFolder(folderId, userId, updates)
 	if err != nil {
@@ -117,7 +191,11 @@ func UpdateFolder(c *gin.Context) {
 }
 
 func AddFolderToFolder(c *gin.Context) {
-	parentFolderId := c.Param("folderId")
+	parentFolderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parent folder ID"})
+		return
+	}
 	var body struct {
 		FolderID string `json:"folderId" binding:"required"`
 	}
@@ -127,6 +205,12 @@ func AddFolderToFolder(c *gin.Context) {
 		return
 	}
 
+	childFolderId, err := primitive.ObjectIDFromHex(body.FolderID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid child folder ID"})
+		return
+	}
+
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
 	userId, err := primitive.ObjectIDFromHex(userIdString)
@@ -135,15 +219,10 @@ func AddFolderToFolder(c *gin.Context) {
 		return
 	}
 
-	err = db.AddFolderToFolder(parentFolderId, userId, body.FolderID)
+	updates := bson.M{"parentId": parentFolderId}
+	err = db.UpdateFolder(childFolderId, userId, updates)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add folder to folder"})
-		return
-	}
-
-	err = db.UpdateFolderParent(body.FolderID, userId, parentFolderId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update folder parent"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to move folder"})
 		return
 	}
 
@@ -151,7 +230,11 @@ func AddFolderToFolder(c *gin.Context) {
 }
 
 func AddEventToFolder(c *gin.Context) {
-	folderId := c.Param("folderId")
+	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
+		return
+	}
 	var body struct {
 		EventID string `json:"eventId" binding:"required"`
 	}
@@ -161,6 +244,12 @@ func AddEventToFolder(c *gin.Context) {
 		return
 	}
 
+	eventId, err := primitive.ObjectIDFromHex(body.EventID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
 	userId, err := primitive.ObjectIDFromHex(userIdString)
@@ -169,7 +258,7 @@ func AddEventToFolder(c *gin.Context) {
 		return
 	}
 
-	err = db.AddEventToFolder(folderId, userId, body.EventID)
+	err = db.SetEventFolder(eventId, &folderId, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add event to folder"})
 		return
@@ -179,8 +268,11 @@ func AddEventToFolder(c *gin.Context) {
 }
 
 func DeleteFolder(c *gin.Context) {
-	folderId := c.Param("folderId")
-
+	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
+		return
+	}
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
 	userId, err := primitive.ObjectIDFromHex(userIdString)
