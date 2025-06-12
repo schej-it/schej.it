@@ -88,6 +88,43 @@ func SetEventFolder(eventId primitive.ObjectID, folderId *primitive.ObjectID, us
 }
 
 func DeleteFolder(folderId primitive.ObjectID, userId primitive.ObjectID) error {
-	_, err := FoldersCollection.UpdateOne(context.Background(), bson.M{"_id": folderId, "userId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
-	return err
+	ctx := context.Background()
+	// Mark this folder as deleted
+	_, err := FoldersCollection.UpdateOne(ctx, bson.M{"_id": folderId, "userId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
+	if err != nil {
+		return err
+	}
+
+	// Mark all events in this folder as deleted
+	_, err = EventsCollection.UpdateMany(ctx, bson.M{"folderId": folderId, "ownerId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
+	if err != nil {
+		return err
+	}
+
+	// Find all child folders
+	cursor, err := FoldersCollection.Find(ctx, bson.M{"parentId": folderId, "userId": userId, "$or": bson.A{
+		bson.M{"isDeleted": bson.M{"$exists": false}},
+		bson.M{"isDeleted": false},
+	}})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close(ctx)
+
+	var childFolders []struct {
+		Id primitive.ObjectID `bson:"_id"`
+	}
+	if err = cursor.All(ctx, &childFolders); err != nil {
+		return err
+	}
+
+	// Recursively delete all child folders
+	for _, child := range childFolders {
+		err := DeleteFolder(child.Id, userId)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
