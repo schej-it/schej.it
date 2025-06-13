@@ -1169,6 +1169,44 @@ var doc = `{
             }
         },
         "/folders": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Get all folders",
+                "responses": {
+                    "200": {
+                        "description": "A list of all folders for the user",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Folder"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to get folders",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -1182,7 +1220,7 @@ var doc = `{
                 "summary": "Create a new folder",
                 "parameters": [
                     {
-                        "description": "Folder name and optional parent folder ID",
+                        "description": "Folder name and optional color",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -1194,10 +1232,10 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "name": {
+                                        "color": {
                                             "type": "string"
                                         },
-                                        "parentId": {
+                                        "name": {
                                             "type": "string"
                                         }
                                     }
@@ -1214,7 +1252,7 @@ var doc = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid user ID, parent ID, or request body",
+                        "description": "Invalid user ID or request body",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1224,43 +1262,6 @@ var doc = `{
                     },
                     "500": {
                         "description": "Failed to create folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/folders/root": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Get the root folder and its contents",
-                "responses": {
-                    "200": {
-                        "description": "The root folder object with child folders and events",
-                        "schema": {
-                            "$ref": "#/definitions/models.Folder"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid user ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to get folders or events",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1291,7 +1292,7 @@ var doc = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "The folder object with child folders and events",
+                        "description": "The folder object with events",
                         "schema": {
                             "$ref": "#/definitions/models.Folder"
                         }
@@ -1315,7 +1316,7 @@ var doc = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to get child folders or events",
+                        "description": "Failed to get events in folder",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1374,7 +1375,7 @@ var doc = `{
                 "tags": [
                     "folders"
                 ],
-                "summary": "Update a folder's name or parent",
+                "summary": "Update a folder's name or color",
                 "parameters": [
                     {
                         "type": "string",
@@ -1384,7 +1385,7 @@ var doc = `{
                         "required": true
                     },
                     {
-                        "description": "New folder name and/or parent folder ID",
+                        "description": "New folder name and/or color",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -1396,10 +1397,10 @@ var doc = `{
                                 {
                                     "type": "object",
                                     "properties": {
-                                        "name": {
+                                        "color": {
                                             "type": "string"
                                         },
-                                        "parentId": {
+                                        "name": {
                                             "type": "string"
                                         }
                                     }
@@ -1411,7 +1412,7 @@ var doc = `{
                 "responses": {
                     "200": {},
                     "400": {
-                        "description": "Invalid user ID, folder ID, or parent ID",
+                        "description": "Invalid user ID or folder ID",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -2252,9 +2253,6 @@ var doc = `{
                 "duration": {
                     "type": "number"
                 },
-                "folderId": {
-                    "type": "string"
-                },
                 "hasResponded": {
                     "description": "Whether the user has responded to the availability group (fetched based on whether user is in Attendees)",
                     "type": "boolean"
@@ -2347,25 +2345,19 @@ var doc = `{
                 "_id": {
                     "type": "string"
                 },
-                "events": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Event"
-                    }
+                "color": {
+                    "type": "string"
                 },
-                "folders": {
+                "eventIds": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Folder"
+                        "type": "string"
                     }
                 },
                 "isDeleted": {
                     "type": "boolean"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "parentId": {
                     "type": "string"
                 },
                 "userId": {

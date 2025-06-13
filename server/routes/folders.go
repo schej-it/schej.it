@@ -16,8 +16,8 @@ func InitFolders(router *gin.RouterGroup) {
 	folderRouter := router.Group("/folders")
 	folderRouter.Use(middleware.AuthRequired())
 
-	folderRouter.POST("", CreateFolder)
 	folderRouter.GET("", GetAllFolders)
+	folderRouter.POST("", CreateFolder)
 	folderRouter.GET("/:folderId", GetFolder)
 	folderRouter.PATCH("/:folderId", UpdateFolder)
 	folderRouter.DELETE("/:folderId", DeleteFolder)
@@ -46,6 +46,10 @@ func GetAllFolders(c *gin.Context) {
 		return
 	}
 
+	if folders == nil {
+		c.JSON(http.StatusOK, []models.Folder{})
+		return
+	}
 	c.JSON(http.StatusOK, folders)
 }
 
@@ -79,12 +83,12 @@ func GetFolder(c *gin.Context) {
 		return
 	}
 
-	events, err := db.GetEventsInFolder(&folderId, userId)
+	events, err := db.GetEventsInFolder(folderId, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get events in folder"})
 		return
 	}
-	folder.Events = events
+	folder.EventIds = events
 
 	c.JSON(http.StatusOK, folder)
 }

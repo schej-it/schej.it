@@ -5,6 +5,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"schej.it/server/logger"
 	"schej.it/server/models"
 )
@@ -52,28 +53,43 @@ func GetAllFolders(userId primitive.ObjectID) ([]models.Folder, error) {
 		return nil, err
 	}
 
+	for i, folder := range folders {
+		events, err := GetEventsInFolder(folder.Id, userId)
+		if err != nil {
+			return nil, err
+		}
+		if events != nil {
+			folders[i].EventIds = events
+		} else {
+			folders[i].EventIds = []primitive.ObjectID{}
+		}
+	}
+
 	return folders, nil
 }
 
-func GetEventsInFolder(folderId *primitive.ObjectID, userId primitive.ObjectID) ([]models.Event, error) {
-	cursor, err := EventsCollection.Find(context.Background(), bson.M{
+func GetEventsInFolder(folderId primitive.ObjectID, userId primitive.ObjectID) ([]primitive.ObjectID, error) {
+	cursor, err := FolderEventsCollection.Find(context.Background(), bson.M{
 		"folderId": folderId,
-		"ownerId":  userId,
-		"$or": bson.A{
-			bson.M{"isDeleted": bson.M{"$exists": false}},
-			bson.M{"isDeleted": false},
-		},
-	})
+		"userId":   userId,
+	}, options.Find().SetProjection(bson.M{"eventId": 1}))
 	if err != nil {
 		return nil, err
 	}
 
-	var events []models.Event
-	if err = cursor.All(context.Background(), &events); err != nil {
+	var eventIdsResponse []struct {
+		EventId primitive.ObjectID `bson:"eventId"`
+	}
+	if err = cursor.All(context.Background(), &eventIdsResponse); err != nil {
 		return nil, err
 	}
 
-	return events, nil
+	eventIds := make([]primitive.ObjectID, len(eventIdsResponse))
+	for i, eventId := range eventIdsResponse {
+		eventIds[i] = eventId.EventId
+	}
+
+	return eventIds, nil
 }
 
 func UpdateFolder(folderId primitive.ObjectID, userId primitive.ObjectID, updates bson.M) error {
@@ -114,23 +130,12 @@ func DeleteFolder(folderId primitive.ObjectID, userId primitive.ObjectID) error 
 	}
 
 	// Find all event mappings for this folder
-	cursor, err := FolderEventsCollection.Find(ctx, bson.M{"folderId": folderId, "userId": userId})
+	eventIds, err := GetEventsInFolder(folderId, userId)
 	if err != nil {
 		return err
 	}
-	defer cursor.Close(ctx)
 
-	var mappings []models.FolderEvent
-	if err = cursor.All(ctx, &mappings); err != nil {
-		return err
-	}
-
-	eventIds := make([]primitive.ObjectID, len(mappings))
-	for i, m := range mappings {
-		eventIds[i] = m.EventId
-	}
-
-	// Mark all events in this folder as deleted
+	// Mark all events in this folder as deleted (if the user owns the event)
 	if len(eventIds) > 0 {
 		_, err = EventsCollection.UpdateMany(ctx, bson.M{"_id": bson.M{"$in": eventIds}, "ownerId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
 		if err != nil {

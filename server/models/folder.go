@@ -10,5 +10,5 @@ type Folder struct {
 	Color     *string `json:"color,omitempty" bson:"color,omitempty"`
 	IsDeleted *bool   `json:"isDeleted,omitempty" bson:"isDeleted,omitempty"`
 
-	Events []Event `json:"events" bson:"-"`
+	EventIds []primitive.ObjectID `json:"eventIds" bson:"-"`
 }

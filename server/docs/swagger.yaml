@@ -118,8 +118,6 @@ definitions:
         type: string
       duration:
         type: number
-      folderId:
-        type: string
       hasResponded:
         description: Whether the user has responded to the availability group (fetched
           based on whether user is in Attendees)
@@ -187,19 +185,15 @@ definitions:
     properties:
       _id:
         type: string
-      events:
+      color:
+        type: string
+      eventIds:
         items:
-          $ref: '#/definitions/models.Event'
-        type: array
-      folders:
-        items:
-          $ref: '#/definitions/models.Folder'
+          type: string
         type: array
       isDeleted:
         type: boolean
       name:
-        type: string
-      parentId:
         type: string
       userId:
         type: string
@@ -1087,11 +1081,36 @@ paths:
       tags:
       - events
   /folders:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: A list of all folders for the user
+          schema:
+            items:
+              $ref: '#/definitions/models.Folder'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to get folders
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all folders
+      tags:
+      - folders
     post:
       consumes:
       - application/json
       parameters:
-      - description: Folder name and optional parent folder ID
+      - description: Folder name and optional color
         in: body
         name: payload
         required: true
@@ -1099,9 +1118,9 @@ paths:
           allOf:
           - type: object
           - properties:
-              name:
+              color:
                 type: string
-              parentId:
+              name:
                 type: string
             type: object
       produces:
@@ -1112,7 +1131,7 @@ paths:
           schema:
             $ref: '#/definitions/routes.CreateFolderResponse'
         "400":
-          description: Invalid user ID, parent ID, or request body
+          description: Invalid user ID or request body
           schema:
             additionalProperties:
               type: string
@@ -1164,7 +1183,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: The folder object with child folders and events
+          description: The folder object with events
           schema:
             $ref: '#/definitions/models.Folder'
         "400":
@@ -1180,7 +1199,7 @@ paths:
               type: string
             type: object
         "500":
-          description: Failed to get child folders or events
+          description: Failed to get events in folder
           schema:
             additionalProperties:
               type: string
@@ -1197,7 +1216,7 @@ paths:
         name: folderId
         required: true
         type: string
-      - description: New folder name and/or parent folder ID
+      - description: New folder name and/or color
         in: body
         name: payload
         required: true
@@ -1205,9 +1224,9 @@ paths:
           allOf:
           - type: object
           - properties:
-              name:
+              color:
                 type: string
-              parentId:
+              name:
                 type: string
             type: object
       produces:
@@ -1215,7 +1234,7 @@ paths:
       responses:
         "200": {}
         "400":
-          description: Invalid user ID, folder ID, or parent ID
+          description: Invalid user ID or folder ID
           schema:
             additionalProperties:
               type: string
@@ -1226,7 +1245,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Update a folder's name or parent
+      summary: Update a folder's name or color
       tags:
       - folders
   /folders/{folderId}/add-event:
@@ -1267,30 +1286,6 @@ paths:
               type: string
             type: object
       summary: Add an event to a folder
-      tags:
-      - folders
-  /folders/root:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: The root folder object with child folders and events
-          schema:
-            $ref: '#/definitions/models.Folder'
-        "400":
-          description: Invalid user ID
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Failed to get folders or events
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get the root folder and its contents
       tags:
       - folders
   /slackbot:
