@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <DiscordBanner />
     <AutoSnackbar color="error" :text="error" />
     <AutoSnackbar color="tw-bg-blue" :text="info" />
     <SignInNotSupportedDialog v-model="webviewDialog" />
@@ -253,6 +254,7 @@ import isWebview from "is-ua-webview"
 import NewDialog from "./components/NewDialog.vue"
 import UpgradeDialog from "@/components/pricing/UpgradeDialog.vue"
 import SignInDialog from "@/components/SignInDialog.vue"
+import DiscordBanner from "@/components/DiscordBanner.vue"
 
 export default {
   name: "App",
@@ -272,6 +274,7 @@ export default {
     Logo,
     UpgradeDialog,
     SignInDialog,
+    DiscordBanner,
   },
 
   data: () => ({
