@@ -1152,335 +1152,6 @@
                 }
             }
         },
-        "/folders": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Get all folders",
-                "responses": {
-                    "200": {
-                        "description": "A list of all folders for the user",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Folder"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid user ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to get folders",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Create a new folder",
-                "parameters": [
-                    {
-                        "description": "Folder name and optional color",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "color": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "The ID of the created folder",
-                        "schema": {
-                            "$ref": "#/definitions/routes.CreateFolderResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid user ID or request body",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to create folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/folders/{folderId}": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Get a folder by its ID and its contents",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Folder ID",
-                        "name": "folderId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The folder object with events",
-                        "schema": {
-                            "$ref": "#/definitions/models.Folder"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid user ID or folder ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Folder not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to get events in folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Delete a folder",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Folder ID",
-                        "name": "folderId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {},
-                    "400": {
-                        "description": "Invalid user ID or folder ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to delete folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Update a folder's name or color",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Folder ID",
-                        "name": "folderId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "New folder name and/or color",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "color": {
-                                            "type": "string"
-                                        },
-                                        "name": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {},
-                    "400": {
-                        "description": "Invalid user ID or folder ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to update folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/folders/{folderId}/add-event": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Add an event to a folder",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Folder ID",
-                        "name": "folderId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "ID of the event to add",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "eventId": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {},
-                    "400": {
-                        "description": "Invalid user ID, folder ID, or event ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to add event to folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/slackbot": {
             "post": {
                 "consumes": [
@@ -1770,6 +1441,335 @@
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/folders": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Get all folders",
+                "responses": {
+                    "200": {
+                        "description": "A list of all folders for the user",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Folder"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to get folders",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Create a new folder",
+                "parameters": [
+                    {
+                        "description": "Folder name and optional color",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "The ID of the created folder",
+                        "schema": {
+                            "$ref": "#/definitions/routes.CreateFolderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID or request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create folder",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/folders/{folderId}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Get a folder by its ID and its contents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder ID",
+                        "name": "folderId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The folder object with events",
+                        "schema": {
+                            "$ref": "#/definitions/models.Folder"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID or folder ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Folder not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to get events in folder",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Delete a folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder ID",
+                        "name": "folderId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {},
+                    "400": {
+                        "description": "Invalid user ID or folder ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete folder",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Update a folder's name or color",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder ID",
+                        "name": "folderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New folder name and/or color",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "color": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {},
+                    "400": {
+                        "description": "Invalid user ID or folder ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update folder",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/folders/{folderId}/add-event": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "folders"
+                ],
+                "summary": "Add an event to a folder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Folder ID",
+                        "name": "folderId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ID of the event to add",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "eventId": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {},
+                    "400": {
+                        "description": "Invalid user ID, folder ID, or event ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to add event to folder",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }

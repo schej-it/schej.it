@@ -13,7 +13,7 @@ import (
 )
 
 func InitFolders(router *gin.RouterGroup) {
-	folderRouter := router.Group("/folders")
+	folderRouter := router.Group("/user/folders")
 	folderRouter.Use(middleware.AuthRequired())
 
 	folderRouter.GET("", GetAllFolders)
@@ -30,7 +30,7 @@ func InitFolders(router *gin.RouterGroup) {
 // @Success 200 {array} models.Folder "A list of all folders for the user"
 // @Failure 400 {object} map[string]string "Invalid user ID"
 // @Failure 500 {object} map[string]string "Failed to get folders"
-// @Router /folders [get]
+// @Router /user/folders [get]
 func GetAllFolders(c *gin.Context) {
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
@@ -61,7 +61,7 @@ func GetAllFolders(c *gin.Context) {
 // @Failure 400 {object} map[string]string "Invalid user ID or folder ID"
 // @Failure 404 {object} map[string]string "Folder not found"
 // @Failure 500 {object} map[string]string "Failed to get events in folder"
-// @Router /folders/{folderId} [get]
+// @Router /user/folders/{folderId} [get]
 func GetFolder(c *gin.Context) {
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
@@ -105,7 +105,7 @@ type CreateFolderResponse struct {
 // @Success 201 {object} CreateFolderResponse "The ID of the created folder"
 // @Failure 400 {object} map[string]string "Invalid user ID or request body"
 // @Failure 500 {object} map[string]string "Failed to create folder"
-// @Router /folders [post]
+// @Router /user/folders [post]
 func CreateFolder(c *gin.Context) {
 	var body struct {
 		Name  string  `json:"name" binding:"required"`
@@ -149,7 +149,7 @@ func CreateFolder(c *gin.Context) {
 // @Success 200
 // @Failure 400 {object} map[string]string "Invalid user ID or folder ID"
 // @Failure 500 {object} map[string]string "Failed to update folder"
-// @Router /folders/{folderId} [patch]
+// @Router /user/folders/{folderId} [patch]
 func UpdateFolder(c *gin.Context) {
 	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
 	if err != nil {
@@ -200,7 +200,7 @@ func UpdateFolder(c *gin.Context) {
 // @Success 200
 // @Failure 400 {object} map[string]string "Invalid user ID, folder ID, or event ID"
 // @Failure 500 {object} map[string]string "Failed to add event to folder"
-// @Router /folders/{folderId}/add-event [post]
+// @Router /user/folders/{folderId}/add-event [post]
 func AddEventToFolder(c *gin.Context) {
 	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
 	if err != nil {
@@ -246,7 +246,7 @@ func AddEventToFolder(c *gin.Context) {
 // @Success 200
 // @Failure 400 {object} map[string]string "Invalid user ID or folder ID"
 // @Failure 500 {object} map[string]string "Failed to delete folder"
-// @Router /folders/{folderId} [delete]
+// @Router /user/folders/{folderId} [delete]
 func DeleteFolder(c *gin.Context) {
 	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
 	if err != nil {

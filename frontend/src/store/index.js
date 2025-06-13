@@ -13,6 +13,7 @@ export default new Vuex.Store({
 
     createdEvents: [],
     joinedEvents: [],
+    folders: [],
 
     featureFlagsLoaded: false,
 
@@ -53,6 +54,9 @@ export default new Vuex.Store({
     },
     setJoinedEvents(state, joinedEvents) {
       state.joinedEvents = joinedEvents
+    },
+    setFolders(state, folders) {
+      state.folders = folders
     },
 
     setFeatureFlagsLoaded(state, loaded) {
@@ -105,13 +109,23 @@ export default new Vuex.Store({
     // Events
     getEvents({ commit, dispatch }) {
       if (this.state.authUser) {
-        return get("/user/events")
-          .then((data) => {
-            commit("setCreatedEvents", data.events)
-            commit("setJoinedEvents", data.joinedEvents)
+        return Promise.allSettled([get("/user/folders"), get("/user/events")])
+          .then(([folders, events]) => {
+            if (
+              folders.status === "fulfilled" &&
+              events.status === "fulfilled"
+            ) {
+              commit("setFolders", folders.value)
+              commit("setCreatedEvents", events.value.events)
+              commit("setJoinedEvents", events.value.joinedEvents)
+            } else {
+              dispatch("showError", "There was a problem fetching events!")
+              console.error(folders.reason, events.reason)
+            }
           })
           .catch((err) => {
             dispatch("showError", "There was a problem fetching events!")
+            console.error(err)
           })
       } else {
         return null
