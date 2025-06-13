@@ -1,6 +1,6 @@
 import Vue from "vue"
 import Vuex from "vuex"
-import { get } from "@/utils"
+import { get, isPremiumUser } from "@/utils"
 
 Vue.use(Vuex)
 
@@ -31,7 +31,11 @@ export default new Vuex.Store({
     upgradeDialogType: null,
     upgradeDialogData: null,
   },
-  getters: {},
+  getters: {
+    isPremiumUser(state) {
+      return isPremiumUser(state.authUser)
+    },
+  },
   mutations: {
     setError(state, error) {
       state.error = error

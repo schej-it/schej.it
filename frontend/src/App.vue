@@ -227,7 +227,7 @@ html {
 </style>
 
 <script>
-import { mapMutations, mapState, mapActions } from "vuex"
+import { mapMutations, mapState, mapActions, mapGetters } from "vuex"
 import {
   get,
   getLocation,
@@ -288,6 +288,7 @@ export default {
   }),
 
   computed: {
+    ...mapGetters(["isPremiumUser"]),
     ...mapState([
       "authUser",
       "error",
@@ -322,9 +323,6 @@ export default {
         }
       }
       return c
-    },
-    isPremiumUser() {
-      return isPremiumUser(this.authUser)
     },
   },
 
