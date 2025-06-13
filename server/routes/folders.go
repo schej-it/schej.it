@@ -17,21 +17,21 @@ func InitFolders(router *gin.RouterGroup) {
 	folderRouter.Use(middleware.AuthRequired())
 
 	folderRouter.POST("", CreateFolder)
-	folderRouter.GET("/root", GetRootFolder)
+	folderRouter.GET("", GetAllFolders)
 	folderRouter.GET("/:folderId", GetFolder)
 	folderRouter.PATCH("/:folderId", UpdateFolder)
 	folderRouter.DELETE("/:folderId", DeleteFolder)
 	folderRouter.POST("/:folderId/add-event", AddEventToFolder)
 }
 
-// @Summary Get the root folder and its contents
+// @Summary Get all folders
 // @Tags folders
 // @Produce json
-// @Success 200 {object} models.Folder "The root folder object with child folders and events"
+// @Success 200 {array} models.Folder "A list of all folders for the user"
 // @Failure 400 {object} map[string]string "Invalid user ID"
-// @Failure 500 {object} map[string]string "Failed to get folders or events"
-// @Router /folders/root [get]
-func GetRootFolder(c *gin.Context) {
+// @Failure 500 {object} map[string]string "Failed to get folders"
+// @Router /folders [get]
+func GetAllFolders(c *gin.Context) {
 	session := sessions.Default(c)
 	userIdString := session.Get("userId").(string)
 	userId, err := primitive.ObjectIDFromHex(userIdString)
@@ -40,38 +40,23 @@ func GetRootFolder(c *gin.Context) {
 		return
 	}
 
-	folders, err := db.GetChildFolders(nil, userId)
+	folders, err := db.GetAllFolders(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get folders"})
 		return
 	}
 
-	events, err := db.GetEventsInFolder(nil, userId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get events"})
-		return
-	}
-
-	rootFolder := models.Folder{
-		Id:       primitive.NilObjectID,
-		UserId:   userId,
-		ParentId: nil,
-		Name:     "Root",
-		Folders:  folders,
-		Events:   events,
-	}
-
-	c.JSON(http.StatusOK, rootFolder)
+	c.JSON(http.StatusOK, folders)
 }
 
 // @Summary Get a folder by its ID and its contents
 // @Tags folders
 // @Produce json
 // @Param folderId path string true "Folder ID"
-// @Success 200 {object} models.Folder "The folder object with child folders and events"
+// @Success 200 {object} models.Folder "The folder object with events"
 // @Failure 400 {object} map[string]string "Invalid user ID or folder ID"
 // @Failure 404 {object} map[string]string "Folder not found"
-// @Failure 500 {object} map[string]string "Failed to get child folders or events"
+// @Failure 500 {object} map[string]string "Failed to get events in folder"
 // @Router /folders/{folderId} [get]
 func GetFolder(c *gin.Context) {
 	session := sessions.Default(c)
@@ -94,13 +79,6 @@ func GetFolder(c *gin.Context) {
 		return
 	}
 
-	childFolders, err := db.GetChildFolders(&folderId, userId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get child folders"})
-		return
-	}
-	folder.Folders = childFolders
-
 	events, err := db.GetEventsInFolder(&folderId, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get events in folder"})
@@ -119,15 +97,15 @@ type CreateFolderResponse struct {
 // @Tags folders
 // @Accept json
 // @Produce json
-// @Param payload body object{name=string,parentId=string} true "Folder name and optional parent folder ID"
+// @Param payload body object{name=string,color=string} true "Folder name and optional color"
 // @Success 201 {object} CreateFolderResponse "The ID of the created folder"
-// @Failure 400 {object} map[string]string "Invalid user ID, parent ID, or request body"
+// @Failure 400 {object} map[string]string "Invalid user ID or request body"
 // @Failure 500 {object} map[string]string "Failed to create folder"
 // @Router /folders [post]
 func CreateFolder(c *gin.Context) {
 	var body struct {
-		Name     string  `json:"name" binding:"required"`
-		ParentId *string `json:"parentId"`
+		Name  string  `json:"name" binding:"required"`
+		Color *string `json:"color"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -143,20 +121,10 @@ func CreateFolder(c *gin.Context) {
 		return
 	}
 
-	var parentId *primitive.ObjectID
-	if body.ParentId != nil {
-		pId, err := primitive.ObjectIDFromHex(*body.ParentId)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parent ID"})
-			return
-		}
-		parentId = &pId
-	}
-
 	folder := models.Folder{
-		UserId:   userId,
-		Name:     body.Name,
-		ParentId: parentId,
+		UserId: userId,
+		Name:   body.Name,
+		Color:  body.Color,
 	}
 
 	id, err := db.CreateFolder(&folder)
@@ -168,14 +136,14 @@ func CreateFolder(c *gin.Context) {
 	c.JSON(http.StatusCreated, CreateFolderResponse{Id: id.Hex()})
 }
 
-// @Summary Update a folder's name or parent
+// @Summary Update a folder's name or color
 // @Tags folders
 // @Accept json
 // @Produce json
 // @Param folderId path string true "Folder ID"
-// @Param payload body object{name=string,parentId=string} true "New folder name and/or parent folder ID"
+// @Param payload body object{name=string,color=string} true "New folder name and/or color"
 // @Success 200
-// @Failure 400 {object} map[string]string "Invalid user ID, folder ID, or parent ID"
+// @Failure 400 {object} map[string]string "Invalid user ID or folder ID"
 // @Failure 500 {object} map[string]string "Failed to update folder"
 // @Router /folders/{folderId} [patch]
 func UpdateFolder(c *gin.Context) {
@@ -185,8 +153,8 @@ func UpdateFolder(c *gin.Context) {
 		return
 	}
 	var body struct {
-		Name     *string `json:"name"`
-		ParentId *string `json:"parentId"`
+		Name  *string `json:"name"`
+		Color *string `json:"color"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -206,17 +174,8 @@ func UpdateFolder(c *gin.Context) {
 	if body.Name != nil {
 		updates["name"] = body.Name
 	}
-	if body.ParentId != nil {
-		if *body.ParentId == "" {
-			updates["parentId"] = nil
-		} else {
-			parentId, err := primitive.ObjectIDFromHex(*body.ParentId)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parent ID"})
-				return
-			}
-			updates["parentId"] = parentId
-		}
+	if body.Color != nil {
+		updates["color"] = body.Color
 	}
 
 	err = db.UpdateFolder(folderId, userId, updates)

@@ -35,10 +35,9 @@ func GetFolderById(folderId primitive.ObjectID, userId primitive.ObjectID) (*mod
 	return &folder, nil
 }
 
-func GetChildFolders(parentFolderId *primitive.ObjectID, userId primitive.ObjectID) ([]models.Folder, error) {
+func GetAllFolders(userId primitive.ObjectID) ([]models.Folder, error) {
 	cursor, err := FoldersCollection.Find(context.Background(), bson.M{
-		"parentId": parentFolderId,
-		"userId":   userId,
+		"userId": userId,
 		"$or": bson.A{
 			bson.M{"isDeleted": bson.M{"$exists": false}},
 			bson.M{"isDeleted": false},
@@ -48,12 +47,12 @@ func GetChildFolders(parentFolderId *primitive.ObjectID, userId primitive.Object
 		return nil, err
 	}
 
-	var childFolders []models.Folder
-	if err = cursor.All(context.Background(), &childFolders); err != nil {
+	var folders []models.Folder
+	if err = cursor.All(context.Background(), &folders); err != nil {
 		return nil, err
 	}
 
-	return childFolders, nil
+	return folders, nil
 }
 
 func GetEventsInFolder(folderId *primitive.ObjectID, userId primitive.ObjectID) ([]models.Event, error) {
@@ -83,8 +82,27 @@ func UpdateFolder(folderId primitive.ObjectID, userId primitive.ObjectID, update
 }
 
 func SetEventFolder(eventId primitive.ObjectID, folderId *primitive.ObjectID, userId primitive.ObjectID) error {
-	_, err := EventsCollection.UpdateOne(context.Background(), bson.M{"_id": eventId, "ownerId": userId}, bson.M{"$set": bson.M{"folderId": folderId}})
-	return err
+	ctx := context.Background()
+
+	// Remove any existing mapping for this event
+	_, err := FolderEventsCollection.DeleteMany(ctx, bson.M{"eventId": eventId, "userId": userId})
+	if err != nil {
+		return err
+	}
+
+	// If folderId is nil, we just un-assign it. Otherwise, create a new mapping
+	if folderId != nil {
+		_, err = FolderEventsCollection.InsertOne(ctx, models.FolderEvent{
+			FolderId: *folderId,
+			EventId:  eventId,
+			UserId:   userId,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func DeleteFolder(folderId primitive.ObjectID, userId primitive.ObjectID) error {
@@ -95,35 +113,35 @@ func DeleteFolder(folderId primitive.ObjectID, userId primitive.ObjectID) error 
 		return err
 	}
 
-	// Mark all events in this folder as deleted
-	_, err = EventsCollection.UpdateMany(ctx, bson.M{"folderId": folderId, "ownerId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
-	if err != nil {
-		return err
-	}
-
-	// Find all child folders
-	cursor, err := FoldersCollection.Find(ctx, bson.M{"parentId": folderId, "userId": userId, "$or": bson.A{
-		bson.M{"isDeleted": bson.M{"$exists": false}},
-		bson.M{"isDeleted": false},
-	}})
+	// Find all event mappings for this folder
+	cursor, err := FolderEventsCollection.Find(ctx, bson.M{"folderId": folderId, "userId": userId})
 	if err != nil {
 		return err
 	}
 	defer cursor.Close(ctx)
 
-	var childFolders []struct {
-		Id primitive.ObjectID `bson:"_id"`
-	}
-	if err = cursor.All(ctx, &childFolders); err != nil {
+	var mappings []models.FolderEvent
+	if err = cursor.All(ctx, &mappings); err != nil {
 		return err
 	}
 
-	// Recursively delete all child folders
-	for _, child := range childFolders {
-		err := DeleteFolder(child.Id, userId)
+	eventIds := make([]primitive.ObjectID, len(mappings))
+	for i, m := range mappings {
+		eventIds[i] = m.EventId
+	}
+
+	// Mark all events in this folder as deleted
+	if len(eventIds) > 0 {
+		_, err = EventsCollection.UpdateMany(ctx, bson.M{"_id": bson.M{"$in": eventIds}, "ownerId": userId}, bson.M{"$set": bson.M{"isDeleted": true}})
 		if err != nil {
 			return err
 		}
+	}
+
+	// Delete the mappings
+	_, err = FolderEventsCollection.DeleteMany(ctx, bson.M{"folderId": folderId, "userId": userId})
+	if err != nil {
+		return err
 	}
 
 	return nil
