@@ -92,12 +92,10 @@
     </div>
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
-        <v-card-title class="headline"
-          >Delete {{ folderToDelete.name }}?</v-card-title
-        >
+        <v-card-title>Delete "{{ folderToDelete.name }}"?</v-card-title>
         <v-card-text
-          >Are you sure you want to delete this folder? This will not delete the
-          events in it.</v-card-text
+          >Are you sure you want to delete this folder? All events you own in
+          this folder will be deleted as well.</v-card-text
         >
         <v-card-actions>
           <v-spacer></v-spacer>

@@ -1,5 +1,6 @@
 import Vue from "vue"
 import Vuex from "vuex"
+import { numFreeEvents, upgradeDialogTypes } from "@/constants"
 import { get, isPremiumUser } from "@/utils"
 import { createFolder, deleteFolder } from "../utils/FolderClient"
 
@@ -32,6 +33,14 @@ export default new Vuex.Store({
     upgradeDialogVisible: false,
     upgradeDialogType: null,
     upgradeDialogData: null,
+
+    // New dialog
+    newDialogOptions: {
+      show: false,
+      contactsPayload: {},
+      openNewGroup: false,
+      eventOnly: false,
+    },
   },
   getters: {
     isPremiumUser(state) {
@@ -90,11 +99,29 @@ export default new Vuex.Store({
     setUpgradeDialogData(state, data) {
       state.upgradeDialogData = data
     },
+
     addFolder(state, folder) {
       state.folders.push(folder)
     },
     removeFolder(state, folderId) {
       state.folders = state.folders.filter((f) => f._id !== folderId)
+    },
+
+    setNewDialogOptions(
+      state,
+      {
+        show = false,
+        contactsPayload = {},
+        openNewGroup = false,
+        eventOnly = true,
+      }
+    ) {
+      state.newDialogOptions = {
+        show,
+        contactsPayload,
+        openNewGroup,
+        eventOnly,
+      }
     },
   },
   actions: {
@@ -111,6 +138,26 @@ export default new Vuex.Store({
     async refreshAuthUser({ commit }) {
       const authUser = await get("/user/profile")
       commit("setAuthUser", authUser)
+    },
+
+    createNew({ state, getters, commit, dispatch }, { eventOnly = false }) {
+      if (
+        state.enablePaywall &&
+        !getters.isPremiumUser &&
+        state.authUser?.numEventsCreated >= numFreeEvents
+      ) {
+        dispatch("showUpgradeDialog", {
+          type: upgradeDialogTypes.CREATE_EVENT,
+        })
+        return
+      }
+
+      commit("setNewDialogOptions", {
+        show: true,
+        contactsPayload: {},
+        openNewGroup: false,
+        eventOnly: eventOnly,
+      })
     },
 
     // Events

@@ -64,7 +64,7 @@
     </div>
 
     <!-- FAB -->
-    <BottomFab v-if="isPhone" id="create-event-btn" @click="createNew">
+    <BottomFab v-if="isPhone" id="create-event-btn" @click="() => _createNew()">
       <v-icon>mdi-plus</v-icon>
     </BottomFab>
 
@@ -113,10 +113,11 @@ export default {
 
   mounted() {
     // If coming from enabling contacts, show the dialog. Checks if contactsPayload is not an Observer.
-    this.$emit("setNewDialogOptions", {
+    this.setNewDialogOptions({
       show: Object.keys(this.contactsPayload).length > 0 || this.openNewGroup,
       contactsPayload: this.contactsPayload,
       openNewGroup: this.openNewGroup,
+      eventOnly: false,
     })
   },
 
@@ -131,17 +132,13 @@ export default {
   },
 
   methods: {
-    ...mapMutations(["setAuthUser"]),
-    ...mapActions(["getEvents"]),
+    ...mapMutations(["setAuthUser", "setNewDialogOptions"]),
+    ...mapActions(["getEvents", "createNew"]),
     userRespondedToEvent(event) {
       return event.hasResponded ?? false
     },
-    createNew() {
-      this.$emit("setNewDialogOptions", {
-        show: true,
-        contactsPayload: {},
-        openNewGroup: false,
-      })
+    _createNew() {
+      this.createNew({ eventOnly: false })
     },
     createFolder() {},
     convertW2M() {

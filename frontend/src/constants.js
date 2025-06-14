@@ -85,7 +85,7 @@ export const folderColors = Object.freeze([
   "#FFB3B3", // Pastel Red
   "#FFCCB3", // Pastel Orange
   "#FFFFB3", // Pastel Yellow
-  "#B3E6B3", // Pastel Green
+  "#CDEBDC", // Pastel Green
   "#B3B3FF", // Pastel Blue
   "#D1B3FF", // Pastel Purple
   "#D3D3D3", // Pastel Gray
