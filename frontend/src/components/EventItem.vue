@@ -11,10 +11,15 @@
       :data-ph-capture-attribute-event-id="event._id"
       :data-ph-capture-attribute-event-name="event.name"
     >
-      <div class="tw-ml-1">
-        <div>{{ this.event.name }}</div>
-        <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
-          {{ dateString }}
+      <div class="tw-flex tw-items-center">
+        <v-icon :color="isGroup ? 'green' : 'grey'">{{
+          isGroup ? "mdi-account-group" : "mdi-calendar"
+        }}</v-icon>
+        <div class="tw-ml-3">
+          <div>{{ this.event.name }}</div>
+          <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
+            {{ dateString }}
+          </div>
         </div>
       </div>
       <div class="tw-min-w-max">

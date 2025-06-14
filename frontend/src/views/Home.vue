@@ -122,33 +122,6 @@ export default {
 
   computed: {
     ...mapState(["createdEvents", "joinedEvents", "authUser", "groupsEnabled"]),
-    events() {
-      return [
-        {
-          header: "Events I created",
-          events: this.createdEventsNonGroup,
-        },
-        {
-          header: "Events I joined",
-          events: this.joinedEventsNonGroup,
-        },
-      ]
-    },
-    createdEventsNonGroup() {
-      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
-    },
-    joinedEventsNonGroup() {
-      return this.joinedEvents.filter((e) => e.type !== eventTypes.GROUP)
-    },
-    availabilityGroups() {
-      return {
-        header: "Availability groups",
-        events: this.createdEvents
-          .filter((e) => e.type === eventTypes.GROUP)
-          .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP))
-          .sort((e1, e2) => (this.userRespondedToEvent(e1) ? 1 : -1)),
-      }
-    },
     eventsNotEmpty() {
       return this.createdEvents.length > 0 || this.joinedEvents.length > 0
     },

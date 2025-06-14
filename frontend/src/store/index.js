@@ -1,6 +1,7 @@
 import Vue from "vue"
 import Vuex from "vuex"
 import { get, isPremiumUser } from "@/utils"
+import { createFolder, deleteFolder } from "../utils/FolderClient"
 
 Vue.use(Vuex)
 
@@ -89,6 +90,12 @@ export default new Vuex.Store({
     setUpgradeDialogData(state, data) {
       state.upgradeDialogData = data
     },
+    addFolder(state, folder) {
+      state.folders.push(folder)
+    },
+    removeFolder(state, folderId) {
+      state.folders = state.folders.filter((f) => f._id !== folderId)
+    },
   },
   actions: {
     // Error & info
@@ -129,6 +136,24 @@ export default new Vuex.Store({
           })
       } else {
         return null
+      }
+    },
+    async createFolder({ commit, dispatch }, { name, color }) {
+      try {
+        const folder = await createFolder(name, color)
+        commit("addFolder", folder)
+      } catch (err) {
+        dispatch("showError", "There was a problem creating the folder!")
+        console.error(err)
+      }
+    },
+    async deleteFolder({ commit, dispatch }, folderId) {
+      try {
+        await deleteFolder(folderId)
+        commit("removeFolder", folderId)
+      } catch (err) {
+        dispatch("showError", "There was a problem deleting the folder!")
+        console.error(err)
       }
     },
     showUpgradeDialog({ commit }, { type, data = null }) {
