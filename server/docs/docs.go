@@ -1435,28 +1435,10 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "events": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.Event"
-                                            }
-                                        },
-                                        "joinedEvents": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/models.Event"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Event"
+                            }
                         }
                     }
                 }

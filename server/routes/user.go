@@ -146,7 +146,7 @@ func updateCalendarOptions(c *gin.Context) {
 // @Description Returns an array containing all the user's events
 // @Tags user
 // @Produce json
-// @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
+// @Success 200 {object} []models.Event
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
 	user := utils.GetAuthUser(c)
@@ -217,10 +217,6 @@ func getEvents(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 
-	response := make(map[string][]models.Event)
-	response["events"] = make([]models.Event, 0)       // The events the user created
-	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
-
 	for _, event := range events {
 		// Set the hasResponded field for availability groups
 		if event.Type == models.GROUP {
@@ -230,16 +226,9 @@ func getEvents(c *gin.Context) {
 				event.HasResponded = utils.FalsePtr()
 			}
 		}
-
-		// Filter into events user created and responded to
-		if event.OwnerId == userId {
-			response["events"] = append(response["events"], event)
-		} else {
-			response["joinedEvents"] = append(response["joinedEvents"], event)
-		}
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, events)
 }
 
 // @Summary Sets the folder for the specified event

@@ -18,8 +18,7 @@ export default new Vuex.Store({
 
     authUser: null,
 
-    createdEvents: [],
-    joinedEvents: [],
+    events: [],
     folders: [],
 
     featureFlagsLoaded: false,
@@ -64,11 +63,8 @@ export default new Vuex.Store({
       state.authUser = authUser
     },
 
-    setCreatedEvents(state, createdEvents) {
-      state.createdEvents = createdEvents
-    },
-    setJoinedEvents(state, joinedEvents) {
-      state.joinedEvents = joinedEvents
+    setEvents(state, events) {
+      state.events = events
     },
     setFolders(state, folders) {
       state.folders = folders
@@ -193,8 +189,7 @@ export default new Vuex.Store({
               events.status === "fulfilled"
             ) {
               commit("setFolders", folders.value)
-              commit("setCreatedEvents", events.value.events)
-              commit("setJoinedEvents", events.value.joinedEvents)
+              commit("setEvents", events.value)
             } else {
               dispatch("showError", "There was a problem fetching events!")
               console.error(folders.reason, events.reason)

@@ -231,13 +231,7 @@ export default {
   },
   computed: {
     ...mapGetters(["isPremiumUser"]),
-    ...mapState([
-      "authUser",
-      "createdEvents",
-      "joinedEvents",
-      "groupsEnabled",
-      "folders",
-    ]),
+    ...mapState(["authUser", "events", "groupsEnabled", "folders"]),
     numFreeEvents() {
       return numFreeEvents
     },
@@ -245,7 +239,7 @@ export default {
       return folderColors
     },
     allEvents() {
-      return [...this.createdEvents, ...this.joinedEvents]
+      return this.events
     },
     allEventsMap() {
       return this.allEvents.reduce((acc, event) => {
@@ -259,30 +253,24 @@ export default {
       this.folders.forEach((folder) => {
         eventsByFolder[folder._id] = []
         for (const eventId of folder.eventIds) {
-          eventsByFolder[folder._id].push(this.allEventsMap[eventId])
-          allEventIds.delete(eventId)
+          const event = this.allEventsMap[eventId]
+          if (event) {
+            eventsByFolder[folder._id].push(event)
+            allEventIds.delete(eventId)
+          }
         }
       })
       eventsByFolder["no-folder"] = []
       for (const eventId of allEventIds) {
-        eventsByFolder["no-folder"].push(this.allEventsMap[eventId])
+        const event = this.allEventsMap[eventId]
+        if (event) {
+          eventsByFolder["no-folder"].push(event)
+        }
       }
       return eventsByFolder
     },
     eventsWithoutFolder() {
       return this.eventsByFolder["no-folder"]
-    },
-    createdEventsNonGroup() {
-      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
-    },
-    joinedEventsNonGroup() {
-      return this.joinedEvents.filter((e) => e.type !== eventTypes.GROUP)
-    },
-    availabilityGroups() {
-      return this.createdEvents
-        .filter((e) => e.type === eventTypes.GROUP)
-        .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP))
-        .sort((e1, e2) => (this.userRespondedToEvent(e1) ? 1 : -1))
     },
     folderDialogTitle() {
       return this.isEditingFolder ? "Edit folder" : "New folder"

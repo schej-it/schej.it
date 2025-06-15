@@ -1242,18 +1242,9 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - type: object
-            - properties:
-                events:
-                  items:
-                    $ref: '#/definitions/models.Event'
-                  type: array
-                joinedEvents:
-                  items:
-                    $ref: '#/definitions/models.Event'
-                  type: array
-              type: object
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
       summary: Gets all the user's events
       tags:
       - user

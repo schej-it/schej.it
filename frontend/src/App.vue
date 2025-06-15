@@ -284,14 +284,10 @@ export default {
       "authUser",
       "error",
       "info",
-      "createdEvents",
       "enablePaywall",
       "upgradeDialogVisible",
       "newDialogOptions",
     ]),
-    createdEventsNonGroup() {
-      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
-    },
     isPhone() {
       return isPhone(this.$vuetify)
     },

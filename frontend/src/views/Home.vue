@@ -122,9 +122,9 @@ export default {
   },
 
   computed: {
-    ...mapState(["createdEvents", "joinedEvents", "authUser", "groupsEnabled"]),
+    ...mapState(["events", "authUser", "groupsEnabled"]),
     eventsNotEmpty() {
-      return this.createdEvents.length > 0 || this.joinedEvents.length > 0
+      return this.events.length > 0
     },
     isPhone() {
       return isPhone(this.$vuetify)
