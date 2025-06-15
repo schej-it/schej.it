@@ -106,14 +106,14 @@
         </div>
       </div>
 
-      <div>
+      <div v-if="allEvents.length > 0">
         <div class="tw-flex tw-items-center">
           <v-btn icon small @click="toggleFolder('no-folder')">
             <v-icon>{{
               folderOpenState["no-folder"] ? "mdi-menu-down" : "mdi-menu-right"
             }}</v-icon>
           </v-btn>
-          <span class="tw-text-sm">No folder</span>
+          <span class="tw-text-sm tw-font-medium">No folder</span>
         </div>
         <div v-show="folderOpenState['no-folder']">
           <draggable
@@ -122,12 +122,12 @@
             @end="onEnd"
             data-folder-id="null"
             draggable=".item"
-            class="tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
+            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
             <template v-slot:header>
               <div
                 v-if="eventsWithoutFolder.length === 0"
-                class="tw-absolute tw-left-0 tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+                class="tw-absolute tw-left-0 tw-ml-7 tw-py-4 tw-text-sm tw-text-very-dark-gray"
               >
                 No events
               </div>
@@ -140,6 +140,11 @@
               class="item"
             />
           </draggable>
+        </div>
+      </div>
+      <div v-else>
+        <div class="tw-py-4 tw-text-sm tw-text-very-dark-gray">
+          No events yet! Create one to get started.
         </div>
       </div>
     </div>
