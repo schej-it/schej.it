@@ -78,26 +78,29 @@
           <draggable
             :list="eventsByFolder[folder._id]"
             group="events"
+            @start="onStart"
+            @change="onChange"
             @end="onEnd"
             :data-folder-id="folder._id"
-            class="tw-grid tw-min-h-[40px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
+            draggable=".item"
+            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
+            <template v-slot:header>
+              <div
+                v-if="eventsByFolder[folder._id].length === 0"
+                class="tw-absolute tw-left-0 tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+              >
+                No events in this folder
+              </div>
+            </template>
             <EventItem
               v-for="event in eventsByFolder[folder._id]"
               :key="event._id"
               :event="event"
               :id="event._id"
+              class="item"
             />
           </draggable>
-          <div
-            v-if="
-              !eventsByFolder[folder._id] ||
-              eventsByFolder[folder._id].length === 0
-            "
-            class="tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
-          >
-            No events in this folder
-          </div>
         </div>
       </div>
 
@@ -116,13 +119,23 @@
             group="events"
             @end="onEnd"
             data-folder-id="null"
-            class="tw-grid tw-min-h-[40px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
+            draggable=".item"
+            class="tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
+            <template v-slot:header>
+              <div
+                v-if="eventsWithoutFolder.length === 0"
+                class="tw-absolute tw-left-0 tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+              >
+                No events
+              </div>
+            </template>
             <EventItem
               v-for="event in eventsWithoutFolder"
               :key="event._id"
               :event="event"
               :id="event._id"
+              class="item"
             />
           </draggable>
         </div>
