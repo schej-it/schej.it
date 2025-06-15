@@ -1,9 +1,13 @@
-import { post, _delete } from "./fetch_utils"
+import { post, _delete, patch } from "./fetch_utils"
 
 const FOLDER_API_ROUTE = "/user/folders"
 
 export const createFolder = (name, color) => {
   return post(FOLDER_API_ROUTE, { name, color })
+}
+
+export const updateFolder = (folderId, name, color) => {
+  return patch(`${FOLDER_API_ROUTE}/${folderId}`, { name, color })
 }
 
 export const deleteFolder = (folderId) => {

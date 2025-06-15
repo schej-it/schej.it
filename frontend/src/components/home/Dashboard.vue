@@ -25,7 +25,7 @@
       </div>
       <v-btn
         text
-        @click="createFolderDialog = true"
+        @click="openCreateFolderDialog"
         class="tw-hidden tw-text-very-dark-gray sm:tw-block"
       >
         <v-icon class="tw-mr-2 tw-text-lg">mdi-folder-plus</v-icon>
@@ -44,7 +44,8 @@
           <v-chip
             :color="folder.color || '#D3D3D3'"
             small
-            class="tw-mr-2 tw-rounded tw-border tw-border-light-gray-stroke tw-px-2 tw-text-sm tw-font-medium"
+            class="tw-mr-2 tw-cursor-pointer tw-rounded tw-border tw-border-light-gray-stroke tw-px-2 tw-text-sm tw-font-medium"
+            @click="openEditFolderDialog(folder)"
           >
             {{ folder.name }}
           </v-chip>
@@ -57,9 +58,12 @@
                   <v-icon small>mdi-dots-horizontal</v-icon>
                 </v-btn>
               </template>
-              <v-list>
+              <v-list dense class="tw-py-1">
+                <v-list-item @click.stop.prevent="openEditFolderDialog(folder)">
+                  <v-list-item-title>Edit</v-list-item-title>
+                </v-list-item>
                 <v-list-item @click.stop.prevent="openDeleteDialog(folder)">
-                  <v-list-item-title class="tw-text-red-500"
+                  <v-list-item-title class="tw-text-red"
                     >Delete</v-list-item-title
                   >
                 </v-list-item>
@@ -78,8 +82,6 @@
           <draggable
             :list="eventsByFolder[folder._id]"
             group="events"
-            @start="onStart"
-            @change="onChange"
             @end="onEnd"
             :data-folder-id="folder._id"
             draggable=".item"
@@ -157,14 +159,14 @@
     </v-dialog>
     <v-dialog v-model="createFolderDialog" max-width="400">
       <v-card>
-        <v-card-title>New folder</v-card-title>
+        <v-card-title>{{ folderDialogTitle }}</v-card-title>
         <v-card-text>
           <v-text-field
             v-model="newFolderName"
             label="Folder name"
             placeholder="Untitled folder"
             autofocus
-            @keydown.enter="confirmCreateFolder"
+            @keydown.enter="confirmFolderDialog"
             hide-details
           ></v-text-field>
           <div class="tw-mt-4">
@@ -186,10 +188,10 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn text @click="createFolderDialog = false">Cancel</v-btn>
-          <v-btn color="primary" text @click="confirmCreateFolder"
-            >Create</v-btn
-          >
+          <v-btn text @click="closeFolderDialog">Cancel</v-btn>
+          <v-btn color="primary" text @click="confirmFolderDialog">{{
+            folderDialogConfirmText
+          }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -220,6 +222,8 @@ export default {
       createFolderDialog: false,
       newFolderName: "",
       newFolderColor: folderColors[3],
+      isEditingFolder: false,
+      folderToEdit: null,
       folderOpenState: {
         "no-folder": true,
       },
@@ -280,6 +284,12 @@ export default {
         .concat(this.joinedEvents.filter((e) => e.type === eventTypes.GROUP))
         .sort((e1, e2) => (this.userRespondedToEvent(e1) ? 1 : -1))
     },
+    folderDialogTitle() {
+      return this.isEditingFolder ? "Edit folder" : "New folder"
+    },
+    folderDialogConfirmText() {
+      return this.isEditingFolder ? "Save" : "Create"
+    },
   },
 
   methods: {
@@ -288,6 +298,7 @@ export default {
       "showUpgradeDialog",
       "deleteFolder",
       "setEventFolder",
+      "updateFolder",
     ]),
     onEnd(evt) {
       const eventId = evt.item.id
@@ -314,16 +325,45 @@ export default {
         })
       }
     },
-    confirmCreateFolder() {
-      if (this.newFolderName.trim()) {
+    confirmFolderDialog() {
+      if (!this.newFolderName.trim()) {
+        this.closeFolderDialog()
+        return
+      }
+      if (this.isEditingFolder) {
+        this.updateFolder({
+          folderId: this.folderToEdit._id,
+          name: this.newFolderName.trim(),
+          color: this.newFolderColor,
+        })
+      } else {
         this.createFolder({
           name: this.newFolderName.trim(),
           color: this.newFolderColor,
         })
       }
+      this.closeFolderDialog()
+    },
+    closeFolderDialog() {
+      this.createFolderDialog = false
+      this.isEditingFolder = false
+      this.folderToEdit = null
       this.newFolderName = ""
       this.newFolderColor = folderColors[3]
-      this.createFolderDialog = false
+    },
+    openCreateFolderDialog() {
+      this.isEditingFolder = false
+      this.folderToEdit = null
+      this.newFolderName = ""
+      this.newFolderColor = folderColors[3]
+      this.createFolderDialog = true
+    },
+    openEditFolderDialog(folder) {
+      this.isEditingFolder = true
+      this.folderToEdit = folder
+      this.newFolderName = folder.name
+      this.newFolderColor = folder.color || folderColors[3]
+      this.createFolderDialog = true
     },
     toggleFolder(folderId) {
       this.$set(this.folderOpenState, folderId, !this.folderOpenState[folderId])

@@ -6,6 +6,7 @@ import {
   createFolder,
   deleteFolder,
   setEventFolder,
+  updateFolder,
 } from "../utils/FolderClient"
 
 Vue.use(Vuex)
@@ -107,6 +108,13 @@ export default new Vuex.Store({
     addFolder(state, folder) {
       state.folders.push(folder)
     },
+    updateFolder(state, { folderId, name, color }) {
+      const folder = state.folders.find((f) => f._id === folderId)
+      if (folder) {
+        folder.name = name
+        folder.color = color
+      }
+    },
     removeFolder(state, folderId) {
       state.folders = state.folders.filter((f) => f._id !== folderId)
     },
@@ -203,9 +211,23 @@ export default new Vuex.Store({
     async createFolder({ commit, dispatch }, { name, color }) {
       try {
         const folder = await createFolder(name, color)
-        commit("addFolder", folder)
+        commit("addFolder", {
+          _id: folder.id,
+          name,
+          color,
+          eventIds: [],
+        })
       } catch (err) {
         dispatch("showError", "There was a problem creating the folder!")
+        console.error(err)
+      }
+    },
+    async updateFolder({ commit, dispatch }, { folderId, name, color }) {
+      try {
+        await updateFolder(folderId, name, color)
+        commit("updateFolder", { folderId, name, color })
+      } catch (err) {
+        dispatch("showError", "There was a problem updating the folder!")
         console.error(err)
       }
     },
