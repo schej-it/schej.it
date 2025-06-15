@@ -9,3 +9,7 @@ export const createFolder = (name, color) => {
 export const deleteFolder = (folderId) => {
   return _delete(`${FOLDER_API_ROUTE}/${folderId}`)
 }
+
+export const moveEventIntoFolder = (eventId, folderId) => {
+  return post(`${FOLDER_API_ROUTE}/${folderId}/add-event`, { eventId })
+}

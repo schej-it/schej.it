@@ -2,7 +2,11 @@ import Vue from "vue"
 import Vuex from "vuex"
 import { numFreeEvents, upgradeDialogTypes } from "@/constants"
 import { get, isPremiumUser } from "@/utils"
-import { createFolder, deleteFolder } from "../utils/FolderClient"
+import {
+  createFolder,
+  deleteFolder,
+  moveEventIntoFolder,
+} from "../utils/FolderClient"
 
 Vue.use(Vuex)
 
@@ -106,6 +110,17 @@ export default new Vuex.Store({
     removeFolder(state, folderId) {
       state.folders = state.folders.filter((f) => f._id !== folderId)
     },
+    removeEventFromFolder(state, eventId) {
+      state.folders.forEach((folder) => {
+        folder.eventIds = folder.eventIds.filter((id) => id !== eventId)
+      })
+    },
+    addEventToFolder(state, { eventId, folderId }) {
+      const folder = state.folders.find((f) => f._id === folderId)
+      if (folder) {
+        folder.eventIds.push(eventId)
+      }
+    },
 
     setNewDialogOptions(
       state,
@@ -200,6 +215,16 @@ export default new Vuex.Store({
         commit("removeFolder", folderId)
       } catch (err) {
         dispatch("showError", "There was a problem deleting the folder!")
+        console.error(err)
+      }
+    },
+    async moveEventIntoFolder({ commit, dispatch }, { eventId, folderId }) {
+      try {
+        commit("removeEventFromFolder", eventId)
+        commit("addEventToFolder", { eventId, folderId })
+        await moveEventIntoFolder(eventId, folderId)
+      } catch (err) {
+        dispatch("showError", "There was a problem moving the event!")
         console.error(err)
       }
     },

@@ -75,17 +75,27 @@
           </div>
         </div>
         <div v-show="folderOpenState[folder._id]">
-          <div
-            v-if="eventsByFolder[folder._id]?.length > 0"
-            class="tw-grid tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
+          <draggable
+            :list="eventsByFolder[folder._id]"
+            group="events"
+            @end="onEnd"
+            :data-folder-id="folder._id"
+            class="tw-grid tw-min-h-[40px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
             <EventItem
               v-for="event in eventsByFolder[folder._id]"
               :key="event._id"
               :event="event"
+              :id="event._id"
             />
-          </div>
-          <div v-else class="tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray">
+          </draggable>
+          <div
+            v-if="
+              !eventsByFolder[folder._id] ||
+              eventsByFolder[folder._id].length === 0
+            "
+            class="tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+          >
             No events in this folder
           </div>
         </div>
@@ -101,15 +111,20 @@
           <span class="tw-text-sm">No folder</span>
         </div>
         <div v-show="folderOpenState['no-folder']">
-          <div
-            class="tw-grid tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
+          <draggable
+            :list="eventsWithoutFolder"
+            group="events"
+            @end="onEnd"
+            data-folder-id="null"
+            class="tw-grid tw-min-h-[40px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
             <EventItem
               v-for="event in eventsWithoutFolder"
               :key="event._id"
               :event="event"
+              :id="event._id"
             />
-          </div>
+          </draggable>
         </div>
       </div>
     </div>
@@ -170,6 +185,7 @@
 
 <script>
 import { mapState, mapActions, mapGetters } from "vuex"
+import draggable from "vuedraggable"
 import {
   eventTypes,
   folderColors,
@@ -182,6 +198,7 @@ export default {
   name: "Dashboard",
   components: {
     EventItem,
+    draggable,
   },
   data() {
     return {
@@ -213,23 +230,30 @@ export default {
     allEvents() {
       return [...this.createdEvents, ...this.joinedEvents]
     },
+    allEventsMap() {
+      return this.allEvents.reduce((acc, event) => {
+        acc[event._id] = event
+        return acc
+      }, {})
+    },
     eventsByFolder() {
       const eventsByFolder = {}
-      this.allEvents.forEach((event) => {
-        if (event.folderId) {
-          if (!eventsByFolder[event.folderId]) {
-            eventsByFolder[event.folderId] = []
-          }
-          eventsByFolder[event.folderId].push(event)
+      const allEventIds = new Set(this.allEvents.map((e) => e._id))
+      this.folders.forEach((folder) => {
+        eventsByFolder[folder._id] = []
+        for (const eventId of folder.eventIds) {
+          eventsByFolder[folder._id].push(this.allEventsMap[eventId])
+          allEventIds.delete(eventId)
         }
       })
+      eventsByFolder["no-folder"] = []
+      for (const eventId of allEventIds) {
+        eventsByFolder["no-folder"].push(this.allEventsMap[eventId])
+      }
       return eventsByFolder
     },
     eventsWithoutFolder() {
-      return this.allEvents.filter(
-        (event) =>
-          !event.folderId || !this.folders.find((f) => f._id === event.folderId)
-      )
+      return this.eventsByFolder["no-folder"]
     },
     createdEventsNonGroup() {
       return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
@@ -246,7 +270,37 @@ export default {
   },
 
   methods: {
-    ...mapActions(["createFolder", "showUpgradeDialog"]),
+    ...mapActions([
+      "createFolder",
+      "showUpgradeDialog",
+      "deleteFolder",
+      "moveEventIntoFolder",
+    ]),
+    onEnd(evt) {
+      const eventId = evt.item.id
+      let newFolderId = evt.to.dataset.folderId
+      if (newFolderId === "null" || newFolderId === undefined) {
+        newFolderId = null
+      }
+
+      const fromFolderId = evt.from.dataset.folderId
+
+      // if moving within the same folder, do nothing.
+      if (fromFolderId === newFolderId) {
+        // Here you might want to handle re-ordering within the same folder
+        // For now, we do nothing.
+        return
+      }
+
+      const event = this.allEvents.find((e) => e._id === eventId)
+
+      if (event) {
+        this.moveEventIntoFolder({
+          eventId: event._id,
+          folderId: newFolderId,
+        })
+      }
+    },
     confirmCreateFolder() {
       if (this.newFolderName.trim()) {
         this.createFolder({
