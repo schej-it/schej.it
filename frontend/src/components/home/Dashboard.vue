@@ -1,8 +1,27 @@
 <template>
   <div class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]">
     <div class="tw-mb-3 tw-flex tw-items-center tw-justify-between">
-      <div class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl">
-        Dashboard
+      <div class="tw-flex tw-flex-col">
+        <div
+          class="tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
+        >
+          Dashboard
+        </div>
+        <div
+          v-if="!isPremiumUser"
+          class="tw-flex tw-items-baseline tw-gap-2 tw-text-sm tw-font-normal tw-text-very-dark-gray"
+        >
+          <div>
+            {{ authUser?.numEventsCreated }} / {{ numFreeEvents }} free events
+            created
+          </div>
+          <div
+            class="tw-cursor-pointer tw-select-none tw-text-xs tw-font-medium tw-text-green tw-underline"
+            @click="openUpgradeDialog"
+          >
+            Upgrade
+          </div>
+        </div>
       </div>
       <v-btn
         text
@@ -15,7 +34,7 @@
     </div>
 
     <div>
-      <div v-for="folder in folders" :key="folder._id" class="tw-mb-2">
+      <div v-for="folder in folders" :key="folder._id" class="tw-group tw-mb-2">
         <div class="tw-flex tw-items-center">
           <v-btn icon small @click="toggleFolder(folder._id)">
             <v-icon>{{
@@ -29,27 +48,31 @@
           >
             {{ folder.name }}
           </v-chip>
-          <v-menu offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn icon small v-bind="attrs" v-on="on" @click.stop.prevent>
-                <v-icon small>mdi-dots-horizontal</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click.stop.prevent="openDeleteDialog(folder)">
-                <v-list-item-title class="tw-text-red-500"
-                  >Delete</v-list-item-title
-                >
-              </v-list-item>
-            </v-list>
-          </v-menu>
-          <v-btn
-            icon
-            small
-            @click.stop.prevent="createEventInFolder(folder._id)"
+          <div
+            class="tw-invisible tw-flex tw-items-center group-hover:tw-visible"
           >
-            <v-icon small>mdi-plus</v-icon>
-          </v-btn>
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn icon small v-bind="attrs" v-on="on" @click.stop.prevent>
+                  <v-icon small>mdi-dots-horizontal</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click.stop.prevent="openDeleteDialog(folder)">
+                  <v-list-item-title class="tw-text-red-500"
+                    >Delete</v-list-item-title
+                  >
+                </v-list-item>
+              </v-list>
+            </v-menu>
+            <v-btn
+              icon
+              small
+              @click.stop.prevent="createEventInFolder(folder._id)"
+            >
+              <v-icon small>mdi-plus</v-icon>
+            </v-btn>
+          </div>
         </div>
         <div v-show="folderOpenState[folder._id]">
           <div
@@ -146,8 +169,13 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex"
-import { eventTypes, folderColors } from "@/constants"
+import { mapState, mapActions, mapGetters } from "vuex"
+import {
+  eventTypes,
+  folderColors,
+  numFreeEvents,
+  upgradeDialogTypes,
+} from "@/constants"
 import EventItem from "@/components/EventItem.vue"
 
 export default {
@@ -168,7 +196,17 @@ export default {
     }
   },
   computed: {
-    ...mapState(["createdEvents", "joinedEvents", "groupsEnabled", "folders"]),
+    ...mapGetters(["isPremiumUser"]),
+    ...mapState([
+      "authUser",
+      "createdEvents",
+      "joinedEvents",
+      "groupsEnabled",
+      "folders",
+    ]),
+    numFreeEvents() {
+      return numFreeEvents
+    },
     folderColors() {
       return folderColors
     },
@@ -208,7 +246,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(["createFolder"]),
+    ...mapActions(["createFolder", "showUpgradeDialog"]),
     confirmCreateFolder() {
       if (this.newFolderName.trim()) {
         this.createFolder({
@@ -234,8 +272,35 @@ export default {
       this.$store.dispatch("deleteFolder", this.folderToDelete._id)
       this.deleteDialog = false
     },
+    openUpgradeDialog() {
+      this.showUpgradeDialog({
+        type: upgradeDialogTypes.UPGRADE_MANUALLY,
+      })
+    },
+  },
+  created() {
+    try {
+      const storedState = localStorage.getItem("folderOpenState")
+      if (storedState) {
+        this.folderOpenState = JSON.parse(storedState)
+      }
+    } catch (e) {
+      console.error("Error reading folderOpenState from localStorage", e)
+      // If corrupted, remove it
+      localStorage.removeItem("folderOpenState")
+    }
   },
   watch: {
+    folderOpenState: {
+      handler(newState) {
+        try {
+          localStorage.setItem("folderOpenState", JSON.stringify(newState))
+        } catch (e) {
+          console.error("Error saving folderOpenState to localStorage", e)
+        }
+      },
+      deep: true,
+    },
     folders: {
       handler(newFolders) {
         if (newFolders) {

@@ -12,9 +12,17 @@
       :data-ph-capture-attribute-event-name="event.name"
     >
       <div class="tw-flex tw-items-center">
-        <v-icon :color="isGroup ? 'green' : 'grey'">{{
-          isGroup ? "mdi-account-group" : "mdi-calendar"
-        }}</v-icon>
+        <div
+          class="tw-flex tw-size-10 tw-items-center tw-justify-center tw-rounded"
+          :class="{
+            'tw-bg-pale-green': isOwner,
+            'tw-bg-off-white': !isOwner,
+          }"
+        >
+          <v-icon :color="isOwner ? 'green' : 'grey'">{{
+            isGroup ? "mdi-account-group" : "mdi-calendar"
+          }}</v-icon>
+        </div>
         <div class="tw-ml-3">
           <div>{{ this.event.name }}</div>
           <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
@@ -38,7 +46,7 @@
           {{ this.event.numResponses }}
         </v-chip>
         <v-menu
-          v-if="showOptions"
+          v-if="isOwner"
           v-model="showMenu"
           ref="menu"
           :close-on-content-click="false"
@@ -174,7 +182,7 @@ export default {
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
-    showOptions() {
+    isOwner() {
       return this.event.ownerId === this.authUser._id
     },
     isGroup() {
