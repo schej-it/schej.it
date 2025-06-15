@@ -274,7 +274,7 @@ export default {
       "createFolder",
       "showUpgradeDialog",
       "deleteFolder",
-      "moveEventIntoFolder",
+      "setEventFolder",
     ]),
     onEnd(evt) {
       const eventId = evt.item.id
@@ -295,7 +295,7 @@ export default {
       const event = this.allEvents.find((e) => e._id === eventId)
 
       if (event) {
-        this.moveEventIntoFolder({
+        this.setEventFolder({
           eventId: event._id,
           folderId: newFolderId,
         })

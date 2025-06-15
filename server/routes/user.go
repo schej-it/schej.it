@@ -32,6 +32,7 @@ func InitUser(router *gin.RouterGroup) {
 	userRouter.PATCH("/name", updateName)
 	userRouter.PATCH("/calendar-options", updateCalendarOptions)
 	userRouter.GET("/events", getEvents)
+	userRouter.POST("/events/:eventId/set-folder", setEventFolder)
 	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-google-calendar-account", addGoogleCalendarAccount)
 	userRouter.POST("/add-apple-calendar-account", addAppleCalendarAccount)
@@ -239,6 +240,56 @@ func getEvents(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+// @Summary Sets the folder for the specified event
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param eventId path string true "The ID of the event to set the folder for"
+// @Param payload body object{folderId=string} true "The ID of the folder to set the event to"
+// @Success 200
+// @Router /user/events/{eventId}/set-folder [post]
+func setEventFolder(c *gin.Context) {
+	eventId, err := primitive.ObjectIDFromHex(c.Param("eventId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+
+	var body = struct {
+		FolderId *string `json:"folderId"`
+	}{}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	session := sessions.Default(c)
+	userIdString := session.Get("userId").(string)
+	userId, err := primitive.ObjectIDFromHex(userIdString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var folderId *primitive.ObjectID
+	if body.FolderId != nil {
+		id, err := primitive.ObjectIDFromHex(*body.FolderId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
+			return
+		}
+		folderId = &id
+	}
+
+	err = db.SetEventFolder(eventId, folderId, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add event to folder"})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 // @Summary Gets the user's calendar events

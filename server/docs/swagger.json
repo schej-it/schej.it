@@ -1446,6 +1446,53 @@
                 }
             }
         },
+        "/user/events/{eventId}/set-folder": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Sets the folder for the specified event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the event to set the folder for",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "The ID of the folder to set the event to",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "type": "object"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "folderId": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
         "/user/folders": {
             "get": {
                 "produces": [
@@ -1700,71 +1747,6 @@
                     },
                     "500": {
                         "description": "Failed to update folder",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/user/folders/{folderId}/add-event": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "folders"
-                ],
-                "summary": "Add an event to a folder",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Folder ID",
-                        "name": "folderId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "ID of the event to add",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "type": "object"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "eventId": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {},
-                    "400": {
-                        "description": "Invalid user ID, folder ID, or event ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to add event to folder",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

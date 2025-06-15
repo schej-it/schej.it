@@ -1257,6 +1257,34 @@ paths:
       summary: Gets all the user's events
       tags:
       - user
+  /user/events/{eventId}/set-folder:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: The ID of the event to set the folder for
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: The ID of the folder to set the event to
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              folderId:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Sets the folder for the specified event
+      tags:
+      - user
   /user/folders:
     get:
       produces:
@@ -1423,46 +1451,6 @@ paths:
               type: string
             type: object
       summary: Update a folder's name or color
-      tags:
-      - folders
-  /user/folders/{folderId}/add-event:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Folder ID
-        in: path
-        name: folderId
-        required: true
-        type: string
-      - description: ID of the event to add
-        in: body
-        name: payload
-        required: true
-        schema:
-          allOf:
-          - type: object
-          - properties:
-              eventId:
-                type: string
-            type: object
-      produces:
-      - application/json
-      responses:
-        "200": {}
-        "400":
-          description: Invalid user ID, folder ID, or event ID
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Failed to add event to folder
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add an event to a folder
       tags:
       - folders
   /user/name:

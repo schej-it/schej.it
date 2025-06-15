@@ -10,6 +10,6 @@ export const deleteFolder = (folderId) => {
   return _delete(`${FOLDER_API_ROUTE}/${folderId}`)
 }
 
-export const moveEventIntoFolder = (eventId, folderId) => {
-  return post(`${FOLDER_API_ROUTE}/${folderId}/add-event`, { eventId })
+export const setEventFolder = (eventId, folderId) => {
+  return post(`/user/events/${eventId}/set-folder`, { folderId })
 }

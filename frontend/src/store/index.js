@@ -5,7 +5,7 @@ import { get, isPremiumUser } from "@/utils"
 import {
   createFolder,
   deleteFolder,
-  moveEventIntoFolder,
+  setEventFolder,
 } from "../utils/FolderClient"
 
 Vue.use(Vuex)
@@ -218,11 +218,11 @@ export default new Vuex.Store({
         console.error(err)
       }
     },
-    async moveEventIntoFolder({ commit, dispatch }, { eventId, folderId }) {
+    async setEventFolder({ commit, dispatch }, { eventId, folderId }) {
       try {
         commit("removeEventFromFolder", eventId)
         commit("addEventToFolder", { eventId, folderId })
-        await moveEventIntoFolder(eventId, folderId)
+        await setEventFolder(eventId, folderId)
       } catch (err) {
         dispatch("showError", "There was a problem moving the event!")
         console.error(err)

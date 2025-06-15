@@ -21,7 +21,6 @@ func InitFolders(router *gin.RouterGroup) {
 	folderRouter.GET("/:folderId", GetFolder)
 	folderRouter.PATCH("/:folderId", UpdateFolder)
 	folderRouter.DELETE("/:folderId", DeleteFolder)
-	folderRouter.POST("/:folderId/add-event", AddEventToFolder)
 }
 
 // @Summary Get all folders
@@ -185,54 +184,6 @@ func UpdateFolder(c *gin.Context) {
 	err = db.UpdateFolder(folderId, userId, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update folder"})
-		return
-	}
-
-	c.Status(http.StatusOK)
-}
-
-// @Summary Add an event to a folder
-// @Tags folders
-// @Accept json
-// @Produce json
-// @Param folderId path string true "Folder ID"
-// @Param payload body object{eventId=string} true "ID of the event to add"
-// @Success 200
-// @Failure 400 {object} map[string]string "Invalid user ID, folder ID, or event ID"
-// @Failure 500 {object} map[string]string "Failed to add event to folder"
-// @Router /user/folders/{folderId}/add-event [post]
-func AddEventToFolder(c *gin.Context) {
-	folderId, err := primitive.ObjectIDFromHex(c.Param("folderId"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
-		return
-	}
-	var body struct {
-		EventID string `json:"eventId" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	eventId, err := primitive.ObjectIDFromHex(body.EventID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
-		return
-	}
-
-	session := sessions.Default(c)
-	userIdString := session.Get("userId").(string)
-	userId, err := primitive.ObjectIDFromHex(userIdString)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
-
-	err = db.SetEventFolder(eventId, &folderId, userId)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add event to folder"})
 		return
 	}
 
