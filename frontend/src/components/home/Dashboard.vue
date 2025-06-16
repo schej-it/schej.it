@@ -215,6 +215,7 @@ import {
   upgradeDialogTypes,
 } from "@/constants"
 import EventItem from "@/components/EventItem.vue"
+import ObjectID from "bson-objectid"
 
 export default {
   name: "Dashboard",
@@ -266,6 +267,7 @@ export default {
             allEventIds.delete(eventId)
           }
         }
+        eventsByFolder[folder._id].sort(this.sortEvents)
       })
       eventsByFolder["no-folder"] = []
       for (const eventId of allEventIds) {
@@ -274,6 +276,7 @@ export default {
           eventsByFolder["no-folder"].push(event)
         }
       }
+      eventsByFolder["no-folder"].sort(this.sortEvents)
       return eventsByFolder
     },
     eventsWithoutFolder() {
@@ -296,6 +299,12 @@ export default {
       "updateFolder",
       "createNew",
     ]),
+    sortEvents(a, b) {
+      if (ObjectID.isValid(a._id) && ObjectID.isValid(b._id)) {
+        return ObjectID(b._id).getTimestamp() - ObjectID(a._id).getTimestamp()
+      }
+      return 0
+    },
     onEnd(evt) {
       const eventId = evt.item.id
       let newFolderId = evt.to.dataset.folderId
