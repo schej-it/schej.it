@@ -217,13 +217,13 @@ func getEvents(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 
-	for _, event := range events {
+	for i, event := range events {
 		// Set the hasResponded field for availability groups
 		if event.Type == models.GROUP {
 			if _, ok := hasRespondedEventIds[event.Id]; ok {
-				event.HasResponded = utils.TruePtr()
+				events[i].HasResponded = utils.TruePtr()
 			} else {
-				event.HasResponded = utils.FalsePtr()
+				events[i].HasResponded = utils.FalsePtr()
 			}
 		}
 	}
