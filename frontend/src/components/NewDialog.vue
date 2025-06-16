@@ -49,6 +49,7 @@
           @input="handleDialogInput"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
+          :folder-id="folderId"
           @signIn="$emit('signIn')"
         />
         <NewGroup
@@ -59,6 +60,7 @@
           :edit="edit"
           @input="handleDialogInput"
           :show-help="!_noTabs"
+          :folder-id="folderId"
           :contactsPayload="this.type == 'group' ? contactsPayload : {}"
         />
         <NewSignUp
@@ -68,8 +70,9 @@
           :event="event"
           :edit="edit"
           @input="handleDialogInput"
-          :contactsPayload="this.type == 'signup' ? contactsPayload : {}"
           :show-help="!_noTabs"
+          :folder-id="folderId"
+          :contactsPayload="this.type == 'signup' ? contactsPayload : {}"
         />
       </template>
     </v-card>
@@ -96,6 +99,7 @@ export default {
     edit: { type: Boolean, default: false },
     contactsPayload: { type: Object, default: () => ({}) },
     noTabs: { type: Boolean, default: false },
+    folderId: { type: String, default: null },
   },
 
   components: {

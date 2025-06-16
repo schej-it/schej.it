@@ -44,6 +44,7 @@ export default new Vuex.Store({
       contactsPayload: {},
       openNewGroup: false,
       eventOnly: false,
+      folderId: null,
     },
   },
   getters: {
@@ -133,6 +134,7 @@ export default new Vuex.Store({
         contactsPayload = {},
         openNewGroup = false,
         eventOnly = true,
+        folderId = null,
       }
     ) {
       state.newDialogOptions = {
@@ -140,6 +142,7 @@ export default new Vuex.Store({
         contactsPayload,
         openNewGroup,
         eventOnly,
+        folderId,
       }
     },
   },
@@ -159,7 +162,10 @@ export default new Vuex.Store({
       commit("setAuthUser", authUser)
     },
 
-    createNew({ state, getters, commit, dispatch }, { eventOnly = false }) {
+    createNew(
+      { state, getters, commit, dispatch },
+      { eventOnly = false, folderId = null }
+    ) {
       if (
         state.enablePaywall &&
         !getters.isPremiumUser &&
@@ -176,6 +182,7 @@ export default new Vuex.Store({
         contactsPayload: {},
         openNewGroup: false,
         eventOnly: eventOnly,
+        folderId: folderId,
       })
     },
 

@@ -9,6 +9,7 @@
       :type="newDialogOptions.openNewGroup ? 'group' : 'event'"
       :contactsPayload="newDialogOptions.contactsPayload"
       :no-tabs="newDialogOptions.eventOnly"
+      :folder-id="newDialogOptions.folderId"
     />
     <UpgradeDialog
       :value="upgradeDialogVisible"

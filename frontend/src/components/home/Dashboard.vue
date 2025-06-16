@@ -292,6 +292,7 @@ export default {
       "deleteFolder",
       "setEventFolder",
       "updateFolder",
+      "createNew",
     ]),
     onEnd(evt) {
       const eventId = evt.item.id
@@ -362,7 +363,10 @@ export default {
       this.$set(this.folderOpenState, folderId, !this.folderOpenState[folderId])
     },
     createEventInFolder(folderId) {
-      console.log(`Create event in folder ${folderId}`)
+      this.createNew({
+        eventOnly: false,
+        folderId: folderId,
+      })
     },
     openDeleteDialog(folder) {
       this.folderToDelete = folder
