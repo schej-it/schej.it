@@ -105,15 +105,17 @@
                 No events in this folder
               </div>
             </template>
-            <EventItem
-              v-for="event in eventsByFolder[folder._id].groups"
-              :key="event._id"
-              :id="event._id"
-              :event="event"
-              :folder-id="folder._id"
-              class="item"
-            />
-            <div class="tw-col-span-full"></div>
+            <template v-if="eventsByFolder[folder._id].groups.length > 0">
+              <EventItem
+                v-for="event in eventsByFolder[folder._id].groups"
+                :key="event._id"
+                :id="event._id"
+                :event="event"
+                :folder-id="folder._id"
+                class="item"
+              />
+              <div class="tw-col-span-full"></div>
+            </template>
             <EventItem
               v-for="event in eventsByFolder[folder._id].events"
               :key="event._id"
@@ -158,15 +160,17 @@
                 No events
               </div>
             </template>
-            <EventItem
-              v-for="event in eventsWithoutFolder.groups"
-              :key="event._id"
-              :id="event._id"
-              :event="event"
-              :folder-id="null"
-              class="item"
-            />
-            <div class="tw-col-span-full"></div>
+            <template v-if="eventsWithoutFolder.groups.length > 0">
+              <EventItem
+                v-for="event in eventsWithoutFolder.groups"
+                :key="event._id"
+                :id="event._id"
+                :event="event"
+                :folder-id="null"
+                class="item"
+              />
+              <div class="tw-col-span-full"></div>
+            </template>
             <EventItem
               v-for="event in eventsWithoutFolder.events"
               :key="event._id"
