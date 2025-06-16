@@ -81,6 +81,16 @@ export const dayIndexToDayString = Object.freeze([
   "2018-06-24", // Sunday
 ])
 
+export const folderColors = Object.freeze([
+  "#FFB3B3", // Pastel Red
+  "#FFCCB3", // Pastel Orange
+  "#FFFFB3", // Pastel Yellow
+  "#CDEBDC", // Pastel Green
+  "#B3B3FF", // Pastel Blue
+  "#D1B3FF", // Pastel Purple
+  "#D3D3D3", // Pastel Gray
+])
+
 export const allTimezones = Object.freeze({
   "Pacific/Midway": "Midway Island, Samoa",
   "Pacific/Honolulu": "Hawaii",

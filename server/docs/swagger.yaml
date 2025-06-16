@@ -181,6 +181,23 @@ definitions:
     type: object
   models.EventType:
     type: string
+  models.Folder:
+    properties:
+      _id:
+        type: string
+      color:
+        type: string
+      eventIds:
+        items:
+          type: string
+        type: array
+      isDeleted:
+        type: boolean
+      name:
+        type: string
+      userId:
+        type: string
+    type: object
   models.Location:
     properties:
       city:
@@ -344,6 +361,11 @@ definitions:
     required:
     - error
     type: object
+  routes.CreateFolderResponse:
+    properties:
+      id:
+        type: string
+    type: object
 host: localhost:3002/api
 info:
   contact: {}
@@ -431,6 +453,65 @@ paths:
                   type: string
               type: object
       summary: Gets the daily count of monthly active event creators over a date range
+      tags:
+      - analytics
+  /analytics/monthly-active-event-creators-with-more-than-x-events:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Start date (YYYY-MM-DD) for the range
+        in: query
+        name: startDate
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD) for the range
+        in: query
+        name: endDate
+        required: true
+        type: string
+      - description: Client's timezone offset in minutes from UTC (e.g., -420 for
+          UTC-7)
+        in: query
+        name: timezoneOffset
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - type: object
+              - properties:
+                  count:
+                    type: integer
+                  date:
+                    type: string
+                type: object
+            type: array
+        "400":
+          description: Invalid date format, range, or timezone offset
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            allOf:
+            - type: object
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Gets the daily count of monthly active event creators over a date range
+        with more than x events
       tags:
       - analytics
   /analytics/scanned-poster:
@@ -1161,21 +1242,208 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - type: object
-            - properties:
-                events:
-                  items:
-                    $ref: '#/definitions/models.Event'
-                  type: array
-                joinedEvents:
-                  items:
-                    $ref: '#/definitions/models.Event'
-                  type: array
-              type: object
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
       summary: Gets all the user's events
       tags:
       - user
+  /user/events/{eventId}/set-folder:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: The ID of the event to set the folder for
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: The ID of the folder to set the event to
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              folderId:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Sets the folder for the specified event
+      tags:
+      - user
+  /user/folders:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: A list of all folders for the user
+          schema:
+            items:
+              $ref: '#/definitions/models.Folder'
+            type: array
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to get folders
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all folders
+      tags:
+      - folders
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Folder name and optional color
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              color:
+                type: string
+              name:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: The ID of the created folder
+          schema:
+            $ref: '#/definitions/routes.CreateFolderResponse'
+        "400":
+          description: Invalid user ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to create folder
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new folder
+      tags:
+      - folders
+  /user/folders/{folderId}:
+    delete:
+      parameters:
+      - description: Folder ID
+        in: path
+        name: folderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "400":
+          description: Invalid user ID or folder ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to delete folder
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a folder
+      tags:
+      - folders
+    get:
+      parameters:
+      - description: Folder ID
+        in: path
+        name: folderId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The folder object with events
+          schema:
+            $ref: '#/definitions/models.Folder'
+        "400":
+          description: Invalid user ID or folder ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Folder not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to get events in folder
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a folder by its ID and its contents
+      tags:
+      - folders
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Folder ID
+        in: path
+        name: folderId
+        required: true
+        type: string
+      - description: New folder name and/or color
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              color:
+                type: string
+              name:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+        "400":
+          description: Invalid user ID or folder ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to update folder
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a folder's name or color
+      tags:
+      - folders
   /user/name:
     patch:
       consumes:

@@ -32,6 +32,7 @@ func InitUser(router *gin.RouterGroup) {
 	userRouter.PATCH("/name", updateName)
 	userRouter.PATCH("/calendar-options", updateCalendarOptions)
 	userRouter.GET("/events", getEvents)
+	userRouter.POST("/events/:eventId/set-folder", setEventFolder)
 	userRouter.GET("/calendars", getCalendars)
 	userRouter.POST("/add-google-calendar-account", addGoogleCalendarAccount)
 	userRouter.POST("/add-apple-calendar-account", addAppleCalendarAccount)
@@ -53,8 +54,8 @@ func getProfile(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Get number of events created this month
-	// eventsCreatedThisMonth := db.GetEventsCreatedThisMonth(user.Id)
-	// user.NumEventsCreated = eventsCreatedThisMonth
+	eventsCreatedThisMonth := db.GetEventsCreatedThisMonth(user.Id)
+	user.NumEventsCreated = eventsCreatedThisMonth
 
 	db.UpdateDailyUserLog(user)
 
@@ -145,7 +146,7 @@ func updateCalendarOptions(c *gin.Context) {
 // @Description Returns an array containing all the user's events
 // @Tags user
 // @Produce json
-// @Success 200 {object} object{events=[]models.Event,joinedEvents=[]models.Event}
+// @Success 200 {object} []models.Event
 // @Router /user/events [get]
 func getEvents(c *gin.Context) {
 	user := utils.GetAuthUser(c)
@@ -216,29 +217,68 @@ func getEvents(c *gin.Context) {
 		logger.StdErr.Panicln(err)
 	}
 
-	response := make(map[string][]models.Event)
-	response["events"] = make([]models.Event, 0)       // The events the user created
-	response["joinedEvents"] = make([]models.Event, 0) // The events the user has responded to
-
-	for _, event := range events {
+	for i, event := range events {
 		// Set the hasResponded field for availability groups
 		if event.Type == models.GROUP {
 			if _, ok := hasRespondedEventIds[event.Id]; ok {
-				event.HasResponded = utils.TruePtr()
+				events[i].HasResponded = utils.TruePtr()
 			} else {
-				event.HasResponded = utils.FalsePtr()
+				events[i].HasResponded = utils.FalsePtr()
 			}
-		}
-
-		// Filter into events user created and responded to
-		if event.OwnerId == userId {
-			response["events"] = append(response["events"], event)
-		} else {
-			response["joinedEvents"] = append(response["joinedEvents"], event)
 		}
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, events)
+}
+
+// @Summary Sets the folder for the specified event
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param eventId path string true "The ID of the event to set the folder for"
+// @Param payload body object{folderId=string} true "The ID of the folder to set the event to"
+// @Success 200
+// @Router /user/events/{eventId}/set-folder [post]
+func setEventFolder(c *gin.Context) {
+	eventId, err := primitive.ObjectIDFromHex(c.Param("eventId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+
+	var body = struct {
+		FolderId *string `json:"folderId"`
+	}{}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	session := sessions.Default(c)
+	userIdString := session.Get("userId").(string)
+	userId, err := primitive.ObjectIDFromHex(userIdString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var folderId *primitive.ObjectID
+	if body.FolderId != nil {
+		id, err := primitive.ObjectIDFromHex(*body.FolderId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid folder ID"})
+			return
+		}
+		folderId = &id
+	}
+
+	err = db.SetEventFolder(eventId, folderId, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add event to folder"})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 // @Summary Gets the user's calendar events

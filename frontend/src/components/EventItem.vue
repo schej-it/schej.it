@@ -11,10 +11,23 @@
       :data-ph-capture-attribute-event-id="event._id"
       :data-ph-capture-attribute-event-name="event.name"
     >
-      <div class="tw-ml-1">
-        <div>{{ this.event.name }}</div>
-        <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
-          {{ dateString }}
+      <div class="tw-flex tw-items-center">
+        <div
+          class="tw-flex tw-size-10 tw-items-center tw-justify-center tw-rounded"
+          :class="{
+            'tw-bg-pale-green': isOwner,
+            'tw-bg-off-white': !isOwner,
+          }"
+        >
+          <v-icon :color="isOwner ? 'green' : 'grey'">{{
+            isGroup ? "mdi-account-group" : "mdi-calendar"
+          }}</v-icon>
+        </div>
+        <div class="tw-ml-3">
+          <div>{{ this.event.name }}</div>
+          <div class="tw-text-sm tw-font-light tw-text-very-dark-gray">
+            {{ dateString }}
+          </div>
         </div>
       </div>
       <div class="tw-min-w-max">
@@ -33,7 +46,7 @@
           {{ this.event.numResponses }}
         </v-chip>
         <v-menu
-          v-if="showOptions"
+          v-if="isOwner"
           v-model="showMenu"
           ref="menu"
           :close-on-content-click="false"
@@ -53,6 +66,7 @@
                 <v-list-item-title>Copy link</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
+            <v-divider />
             <v-dialog
               v-if="!isGroup"
               v-model="duplicateDialog"
@@ -103,6 +117,46 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
+            <v-menu
+              v-if="isOwner"
+              right
+              offset-x
+              :close-on-content-click="false"
+              open-on-hover
+            >
+              <template v-slot:activator="{ on: onMenu, attrs: attrsMenu }">
+                <v-list-item
+                  v-bind="attrsMenu"
+                  v-on="onMenu"
+                  class="tw-cursor-pointer tw-pr-1 hover:tw-bg-light-gray"
+                >
+                  <v-list-item-title>Move to</v-list-item-title>
+                  <v-list-item-icon>
+                    <v-icon small>mdi-chevron-right</v-icon>
+                  </v-list-item-icon>
+                </v-list-item>
+              </template>
+              <v-list dense class="tw-py-1">
+                <v-list-item @click="moveEventToFolder(null)" class="tw-pr-1">
+                  <v-list-item-title>No folder</v-list-item-title>
+                  <v-list-item-action v-if="folderId === null">
+                    <v-icon small>mdi-check</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+                <v-list-item
+                  v-for="folder in folders"
+                  :key="folder._id"
+                  @click="moveEventToFolder(folder._id)"
+                  class="tw-pr-1"
+                >
+                  <v-list-item-title>{{ folder.name }}</v-list-item-title>
+                  <v-list-item-action v-if="folder._id === folderId">
+                    <v-icon small>mdi-check</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+            <v-divider />
             <v-dialog v-model="removeDialog" width="400" persistent>
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item
@@ -151,6 +205,7 @@ export default {
 
   props: {
     event: { type: Object, required: true },
+    folderId: { type: String, default: null },
   },
 
   data: () => ({
@@ -165,11 +220,11 @@ export default {
   }),
 
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "folders"]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
-    showOptions() {
+    isOwner() {
       return this.event.ownerId === this.authUser._id
     },
     isGroup() {
@@ -204,7 +259,14 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError", "showInfo", "getEvents"]),
+    ...mapActions(["showError", "showInfo", "getEvents", "setEventFolder"]),
+    moveEventToFolder(folderId) {
+      this.setEventFolder({
+        eventId: this.event._id,
+        folderId: folderId,
+      })
+      this.showMenu = false
+    },
     copyLink() {
       /* Copies event link to clipboard */
       navigator.clipboard.writeText(

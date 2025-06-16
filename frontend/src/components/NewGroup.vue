@@ -198,6 +198,7 @@ export default {
     dialog: { type: Boolean, default: true },
     showHelp: { type: Boolean, default: false },
     contactsPayload: { type: Object, default: () => ({}) },
+    folderId: { type: String, default: null },
   },
 
   components: {
@@ -285,7 +286,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError"]),
+    ...mapActions(["showError", "setEventFolder"]),
     blurNameField() {
       this.$refs["name-field"].blur()
     },
@@ -335,7 +336,8 @@ export default {
           startOnMonday,
           creatorPosthogId: this.$posthog?.get_distinct_id(),
         })
-          .then(({ eventId, shortId }) => {
+          .then(async ({ eventId, shortId }) => {
+            await this.setEventFolder({ eventId, folderId: this.folderId })
             this.$router.push({
               name: "group",
               params: {
@@ -359,6 +361,7 @@ export default {
             this.showError(
               "There was a problem creating that group! Please try again later."
             )
+            console.error(err)
           })
           .finally(() => {
             this.loading = false

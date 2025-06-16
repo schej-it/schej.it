@@ -10,6 +10,7 @@
       :type="newDialogOptions.openNewGroup ? 'group' : 'event'"
       :contactsPayload="newDialogOptions.contactsPayload"
       :no-tabs="newDialogOptions.eventOnly"
+      :folder-id="newDialogOptions.folderId"
     />
     <UpgradeDialog
       :value="upgradeDialogVisible"
@@ -42,7 +43,7 @@
           v-if="$route.name === 'event'"
           id="top-right-create-btn"
           text
-          @click="() => createNew(true)"
+          @click="() => _createNew(true)"
         >
           Create an event
         </v-btn>
@@ -71,7 +72,7 @@
           :style="{
             boxShadow: '0px 2px 8px 0px #00994C80 !important',
           }"
-          @click="() => createNew()"
+          @click="() => _createNew()"
         >
           + Create new
         </v-btn>
@@ -90,11 +91,7 @@
           class="tw-relative tw-flex-1 tw-overscroll-auto"
           :class="routerViewClass"
         >
-          <router-view
-            v-if="loaded"
-            :key="$route.fullPath"
-            @setNewDialogOptions="setNewDialogOptions"
-          />
+          <router-view v-if="loaded" :key="$route.fullPath" />
         </div>
       </div>
     </v-main>
@@ -228,7 +225,7 @@ html {
 </style>
 
 <script>
-import { mapMutations, mapState, mapActions } from "vuex"
+import { mapMutations, mapState, mapActions, mapGetters } from "vuex"
 import {
   get,
   getLocation,
@@ -282,26 +279,19 @@ export default {
     loaded: false,
     scrollY: 0,
     webviewDialog: false,
-    newDialogOptions: {
-      show: false,
-      contactsPayload: {},
-      openNewGroup: false,
-    },
     signInDialog: false,
   }),
 
   computed: {
+    ...mapGetters(["isPremiumUser"]),
     ...mapState([
       "authUser",
       "error",
       "info",
-      "createdEvents",
       "enablePaywall",
       "upgradeDialogVisible",
+      "newDialogOptions",
     ]),
-    createdEventsNonGroup() {
-      return this.createdEvents.filter((e) => e.type !== eventTypes.GROUP)
-    },
     isPhone() {
       return isPhone(this.$vuetify)
     },
@@ -326,9 +316,6 @@ export default {
       }
       return c
     },
-    isPremiumUser() {
-      return isPremiumUser(this.authUser)
-    },
   },
 
   methods: {
@@ -339,47 +326,20 @@ export default {
       "setEnablePaywall",
       "setFeatureFlagsLoaded",
     ]),
-    ...mapActions(["getEvents", "showUpgradeDialog", "hideUpgradeDialog"]),
+    ...mapActions([
+      "getEvents",
+      "showUpgradeDialog",
+      "hideUpgradeDialog",
+      "createNew",
+    ]),
     handleScroll(e) {
       this.scrollY = window.scrollY
     },
-    createNew(eventOnly = false) {
+    _createNew(eventOnly = false) {
       this.$posthog.capture("create_new_button_clicked", {
         eventOnly: eventOnly,
       })
-      if (
-        this.enablePaywall &&
-        !this.isPremiumUser &&
-        this.authUser?.numEventsCreated >= numFreeEvents
-      ) {
-        this.showUpgradeDialog({
-          type: upgradeDialogTypes.CREATE_EVENT,
-        })
-        return
-      }
-
-      this.newDialogOptions = {
-        show: true,
-        contactsPayload: {},
-        openNewGroup: false,
-        eventOnly: eventOnly,
-      }
-    },
-    setNewDialogOptions(newDialogOptions) {
-      if (
-        newDialogOptions.show &&
-        this.enablePaywall &&
-        !this.isPremiumUser &&
-        this.authUser?.numEventsCreated >= numFreeEvents
-      ) {
-        this.showUpgradeDialog({
-          type: upgradeDialogTypes.CREATE_EVENT,
-        })
-        return
-      }
-
-      this.newDialogOptions = newDialogOptions
-      this.newDialogOptions.eventOnly = false
+      this.createNew({ eventOnly })
     },
     signIn() {
       if (

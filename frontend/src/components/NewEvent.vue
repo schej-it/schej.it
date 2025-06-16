@@ -496,6 +496,7 @@ export default {
     dialog: { type: Boolean, default: true },
     contactsPayload: { type: Object, default: () => ({}) },
     showHelp: { type: Boolean, default: false },
+    folderId: { type: String, default: null },
   },
 
   components: {
@@ -628,7 +629,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError"]),
+    ...mapActions(["showError", "setEventFolder"]),
     blurNameField() {
       this.$refs["name-field"].blur()
     },
@@ -759,7 +760,8 @@ export default {
       if (!this.edit) {
         // Create new event on backend
         post("/events", payload)
-          .then(({ eventId, shortId }) => {
+          .then(async ({ eventId, shortId }) => {
+            await this.setEventFolder({ eventId, folderId: this.folderId })
             this.$router.push({
               name: "event",
               params: {
@@ -783,6 +785,7 @@ export default {
             this.showError(
               "There was a problem creating that event! Please try again later."
             )
+            console.error(err)
           })
           .finally(() => {
             this.loading = false
