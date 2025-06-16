@@ -34,7 +34,11 @@
     </div>
 
     <div>
-      <div v-for="folder in folders" :key="folder._id" class="tw-group tw-mb-2">
+      <div
+        v-for="folder in orderedFolders"
+        :key="folder._id"
+        class="tw-group tw-mb-2"
+      >
         <div class="tw-flex tw-items-center">
           <v-btn icon small @click="toggleFolder(folder._id)">
             <v-icon>{{
@@ -270,6 +274,11 @@ export default {
   computed: {
     ...mapGetters(["isPremiumUser"]),
     ...mapState(["authUser", "events", "groupsEnabled", "folders"]),
+    orderedFolders() {
+      return this.folders.sort((a, b) => {
+        return a.name.localeCompare(b.name)
+      })
+    },
     numFreeEvents() {
       return numFreeEvents
     },
