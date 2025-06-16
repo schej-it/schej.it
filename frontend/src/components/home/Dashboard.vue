@@ -80,7 +80,10 @@
         </div>
         <div v-show="folderOpenState[folder._id]">
           <draggable
-            :list="eventsByFolder[folder._id]"
+            :list="[
+              ...eventsByFolder[folder._id].groups,
+              ...eventsByFolder[folder._id].events,
+            ]"
             group="events"
             @end="onEnd"
             :data-folder-id="folder._id"
@@ -89,14 +92,26 @@
           >
             <template v-slot:header>
               <div
-                v-if="eventsByFolder[folder._id].length === 0"
+                v-if="
+                  eventsByFolder[folder._id].groups.length === 0 &&
+                  eventsByFolder[folder._id].events.length === 0
+                "
                 class="tw-absolute tw-left-0 tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
               >
                 No events in this folder
               </div>
             </template>
             <EventItem
-              v-for="event in eventsByFolder[folder._id]"
+              v-for="event in eventsByFolder[folder._id].groups"
+              :key="event._id"
+              :id="event._id"
+              :event="event"
+              :folder-id="folder._id"
+              class="item"
+            />
+            <div class="tw-col-span-full"></div>
+            <EventItem
+              v-for="event in eventsByFolder[folder._id].events"
               :key="event._id"
               :id="event._id"
               :event="event"
@@ -118,7 +133,10 @@
         </div>
         <div v-show="folderOpenState['no-folder']">
           <draggable
-            :list="eventsWithoutFolder"
+            :list="[
+              ...eventsWithoutFolder.groups,
+              ...eventsWithoutFolder.events,
+            ]"
             group="events"
             @end="onEnd"
             data-folder-id="null"
@@ -127,14 +145,26 @@
           >
             <template v-slot:header>
               <div
-                v-if="eventsWithoutFolder.length === 0"
+                v-if="
+                  eventsWithoutFolder.groups.length === 0 &&
+                  eventsWithoutFolder.events.length === 0
+                "
                 class="tw-absolute tw-left-0 tw-ml-7 tw-py-4 tw-text-sm tw-text-very-dark-gray"
               >
                 No events
               </div>
             </template>
             <EventItem
-              v-for="event in eventsWithoutFolder"
+              v-for="event in eventsWithoutFolder.groups"
+              :key="event._id"
+              :id="event._id"
+              :event="event"
+              :folder-id="null"
+              class="item"
+            />
+            <div class="tw-col-span-full"></div>
+            <EventItem
+              v-for="event in eventsWithoutFolder.events"
               :key="event._id"
               :id="event._id"
               :event="event"
@@ -259,24 +289,34 @@ export default {
       const eventsByFolder = {}
       const allEventIds = new Set(this.allEvents.map((e) => e._id))
       this.folders.forEach((folder) => {
-        eventsByFolder[folder._id] = []
+        eventsByFolder[folder._id] = { groups: [], events: [] }
         for (const eventId of folder.eventIds) {
           const event = this.allEventsMap[eventId]
           if (event) {
-            eventsByFolder[folder._id].push(event)
+            if (event.type === eventTypes.GROUP) {
+              eventsByFolder[folder._id].groups.push(event)
+            } else {
+              eventsByFolder[folder._id].events.push(event)
+            }
             allEventIds.delete(eventId)
           }
         }
-        eventsByFolder[folder._id].sort(this.sortEvents)
+        eventsByFolder[folder._id].groups.sort(this.sortEvents)
+        eventsByFolder[folder._id].events.sort(this.sortEvents)
       })
-      eventsByFolder["no-folder"] = []
+      eventsByFolder["no-folder"] = { groups: [], events: [] }
       for (const eventId of allEventIds) {
         const event = this.allEventsMap[eventId]
         if (event) {
-          eventsByFolder["no-folder"].push(event)
+          if (event.type === eventTypes.GROUP) {
+            eventsByFolder["no-folder"].groups.push(event)
+          } else {
+            eventsByFolder["no-folder"].events.push(event)
+          }
         }
       }
-      eventsByFolder["no-folder"].sort(this.sortEvents)
+      eventsByFolder["no-folder"].groups.sort(this.sortEvents)
+      eventsByFolder["no-folder"].events.sort(this.sortEvents)
       return eventsByFolder
     },
     eventsWithoutFolder() {
