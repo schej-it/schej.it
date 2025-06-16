@@ -98,8 +98,9 @@
             <EventItem
               v-for="event in eventsByFolder[folder._id]"
               :key="event._id"
-              :event="event"
               :id="event._id"
+              :event="event"
+              :folder-id="folder._id"
               class="item"
             />
           </draggable>
@@ -135,8 +136,9 @@
             <EventItem
               v-for="event in eventsWithoutFolder"
               :key="event._id"
-              :event="event"
               :id="event._id"
+              :event="event"
+              :folder-id="null"
               class="item"
             />
           </draggable>

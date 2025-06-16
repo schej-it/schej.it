@@ -66,6 +66,7 @@
                 <v-list-item-title>Copy link</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
+            <v-divider />
             <v-dialog
               v-if="!isGroup"
               v-model="duplicateDialog"
@@ -116,6 +117,46 @@
                 </v-card-actions>
               </v-card>
             </v-dialog>
+            <v-menu
+              v-if="isOwner"
+              right
+              offset-x
+              :close-on-content-click="false"
+              open-on-hover
+            >
+              <template v-slot:activator="{ on: onMenu, attrs: attrsMenu }">
+                <v-list-item
+                  v-bind="attrsMenu"
+                  v-on="onMenu"
+                  class="tw-cursor-pointer tw-pr-1 hover:tw-bg-light-gray"
+                >
+                  <v-list-item-title>Move to</v-list-item-title>
+                  <v-list-item-icon>
+                    <v-icon small>mdi-chevron-right</v-icon>
+                  </v-list-item-icon>
+                </v-list-item>
+              </template>
+              <v-list dense class="tw-py-1">
+                <v-list-item @click="moveEventToFolder(null)" class="tw-pr-1">
+                  <v-list-item-title>No folder</v-list-item-title>
+                  <v-list-item-action v-if="folderId === null">
+                    <v-icon small>mdi-check</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+                <v-list-item
+                  v-for="folder in folders"
+                  :key="folder._id"
+                  @click="moveEventToFolder(folder._id)"
+                  class="tw-pr-1"
+                >
+                  <v-list-item-title>{{ folder.name }}</v-list-item-title>
+                  <v-list-item-action v-if="folder._id === folderId">
+                    <v-icon small>mdi-check</v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+            <v-divider />
             <v-dialog v-model="removeDialog" width="400" persistent>
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item
@@ -164,6 +205,7 @@ export default {
 
   props: {
     event: { type: Object, required: true },
+    folderId: { type: String, default: null },
   },
 
   data: () => ({
@@ -178,7 +220,7 @@ export default {
   }),
 
   computed: {
-    ...mapState(["authUser"]),
+    ...mapState(["authUser", "folders"]),
     dateString() {
       return getDateRangeStringForEvent(this.event)
     },
@@ -217,7 +259,14 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError", "showInfo", "getEvents"]),
+    ...mapActions(["showError", "showInfo", "getEvents", "setEventFolder"]),
+    moveEventToFolder(folderId) {
+      this.setEventFolder({
+        eventId: this.event._id,
+        folderId: folderId,
+      })
+      this.showMenu = false
+    },
     copyLink() {
       /* Copies event link to clipboard */
       navigator.clipboard.writeText(
