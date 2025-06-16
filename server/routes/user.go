@@ -54,8 +54,8 @@ func getProfile(c *gin.Context) {
 	user := userInterface.(*models.User)
 
 	// Get number of events created this month
-	// eventsCreatedThisMonth := db.GetEventsCreatedThisMonth(user.Id)
-	// user.NumEventsCreated = eventsCreatedThisMonth
+	eventsCreatedThisMonth := db.GetEventsCreatedThisMonth(user.Id)
+	user.NumEventsCreated = eventsCreatedThisMonth
 
 	db.UpdateDailyUserLog(user)
 
