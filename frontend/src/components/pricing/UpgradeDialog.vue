@@ -316,8 +316,8 @@ export default {
       showStudentProofDialog: false,
 
       showMonthly: true,
-      showYearly: false,
-      showLifetime: true,
+      showYearly: true,
+      showLifetime: false,
     }
   },
 
