@@ -932,6 +932,36 @@ paths:
       summary: Duplicate event
       tags:
       - events
+  /events/{eventId}/rename-user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      - description: Object containing info about the guest response to rename
+        in: body
+        name: payload
+        required: true
+        schema:
+          allOf:
+          - type: object
+          - properties:
+              newName:
+                type: string
+              oldName:
+                type: string
+            type: object
+      produces:
+      - application/json
+      responses:
+        "200": {}
+      summary: Rename a guest response
+      tags:
+      - events
   /events/{eventId}/responded:
     post:
       consumes:

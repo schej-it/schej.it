@@ -33,6 +33,7 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.GET("/:eventId/responses", getResponses)
 	eventRouter.POST("/:eventId/response", updateEventResponse)
 	eventRouter.DELETE("/:eventId/response", deleteEventResponse)
+	eventRouter.POST("/:eventId/rename-user", renameUser)
 	eventRouter.POST("/:eventId/responded", userResponded)
 	eventRouter.POST("/:eventId/decline", middleware.AuthRequired(), declineInvite)
 	eventRouter.GET("/:eventId/calendar-availabilities", middleware.AuthRequired(), getCalendarAvailabilities)
@@ -954,6 +955,35 @@ func deleteEventResponse(c *gin.Context) {
 	if err != nil {
 		logger.StdErr.Panicln(err)
 	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// @Summary Rename a guest response
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{oldName=string,newName=string} true "Object containing info about the guest response to rename"
+// @Success 200
+// @Router /events/{eventId}/rename-user [post]
+func renameUser(c *gin.Context) {
+	payload := struct {
+		OldName string `json:"oldName"`
+		NewName string `json:"newName"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		return
+	}
+	eventId := c.Param("eventId")
+	event := db.GetEventByEitherId(eventId)
+	if event == nil {
+		c.JSON(http.StatusNotFound, responses.Error{Error: errs.EventNotFound})
+		return
+	}
+
+	// Check if old name is a guest response
+	db.UpdateGuestResponseName(event.Id.Hex(), payload.OldName, payload.NewName)
 
 	c.JSON(http.StatusOK, gin.H{})
 }
