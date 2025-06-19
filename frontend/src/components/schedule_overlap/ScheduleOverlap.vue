@@ -577,7 +577,7 @@
                       !addingAvailabilityAsGuest
                     )
                   "
-                  class="tw-text-sm tw-italic tw-text-dark-gray"
+                  class="tw-flex tw-flex-wrap tw-items-baseline tw-gap-1 tw-text-sm tw-italic tw-text-dark-gray"
                 >
                   {{
                     (userHasResponded && !addingAvailabilityAsGuest) ||
@@ -586,13 +586,52 @@
                       : "Adding"
                   }}
                   availability as
-                  {{
-                    authUser && !addingAvailabilityAsGuest
-                      ? `${authUser.firstName} ${authUser.lastName}`
-                      : curGuestId?.length > 0
-                      ? curGuestId
-                      : "a guest"
-                  }}
+                  <div
+                    v-if="curGuestId && canEditGuestName"
+                    class="tw-group tw-mt-0.5 tw-flex tw-w-fit tw-cursor-pointer tw-items-center tw-gap-1"
+                    @click="openEditGuestNameDialog"
+                  >
+                    <span class="tw-font-medium group-hover:tw-underline">{{
+                      curGuestId
+                    }}</span>
+                    <v-icon small>mdi-pencil</v-icon>
+                  </div>
+                  <span v-else>
+                    {{
+                      authUser && !addingAvailabilityAsGuest
+                        ? `${authUser.firstName} ${authUser.lastName}`
+                        : curGuestId?.length > 0
+                        ? curGuestId
+                        : "a guest"
+                    }}
+                  </span>
+                  <v-dialog
+                    v-model="editGuestNameDialog"
+                    width="400"
+                    content-class="tw-m-0"
+                  >
+                    <v-card>
+                      <v-card-title>Edit guest name</v-card-title>
+                      <v-card-text>
+                        <v-text-field
+                          v-model="newGuestName"
+                          label="Guest name"
+                          autofocus
+                          @keydown.enter="saveGuestName"
+                          hide-details
+                        ></v-text-field>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer />
+                        <v-btn text @click="editGuestNameDialog = false"
+                          >Cancel</v-btn
+                        >
+                        <v-btn text color="primary" @click="saveGuestName"
+                          >Save</v-btn
+                        >
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
                 </div>
                 <AvailabilityTypeToggle
                   v-if="!isGroup && !isPhone"
@@ -1127,6 +1166,8 @@ export default {
       /* Dialogs */
       deleteAvailabilityDialog: false,
       calendarOptionsDialog: false,
+      editGuestNameDialog: false,
+      newGuestName: "",
 
       /* Variables for scrolling */
       optionsVisible: false,
@@ -1636,6 +1677,9 @@ export default {
 
       const user = this.parsedResponses[this.curRespondents[0]].user
       return this.isGuest(user) ? user._id : ""
+    },
+    canEditGuestName() {
+      return this.isOwner // || this.curGuestId === this.selectedGuestRespondent
     },
     scheduledEventStyle() {
       const style = {}
@@ -3385,6 +3429,34 @@ export default {
         this.populateUserAvailability(id)
         this.$emit("setCurGuestId", id)
       })
+    },
+    openEditGuestNameDialog() {
+      this.newGuestName = this.curGuestId
+      this.editGuestNameDialog = true
+    },
+    async saveGuestName() {
+      const newName = this.newGuestName.trim()
+      if (newName.length === 0) {
+        this.showError("Guest name cannot be empty")
+        return
+      }
+      if (newName === this.curGuestId) {
+        this.editGuestNameDialog = false
+        return
+      }
+      try {
+        await post(`/events/${this.event._id}/rename-user`, {
+          oldName: this.curGuestId,
+          newName,
+        })
+        localStorage[this.guestNameKey] = newName
+        this.showInfo("Guest name updated successfully")
+        this.editGuestNameDialog = false
+        this.$emit("setCurGuestId", newName)
+        this.refreshEvent()
+      } catch (err) {
+        this.showError(err.message || "Failed to update guest name")
+      }
     },
     refreshEvent() {
       this.$emit("refreshEvent")
