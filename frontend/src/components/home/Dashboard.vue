@@ -92,7 +92,10 @@
             @end="onEnd"
             :data-folder-id="folder._id"
             draggable=".item"
-            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 tw-pr-8 sm:tw-grid-cols-2 sm:tw-pr-0"
+            :delay="200"
+            :delay-on-touch-only="true"
+            :touch-start-threshold="10"
+            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
             <template v-slot:header>
               <div
@@ -147,7 +150,10 @@
             @end="onEnd"
             data-folder-id="null"
             draggable=".item"
-            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 tw-pr-8 sm:tw-grid-cols-2 sm:tw-pr-0"
+            :delay="200"
+            :delay-on-touch-only="true"
+            :touch-start-threshold="10"
+            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
           >
             <template v-slot:header>
               <div
