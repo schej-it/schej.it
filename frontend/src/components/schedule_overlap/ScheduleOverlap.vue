@@ -1016,6 +1016,7 @@ import {
   availabilityTypes,
   calendarOptionsDefaults,
   eventTypes,
+  guestUserId,
   timeTypes,
   timeslotDurations,
   upgradeDialogTypes,
@@ -1650,6 +1651,9 @@ export default {
     isOwner() {
       return this.authUser?._id === this.event.ownerId
     },
+    isGuestEvent() {
+      return this.event.ownerId === guestUserId
+    },
     isSpecificDates() {
       return this.event.type === eventTypes.SPECIFIC_DATES || !this.event.type
     },
@@ -1679,7 +1683,8 @@ export default {
       return this.isGuest(user) ? user._id : ""
     },
     canEditGuestName() {
-      return this.isOwner // || this.curGuestId === this.selectedGuestRespondent
+      return true
+      // return this.isOwner || this.isGuestEvent // || this.curGuestId === this.selectedGuestRespondent
     },
     scheduledEventStyle() {
       const style = {}
