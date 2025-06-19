@@ -587,7 +587,7 @@
                   }}
                   availability as
                   <div
-                    v-if="curGuestId"
+                    v-if="curGuestId && canEditGuestName"
                     class="tw-group tw-mt-0.5 tw-flex tw-w-fit tw-cursor-pointer tw-items-center tw-gap-1"
                     @click="openEditGuestNameDialog"
                   >
@@ -1677,6 +1677,9 @@ export default {
 
       const user = this.parsedResponses[this.curRespondents[0]].user
       return this.isGuest(user) ? user._id : ""
+    },
+    canEditGuestName() {
+      return this.isOwner // || this.curGuestId === this.selectedGuestRespondent
     },
     scheduledEventStyle() {
       const style = {}
@@ -3446,6 +3449,7 @@ export default {
           oldName: this.curGuestId,
           newName,
         })
+        localStorage[this.guestNameKey] = newName
         this.showInfo("Guest name updated successfully")
         this.editGuestNameDialog = false
         this.$emit("setCurGuestId", newName)
