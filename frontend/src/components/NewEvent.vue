@@ -761,7 +761,9 @@ export default {
         // Create new event on backend
         post("/events", payload)
           .then(async ({ eventId, shortId }) => {
-            await this.setEventFolder({ eventId, folderId: this.folderId })
+            if (this.authUser) {
+              await this.setEventFolder({ eventId, folderId: this.folderId })
+            }
             this.$router.push({
               name: "event",
               params: {

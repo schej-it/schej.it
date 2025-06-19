@@ -337,7 +337,9 @@ export default {
           creatorPosthogId: this.$posthog?.get_distinct_id(),
         })
           .then(async ({ eventId, shortId }) => {
-            await this.setEventFolder({ eventId, folderId: this.folderId })
+            if (this.authUser) {
+              await this.setEventFolder({ eventId, folderId: this.folderId })
+            }
             this.$router.push({
               name: "group",
               params: {
