@@ -944,7 +944,7 @@ export default {
     /** Resets week offset to 0 */
     resetWeekOffset() {
       if (this.event && this.event.startOnMonday) {
-        this.weekOffset = 1
+        this.weekOffset = 0
       } else {
         this.weekOffset = 0
       }
