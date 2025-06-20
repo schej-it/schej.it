@@ -26,10 +26,10 @@
       <v-btn
         text
         @click="openCreateFolderDialog"
-        class="tw-hidden tw-text-very-dark-gray sm:tw-block"
+        class="tw-text-very-dark-gray"
       >
-        <v-icon class="tw-mr-2 tw-text-lg">mdi-folder-plus</v-icon>
-        New folder
+        <v-icon class="tw-text-lg">mdi-folder-plus</v-icon>
+        <span class="tw-ml-2">New folder</span>
       </v-btn>
     </div>
 
