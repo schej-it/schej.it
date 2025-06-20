@@ -1,76 +1,85 @@
 <template>
-  <div
-    class="tw-mx-auto tw-mb-24 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mb-12 sm:tw-mt-7"
-  >
-    <!-- Preload images -->
-    <div class="tw-hidden">
-      <img src="@/assets/doodles/boba/0.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/1.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/2.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/3.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/4.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/5.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/6.jpg" alt="preload" />
-      <img src="@/assets/doodles/boba/7.jpg" alt="preload" />
-    </div>
+  <span>
+    <FormerlyKnownAs
+      class="tw-mx-auto tw-mb-10 tw-mt-3 tw-max-w-6xl tw-pl-4 sm:tw-pl-12"
+    />
     <div
-      v-if="loading && !eventsNotEmpty"
-      class="tw-flex tw-h-[calc(100vh-10rem)] tw-w-full tw-items-center tw-justify-center"
+      class="tw-mx-auto tw-mb-24 tw-mt-4 tw-max-w-6xl tw-space-y-4 sm:tw-mb-12 sm:tw-mt-7"
     >
-      <v-progress-circular
-        indeterminate
-        color="primary"
-        :size="20"
-        :width="2"
-      ></v-progress-circular>
-    </div>
-
-    <v-fade-transition>
-      <Dashboard v-if="!loading || eventsNotEmpty" />
-    </v-fade-transition>
-
-    <div
-      class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
-      v-if="!loading || eventsNotEmpty"
-    >
-      <div
-        class="tw-mb-3 tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
-      >
-        Tools
+      <!-- Preload images -->
+      <div class="tw-hidden">
+        <img src="@/assets/doodles/boba/0.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/1.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/2.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/3.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/4.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/5.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/6.jpg" alt="preload" />
+        <img src="@/assets/doodles/boba/7.jpg" alt="preload" />
       </div>
-      <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
+      <div
+        v-if="loading && !eventsNotEmpty"
+        class="tw-flex tw-h-[calc(100vh-10rem)] tw-w-full tw-items-center tw-justify-center"
+      >
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          :size="20"
+          :width="2"
+        ></v-progress-circular>
+      </div>
+
+      <v-fade-transition>
+        <Dashboard v-if="!loading || eventsNotEmpty" />
+      </v-fade-transition>
+
+      <div
+        class="tw-rounded-md tw-px-6 tw-py-4 sm:tw-mx-4 sm:tw-bg-[#f3f3f366]"
+        v-if="!loading || eventsNotEmpty"
+      >
         <div
-          @click="convertW2M"
-          class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
+          class="tw-mb-3 tw-text-xl tw-font-medium tw-text-dark-green sm:tw-text-2xl"
         >
-          Convert When2meet to Timeful
+          Tools
+        </div>
+        <div class="tw-flex tw-flex-row tw-items-center tw-gap-2">
+          <div
+            @click="convertW2M"
+            class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
+          >
+            Convert When2meet to Timeful
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-if="!loading || eventsNotEmpty" class="tw-flex tw-justify-center">
-      <div
-        class="animate-boba tw-size-48 tw-bg-contain tw-bg-no-repeat sm:tw-size-48"
-      ></div>
-    </div>
+      <div v-if="!loading || eventsNotEmpty" class="tw-flex tw-justify-center">
+        <div
+          class="animate-boba tw-size-48 tw-bg-contain tw-bg-no-repeat sm:tw-size-48"
+        ></div>
+      </div>
 
-    <div class="tw-flex tw-flex-col tw-items-center tw-justify-between">
-      <router-link
-        class="tw-text-xs tw-font-medium tw-text-gray"
-        :to="{ name: 'privacy-policy' }"
+      <div class="tw-flex tw-flex-col tw-items-center tw-justify-between">
+        <router-link
+          class="tw-text-xs tw-font-medium tw-text-gray"
+          :to="{ name: 'privacy-policy' }"
+        >
+          Privacy Policy
+        </router-link>
+      </div>
+
+      <!-- FAB -->
+      <BottomFab
+        v-if="isPhone"
+        id="create-event-btn"
+        @click="() => _createNew()"
       >
-        Privacy Policy
-      </router-link>
+        <v-icon>mdi-plus</v-icon>
+      </BottomFab>
+
+      <!-- When2meet Import Dialog -->
+      <When2meetImportDialog v-model="showW2MDialog" />
     </div>
-
-    <!-- FAB -->
-    <BottomFab v-if="isPhone" id="create-event-btn" @click="() => _createNew()">
-      <v-icon>mdi-plus</v-icon>
-    </BottomFab>
-
-    <!-- When2meet Import Dialog -->
-    <When2meetImportDialog v-model="showW2MDialog" />
-  </div>
+  </span>
 </template>
 
 <script>
@@ -82,6 +91,7 @@ import Dashboard from "@/components/home/Dashboard.vue"
 import { mapState, mapActions, mapMutations } from "vuex"
 import { eventTypes } from "@/constants"
 import { isPhone, get } from "@/utils"
+import FormerlyKnownAs from "@/components/FormerlyKnownAs.vue"
 
 export default {
   name: "Home",
@@ -96,6 +106,7 @@ export default {
     CreateSpeedDial,
     When2meetImportDialog,
     Dashboard,
+    FormerlyKnownAs,
   },
 
   props: {
