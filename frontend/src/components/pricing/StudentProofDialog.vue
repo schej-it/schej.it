@@ -12,7 +12,7 @@
       <p class="tw-mb-6 tw-text-sm tw-text-dark-gray">
         Please email
         <span class="tw-font-medium tw-text-dark-green tw-underline"
-          >schej.team@gmail.com</span
+          >contact@timeful.app</span
         >
         with proof that you are a student to get the discounted price. The
         subject of your email should be "Student Discount".

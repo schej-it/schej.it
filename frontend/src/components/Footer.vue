@@ -93,7 +93,7 @@
                 <div class="tw-text-sm">
                   Email support at
                   <span class="tw-text-green tw-underline"
-                    >schej.team@gmail.com</span
+                    >contact@timeful.app</span
                   >
                 </div>
               </v-card>
