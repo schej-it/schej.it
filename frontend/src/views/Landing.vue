@@ -29,11 +29,12 @@
             <div class="-tw-mt-3.5 tw-text-dark-gray">
               <v-icon>mdi-arrow-up-left</v-icon>
             </div>
-            <span
+            <a
+              href="/blog/schej-is-now-timeful/"
               class="tw-cursor-pointer tw-select-none tw-text-sm tw-text-dark-gray hover:tw-underline"
             >
               Formerly known as "Schej"
-            </span>
+            </a>
           </div>
         </div>
       </div>
