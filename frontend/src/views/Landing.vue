@@ -29,9 +29,11 @@
             <div class="-tw-mt-3.5 tw-text-dark-gray">
               <v-icon>mdi-arrow-up-left</v-icon>
             </div>
-            <div class="tw-text-sm tw-text-dark-gray">
-              <PronunciationMenu />
-            </div>
+            <span
+              class="tw-cursor-pointer tw-select-none tw-text-sm tw-text-dark-gray hover:tw-underline"
+            >
+              Formerly known as "Schej"
+            </span>
           </div>
         </div>
       </div>
@@ -322,7 +324,7 @@ export default {
   name: "Landing",
 
   metaInfo: {
-    title: "Timeful - Find a time to meet (formerly Schej)",
+    title: "Timeful (formerly Schej) - Find a time to meet",
   },
 
   components: {
