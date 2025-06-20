@@ -66,7 +66,7 @@
         <v-card-text
           ><span class="tw-font-medium"
             >You're about to add your availability without filling out all pages
-            of this Schej.</span
+            of this Timeful.</span
           >
           Click the left and right arrows at the top to switch between
           pages.</v-card-text
@@ -276,7 +276,7 @@
           href="https://forms.gle/9AgRy4PQfWfVuBnw8"
           target="_blank"
         >
-          Give feedback to Schej team
+          Give feedback to Timeful team
         </v-btn>
         <div class="tw-w-full tw-border-t tw-border-solid tw-border-gray"></div>
         <v-btn
@@ -1078,7 +1078,7 @@ export default {
         this.$nextTick(() => {
           this.scheduleOverlapComponent = this.$refs.scheduleOverlap
         })
-        document.title = `${this.event.name} - Schej`
+        document.title = `${this.event.name} - Timeful`
       }
     },
     scheduleOverlapComponent() {

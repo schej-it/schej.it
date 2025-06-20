@@ -10,7 +10,7 @@
     color="#333"
     content-class="tw-flex tw-items-center tw-gap-x-2"
   >
-    Enjoying Schej? Help us reach more people by upvoting our Reddit post and
+    Enjoying Timeful? Help us reach more people by upvoting our Reddit post and
     leaving a comment with your thoughts :)
     <v-btn
       :href="redditUrl"

@@ -1,4 +1,4 @@
-# schej
+# timeful
 
 ## Project setup
 

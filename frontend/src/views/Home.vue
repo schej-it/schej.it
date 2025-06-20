@@ -43,7 +43,7 @@
           @click="convertW2M"
           class="tw-cursor-pointer tw-text-sm tw-font-normal tw-text-dark-gray tw-underline"
         >
-          Convert When2meet to Schej
+          Convert When2meet to Timeful
         </div>
       </div>
     </div>
@@ -87,7 +87,7 @@ export default {
   name: "Home",
 
   metaInfo: {
-    title: "Home - Schej",
+    title: "Home - Timeful",
   },
 
   components: {
@@ -143,7 +143,7 @@ export default {
     createFolder() {},
     convertW2M() {
       this.showW2MDialog = true
-      this.$posthog?.capture("convert_when2meet_to_schej_clicked")
+      this.$posthog?.capture("convert_when2meet_to_timeful_clicked")
     },
   },
 

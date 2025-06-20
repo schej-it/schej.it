@@ -11,7 +11,7 @@
           Upgrade to
           <span
             class="tw-bg-gradient-to-r tw-from-darkest-green tw-to-light-green tw-bg-clip-text tw-text-transparent"
-            >Schej Premium</span
+            >Timeful Premium</span
           >
         </h2>
         <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
@@ -25,7 +25,7 @@
           <template
             v-else-if="upgradeDialogType === upgradeDialogTypes.SCHEDULE_EVENT"
           >
-            Upgrade to schedule events with Schej. Your payment helps us keep
+            Upgrade to schedule events with Timeful. Your payment helps us keep
             the site running.
           </template>
           <template
@@ -33,7 +33,7 @@
               upgradeDialogType === upgradeDialogTypes.UPGRADE_MANUALLY
             "
           >
-            Create unlimited events with Schej Premium. Your payment helps us
+            Create unlimited events with Timeful Premium. Your payment helps us
             keep the site running.
           </template>
         </div>
@@ -59,8 +59,9 @@
         class="tw-mb-8 tw-rounded-lg tw-border tw-border-light-gray-stroke tw-p-4"
       >
         <div class="tw-mb-4 tw-text-sm tw-font-medium tw-text-dark-gray">
-          Schej is free for students! But you have to prove it. And make sure to
-          spread Schej to as many of your friends as possible. Pinky promise.
+          Timeful is free for students! But you have to prove it. And make sure
+          to spread Timeful to as many of your friends as possible. Pinky
+          promise.
         </div>
         <div class="tw-text-sm tw-font-medium tw-text-dark-gray">
           Email
@@ -69,7 +70,7 @@
           >
           from your student email with:
           <ul class="tw-list-decimal tw-py-4 tw-pl-4">
-            <li>Email address you use for Schej</li>
+            <li>Email address you use for Timeful</li>
             <li>Proof of enrollment</li>
           </ul>
           and we'll get back to you within 24 hours (but probably sooner). The

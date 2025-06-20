@@ -6,7 +6,7 @@
       <!-- Header -->
       <div class="tw-mb-16 sm:tw-mb-28">
         <div class="tw-flex tw-items-center tw-pt-5">
-          <Logo type="schej" />
+          <Logo type="timeful" />
 
           <v-spacer />
 
@@ -79,7 +79,7 @@
                 >
               </template>
               <span
-                >Schej allows you to autofill your availability from Google
+                >Timeful allows you to autofill your availability from Google
                 Calendar,<br class="tw-hidden sm:tw-block" />
                 Outlook, and Apple Calendar</span
               > </v-tooltip
@@ -89,7 +89,6 @@
 
         <div class="tw-mb-12 tw-space-y-2">
           <v-btn
-            id="lets-schej-it-btn"
             class="tw-block tw-self-center tw-rounded-lg tw-bg-green tw-px-10 tw-text-base sm:tw-px-10 lg:tw-px-12"
             dark
             @click="authUser ? openDashboard() : (newDialog = true)"
@@ -192,7 +191,7 @@
         <iframe
           class="tw-h-full tw-w-full"
           src="https://www.youtube.com/embed/I7jl850X1P4?si=4xUlkXJebxBaDP1I"
-          title="Schej demo"
+          title="Timeful demo"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerpolicy="strict-origin-when-cross-origin"
@@ -323,7 +322,7 @@ export default {
   name: "Landing",
 
   metaInfo: {
-    title: "Schej - Find a time to meet",
+    title: "Timeful - Find a time to meet (formerly Schej)",
   },
 
   components: {
@@ -349,13 +348,13 @@ export default {
     newDialog: false,
     githubSnackbar: true,
     howItWorksSteps: [
-      "Create a Schej event",
-      "Share the Schej link with your group for them to fill out",
+      "Create a Timeful event",
+      "Share the Timeful link with your group for them to fill out",
       "See where everybody's availability overlaps!",
     ],
     faqs: [
       {
-        question: "How is Schej different from Lettucemeet or When2meet?",
+        question: "How is Timeful different from Lettucemeet or When2meet?",
         points: [
           "Much better UI (web and mobile)",
           "Seamless and working calendar integration",
@@ -363,12 +362,12 @@ export default {
         ],
       },
       {
-        question: "What calendars does Schej integrate with?",
+        question: "What calendars does Timeful integrate with?",
         answer:
-          "Schej currently supports Google Calendar, Outlook, and Apple Calendar. We are working on adding more calendar types soon!",
+          "Timeful currently supports Google Calendar, Outlook, and Apple Calendar. We are working on adding more calendar types soon!",
       },
       {
-        question: "Is calendar access required in order to use Schej?",
+        question: "Is calendar access required in order to use Timeful?",
         answer:
           "Nope! You can manually input your availability, but we highly recommend allowing calendar access in order to view your calendar events while doing so.",
       },
@@ -399,7 +398,7 @@ export default {
       },
       {
         question: `How do I send reminders to people to fill out an event?`,
-        answer: `Open the "Email Reminders" section when creating an event and input everybody's email address. Reminder emails will be sent the day of event creation, one day after, and three days after. <br><br>You will also receive an email once everybody has filled out the Schej.`,
+        answer: `Open the "Email Reminders" section when creating an event and input everybody's email address. Reminder emails will be sent the day of event creation, one day after, and three days after. <br><br>You will also receive an email once everybody has filled out the Timeful.`,
         authRequired: true,
       },
     ],
@@ -412,21 +411,21 @@ export default {
           "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png",
       },
       {
-        text: "It's almost <span class='rdt-h'>comically easy</span> to schedule meetings with Schej.",
+        text: "It's almost <span class='rdt-h'>comically easy</span> to schedule meetings with Timeful.",
         author: "u/stuffingmybrain",
         link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8rvty",
         picture:
           "https://styles.redditmedia.com/t5_qqojf/styles/profileIcon_snooa54a8eae-bc7f-406f-9778-b3b9dfb818e5-headshot.png?width=64&height=64&frame=1&auto=webp&crop=&s=a0a91575ff7cfc3b6698cac69da6c012c7deb8d6",
       },
       {
-        text: "Schej is everything I've ever wanted and more. On top of that, <span class='rdt-h'>community support is the best I've seen</span> of any app or software, ever.",
+        text: "Timeful is everything I've ever wanted and more. On top of that, <span class='rdt-h'>community support is the best I've seen</span> of any app or software, ever.",
         author: "u/DMODD",
         link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb8udud",
         picture:
           "https://www.redditstatic.com/avatars/defaults/v2/avatar_default_6.png",
       },
       {
-        text: "With Schej, <span class='rdt-h'>I'm very quickly able to figure out the optimal time</span> to schedule online extra help sessions before an exam.",
+        text: "With Timeful, <span class='rdt-h'>I'm very quickly able to figure out the optimal time</span> to schedule online extra help sessions before an exam.",
         author: "u/crackwurst",
         link: "https://www.reddit.com/r/schej/comments/1drs26z/comment/lb9dmbe",
         picture:

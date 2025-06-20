@@ -6,7 +6,7 @@
         <div>
           <div class="tw-mb-3 tw-flex tw-items-center">
             <v-icon class="tw-mr-1 tw-text-white">mdi-calendar-blank</v-icon>
-            <span class="tw-text-2xl tw-font-medium">schej</span>
+            <span class="tw-text-2xl tw-font-medium">timeful</span>
           </div>
           <div class="tw-mb-6 tw-leading-snug">
             Made with 💚 by
@@ -69,25 +69,6 @@
                 />
               </svg>
             </a>
-          </div>
-          <div class="tw-mb-4">
-            <v-menu :nudge-bottom="10" offset-y :close-on-content-click="false">
-              <template v-slot:activator="{ on, attrs }">
-                <span
-                  class="tw-cursor-pointer tw-text-sm tw-text-white/80 hover:tw-text-white"
-                  v-bind="attrs"
-                  v-on="on"
-                  @click="copyContractAddress"
-                >
-                  View $SCHEJ contract
-                </span>
-              </template>
-              <v-card class="tw-p-3">
-                <div class="tw-text-sm">
-                  {{ contractAddress }}
-                </div>
-              </v-card>
-            </v-menu>
           </div>
           <a href="/privacy-policy" class="tw-text-sm">Privacy Policy</a>
         </div>

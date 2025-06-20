@@ -197,7 +197,7 @@ export default {
   name: "Settings",
 
   metaInfo: {
-    title: "Settings - Schej",
+    title: "Settings - Timeful",
   },
 
   components: { CalendarAccounts },

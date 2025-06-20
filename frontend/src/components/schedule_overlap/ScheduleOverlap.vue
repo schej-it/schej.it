@@ -1060,7 +1060,7 @@ export default {
     sampleCalendarEventsByDay: { type: Array, required: false }, // Sample calendar events to use for example calendars
     calendarPermissionGranted: { type: Boolean, default: false }, // Whether user has granted google calendar permissions
 
-    weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly schejs
+    weekOffset: { type: Number, default: 0 }, // Week offset used for displaying calendar events on weekly Timefuls
 
     alwaysShowCalendarEvents: { type: Boolean, default: false }, // Whether to show calendar events all the time
     noEventNames: { type: Boolean, default: false }, // Whether to show "busy" instead of the event name
@@ -1719,7 +1719,7 @@ export default {
       style.height = `calc(${height} * 1rem)`
       return style
     },
-    /** Parses the responses to the Schej, makes necessary changes based on the type of event, and returns it */
+    /** Parses the responses to the Timeful, makes necessary changes based on the type of event, and returns it */
     parsedResponses() {
       const parsed = {}
 
@@ -3542,13 +3542,13 @@ export default {
         url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
           this.event.name
         )}&dates=${start}/${end}&details=${encodeURIComponent(
-          "\n\nThis event was scheduled with schej: https://schej.it/e/"
+          "\n\nThis event was scheduled with Timeful: https://timeful.app/e/"
         )}${eventId}&ctz=${this.curTimezone.value}&add=${emailsString}`
       } else {
         url = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(
           this.event.name
         )}&body=${encodeURIComponent(
-          "\n\nThis event was scheduled with schej: https://schej.it/e/" +
+          "\n\nThis event was scheduled with Timeful: https://timeful.app/e/" +
             eventId
         )}&startdt=${startDate.toISOString()}&enddt=${endDate.toISOString()}&location=${encodeURIComponent(
           this.event.location || ""

@@ -11,7 +11,7 @@ export default {
   name: "PrivacyPolicy",
 
   metaInfo: {
-    title: "Privacy Policy - Schej",
+    title: "Privacy Policy - Timeful",
   },
 }
 </script>
