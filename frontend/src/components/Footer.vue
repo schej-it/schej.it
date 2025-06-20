@@ -112,15 +112,22 @@
         <div class="tw-flex tw-flex-col tw-gap-2">
           <div class="tw-mb-1 tw-font-bold">Articles</div>
           <div>
-            <a href="/blog/about/" class="tw-text-sm"
-              >Welcome to the Schej blog!</a
+            <a href="/blog/schej-is-now-timeful/" class="tw-text-sm"
+              >Schej is now Timeful</a
             >
           </div>
           <div>
-            <a href="/blog/doodle/" class="tw-text-sm">Schej vs Doodle</a>
+            <a href="/blog/about/" class="tw-text-sm"
+              >Welcome to the Timeful blog!</a
+            >
           </div>
           <div>
-            <a href="/blog/when2meet/" class="tw-text-sm">Schej vs When2meet</a>
+            <a href="/blog/doodle/" class="tw-text-sm">Timeful vs Doodle</a>
+          </div>
+          <div>
+            <a href="/blog/when2meet/" class="tw-text-sm"
+              >Timeful vs When2meet</a
+            >
           </div>
           <div>
             <a href="/blog/gcalandwhen2meet/" class="tw-text-sm"
