@@ -177,7 +177,7 @@
       >
         <iframe
           class="tw-h-full tw-w-full"
-          src="https://www.youtube.com/embed/I7jl850X1P4?si=4xUlkXJebxBaDP1I"
+          src="https://www.youtube.com/embed/vFkBC8BrkOk?si=pF64JAIyDhom_1do"
           title="Timeful demo"
           frameborder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
