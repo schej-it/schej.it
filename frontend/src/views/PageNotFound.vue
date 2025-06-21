@@ -28,7 +28,7 @@ export default {
   name: "PageNotFound",
 
   metaInfo: {
-    title: "Page not found - Schej",
+    title: "Page not found - Timeful",
   },
 
   computed: {

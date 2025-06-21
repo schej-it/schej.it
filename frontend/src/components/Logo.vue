@@ -17,8 +17,8 @@ export default {
 
   props: {
     type: {
-      type: "schej" | "betterwhen2meet" | "aprilfools",
-      default: "schej",
+      type: "timeful" | "betterwhen2meet" | "aprilfools",
+      default: "timeful",
     },
   },
 
@@ -31,12 +31,12 @@ export default {
         return "Betterwhen2meet Logo"
       }
 
-      return "Schej Logo"
+      return "Timeful Logo"
     },
     src() {
       switch (this.type) {
-        case "schej":
-          return require("@/assets/schej_logo_with_text.png")
+        case "timeful":
+          return require("@/assets/timeful_logo_with_text.png")
         case "betterwhen2meet":
           return require("@/assets/april_fools_logo.png")
         case "aprilfools":
@@ -45,8 +45,8 @@ export default {
     },
     width() {
       switch (this.type) {
-        case "schej":
-          return this.isPhone ? 70 : 90
+        case "timeful":
+          return this.isPhone ? 90 : 110
         case "betterwhen2meet":
           return this.isPhone ? 200 : 300
         case "aprilfools":

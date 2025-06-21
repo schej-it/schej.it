@@ -9,9 +9,9 @@
       <h2 class="tw-mb-4 tw-text-lg tw-font-medium">Already Donated?</h2>
       <p class="tw-mb-6 tw-text-sm tw-text-dark-gray">
         Thank you so much for your previous donation! To get free lifetime
-        access to Schej Premium, please send an email to
+        access to Timeful Premium, please send an email to
         <span class="tw-font-medium tw-text-dark-green tw-underline"
-          >schej.team@gmail.com</span
+          >contact@timeful.app</span
         >
         from the email address associated with your donation. We'll upgrade your
         account manually.

@@ -1054,12 +1054,7 @@ func userResponded(c *gin.Context) {
 		owner := db.GetUserById(event.OwnerId.Hex())
 
 		// Get event url
-		var baseUrl string
-		if utils.IsRelease() {
-			baseUrl = "https://schej.it"
-		} else {
-			baseUrl = "http://localhost:8080"
-		}
+		baseUrl := utils.GetBaseUrl()
 		eventUrl := fmt.Sprintf("%s/e/%s", baseUrl, eventId)
 
 		// Send email

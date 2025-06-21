@@ -20,7 +20,7 @@
             You've upgraded to <br class="tw-block sm:tw-hidden" />
             <span
               class="tw-bg-gradient-to-r tw-from-darkest-green tw-to-light-green tw-bg-clip-text tw-text-transparent"
-              >Schej Premium</span
+              >Timeful Premium</span
             >!
           </div>
           <div>

@@ -1,17 +1,44 @@
 server {
     server_name schej.it; # managed by Certbot
   
-  	#frontend 
-	location / {
-		if (-f /schej.it/maintenance_page/maintenance_true.html) {
-			return 503;
-		}
-	    proxy_pass http://localhost:3002/;
-	    proxy_http_version 1.1;
-	    proxy_set_header Upgrade $http_upgrade;
-	    proxy_set_header Connection 'upgrade';
-	    proxy_set_header Host $host;
-	    proxy_cache_bypass $http_upgrade;
+        #frontend
+        location / {
+                if (-f /schej.it/maintenance_page/maintenance_true.html) {
+                        return 503;
+                }
+
+		#root  /schej.it/frontend/dist;
+		#try_files $uri $uri/ /index.html;
+
+            proxy_pass http://localhost:3002;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+
+location /blog/ {
+    proxy_pass https://schej-blog.vercel.app/blog/;
+
+    # Keep the correct Vercel domain in Host header
+    proxy_set_header Host schej-blog.vercel.app;
+
+    # Tell Next.js what the *original host* was
+    proxy_set_header X-Forwarded-Host schej.it;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    proxy_redirect off;
+}
+
+	location /api {
+            proxy_pass http://localhost:3002/api;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
 	}
 
   	location /sockets/ {
@@ -39,6 +66,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/schej.it/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
 
 }
 server {

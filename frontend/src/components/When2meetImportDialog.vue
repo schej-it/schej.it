@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title>
         <span class="tw-text-xl tw-font-medium"
-          >Convert When2meet to Schej</span
+          >Convert When2meet to Timeful</span
         >
         <v-spacer />
         <v-btn
@@ -17,8 +17,8 @@
       </v-card-title>
       <v-card-text class="tw-text-very-dark-gray">
         <p class="tw-mb-4">
-          If someone accidentally sends you a When2meet link instead of a Schej,
-          you can convert it by following these steps:
+          If someone accidentally sends you a When2meet link instead of a
+          Timeful, you can convert it by following these steps:
         </p>
         <ol class="tw-mb-6 tw-list-decimal tw-pl-5">
           <li>Go to your When2meet event link.</li>

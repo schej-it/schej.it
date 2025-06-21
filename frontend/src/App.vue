@@ -26,7 +26,7 @@
         class="tw-relative tw-m-auto tw-flex tw-h-full tw-max-w-6xl tw-items-center tw-justify-center tw-px-4"
       >
         <router-link :to="{ name: 'home' }">
-          <Logo type="schej" />
+          <Logo type="timeful" />
         </router-link>
         <v-expand-x-transition>
           <span

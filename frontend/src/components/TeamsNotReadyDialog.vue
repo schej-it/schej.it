@@ -14,7 +14,7 @@
         </v-btn>
       </v-card-title>
       <v-card-text class="tw-text-very-dark-gray">
-        Teams are only available on the Schej organization plan. Book a call
+        Teams are only available on the Timeful organization plan. Book a call
         with the founder to learn about how to upgrade.
       </v-card-text>
       <v-card-actions>
@@ -46,7 +46,7 @@ export default {
     bookCall() {
       this.$posthog?.capture("book_call_for_organization_plan_clicked")
       window.open(
-        "https://cal.com/jonathan-liu/schej-organization-plan",
+        "https://cal.com/jonathan-liu/timeful-organization-plan",
         "_blank"
       )
       this.dialog = false

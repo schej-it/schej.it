@@ -6,7 +6,7 @@
         <div>
           <div class="tw-mb-3 tw-flex tw-items-center">
             <v-icon class="tw-mr-1 tw-text-white">mdi-calendar-blank</v-icon>
-            <span class="tw-text-2xl tw-font-medium">schej</span>
+            <span class="tw-text-2xl tw-font-medium">timeful</span>
           </div>
           <div class="tw-mb-6 tw-leading-snug">
             Made with 💚 by
@@ -70,25 +70,6 @@
               </svg>
             </a>
           </div>
-          <div class="tw-mb-4">
-            <v-menu :nudge-bottom="10" offset-y :close-on-content-click="false">
-              <template v-slot:activator="{ on, attrs }">
-                <span
-                  class="tw-cursor-pointer tw-text-sm tw-text-white/80 hover:tw-text-white"
-                  v-bind="attrs"
-                  v-on="on"
-                  @click="copyContractAddress"
-                >
-                  View $SCHEJ contract
-                </span>
-              </template>
-              <v-card class="tw-p-3">
-                <div class="tw-text-sm">
-                  {{ contractAddress }}
-                </div>
-              </v-card>
-            </v-menu>
-          </div>
           <a href="/privacy-policy" class="tw-text-sm">Privacy Policy</a>
         </div>
         <!-- Links -->
@@ -112,7 +93,7 @@
                 <div class="tw-text-sm">
                   Email support at
                   <span class="tw-text-green tw-underline"
-                    >schej.team@gmail.com</span
+                    >contact@timeful.app</span
                   >
                 </div>
               </v-card>
@@ -131,15 +112,22 @@
         <div class="tw-flex tw-flex-col tw-gap-2">
           <div class="tw-mb-1 tw-font-bold">Articles</div>
           <div>
-            <a href="/blog/about/" class="tw-text-sm"
-              >Welcome to the Schej blog!</a
+            <a href="/blog/schej-is-now-timeful/" class="tw-text-sm"
+              >Schej is now Timeful</a
             >
           </div>
           <div>
-            <a href="/blog/doodle/" class="tw-text-sm">Schej vs Doodle</a>
+            <a href="/blog/about/" class="tw-text-sm"
+              >Welcome to the Timeful blog!</a
+            >
           </div>
           <div>
-            <a href="/blog/when2meet/" class="tw-text-sm">Schej vs When2meet</a>
+            <a href="/blog/doodle/" class="tw-text-sm">Timeful vs Doodle</a>
+          </div>
+          <div>
+            <a href="/blog/when2meet/" class="tw-text-sm"
+              >Timeful vs When2meet</a
+            >
           </div>
           <div>
             <a href="/blog/gcalandwhen2meet/" class="tw-text-sm"
