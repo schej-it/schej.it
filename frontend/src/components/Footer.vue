@@ -18,7 +18,7 @@
             >
           </div>
           <div class="tw-mb-6 tw-flex tw-items-center tw-space-x-3">
-            <a href="https://x.com/schej_it" aria-label="X" target="_blank">
+            <a href="https://x.com/timeful_app" aria-label="X" target="_blank">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 512 512"
