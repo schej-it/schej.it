@@ -16,6 +16,7 @@
       :min="minCalendarDate"
       full-width
       :scrollable="false"
+      :first-day-of-week="startCalendarOnMonday ? 1 : 0"
     ></v-date-picker>
     <!-- <div class="tw-mt-2 tw-text-xs tw-text-very-dark-gray">
       Drag to select multiple dates
@@ -30,6 +31,7 @@ export default {
   props: {
     value: { type: Array, required: true },
     minCalendarDate: { type: String, default: "" },
+    startCalendarOnMonday: { type: Boolean, default: false },
   },
 
   data() {

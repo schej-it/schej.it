@@ -159,6 +159,7 @@
                 <DatePicker
                   v-model="selectedDays"
                   :minCalendarDate="minCalendarDate"
+                  :startCalendarOnMonday="startOnMonday"
                 />
               </v-input>
             </div>
@@ -497,6 +498,7 @@ export default {
     contactsPayload: { type: Object, default: () => ({}) },
     showHelp: { type: Boolean, default: false },
     folderId: { type: String, default: null },
+    isDialogOpen: { type: Boolean, default: false },
   },
 
   components: {
@@ -519,7 +521,10 @@ export default {
     loading: false,
     selectedDays: [],
     selectedDaysOfWeek: [],
-    startOnMonday: false,
+    startOnMonday:
+      localStorage["startCalendarOnMonday"] == undefined
+        ? false
+        : localStorage["startCalendarOnMonday"] == "true",
     notificationsEnabled: true,
 
     daysOnly: false,
@@ -649,6 +654,10 @@ export default {
       this.sendEmailAfterXResponsesEnabled = false
       this.sendEmailAfterXResponses = 3
       this.collectEmails = false
+      this.startOnMonday =
+        localStorage["startCalendarOnMonday"] == undefined
+          ? false
+          : localStorage["startCalendarOnMonday"] == "true"
 
       this.$refs.form.resetValidation()
     },
@@ -993,6 +1002,14 @@ export default {
         this.selectedDaysOfWeek = []
       } else if (this.selectedDateOption === this.dateOptions.DOW) {
         this.selectedDays = []
+      }
+    },
+    startOnMonday() {
+      localStorage.setItem("startCalendarOnMonday", this.startOnMonday)
+    },
+    isDialogOpen(newVal) {
+      if (newVal) {
+        this.reset()
       }
     },
   },

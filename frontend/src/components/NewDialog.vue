@@ -47,6 +47,7 @@
           :event="event"
           :edit="edit"
           @input="handleDialogInput"
+          :is-dialog-open="value"
           :contactsPayload="this.type == 'event' ? contactsPayload : {}"
           :show-help="!_noTabs"
           :folder-id="folderId"

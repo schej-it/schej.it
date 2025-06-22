@@ -1163,10 +1163,10 @@ export default {
         localStorage["timeType"] ??
         (userPrefers12h() ? timeTypes.HOUR12 : timeTypes.HOUR24), // Whether 12-hour or 24-hour
       showCalendarEvents: false,
-      startCalendarOnMonday: false,
-      // localStorage["startCalendarOnMonday"] == undefined
-      //   ? false
-      //   : localStorage["startCalendarOnMonday"] == "true",
+      startCalendarOnMonday:
+        localStorage["startCalendarOnMonday"] == undefined
+          ? false
+          : localStorage["startCalendarOnMonday"] == "true",
 
       /* Dialogs */
       deleteAvailabilityDialog: false,
@@ -1223,6 +1223,9 @@ export default {
     },
     /** Returns the days of the week in the correct order */
     daysOfWeek() {
+      if (!this.event.daysOnly) {
+        return ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+      }
       return !this.startCalendarOnMonday
         ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
         : ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]

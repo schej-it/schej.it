@@ -20,7 +20,13 @@
           }"
         >
           <v-icon :color="isOwner ? 'green' : 'grey'">{{
-            isGroup ? "mdi-account-group" : "mdi-calendar"
+            isGroup
+              ? "mdi-account-group"
+              : isDow
+              ? "mdi-calendar-range"
+              : event.daysOnly
+              ? "mdi-calendar-month"
+              : "mdi-calendar"
           }}</v-icon>
         </div>
         <div class="tw-ml-3">
@@ -229,6 +235,9 @@ export default {
     },
     isGroup() {
       return this.event.type === eventTypes.GROUP
+    },
+    isDow() {
+      return this.event.type === eventTypes.DOW
     },
     isSignUp() {
       return this.event.isSignUpForm
