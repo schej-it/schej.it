@@ -30,7 +30,7 @@
               </svg>
             </a>
             <a
-              href="https://github.com/schej-it/schej.it"
+              href="https://github.com/schej-it/timeful.app"
               aria-label="GitHub"
               target="_blank"
               ><v-icon class="tw-text-white/80 hover:tw-text-white"

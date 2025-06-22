@@ -34,9 +34,9 @@
             <github-button
               v-once
               class="-tw-mb-1 tw-ml-2"
-              href="https://github.com/schej-it/schej.it"
+              href="https://github.com/schej-it/timeful.app"
               data-show-count="true"
-              aria-label="Star schej-it/schej.it on GitHub"
+              aria-label="Star timeful.app on GitHub"
               >Star</github-button
             >
           </div>
