@@ -633,11 +633,14 @@
                     </v-card>
                   </v-dialog>
                 </div>
-                <AvailabilityTypeToggle
-                  v-if="!isGroup && !isPhone"
-                  class="tw-w-full"
-                  v-model="availabilityType"
-                />
+                <div class="tw-flex tw-flex-col tw-gap-3">
+                  <AvailabilityTypeToggle
+                    v-if="!isGroup && !isPhone"
+                    class="tw-w-full"
+                    v-model="availabilityType"
+                  />
+                  <ColorLegend />
+                </div>
                 <!-- User's calendar accounts -->
                 <CalendarAccounts
                   v-if="
@@ -1037,6 +1040,7 @@ import ExpandableSection from "../ExpandableSection.vue"
 import WorkingHoursToggle from "./WorkingHoursToggle.vue"
 import AlertText from "../AlertText.vue"
 import Tooltip from "../Tooltip.vue"
+import ColorLegend from "./ColorLegend.vue"
 
 import dayjs from "dayjs"
 import ObjectID from "bson-objectid"
@@ -4534,6 +4538,7 @@ export default {
   components: {
     AlertText,
     AvailabilityTypeToggle,
+    ColorLegend,
     ExpandableSection,
     BufferTimeSwitch,
     UserAvatarContent,
