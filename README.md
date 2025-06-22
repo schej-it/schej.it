@@ -1,6 +1,6 @@
 <div align="center">
   
-<img src="./.github/assets/images/logo.svg" width="200px" alt="Schej logo" />
+<img src="./.github/assets/images/logo.svg" width="200px" alt="Timeful logo" />
 
 </div>
 <br />
@@ -13,11 +13,11 @@
 
 </div>
 
-<img src="./.github/assets/images/hero.jpg" alt="Schej hero" />
+<img src="./.github/assets/images/hero.jpg" alt="Timeful hero" />
 
-Schej is a scheduling platform helps you find the best time for a group to meet. It is a free availability poll that is easy to use and integrates with your calendar.
+Timeful is a scheduling platform helps you find the best time for a group to meet. It is a free availability poll that is easy to use and integrates with your calendar.
 
-Hosted version of the site: https://schej.it
+Hosted version of the site: https://timeful.app
 
 Built with [Vue 2](https://github.com/vuejs/vue), [MongoDB](https://github.com/mongodb/mongo), [Go](https://github.com/golang/go), and [TailwindCSS](https://github.com/tailwindlabs/tailwindcss)
 
