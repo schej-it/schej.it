@@ -124,7 +124,8 @@ func getPrice(c *gin.Context) {
 	var lifetimePriceId string
 	switch exp {
 	case "test":
-		lifetimePriceId = os.Getenv("STRIPE_LIFETIME_PRICE_ID_2")
+		// lifetimePriceId = os.Getenv("STRIPE_LIFETIME_PRICE_ID_2")
+		lifetimePriceId = os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 	default:
 		lifetimePriceId = os.Getenv("STRIPE_LIFETIME_PRICE_ID")
 	}
