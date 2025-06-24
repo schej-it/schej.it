@@ -39,6 +39,7 @@ func InitEvents(router *gin.RouterGroup) {
 	eventRouter.GET("/:eventId/calendar-availabilities", middleware.AuthRequired(), getCalendarAvailabilities)
 	eventRouter.DELETE("/:eventId", middleware.AuthRequired(), deleteEvent)
 	eventRouter.POST("/:eventId/duplicate", middleware.AuthRequired(), duplicateEvent)
+	eventRouter.POST("/:eventId/archive", middleware.AuthRequired(), archiveEvent)
 }
 
 // @Summary Creates a new event
@@ -1365,6 +1366,52 @@ func duplicateEvent(c *gin.Context) {
 
 	insertedId := result.InsertedID.(primitive.ObjectID).Hex()
 	c.JSON(http.StatusCreated, gin.H{"eventId": insertedId, "shortId": shortId})
+}
+
+// @Summary Archive an event
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Param payload body object{archive=bool} true "Archive status"
+// @Success 200
+// @Router /events/{eventId}/archive [post]
+func archiveEvent(c *gin.Context) {
+	payload := struct {
+		Archive *bool `json:"archive" binding:"required"`
+	}{}
+	if err := c.Bind(&payload); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	eventId := c.Param("eventId")
+
+	objectId, err := primitive.ObjectIDFromHex(eventId)
+	if err != nil {
+		// eventId is malformatted
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userInterface, _ := c.Get("authUser")
+	user := userInterface.(*models.User)
+
+	result := db.EventsCollection.FindOneAndUpdate(context.Background(), bson.M{
+		"_id":     objectId,
+		"ownerId": user.Id,
+	}, bson.M{
+		"$set": bson.M{
+			"isArchived": payload.Archive,
+		},
+	})
+	var event models.Event
+	err = result.Decode(&event)
+	if err != nil {
+		logger.StdErr.Panicln(err)
+	}
+
+	c.Status(http.StatusOK)
 }
 
 // Helper function to find a response by userId

@@ -35,17 +35,18 @@
 
     <div>
       <div
-        v-for="folder in orderedFolders"
-        :key="folder._id"
+        v-for="folder in allFolders"
+        :key="folder.id"
         class="tw-group tw-mb-2"
       >
         <div class="tw-flex tw-items-center">
-          <v-btn icon small @click="toggleFolder(folder._id)">
+          <v-btn icon small @click="toggleFolder(folder.id)">
             <v-icon>{{
-              folderOpenState[folder._id] ? "mdi-menu-down" : "mdi-menu-right"
+              folderOpenState[folder.id] ? "mdi-menu-down" : "mdi-menu-right"
             }}</v-icon>
           </v-btn>
           <v-chip
+            v-if="folder.type === 'regular'"
             :color="folder.color || '#D3D3D3'"
             small
             class="tw-mr-2 tw-cursor-pointer tw-rounded tw-border tw-border-light-gray-stroke tw-px-2 tw-text-sm tw-font-medium"
@@ -53,7 +54,11 @@
           >
             {{ folder.name }}
           </v-chip>
+          <span v-else class="tw-mr-2 tw-text-sm tw-font-medium">{{
+            folder.name
+          }}</span>
           <div
+            v-if="folder.type === 'regular'"
             class="tw-invisible tw-flex tw-items-center group-hover:tw-visible"
           >
             <v-menu offset-y>
@@ -76,117 +81,71 @@
             <v-btn
               icon
               small
-              @click.stop.prevent="createEventInFolder(folder._id)"
+              @click.stop.prevent="createEventInFolder(folder.id)"
             >
               <v-icon small>mdi-plus</v-icon>
             </v-btn>
           </div>
         </div>
-        <div v-show="folderOpenState[folder._id]">
+        <div v-show="folderOpenState[folder.id]">
           <draggable
             :list="[
-              ...eventsByFolder[folder._id].groups,
-              ...eventsByFolder[folder._id].events,
+              ...eventsByFolder[folder.id].groups,
+              ...eventsByFolder[folder.id].events,
             ]"
             group="events"
             @end="onEnd"
-            :data-folder-id="folder._id"
+            :data-folder-id="
+              folder.type === 'no-folder'
+                ? 'null'
+                : folder.type === 'archived'
+                ? 'archived'
+                : folder.id
+            "
             draggable=".item"
             :delay="200"
             :delay-on-touch-only="true"
-            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
+            :class="[
+              'tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2',
+              folder.type === 'archived' ? 'tw-opacity-75' : '',
+            ]"
           >
             <template v-slot:header>
               <div
                 v-if="
-                  eventsByFolder[folder._id].groups.length === 0 &&
-                  eventsByFolder[folder._id].events.length === 0
+                  eventsByFolder[folder.id].groups.length === 0 &&
+                  eventsByFolder[folder.id].events.length === 0
                 "
-                class="tw-absolute tw-left-0 tw-ml-8 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+                class="tw-absolute tw-left-0 tw-py-4 tw-text-sm tw-text-very-dark-gray"
+                :class="folder.type === 'regular' ? 'tw-ml-8' : 'tw-ml-7'"
               >
-                No events in this folder
+                {{ folder.emptyMessage }}
               </div>
             </template>
-            <template v-if="eventsByFolder[folder._id].groups.length > 0">
+            <template v-if="eventsByFolder[folder.id].groups.length > 0">
               <EventItem
-                v-for="event in eventsByFolder[folder._id].groups"
+                v-for="event in eventsByFolder[folder.id].groups"
                 :key="event._id"
                 :id="event._id"
                 :event="event"
-                :folder-id="folder._id"
+                :folder-id="folder.id"
                 class="item"
               />
               <div class="tw-col-span-full"></div>
             </template>
             <EventItem
-              v-for="event in eventsByFolder[folder._id].events"
+              v-for="event in eventsByFolder[folder.id].events"
               :key="event._id"
               :id="event._id"
               :event="event"
-              :folder-id="folder._id"
+              :folder-id="folder.id"
               class="item"
             />
           </draggable>
         </div>
       </div>
 
-      <div v-if="allEvents.length > 0">
-        <div class="tw-flex tw-items-center">
-          <v-btn icon small @click="toggleFolder('no-folder')">
-            <v-icon>{{
-              folderOpenState["no-folder"] ? "mdi-menu-down" : "mdi-menu-right"
-            }}</v-icon>
-          </v-btn>
-          <span class="tw-text-sm tw-font-medium">No folder</span>
-        </div>
-        <div v-show="folderOpenState['no-folder']">
-          <draggable
-            :list="[
-              ...eventsWithoutFolder.groups,
-              ...eventsWithoutFolder.events,
-            ]"
-            group="events"
-            @end="onEnd"
-            data-folder-id="null"
-            draggable=".item"
-            :delay="200"
-            :delay-on-touch-only="true"
-            class="tw-relative tw-grid tw-min-h-[52px] tw-grid-cols-1 tw-gap-4 tw-py-4 sm:tw-grid-cols-2"
-          >
-            <template v-slot:header>
-              <div
-                v-if="
-                  eventsWithoutFolder.groups.length === 0 &&
-                  eventsWithoutFolder.events.length === 0
-                "
-                class="tw-absolute tw-left-0 tw-ml-7 tw-py-4 tw-text-sm tw-text-very-dark-gray"
-              >
-                No events
-              </div>
-            </template>
-            <template v-if="eventsWithoutFolder.groups.length > 0">
-              <EventItem
-                v-for="event in eventsWithoutFolder.groups"
-                :key="event._id"
-                :id="event._id"
-                :event="event"
-                :folder-id="null"
-                class="item"
-              />
-              <div class="tw-col-span-full"></div>
-            </template>
-            <EventItem
-              v-for="event in eventsWithoutFolder.events"
-              :key="event._id"
-              :id="event._id"
-              :event="event"
-              :folder-id="null"
-              class="item"
-            />
-          </draggable>
-        </div>
-      </div>
-      <div v-else>
+      <div v-if="allEvents.length === 0">
         <div class="tw-py-4 tw-text-sm tw-text-very-dark-gray">
           No events yet! Create one to get started.
         </div>
@@ -305,15 +264,27 @@ export default {
     eventsByFolder() {
       const eventsByFolder = {}
       const allEventIds = new Set(this.allEvents.map((e) => e._id))
+
+      eventsByFolder["no-folder"] = { groups: [], events: [] }
+      eventsByFolder["archived"] = { groups: [], events: [] }
+
       this.folders.forEach((folder) => {
         eventsByFolder[folder._id] = { groups: [], events: [] }
         for (const eventId of folder.eventIds) {
           const event = this.allEventsMap[eventId]
           if (event) {
-            if (event.type === eventTypes.GROUP) {
-              eventsByFolder[folder._id].groups.push(event)
+            if (event.isArchived) {
+              if (event.type === eventTypes.GROUP) {
+                eventsByFolder["archived"].groups.push(event)
+              } else {
+                eventsByFolder["archived"].events.push(event)
+              }
             } else {
-              eventsByFolder[folder._id].events.push(event)
+              if (event.type === eventTypes.GROUP) {
+                eventsByFolder[folder._id].groups.push(event)
+              } else {
+                eventsByFolder[folder._id].events.push(event)
+              }
             }
             allEventIds.delete(eventId)
           }
@@ -321,29 +292,68 @@ export default {
         eventsByFolder[folder._id].groups.sort(this.sortEvents)
         eventsByFolder[folder._id].events.sort(this.sortEvents)
       })
-      eventsByFolder["no-folder"] = { groups: [], events: [] }
+
       for (const eventId of allEventIds) {
         const event = this.allEventsMap[eventId]
         if (event) {
-          if (event.type === eventTypes.GROUP) {
-            eventsByFolder["no-folder"].groups.push(event)
+          if (event.isArchived) {
+            if (event.type === eventTypes.GROUP) {
+              eventsByFolder["archived"].groups.push(event)
+            } else {
+              eventsByFolder["archived"].events.push(event)
+            }
           } else {
-            eventsByFolder["no-folder"].events.push(event)
+            if (event.type === eventTypes.GROUP) {
+              eventsByFolder["no-folder"].groups.push(event)
+            } else {
+              eventsByFolder["no-folder"].events.push(event)
+            }
           }
         }
       }
+
       eventsByFolder["no-folder"].groups.sort(this.sortEvents)
       eventsByFolder["no-folder"].events.sort(this.sortEvents)
+      eventsByFolder["archived"].groups.sort(this.sortEvents)
+      eventsByFolder["archived"].events.sort(this.sortEvents)
       return eventsByFolder
-    },
-    eventsWithoutFolder() {
-      return this.eventsByFolder["no-folder"]
     },
     folderDialogTitle() {
       return this.isEditingFolder ? "Edit folder" : "New folder"
     },
     folderDialogConfirmText() {
       return this.isEditingFolder ? "Save" : "Create"
+    },
+    allFolders() {
+      const folders = this.folders.map((folder) => ({
+        ...folder,
+        id: folder._id,
+        type: "regular",
+        name: folder.name,
+        emptyMessage: "No events in this folder",
+      }))
+
+      // Only show "no-folder" section if there are events
+      if (this.allEvents.length > 0) {
+        folders.push({
+          id: "no-folder",
+          type: "no-folder",
+          name: "No folder",
+          emptyMessage: "No events",
+        })
+      }
+
+      // Only show "archived" section if there are archived events
+      if (this.allEvents.some((event) => event.isArchived)) {
+        folders.push({
+          id: "archived",
+          type: "archived",
+          name: "Archived",
+          emptyMessage: "No archived events",
+        })
+      }
+
+      return folders
     },
   },
 
@@ -365,11 +375,26 @@ export default {
     onEnd(evt) {
       const eventId = evt.item.id
       let newFolderId = evt.to.dataset.folderId
-      if (newFolderId === "null" || newFolderId === undefined) {
+      if (
+        newFolderId === "null" ||
+        newFolderId === undefined ||
+        newFolderId === "no-folder"
+      ) {
         newFolderId = null
       }
 
-      const fromFolderId = evt.from.dataset.folderId
+      // Don't allow dropping into archived section
+      if (newFolderId === "archived") {
+        return
+      }
+
+      let fromFolderId = evt.from.dataset.folderId
+      if (fromFolderId === "no-folder") {
+        fromFolderId = null
+      }
+      if (fromFolderId === "archived") {
+        fromFolderId = null
+      }
 
       // if moving within the same folder, do nothing.
       if (fromFolderId === newFolderId) {
@@ -435,9 +460,10 @@ export default {
       this.$set(this.folderOpenState, folderId, !this.folderOpenState[folderId])
     },
     createEventInFolder(folderId) {
+      const actualFolderId = folderId === "no-folder" ? null : folderId
       this.createNew({
         eventOnly: false,
-        folderId: folderId,
+        folderId: actualFolderId,
       })
     },
     openDeleteDialog(folder) {

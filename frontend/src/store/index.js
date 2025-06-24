@@ -7,7 +7,8 @@ import {
   deleteFolder,
   setEventFolder,
   updateFolder,
-} from "../utils/FolderClient"
+} from "../utils/services/FolderService"
+import { archiveEvent } from "../utils/services/EventService"
 
 Vue.use(Vuex)
 
@@ -187,8 +188,8 @@ export default new Vuex.Store({
     },
 
     // Events
-    getEvents({ commit, dispatch }) {
-      if (this.state.authUser) {
+    getEvents({ commit, dispatch, state }) {
+      if (state.authUser) {
         return Promise.allSettled([get("/user/folders"), get("/user/events")])
           .then(([folders, events]) => {
             if (
@@ -208,6 +209,18 @@ export default new Vuex.Store({
           })
       } else {
         return null
+      }
+    },
+    async archiveEvent({ dispatch, state }, { eventId, archive }) {
+      try {
+        await archiveEvent(eventId, archive)
+        const event = state.events.find((e) => e._id === eventId)
+        if (event) {
+          event.isArchived = archive
+        }
+      } catch (err) {
+        dispatch("showError", "There was a problem archiving the event!")
+        console.error(err)
       }
     },
     async createFolder({ commit, dispatch }, { name, color }) {

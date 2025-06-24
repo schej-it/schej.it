@@ -1,4 +1,4 @@
-import { post, _delete, patch } from "./fetch_utils"
+import { post, _delete, patch } from "../fetch_utils"
 
 const FOLDER_API_ROUTE = "/user/folders"
 

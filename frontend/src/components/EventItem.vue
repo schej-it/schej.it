@@ -163,6 +163,11 @@
               </v-list>
             </v-menu>
             <v-divider />
+            <v-list-item @click="_archiveEvent">
+              <v-list-item-title>{{
+                event.isArchived ? "Unarchive" : "Archive"
+              }}</v-list-item-title>
+            </v-list-item>
             <v-dialog v-model="removeDialog" width="400" persistent>
               <template v-slot:activator="{ on, attrs }">
                 <v-list-item
@@ -268,7 +273,19 @@ export default {
   },
 
   methods: {
-    ...mapActions(["showError", "showInfo", "getEvents", "setEventFolder"]),
+    ...mapActions([
+      "showError",
+      "showInfo",
+      "getEvents",
+      "setEventFolder",
+      "archiveEvent",
+    ]),
+    _archiveEvent() {
+      this.archiveEvent({
+        eventId: this.event._id,
+        archive: !this.event.isArchived,
+      })
+    },
     moveEventToFolder(folderId) {
       this.setEventFolder({
         eventId: this.event._id,
