@@ -765,21 +765,19 @@ export default {
     },
 
     highlightAvailabilityBtn() {
-      if (!this.isPhone) {
-        window.scrollTo({ top: 0, behavior: "instant" })
-      }
-
-      this.availabilityBtnOpacity = 0.1
-      setTimeout(() => {
-        this.availabilityBtnOpacity = 1
-
-        setTimeout(() => {
-          this.availabilityBtnOpacity = 0.1
-          setTimeout(() => {
-            this.availabilityBtnOpacity = 1
-          }, 100)
-        }, 100)
-      }, 100)
+      // if (!this.isPhone) {
+      //   window.scrollTo({ top: 0, behavior: "instant" })
+      // }
+      // this.availabilityBtnOpacity = 0.1
+      // setTimeout(() => {
+      //   this.availabilityBtnOpacity = 1
+      //   setTimeout(() => {
+      //     this.availabilityBtnOpacity = 0.1
+      //     setTimeout(() => {
+      //       this.availabilityBtnOpacity = 1
+      //     }, 100)
+      //   }, 100)
+      // }, 100)
     },
 
     /** Sign in with google to link apple calendar */
