@@ -1378,7 +1378,7 @@ func duplicateEvent(c *gin.Context) {
 // @Router /events/{eventId}/archive [post]
 func archiveEvent(c *gin.Context) {
 	payload := struct {
-		Archive bool `json:"archive" binding:"required"`
+		Archive *bool `json:"archive" binding:"required"`
 	}{}
 	if err := c.Bind(&payload); err != nil {
 		c.Status(http.StatusBadRequest)
