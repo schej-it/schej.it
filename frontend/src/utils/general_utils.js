@@ -250,12 +250,43 @@ export const deleteEventsCreated = () => {
 export const prefersStartOnMonday = () => {
   let defaultStartOnMonday = false
   try {
-    defaultStartOnMonday =
-      new Intl.Locale(navigator.language).weekInfo.firstDay === 1
+    defaultStartOnMonday = weekStartLocale(navigator.language) === "mon"
   } catch {
     defaultStartOnMonday = false
   }
   return localStorage["startCalendarOnMonday"] == undefined
     ? defaultStartOnMonday
     : localStorage["startCalendarOnMonday"] == "true"
+}
+
+/** Source: https://stackoverflow.com/questions/53382465/how-can-i-determine-if-week-starts-on-monday-or-sunday-based-on-locale-in-pure-j */
+function weekStart(region, language) {
+  const regionSat = "AEAFBHDJDZEGIQIRJOKWLYOMQASDSY".match(/../g)
+  const regionSun =
+    "AGARASAUBDBRBSBTBWBZCACNCODMDOETGTGUHKHNIDILINJMJPKEKHKRLAMHMMMOMTMXMZNINPPAPEPHPKPRPTPYSASGSVTHTTTWUMUSVEVIWSYEZAZW".match(
+      /../g
+    )
+  const languageSat = ["ar", "arq", "arz", "fa"]
+  const languageSun =
+    "amasbndzengnguhehiidjajvkmknkolomhmlmrmtmyneomorpapssdsmsnsutatethtnurzhzu".match(
+      /../g
+    )
+
+  return region
+    ? regionSun.includes(region)
+      ? "sun"
+      : regionSat.includes(region)
+      ? "sat"
+      : "mon"
+    : languageSun.includes(language)
+    ? "sun"
+    : languageSat.includes(language)
+    ? "sat"
+    : "mon"
+}
+function weekStartLocale(locale) {
+  const parts = locale.match(
+    /^([a-z]{2,3})(?:-([a-z]{3})(?=$|-))?(?:-([a-z]{4})(?=$|-))?(?:-([a-z]{2}|\d{3})(?=$|-))?/i
+  )
+  return weekStart(parts[4], parts[1])
 }
