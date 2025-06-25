@@ -343,17 +343,19 @@ export default {
     ],
     faqs: [
       {
-        question: "How is Timeful different from Lettucemeet or When2meet?",
-        points: [
-          "Much better UI (web and mobile)",
-          "Seamless and working calendar integration",
-          "A slew of other features that we don't have space to list here",
-        ],
+        question: "Does Timeful support timezones?",
+        answer:
+          "Yes! Timeful automatically converts all times to the viewer's local timezone. There's also a timezone selector at the bottom of every meeting poll if you would like to manually change it.",
+      },
+      {
+        question: "How many people can respond to an event?",
+        answer:
+          "Unlimited! We've tested events with over 500+ responses and it works great.",
       },
       {
         question: "What calendars does Timeful integrate with?",
         answer:
-          "Timeful currently supports Google Calendar, Outlook, and Apple Calendar. We are working on adding more calendar types soon!",
+          "Timeful allows you to autofill your availability from your Google Calendar, Outlook, and Apple Calendar. We are working on adding more calendar types soon!",
       },
       {
         question: "Is calendar access required in order to use Timeful?",
@@ -366,14 +368,17 @@ export default {
           "Nope! All other users will be able to see is the availability that you enter for an event.",
       },
       {
-        question: "How many people can respond to an event?",
-        answer:
-          "Unlimited! We've tested events with over 500+ responses and it works great.",
-      },
-      {
         question: "How do I edit my availability?",
         answer:
           'If you are signed in, simply click the "Edit availability" button. If you entered your availability as a guest, hover over your name and click the pencil icon next to it.',
+      },
+      {
+        question: "How is Timeful different from Lettucemeet or When2meet?",
+        points: [
+          "Much better UI (web and mobile)",
+          "Seamless and working calendar integration",
+          "A slew of other features that we don't have space to list here",
+        ],
       },
       {
         question: `I want it so that only I can see people's responses.`,
