@@ -467,6 +467,7 @@ import {
   getDateWithTimezone,
   getTimeOptions,
   addEventToCreatedList,
+  prefersStartOnMonday,
 } from "@/utils"
 import { mapActions, mapState } from "vuex"
 import TimezoneSelector from "./schedule_overlap/TimezoneSelector.vue"
@@ -521,10 +522,7 @@ export default {
     loading: false,
     selectedDays: [],
     selectedDaysOfWeek: [],
-    startOnMonday:
-      localStorage["startCalendarOnMonday"] == undefined
-        ? false
-        : localStorage["startCalendarOnMonday"] == "true",
+    startOnMonday: prefersStartOnMonday(),
     notificationsEnabled: true,
 
     daysOnly: false,
@@ -654,10 +652,7 @@ export default {
       this.sendEmailAfterXResponsesEnabled = false
       this.sendEmailAfterXResponses = 3
       this.collectEmails = false
-      this.startOnMonday =
-        localStorage["startCalendarOnMonday"] == undefined
-          ? false
-          : localStorage["startCalendarOnMonday"] == "true"
+      this.startOnMonday = prefersStartOnMonday()
 
       this.$refs.form.resetValidation()
     },

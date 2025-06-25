@@ -246,3 +246,9 @@ export const getEventsCreated = () => {
 export const deleteEventsCreated = () => {
   localStorage.removeItem("eventsCreated")
 }
+
+export const prefersStartOnMonday = () => {
+  return localStorage["startCalendarOnMonday"] == undefined
+    ? new Intl.Locale(navigator.language).weekInfo.firstDay === 1
+    : localStorage["startCalendarOnMonday"] == "true"
+}
