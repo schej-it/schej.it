@@ -96,20 +96,27 @@ func (calendar *AppleCalendar) GetCalendarEvents(calendarId string, timeMin time
 
 	var filteredEvents []models.CalendarEvent
 	for _, event := range events {
-		// Filter out all day events
 		startTimeString := event.Data.Children[0].Props["DTSTART"][0].Value
-		if !strings.Contains(startTimeString, "T") {
-			continue
-		}
+		allDay := false
 
-		// Get time objects from time string taking timezone into account
-		startTime, err := parseTimeWithTZ(event.Data.Children[0].Props.Get("DTSTART"))
-		if err != nil {
-			continue
-		}
-		endTime, err := parseTimeWithTZ(event.Data.Children[0].Props.Get("DTEND"))
-		if err != nil {
-			continue
+		var startTime time.Time
+		var endTime time.Time
+
+		if !strings.Contains(startTimeString, "T") {
+			// Handle all day events
+			startTime, _ = time.Parse("20060102", startTimeString)
+			endTime, _ = time.Parse("20060102", event.Data.Children[0].Props["DTEND"][0].Value)
+			allDay = true
+		} else {
+			// Handle normal events
+			startTime, err = parseTimeWithTZ(event.Data.Children[0].Props.Get("DTSTART"))
+			if err != nil {
+				continue
+			}
+			endTime, err = parseTimeWithTZ(event.Data.Children[0].Props.Get("DTEND"))
+			if err != nil {
+				continue
+			}
 		}
 
 		filteredEvents = append(filteredEvents, models.CalendarEvent{
@@ -118,6 +125,7 @@ func (calendar *AppleCalendar) GetCalendarEvents(calendarId string, timeMin time
 			Summary:    event.Data.Children[0].Props.Get("SUMMARY").Value,
 			StartDate:  primitive.NewDateTimeFromTime(startTime),
 			EndDate:    primitive.NewDateTimeFromTime(endTime),
+			AllDay:     allDay,
 		})
 	}
 
